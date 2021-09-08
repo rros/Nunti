@@ -42,5 +42,9 @@ export default Styles = StyleSheet.create ({
     cardContentCoverContainer: {
         flex: 1
     },
+
+    buttonLeft: {
+        marginLeft: "auto"
+    },
 });
 
