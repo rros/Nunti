@@ -19,13 +19,20 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 const NavigationDrawer = createDrawerNavigator();
 
 export default class App extends Component {
+    constructor(){
+        super();
+
+        // load theme here
+        // end splash screen
+    }
     render() {
         return(
             <PaperProvider theme={Dark}>
                 <NavigationContainer theme={Dark}>
                     <NavigationDrawer.Navigator drawerContent={(props) => <CustomDrawer {...props}/>} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
-                        <NavigationDrawer.Screen name="Feed" component={Feed} />
+                        <NavigationDrawer.Screen name="Feed" component={Feed}/>
                         <NavigationDrawer.Screen name="Bookmarks" component={Feed} />
+                        <NavigationDrawer.Screen name="Settings" component={Feed} />
                     </NavigationDrawer.Navigator>
                 </NavigationContainer>
             </PaperProvider>
@@ -38,7 +45,6 @@ function CustomHeader ({ navigation, route }) {
         <Appbar.Header>
             <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} />
             <Appbar.Content title={route.name} />
-            <Appbar.Action icon="tune" onPress={ () => { console.log("settings here soon"); }} />
         </Appbar.Header>
       );
 }
@@ -48,22 +54,33 @@ function CustomDrawer ({ state, navigation }) {
 
     return (
         <Drawer.Section title="Nunti" style={{backgroundColor: Dark.colors.surface, height: "100%"}}>
+            <Drawer.Section>
+                <Drawer.Item
+                    label={state.routeNames[0]}
+                    icon="book"
+                    active={active === state.routeNames[0]}
+                    onPress={() => {
+                        setActive(state.routeNames[0]);
+                        navigation.navigate(state.routes[0]);
+                    }}
+                />
+                <Drawer.Item
+                    label={state.routeNames[1]}
+                    icon="bookmark"
+                    active={active === state.routeNames[1]}
+                    onPress={() => {
+                        setActive(state.routeNames[1]);
+                        navigation.navigate(state.routes[1]);
+                    }}
+                />
+            </Drawer.Section>
             <Drawer.Item
-                label={state.routeNames[0]}
-                icon="book"
-                active={active === state.routeNames[0]}
+                label={state.routeNames[2]}
+                icon="tune"
+                active={active === state.routeNames[2]}
                 onPress={() => {
-                    setActive(state.routeNames[0]);
-                    navigation.navigate(state.routes[0]);
-                }}
-            />
-            <Drawer.Item
-                label={state.routeNames[1]}
-                icon="bookmark"
-                active={active === state.routeNames[1]}
-                onPress={() => {
-                    setActive(state.routeNames[1]);
-                    navigation.navigate(state.routes[1]);
+                    setActive(state.routeNames[2]);
+                    navigation.navigate(state.routes[2]);
                 }}
             />
         </Drawer.Section>
