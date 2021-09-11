@@ -10,7 +10,9 @@ import { DarkTheme, DefaultTheme } from 'react-native-paper';
 
 // our files
 import Styles, { Dark, Light } from "./Styles";
-import Feed from "./Feed"
+import Feed from "./Screens/Feed"
+import Bookmarks from "./Screens/Bookmarks"
+import Settings from "./Screens/Settings"
 
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -31,8 +33,8 @@ export default class App extends Component {
                 <NavigationContainer theme={Dark}>
                     <NavigationDrawer.Navigator drawerContent={(props) => <CustomDrawer {...props}/>} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
                         <NavigationDrawer.Screen name="Feed" component={Feed}/>
-                        <NavigationDrawer.Screen name="Bookmarks" component={Feed} />
-                        <NavigationDrawer.Screen name="Settings" component={Feed} />
+                        <NavigationDrawer.Screen name="Bookmarks" component={Bookmarks} />
+                        <NavigationDrawer.Screen name="Settings" component={Settings} />
                     </NavigationDrawer.Navigator>
                 </NavigationContainer>
             </PaperProvider>

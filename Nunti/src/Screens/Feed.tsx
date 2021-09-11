@@ -3,7 +3,8 @@ import {
     SafeAreaView,
     FlatList,
     View,
-    Share
+    Share,
+    ScrollView
 } from 'react-native';
 
 import { 
@@ -19,7 +20,7 @@ import { WebView } from 'react-native-webview';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import Backend from './Backend';
+import Backend from '../Backend';
 
 const NavigationStack = createNativeStackNavigator();
 
@@ -53,27 +54,26 @@ class Articles extends Component {
         }
         
         Backend.LoadNewArticles().then( async (arts) => {
-            await this.setState({ articles:arts, refreshing:false })
+            await this.setState({ articles:arts, refreshing:false });
         })
     }
 
     private async readMore(articleIndex: number) {
         this.hideDetails();
 
-        let url = ""
+        let url = "";
         if(typeof(articleIndex) !== typeof(0)) {
             // when readMore is called without articleIndex, we need to take it from this.state
             // this happens on "Read More" button in article details
-            url = this.state.articles[this.state.currentIndex].url
+            url = this.state.articles[this.state.currentIndex].url;
         } else
-            url = this.state.articles[articleIndex].url
+            url = this.state.articles[articleIndex].url;
 
-        this.props.navigation.push("WebView", { uri: url })
+        this.props.navigation.push("WebView", { uri: url });
     }
     
     private async viewDetails(articleIndex: number){
-        await this.setState({ currentIndex: articleIndex })
-        console.log('view details',this.state.currentIndex)
+        await this.setState({ currentIndex: articleIndex });
         this.setState({ detailsVisible: true });
     }
     
@@ -88,7 +88,8 @@ class Articles extends Component {
     }
 
     private async saveArticle() {
-        return await Backend.SaveArticle(this.state.articles[this.state.currentIndex])
+        // TODO: show snackbar
+        return await Backend.SaveArticle(this.state.articles[this.state.currentIndex]);
     }
 
     private async shareArticle() {
@@ -119,22 +120,22 @@ class Articles extends Component {
                     refreshing={this.state.refreshing}
                     onRefresh={this.refresh}
                 />
-                <Portal>
                     <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
-                        <Card>
-                            <Card.Cover source={{ uri: this.state.articles[this.state.currentIndex].cover }} />
-                            <Card.Content>
-                                <Title>{this.state.articles[this.state.currentIndex].title}</Title>
-                                <Paragraph>{this.state.articles[this.state.currentIndex].description}</Paragraph>
-                            </Card.Content>
-                            <Card.Actions>
-                                <Button icon="book" onPress={this.readMore}>Read more</Button>
-                                <Button icon="bookmark" onPress={this.saveArticle}>Save</Button>
-                                <Button icon="share" onPress={this.shareArticle} style={Styles.buttonLeft}>Share</Button>
-                            </Card.Actions>
-                        </Card>
+                        <ScrollView>
+                            <Card>
+                                <Card.Cover source={{ uri: this.state.articles[this.state.currentIndex].cover }} />
+                                <Card.Content>
+                                    <Title>{this.state.articles[this.state.currentIndex].title}</Title>
+                                    <Paragraph>{this.state.articles[this.state.currentIndex].description}</Paragraph>
+                                </Card.Content>
+                                <Card.Actions>
+                                    <Button icon="book" onPress={this.readMore}>Read more</Button>
+                                    <Button icon="bookmark" onPress={this.saveArticle}>Save</Button>
+                                    <Button icon="share" onPress={this.shareArticle} style={Styles.buttonLeft}>Share</Button>
+                                </Card.Actions>
+                            </Card>
+                        </ScrollView>
                     </Modal>
-                </Portal>
             </SafeAreaView>
         );
     }
