@@ -4,7 +4,7 @@ Finally a smart news reader which does not suck ass nor your data.
 
 # Licence, disclaimer or whatever
 
-Nunti  Copyright (C) 2020  Ondřej Foltýn
+Nunti  Copyright &copy; 2020  Ondřej Foltýn
 
 > This program is free software: you can redistribute it and/or modify
 > it under the terms of the **GNU General Public License** as published by
