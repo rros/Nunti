@@ -9,8 +9,8 @@ import {
 import { DarkTheme, DefaultTheme } from 'react-native-paper';
 
 // our files
-import Styles, { Dark, Light } from "./Styles.ts";
-import Feed from "./Feed.tsx"
+import Styles, { Dark, Light } from "./Styles";
+import Feed from "./Feed"
 
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -19,8 +19,8 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 const NavigationDrawer = createDrawerNavigator();
 
 export default class App extends Component {
-    constructor(){
-        super();
+    constructor(props: any) {
+        super(props);
 
         // load theme here
         // end splash screen

@@ -1,9 +1,17 @@
+class Article {
+    public id: number = 0;
+    public title: string = "";
+    public description: string = "";
+    public cover: string = "about:blank";
+    public url: string = "about:blank";
+}
 class Backend {
+    public static EmptyArticle = new Article()
     public static async LoadNewArticles() {
         //TODO
-        console.log("Loading new articles..");
+        console.log("Backend: Loading new articles..");
         await new Promise(r => setTimeout(r, 500));
-        console.log("Loaded.");
+        console.log("Backend: Loaded.");
         return [ 
                 {
                     id: 0,
@@ -27,6 +35,10 @@ class Backend {
                     url: "https://www.irozhlas.cz/zpravy-domov/jan-hamacek-cesta-do-moskvy-vrbetice-vysetrovani_2109071849_onz"
                 },
             ]
+    }
+    public static async SaveArticle(article: Article) {
+        //TODO
+        console.log("Backend: Saving article", article.url);
     }
 }
 export default Backend;
