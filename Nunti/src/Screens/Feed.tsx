@@ -88,8 +88,11 @@ class Articles extends Component {
     }
 
     private async saveArticle() {
-        // TODO: show snackbar
-        return await Backend.SaveArticle(this.state.articles[this.state.currentIndex]);
+        if(await Backend.TrySaveArticle(this.state.articles[this.state.currentIndex])) {
+            // TODO: show snackbar success
+        } else {
+            // TODO: show snackbar fail
+        }
     }
 
     private async shareArticle() {

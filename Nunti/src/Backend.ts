@@ -1,3 +1,5 @@
+import { AsyncStorage } from 'react-native';
+
 class Article {
     public id: number = 0;
     public title: string = "";
@@ -8,8 +10,9 @@ class Article {
 class Backend {
     public static EmptyArticle = new Article()
     public static async LoadNewArticles() {
-        //TODO
+        //TODO: download and ai
         console.log("Backend: Loading new articles..");
+        await this.CheckDB();
         await new Promise(r => setTimeout(r, 500));
         console.log("Backend: Loaded.");
         return [ 
@@ -32,13 +35,47 @@ class Backend {
                     title: "Hamáček vysvětloval na policii plánovanou cestu do Moskvy. K obsahu výpovědi se odmítl vyjádřit",
                     description: "Vicepremiér a ministr vnitra Jan Hamáček (ČSSD) v úterý podával policistům vysvětlení k okolnostem své neuskutečněné cesty do Moskvy, kterou překazilo odhalení v kauze výbuchů ve Vrběticích. Podle informací České televize policisté dorazili za Hamáčkem dopoledne na ministerstvo vnitra. Pro média se ministr po rozhovoru s vyšetřovateli nevyjadřoval.",
                     cover: "https://www.irozhlas.cz/sites/default/files/styles/zpravy_fotogalerie_medium/public/uploader/rv0_6117_210628-170605_vlf.jpg?itok=nOyfuGJE",
-                    url: "https://www.irozhlas.cz/zpravy-domov/jan-hamacek-cesta-do-moskvy-vrbetice-vysetrovani_2109071849_onz"
+                    url: "https://www.irozhlas.cSz/zpravy-domov/jan-hamacek-cesta-do-moskvy-vrbetice-vysetrovani_2109071849_onz"
                 },
             ]
     }
-    public static async SaveArticle(article: Article) {
-        //TODO
-        console.log("Backend: Saving article", article.url);
+    public static async TrySaveArticle(article: Article): Promise<boolean> {
+        try {
+            console.log("Backend: Saving article", article.url);
+            let saved = await this.StorageGet('saved');
+            if (await this.FindArticleByUrl(article.url, saved) < 0) {
+                saved.push(article);
+                await this.StorageSave('saved',saved);
+            } else {
+                console.info('Backend: Article is already saved.');
+            }
+            return true;
+        } catch(error) {
+            console.error('Backend: Cannot save article.',error);
+            return false;
+        }
+    }
+    private static async FindArticleByUrl(url: string, haystack: Article[]): Promise<number> {
+        for(let i = 0; i < haystack.length; i++) {
+            if (haystack[i].url === url)
+                return i;
+        }
+        return -1;
+    }
+    private static async StorageSave(key: string, value: any) {
+        console.debug(`Backend: Saving key '${key}'.`);
+        await AsyncStorage.setItem(key,JSON.stringify(value));
+    }
+    private static async StorageGet(key:string): Promise<any> {
+        let data = await AsyncStorage.getItem(key);
+        if (data === null)
+            throw new Error(`Cannot retrieve data, possibly unknown key '${key}'.`);
+        return JSON.parse(data);
+    }
+    private static async CheckDB() {
+        console.debug('Backend: Checking DB..');
+        if (await AsyncStorage.getItem('saved') === null)
+            await AsyncStorage.setItem('saved',JSON.stringify([]));
     }
 }
 export default Backend;
