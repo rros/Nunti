@@ -7,37 +7,34 @@ class Article {
     public cover: string = "about:blank";
     public url: string = "about:blank";
 }
+
+class UserSettings {
+    public ArticleCacheTime: number = 60; //minutes
+}
+
 class Backend {
-    public static EmptyArticle = new Article()
-    public static async LoadNewArticles() {
-        //TODO: download and ai
+    public static EmptyArticle = new Article();
+    public static DefaultArticleList: Article[] = [Backend.EmptyArticle]; //TODO: this is shown before articles are loaded, make loading animation here.
+
+    /* Retrieves sorted articles to show in feed. */
+    public static async GetArticles(): Promise<Article[]> {
         console.log("Backend: Loading new articles..");
         await this.CheckDB();
-        await new Promise(r => setTimeout(r, 500));
+
+        let cache = await this.StorageGet('articles_cache');
+        let arts: Article[];
+
+        if (Date.now() - cache.timestamp >= (await this.StorageGet('user_settings')).ArticleCacheTime * 1000 * 60) {
+            arts = await this.DownloadArticles();
+            this.StorageSave('articles_cache', {"timestamp": Date.now(), "articles": arts})
+        } else {
+            console.log(`Backend: Using cached articles. (${((Date.now() - cache.timestamp) * 1000 * 60)} minutes old)`);
+            arts = cache.articles;
+        }
+
+        arts = await this.SortArticles(arts);
         console.log("Backend: Loaded.");
-        return [ 
-                {
-                    id: 0,
-                    title: "Kauza kancléře Mynáře míří k nejvyššímu žalobci Střížovi. Ve hře je vrácení dotace na penzion",
-                    description: "Dotační úřad ROP Střední Morava našel cestu, jak ještě získat zpět šestimilionovou dotaci na penzion v Osvětimanech od firmy Clever Management hradního kancléře Vratislava Mynáře. Vedoucí odboru veřejné kontroly Dana Koplíková serveru iROZHLAS.cz potvrdila, že úřad předal Nejvyššímu státnímu zastupitelství návrh, aby kvůli vrácení dotace podal správní žalobu k soudu.",
-                    cover: "https://www.irozhlas.cz/sites/default/files/styles/zpravy_fotogalerie_medium/public/uploader/profimedia-030438780_170821-154405_kno.jpg?itok=i1w6k_n8",
-                    url: "https://www.irozhlas.cz/zpravy-domov/vratislav-mynar-dotace-rop-stredni-morava-osvetimany-clever-management_2109071907_zpo"
-                },
-                {
-                    id: 1,
-                    title: "Policisté nemohli střelbě v Bělehradské ulici předejít, postupovali správně, uvedla generální inspekce",
-                    description: "Útoku, při kterém koncem června zemřela pracovnice úřadu práce v Praze 2, nebylo možné předejít, uvedla na svém webu Generální inspekce bezpečnostních sborů (GIBS). Postup policie byl podle ní správný a v souladu s předpisy. Ze zastřelení zaměstnankyně úřadu práce je obviněn šestašedesátiletý muž. Podle policistů krátce předtím poleptal kyselinou ženu v Odoleně Vodě a nastražil výbušné zařízení, které zranilo policistu.",
-                    cover: "https://www.irozhlas.cz/sites/default/files/styles/zpravy_fotogalerie_medium/public/uploader/profimedia-061859281_210630-142545_bar.jpg?itok=EUOjsK1J",
-                    url: "https://www.irozhlas.cz/zpravy-domov/policie-postup-strelba-belehradska-urednice-gibs-inspekce_2109071724_tzr"
-                },
-                {
-                    id: 2,
-                    title: "Hamáček vysvětloval na policii plánovanou cestu do Moskvy. K obsahu výpovědi se odmítl vyjádřit",
-                    description: "Vicepremiér a ministr vnitra Jan Hamáček (ČSSD) v úterý podával policistům vysvětlení k okolnostem své neuskutečněné cesty do Moskvy, kterou překazilo odhalení v kauze výbuchů ve Vrběticích. Podle informací České televize policisté dorazili za Hamáčkem dopoledne na ministerstvo vnitra. Pro média se ministr po rozhovoru s vyšetřovateli nevyjadřoval.",
-                    cover: "https://www.irozhlas.cz/sites/default/files/styles/zpravy_fotogalerie_medium/public/uploader/rv0_6117_210628-170605_vlf.jpg?itok=nOyfuGJE",
-                    url: "https://www.irozhlas.cSz/zpravy-domov/jan-hamacek-cesta-do-moskvy-vrbetice-vysetrovani_2109071849_onz"
-                },
-            ]
+        return arts;
     }
     public static async TrySaveArticle(article: Article): Promise<boolean> {
         try {
@@ -47,13 +44,47 @@ class Backend {
                 saved.push(article);
                 await this.StorageSave('saved',saved);
             } else {
-                console.info('Backend: Article is already saved.');
+                console.log('Backend: Article is already saved.');
             }
             return true;
         } catch(error) {
             console.error('Backend: Cannot save article.',error);
             return false;
         }
+    }
+
+    /* Private methods */
+    private static async DownloadArticles(): Promise<Article[]> {
+        //TODO: downloading
+        //TODO: user setting - download only on wifi
+        await new Promise(r => setTimeout(r, 500));
+        return [
+            {
+                id: 0,
+                title: "Kauza kancléře Mynáře míří k nejvyššímu žalobci Střížovi. Ve hře je vrácení dotace na penzion",
+                description: "Dotační úřad ROP Střední Morava našel cestu, jak ještě získat zpět šestimilionovou dotaci na penzion v Osvětimanech od firmy Clever Management hradního kancléře Vratislava Mynáře. Vedoucí odboru veřejné kontroly Dana Koplíková serveru iROZHLAS.cz potvrdila, že úřad předal Nejvyššímu státnímu zastupitelství návrh, aby kvůli vrácení dotace podal správní žalobu k soudu.",
+                cover: "https://www.irozhlas.cz/sites/default/files/styles/zpravy_fotogalerie_medium/public/uploader/profimedia-030438780_170821-154405_kno.jpg?itok=i1w6k_n8",
+                url: "https://www.irozhlas.cz/zpravy-domov/vratislav-mynar-dotace-rop-stredni-morava-osvetimany-clever-management_2109071907_zpo"
+            },
+            {
+                id: 1,
+                title: "Policisté nemohli střelbě v Bělehradské ulici předejít, postupovali správně, uvedla generální inspekce",
+                description: "Útoku, při kterém koncem června zemřela pracovnice úřadu práce v Praze 2, nebylo možné předejít, uvedla na svém webu Generální inspekce bezpečnostních sborů (GIBS). Postup policie byl podle ní správný a v souladu s předpisy. Ze zastřelení zaměstnankyně úřadu práce je obviněn šestašedesátiletý muž. Podle policistů krátce předtím poleptal kyselinou ženu v Odoleně Vodě a nastražil výbušné zařízení, které zranilo policistu.",
+                cover: "https://www.irozhlas.cz/sites/default/files/styles/zpravy_fotogalerie_medium/public/uploader/profimedia-061859281_210630-142545_bar.jpg?itok=EUOjsK1J",
+                url: "https://www.irozhlas.cz/zpravy-domov/policie-postup-strelba-belehradska-urednice-gibs-inspekce_2109071724_tzr"
+            },
+            {
+                id: 2,
+                title: "Hamáček vysvětloval na policii plánovanou cestu do Moskvy. K obsahu výpovědi se odmítl vyjádřit",
+                description: "Vicepremiér a ministr vnitra Jan Hamáček (ČSSD) v úterý podával policistům vysvětlení k okolnostem své neuskutečněné cesty do Moskvy, kterou překazilo odhalení v kauze výbuchů ve Vrběticích. Podle informací České televize policisté dorazili za Hamáčkem dopoledne na ministerstvo vnitra. Pro média se ministr po rozhovoru s vyšetřovateli nevyjadřoval.",
+                cover: "https://www.irozhlas.cz/sites/default/files/styles/zpravy_fotogalerie_medium/public/uploader/rv0_6117_210628-170605_vlf.jpg?itok=nOyfuGJE",
+                url: "https://www.irozhlas.cSz/zpravy-domov/jan-hamacek-cesta-do-moskvy-vrbetice-vysetrovani_2109071849_onz"
+            },
+        ]
+    }
+    private static async SortArticles(articles: Article[]) {
+        //TODO: sorting AI
+        return articles;
     }
     private static async FindArticleByUrl(url: string, haystack: Article[]): Promise<number> {
         for(let i = 0; i < haystack.length; i++) {
@@ -76,6 +107,10 @@ class Backend {
         console.debug('Backend: Checking DB..');
         if (await AsyncStorage.getItem('saved') === null)
             await AsyncStorage.setItem('saved',JSON.stringify([]));
+        if (await AsyncStorage.getItem('user_settings') === null)
+            await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
+        if (await AsyncStorage.getItem('articles_cache') === null)
+            await AsyncStorage.setItem('articles_cache',JSON.stringify({"timestamp":0,"articles":[]}));
     }
 }
 export default Backend;

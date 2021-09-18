@@ -50,10 +50,10 @@ class Articles extends Component {
             detailsVisible: false,
             currentIndex: 0,
             refreshing: true,
-            articles: [Backend.EmptyArticle]
+            articles: Backend.DefaultArticleList
         }
         
-        Backend.LoadNewArticles().then( async (arts) => {
+        Backend.GetArticles().then( async (arts) => {
             await this.setState({ articles:arts, refreshing:false });
         })
     }
