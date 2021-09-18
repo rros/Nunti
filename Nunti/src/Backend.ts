@@ -23,12 +23,13 @@ class Backend {
 
         let cache = await this.StorageGet('articles_cache');
         let arts: Article[];
-
-        if (Date.now() - cache.timestamp >= (await this.StorageGet('user_settings')).ArticleCacheTime * 1000 * 60) {
+        
+        let cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp)) / 60000;
+        if (cacheAgeMinutes >= (await this.StorageGet('user_settings')).ArticleCacheTime) {
             arts = await this.DownloadArticles();
             this.StorageSave('articles_cache', {"timestamp": Date.now(), "articles": arts})
         } else {
-            console.log(`Backend: Using cached articles. (${((Date.now() - cache.timestamp) * 1000 * 60)} minutes old)`);
+            console.log(`Backend: Using cached articles. (${cacheAgeMinutes} minutes old)`);
             arts = cache.articles;
         }
 
@@ -36,6 +37,8 @@ class Backend {
         console.log("Backend: Loaded.");
         return arts;
     }
+
+    /* Tries to save an article, true on success, false on fail. */
     public static async TrySaveArticle(article: Article): Promise<boolean> {
         try {
             console.log("Backend: Saving article", article.url);
@@ -53,11 +56,30 @@ class Backend {
         }
     }
 
+    /* Returns list of saved articles. */
+    public static async GetSavedArticles(): Promise<Article[]> {
+        return await this.StorageGet('saved');
+    }
+
+    /* Resets cache */
+    public static async ResetCache() {
+        console.info('Backend: Resetting cache..');
+        await this.CheckDB();
+        await this.StorageSave("articles_cache",{"timestamp":0, "articles":[]});
+    }
+    
+    /* Resets all data in the app storage. */
+    public static async ResetAllData() {
+        console.warn('Backend: Resetting all data.');
+        await AsyncStorage.clear();
+        await this.CheckDB();
+    }
+
     /* Private methods */
     private static async DownloadArticles(): Promise<Article[]> {
         //TODO: downloading
         //TODO: user setting - download only on wifi
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 5000));
         return [
             {
                 id: 0,

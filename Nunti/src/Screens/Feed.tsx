@@ -83,7 +83,7 @@ class Articles extends Component {
 
     private async refresh(){
         await this.setState({ refreshing: true });
-        await this.setState({ articles: await Backend.LoadNewArticles() });
+        await this.setState({ articles: await Backend.GetArticles() });
         await this.setState({ refreshing: false });
     }
 
