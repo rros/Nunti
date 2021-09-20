@@ -46,5 +46,26 @@ export default Styles = StyleSheet.create ({
     buttonLeft: {
         marginLeft: "auto"
     },
+
+    buttonBad: {
+        textAlign: 'center',
+        paddingRight: "20%",
+        backgroundColor: "#d32f2f"
+    },
+
+    buttonGood: {
+        paddingLeft: "20%",
+        alignSelf: "center",
+        backgroundColor: "#4caf50"
+    },
+
+    swipeListBack: {
+        alignItems: 'center',
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: "3%",
+        marginBottom: "3%",
+    }
 });
 

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import {
     SafeAreaView,
-    FlatList,
     View,
     Share,
-    ScrollView
+    ScrollView,
+    Text
 } from 'react-native';
 
 import { 
@@ -16,10 +16,9 @@ import {
     Button
 } from 'react-native-paper';
 
+import { SwipeListView } from 'react-native-swipe-list-view';
 import { WebView } from 'react-native-webview';
-
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 import Backend from '../Backend';
 
 const NavigationStack = createNativeStackNavigator();
@@ -101,24 +100,63 @@ class Articles extends Component {
         });
     }
 
+    // article is the full article item so the article can get deleted from the list immediately
+    private async rate(article: any, isGood: bool) {
+        if(isGood){
+            // TODO: function to rate
+        } else {
+            // TODO: function to rate
+        }
+    }
+
     render() {
-        return (
+        return (viewDetails
             <SafeAreaView style={{ flex: 1 }}>
-                <FlatList
+                <SwipeListView 
                     data={this.state.articles}
-                    renderItem={ ({ item }) => (
-                        <Card style={Styles.card} onPress={() => { this.readMore(item.id) }} onLongPress={() => { this.viewDetails(item.id) }}>
+                    renderItem={ (rowData, rowMap) => (
+                        <Card style={Styles.card} onPress={() => { rowMap[rowData.item.id].closeRow(); this.readMore(rowData.index) }} onLongPress={() => { rowMap[rowData.item.id].closeRow(); this.viewDetails(rowData.index) }}>
                             <View style={Styles.cardContentContainer}>
                                 <Card.Content style={Styles.cardContentTextContainer}>
-                                    <Title>{item.title}</Title>
-                                    <Paragraph numberOfLines={4}>{item.description}</Paragraph>
+                                    <Title>{rowData.item.title}</Title>
+                                    <Paragraph numberOfLines={4}>{rowData.item.description}</Paragraph>
                                 </Card.Content>
                                 <View style={Styles.cardContentCoverContainer}>
-                                    <Card.Cover source={{ uri: item.cover }}/>
+                                    <Card.Cover source={{ uri: rowData.item.cover }}/>
                                 </View>
                             </View>
                         </Card>
                     )}
+                    renderHiddenItem={(rowData, rowMap) => (
+                        <View style={Styles.swipeListBack}>
+                            <Button icon="thumb-down" mode="contained" 
+                                onPress={() => {
+                                    this.rate(rowData.item, false);
+
+                                    let updatedArticles = this.state.articles;
+                                    updatedArticles.splice(rowData.index, 1);
+                                    this.setState({ articles: updatedArticles });
+                                }}
+                                contentStyle={{height: "100%"}} style={Styles.buttonBad}
+                            >Rate</Button>
+                            <Button icon="thumb-up" mode="contained" 
+                                onPress={() => {
+                                    this.rate(rowData.item, true);
+
+                                    let updatedArticles = this.state.articles;
+                                    updatedArticles.splice(rowData.index, 1);
+                                    this.setState({ articles: updatedArticles });
+                                }}
+                                contentStyle={{height: "100%"}} style={Styles.buttonGood}
+                            >Rate</Button>
+                        </View>
+                    )}
+                    useNativeDriver={false}
+                    leftOpenValue={100}
+                    rightOpenValue={-100}
+                    stopLeftSwipe={150}
+                    stopRightSwipe={-150}
+
                     keyExtractor={item => item.id}
                     refreshing={this.state.refreshing}
                     onRefresh={this.refresh}
