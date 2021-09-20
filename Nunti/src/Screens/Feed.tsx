@@ -110,7 +110,7 @@ class Articles extends Component {
     }
 
     render() {
-        return (viewDetails
+        return (
             <SafeAreaView style={{ flex: 1 }}>
                 <SwipeListView 
                     data={this.state.articles}
