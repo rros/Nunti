@@ -115,7 +115,7 @@ class Articles extends Component {
                 <SwipeListView 
                     data={this.state.articles}
                     renderItem={ (rowData, rowMap) => (
-                        <Card style={Styles.card} onPress={() => { rowMap[rowData.item.id].closeRow(); this.readMore(rowData.index) }} onLongPress={() => { rowMap[rowData.item.id].closeRow(); this.viewDetails(rowData.index) }}>
+                        <Card style={Styles.card} onPress={() => { this.readMore(rowData.index) }} onLongPress={() => { this.viewDetails(rowData.index) }}>
                             <View style={Styles.cardContentContainer}>
                                 <Card.Content style={Styles.cardContentTextContainer}>
                                     <Title>{rowData.item.title}</Title>
@@ -130,23 +130,9 @@ class Articles extends Component {
                     renderHiddenItem={(rowData, rowMap) => (
                         <View style={Styles.swipeListBack}>
                             <Button icon="thumb-down" mode="contained" 
-                                onPress={() => {
-                                    this.rate(rowData.item, false);
-
-                                    let updatedArticles = this.state.articles;
-                                    updatedArticles.splice(rowData.index, 1);
-                                    this.setState({ articles: updatedArticles });
-                                }}
                                 contentStyle={{height: "100%"}} style={Styles.buttonBad}
                             >Rate</Button>
                             <Button icon="thumb-up" mode="contained" 
-                                onPress={() => {
-                                    this.rate(rowData.item, true);
-
-                                    let updatedArticles = this.state.articles;
-                                    updatedArticles.splice(rowData.index, 1);
-                                    this.setState({ articles: updatedArticles });
-                                }}
                                 contentStyle={{height: "100%"}} style={Styles.buttonGood}
                             >Rate</Button>
                         </View>
@@ -156,6 +142,19 @@ class Articles extends Component {
                     rightOpenValue={-100}
                     stopLeftSwipe={150}
                     stopRightSwipe={-150}
+
+                    onRowDidOpen={(rowKey, rowMap) => {
+                        if(rowMap[rowKey].currentTranslateX > 0){
+                            this.rate(rowMap[rowKey].props.item, false);
+                        } else {
+                            this.rate(rowMap[rowKey].props.item, true);
+                        }
+
+                        let updatedArticles = this.state.articles;
+                        let removingIndex = updatedArticles.findIndex(item => item.id === rowMap[rowKey].props.item.id);
+                        updatedArticles.splice(removingIndex, 1);
+                        this.setState({ articles: updatedArticles });
+                    }}
 
                     keyExtractor={item => item.id}
                     refreshing={this.state.refreshing}
