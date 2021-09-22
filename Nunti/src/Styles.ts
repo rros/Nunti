@@ -36,11 +36,11 @@ export default Styles = StyleSheet.create ({
     },
 
     cardContentTextContainer: {
-        flex: 2
+        flex: 2,
     },
     
     cardContentCoverContainer: {
-        flex: 1
+        flex: 1,
     },
 
     buttonLeft: {
@@ -48,14 +48,12 @@ export default Styles = StyleSheet.create ({
     },
 
     buttonBad: {
-        textAlign: 'center',
         paddingRight: "20%",
         backgroundColor: "#d32f2f"
     },
 
     buttonGood: {
         paddingLeft: "20%",
-        alignSelf: "center",
         backgroundColor: "#4caf50"
     },
 

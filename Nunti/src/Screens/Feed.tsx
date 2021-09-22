@@ -4,7 +4,7 @@ import {
     View,
     Share,
     ScrollView,
-    Text
+    Animated
 } from 'react-native';
 
 import { 
@@ -19,6 +19,7 @@ import {
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { WebView } from 'react-native-webview';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import ReactNativeHapticFeedback from "react-native-haptic-feedback";
 import Backend from '../Backend';
 
 const NavigationStack = createNativeStackNavigator();
@@ -49,12 +50,20 @@ class Articles extends Component {
             detailsVisible: false,
             currentIndex: 0,
             refreshing: true,
-            articles: Backend.DefaultArticleList
+            articles: Backend.DefaultArticleList,
         }
         
         Backend.GetArticles().then( async (arts) => {
             await this.setState({ articles:arts, refreshing:false });
         })
+
+        this.swiping = false;
+        this.rowTranslateValues = {};
+        Array(20) // TODO: length by article list length
+            .fill('')
+            .forEach((_, i) => {
+                this.rowTranslateValues[`${i}`] = new Animated.Value(1);
+            });
     }
 
     private async readMore(articleIndex: number) {
@@ -82,6 +91,13 @@ class Articles extends Component {
 
     private async refresh(){
         await this.setState({ refreshing: true });
+        
+        Array(20)
+            .fill('')
+            .forEach((_, i) => {
+                this.rowTranslateValues[`${i}`] = new Animated.Value(1);
+            });
+
         await this.setState({ articles: await Backend.GetArticles() });
         await this.setState({ refreshing: false });
     }
@@ -109,57 +125,93 @@ class Articles extends Component {
         }
     }
 
+    // NOTE: rowKey and item.id is the same. They don't change like the index, and the list uses them internally.
+    // Therefore use index for getting the right url from article list, and use the id/rowKey for finding the right row for actions
     render() {
         return (
             <SafeAreaView style={{ flex: 1 }}>
-                <SwipeListView 
+                <SwipeListView
                     data={this.state.articles}
                     renderItem={ (rowData, rowMap) => (
-                        <Card style={Styles.card} onPress={() => { this.readMore(rowData.index) }} onLongPress={() => { this.viewDetails(rowData.index) }}>
-                            <View style={Styles.cardContentContainer}>
-                                <Card.Content style={Styles.cardContentTextContainer}>
-                                    <Title>{rowData.item.title}</Title>
-                                    <Paragraph numberOfLines={4}>{rowData.item.description}</Paragraph>
-                                </Card.Content>
-                                <View style={Styles.cardContentCoverContainer}>
-                                    <Card.Cover source={{ uri: rowData.item.cover }}/>
+                        <Animated.View style={{ maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 400],
+                        })}}>
+                            <Card style={Styles.card} 
+                                onPress={() => { this.readMore(rowData.index) }} onLongPress={() => { this.viewDetails(rowData.index) }}>
+                                <View style={Styles.cardContentContainer}>
+                                    <Card.Content style={Styles.cardContentTextContainer}>
+                                        <Title>{rowData.item.title}</Title>
+                                        <Paragraph numberOfLines={4}>{rowData.item.description}</Paragraph>
+                                    </Card.Content>
+                                    <View style={Styles.cardContentCoverContainer}>
+                                        <Card.Cover source={{ uri: rowData.item.cover }}/>
+                                    </View>
                                 </View>
-                            </View>
-                        </Card>
+                            </Card>
+                        </Animated.View>
                     )}
                     renderHiddenItem={(rowData, rowMap) => (
                         <View style={Styles.swipeListBack}>
                             <Button icon="thumb-down" mode="contained" 
-                                contentStyle={{height: "100%"}} style={Styles.buttonBad}
-                            >Rate</Button>
+                                contentStyle={{height: "100%"}} style={Styles.buttonBad}>Rate</Button>
                             <Button icon="thumb-up" mode="contained" 
-                                contentStyle={{height: "100%"}} style={Styles.buttonGood}
-                            >Rate</Button>
+                                contentStyle={{height: "100%"}} style={Styles.buttonGood}>Rate</Button>
                         </View>
                     )}
                     useNativeDriver={false}
-                    leftOpenValue={100}
-                    rightOpenValue={-100}
+
                     stopLeftSwipe={150}
                     stopRightSwipe={-150}
 
-                    onRowDidOpen={(rowKey, rowMap) => {
-                        if(rowMap[rowKey].currentTranslateX > 0){
-                            this.rate(rowMap[rowKey].props.item, false);
-                        } else {
-                            this.rate(rowMap[rowKey].props.item, true);
-                        }
+                    leftActivationValue={100}
+                    rightActivationValue={-100}
 
-                        let updatedArticles = this.state.articles;
-                        let removingIndex = updatedArticles.findIndex(item => item.id === rowMap[rowKey].props.item.id);
-                        updatedArticles.splice(removingIndex, 1);
-                        this.setState({ articles: updatedArticles });
+                    onLeftActionStatusChange={() => {
+                        if(this.swiping == true){
+                            ReactNativeHapticFeedback.trigger("impactLight", { ignoreAndroidSystemSettings: true });
+                        }
+                    }}
+                    onRightActionStatusChange={() => {
+                        if(this.swiping == true){
+                            ReactNativeHapticFeedback.trigger("impactLight", { ignoreAndroidSystemSettings: true });
+                        }
+                    }}
+
+                    swipeGestureBegan={() => {
+                        this.swiping = true;
+                    }}
+
+                    swipeGestureEnded={(rowKey, data) => {
+                        this.swiping = false;
+
+                        if(data.translateX > 100 || data.translateX < -100){
+                            this.rowTranslateValues[rowKey].setValue(1);
+
+                            Animated.timing(this.rowTranslateValues[rowKey], {
+                                toValue: 0,
+                                duration: 400,
+                                useNativeDriver: false,
+                            }).start(() => {
+                                let updatedArticles = this.state.articles;
+                                let removingIndex = updatedArticles.findIndex(item => item.id === rowKey);
+
+                                if(data.translateX > 0){
+                                    this.rate(updatedArticles[removingIndex], true);
+                                } else {
+                                    this.rate(updatedArticles[removingIndex], false);
+                                }
+
+                                updatedArticles.splice(removingIndex, 1);
+                                this.setState({ articles: updatedArticles });
+                            })
+                        }
                     }}
 
                     keyExtractor={item => item.id}
                     refreshing={this.state.refreshing}
                     onRefresh={this.refresh}
-                />
+                ></SwipeListView>
                     <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
                         <ScrollView>
                             <Card>
