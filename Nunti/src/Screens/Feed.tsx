@@ -45,25 +45,38 @@ class Articles extends Component {
         this.refresh = this.refresh.bind(this);
         this.shareArticle = this.shareArticle.bind(this);
         this.saveArticle = this.saveArticle.bind(this);
+        this.prepareArticles = this.prepareArticles.bind(this);
 
         this.state = {
             detailsVisible: false,
-            currentIndex: 0,
-            refreshing: true,
-            articles: Backend.DefaultArticleList,
+            refreshing: false,
+            articles: Backend.DefaultArticleList
         }
         
-        Backend.GetArticles().then( async (arts) => {
-            await this.setState({ articles:arts, refreshing:false });
-        })
-
+        this.currentIndex = 0;
         this.swiping = false;
         this.rowTranslateValues = {};
-        Array(20) // TODO: length by article list length
+        Array(20) // temporary until articles load
             .fill('')
             .forEach((_, i) => {
                 this.rowTranslateValues[`${i}`] = new Animated.Value(1);
             });
+        
+        this.prepareArticles();
+    }
+
+    private async prepareArticles(){
+        let arts = await Backend.GetArticles();
+        
+        // create one animation value for each article (row)
+        this.rowTranslateValues = {};
+        Array(arts.length)
+            .fill('')
+            .forEach((_, i) => {
+                this.rowTranslateValues[`${i}`] = new Animated.Value(1);
+            });
+        
+        this.setState({ articles: arts });
     }
 
     private async readMore(articleIndex: number) {
@@ -73,7 +86,7 @@ class Articles extends Component {
         if(typeof(articleIndex) !== typeof(0)) {
             // when readMore is called without articleIndex, we need to take it from this.state
             // this happens on "Read More" button in article details
-            url = this.state.articles[this.state.currentIndex].url;
+            url = this.state.articles[this.currentIndex].url;
         } else
             url = this.state.articles[articleIndex].url;
 
@@ -81,7 +94,7 @@ class Articles extends Component {
     }
     
     private async viewDetails(articleIndex: number){
-        await this.setState({ currentIndex: articleIndex });
+        this.currentIndex = articleIndex;
         this.setState({ detailsVisible: true });
     }
     
@@ -90,20 +103,13 @@ class Articles extends Component {
     }
 
     private async refresh(){
-        await this.setState({ refreshing: true });
-        
-        Array(20)
-            .fill('')
-            .forEach((_, i) => {
-                this.rowTranslateValues[`${i}`] = new Animated.Value(1);
-            });
-
-        await this.setState({ articles: await Backend.GetArticles() });
-        await this.setState({ refreshing: false });
+        this.setState({ refreshing: true });
+        await this.prepareArticles();
+        this.setState({ refreshing: false });
     }
 
     private async saveArticle() {
-        if(await Backend.TrySaveArticle(this.state.articles[this.state.currentIndex])) {
+        if(await Backend.TrySaveArticle(this.state.articles[this.currentIndex])) {
             // TODO: show snackbar success
         } else {
             // TODO: show snackbar fail
@@ -112,7 +118,7 @@ class Articles extends Component {
 
     private async shareArticle() {
         await Share.share({
-            message: this.state.articles[this.state.currentIndex].url
+            message: this.state.articles[this.currentIndex].url
         });
     }
 
@@ -188,6 +194,7 @@ class Articles extends Component {
                         if(data.translateX > 100 || data.translateX < -100){
                             this.rowTranslateValues[rowKey].setValue(1);
 
+
                             Animated.timing(this.rowTranslateValues[rowKey], {
                                 toValue: 0,
                                 duration: 400,
@@ -212,13 +219,13 @@ class Articles extends Component {
                     refreshing={this.state.refreshing}
                     onRefresh={this.refresh}
                 ></SwipeListView>
-                    <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
+                    <Modal visible={this.detailsVisible} onDismiss={this.hideDetails}>
                         <ScrollView>
                             <Card>
-                                <Card.Cover source={{ uri: this.state.articles[this.state.currentIndex].cover }} />
+                                <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />
                                 <Card.Content>
-                                    <Title>{this.state.articles[this.state.currentIndex].title}</Title>
-                                    <Paragraph>{this.state.articles[this.state.currentIndex].description}</Paragraph>
+                                    <Title>{this.state.articles[this.currentIndex].title}</Title>
+                                    <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
                                 </Card.Content>
                                 <Card.Actions>
                                     <Button icon="book" onPress={this.readMore}>Read more</Button>
