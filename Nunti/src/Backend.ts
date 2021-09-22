@@ -6,6 +6,10 @@ class Article {
     public description: string = "";
     public cover: string = "about:blank";
     public url: string = "about:blank";
+
+    constructor(id: number) {
+        this.id = id;
+    }
 }
 
 class UserSettings {
@@ -13,8 +17,7 @@ class UserSettings {
 }
 
 class Backend {
-    public static EmptyArticle = new Article();
-    public static DefaultArticleList: Article[] = [Backend.EmptyArticle]; //TODO: this is shown before articles are loaded, make loading animation here.
+    public static DefaultArticleList: Article[] = [new Article(0), new Article(1), new Article(2)];
 
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {

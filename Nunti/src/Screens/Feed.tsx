@@ -47,6 +47,7 @@ class Articles extends Component {
         this.saveArticle = this.saveArticle.bind(this);
         this.prepareArticles = this.prepareArticles.bind(this);
         this.toggleSnack = this.toggleSnack.bind(this);
+        this.loadingAnimation = this.loadingAnimation.bind(this);
 
         this.state = {
             detailsVisible: false,
@@ -58,18 +59,29 @@ class Articles extends Component {
         this.snackMessage = "";
         this.currentIndex = 0;
         this.swiping = false;
+
         this.rowTranslateValues = {};
         Array(5) // temporary until articles load
             .fill('')
             .forEach((_, i) => {
                 this.rowTranslateValues[`${i}`] = new Animated.Value(1);
             });
-        
-        this.prepareArticles();
+
+        this.allRowsLoadingOpacity = new Animated.Value(1);
+    }
+
+    UNSAFE_componentWillMount(){
+        this.prepareArticles(true);
     }
 
     private async prepareArticles(){
         this.setState({ refreshing: true });
+
+        // check for placeholder "articles"
+        if(this.state.articles[0].url == "about:blank"){
+            this.loadingAnimation();
+        }
+
         let arts = await Backend.GetArticles();
         
         // create one animation value for each article (row)
@@ -81,7 +93,32 @@ class Articles extends Component {
             });
         
         this.setState({ articles: arts });
+
+        // stop the loading animation
+        this.allRowsLoadingOpacity.stopAnimation();
+        this.allRowsLoadingOpacity.setValue(1);
+
         this.setState({ refreshing: false });
+    }
+
+    private async loadingAnimation() {
+        this.allRowsLoadingOpacity.setValue(1);
+        
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(this.allRowsLoadingOpacity, {
+                    toValue: 0,
+                    duration: 500,
+                    useNativeDriver: false,
+                }),
+                Animated.timing(this.allRowsLoadingOpacity, {
+                    toValue: 1,
+                    duration: 500,
+                    useNativeDriver: false,
+                })
+            ]),
+            {resetBeforeIteration: true, iterations: Number.MAX_SAFE_INTEGER}
+        ).start();
     }
 
     private async toggleSnack(message: string, visible: bool){
@@ -155,7 +192,11 @@ class Articles extends Component {
                                 outputRange: [0, 1],
                             }), 
                         }}>
-                            <Card style={Styles.card} 
+                            <Card style={[Styles.card, { opacity: this.allRowsLoadingOpacity.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0.5, 1],
+                                })
+                            }]} 
                                 onPress={() => { this.readMore(rowData.index) }} onLongPress={() => { this.viewDetails(rowData.index) }}>
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
@@ -170,11 +211,11 @@ class Articles extends Component {
                         </Animated.View>
                     )}
                     renderHiddenItem={(rowData, rowMap) => (
-                        <Animated.View style={[Styles.swipeListBack, { 
-                            opacity: this.rowTranslateValues[rowData.item.id].interpolate({
+                        <Animated.View style={[Styles.swipeListBack, { //if refreshing then hides the hidden row
+                            opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({
                                 inputRange: [0, 0.95, 1],
                                 outputRange: [0, 0.05, 1],
-                            }), 
+                            }),
                         }]}>
                             <Button icon="thumb-down" mode="contained" 
                                 contentStyle={{height: "100%"}} style={Styles.buttonBad}>Rate</Button>
@@ -208,7 +249,8 @@ class Articles extends Component {
                     swipeGestureEnded={(rowKey, data) => {
                         this.swiping = false;
 
-                        if(data.translateX > 100 || data.translateX < -100){
+                        // don't remove anything if loading, swipe gestures still work
+                        if(this.state.refreshing == false && (data.translateX > 100 || data.translateX < -100)){
                             this.rowTranslateValues[rowKey].setValue(1);
 
                             Animated.timing(this.rowTranslateValues[rowKey], {
