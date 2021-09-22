@@ -42,7 +42,6 @@ class Articles extends Component {
         this.readMore = this.readMore.bind(this);
         this.viewDetails = this.viewDetails.bind(this);
         this.hideDetails = this.hideDetails.bind(this);
-        this.refresh = this.refresh.bind(this);
         this.shareArticle = this.shareArticle.bind(this);
         this.saveArticle = this.saveArticle.bind(this);
         this.prepareArticles = this.prepareArticles.bind(this);
@@ -66,6 +65,7 @@ class Articles extends Component {
     }
 
     private async prepareArticles(){
+        this.setState({ refreshing: true });
         let arts = await Backend.GetArticles();
         
         // create one animation value for each article (row)
@@ -77,6 +77,7 @@ class Articles extends Component {
             });
         
         this.setState({ articles: arts });
+        this.setState({ refreshing: false });
     }
 
     private async readMore(articleIndex: number) {
@@ -100,12 +101,6 @@ class Articles extends Component {
     
     private async hideDetails(){
         this.setState({ detailsVisible: false });
-    }
-
-    private async refresh(){
-        this.setState({ refreshing: true });
-        await this.prepareArticles();
-        this.setState({ refreshing: false });
     }
 
     private async saveArticle() {
@@ -139,10 +134,16 @@ class Articles extends Component {
                 <SwipeListView
                     data={this.state.articles}
                     renderItem={ (rowData, rowMap) => (
-                        <Animated.View style={{ maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 400],
-                        })}}>
+                        <Animated.View style={{ 
+                            maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 400],
+                            }), 
+                            opacity: this.rowTranslateValues[rowData.item.id].interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 1],
+                            }), 
+                        }}>
                             <Card style={Styles.card} 
                                 onPress={() => { this.readMore(rowData.index) }} onLongPress={() => { this.viewDetails(rowData.index) }}>
                                 <View style={Styles.cardContentContainer}>
@@ -158,12 +159,17 @@ class Articles extends Component {
                         </Animated.View>
                     )}
                     renderHiddenItem={(rowData, rowMap) => (
-                        <View style={Styles.swipeListBack}>
+                        <Animated.View style={[Styles.swipeListBack, { 
+                            opacity: this.rowTranslateValues[rowData.item.id].interpolate({
+                                inputRange: [0, 0.95, 1],
+                                outputRange: [0, 0.05, 1],
+                            }), 
+                        }]}>
                             <Button icon="thumb-down" mode="contained" 
                                 contentStyle={{height: "100%"}} style={Styles.buttonBad}>Rate</Button>
                             <Button icon="thumb-up" mode="contained" 
                                 contentStyle={{height: "100%"}} style={Styles.buttonGood}>Rate</Button>
-                        </View>
+                        </Animated.View>
                     )}
                     useNativeDriver={false}
 
@@ -217,7 +223,7 @@ class Articles extends Component {
 
                     keyExtractor={item => item.id}
                     refreshing={this.state.refreshing}
-                    onRefresh={this.refresh}
+                    onRefresh={this.prepareArticles}
                 ></SwipeListView>
                     <Modal visible={this.detailsVisible} onDismiss={this.hideDetails}>
                         <ScrollView>
