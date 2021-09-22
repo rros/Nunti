@@ -6,8 +6,6 @@ import {
     Drawer
 } from 'react-native-paper';
 
-import { DarkTheme, DefaultTheme } from 'react-native-paper';
-
 // our files
 import Styles, { Dark, Light } from "./Styles";
 import Feed from "./Screens/Feed"
@@ -23,7 +21,7 @@ const NavigationDrawer = createDrawerNavigator();
 export default class App extends Component {
     constructor(props: any) {
         super(props);
-
+        
         // load theme here
         // end splash screen
     }
@@ -55,7 +53,7 @@ function CustomDrawer ({ state, navigation }) {
     const [active, setActive] = React.useState(state.routes[state.index].name);
 
     return (
-        <Drawer.Section title="Nunti" style={{backgroundColor: Dark.colors.surface, height: "100%"}}>
+        <Drawer.Section title="Nunti" style={{backgroundColor: Dark.colors.background, height: "100%"}}>
             <Drawer.Section>
                 <Drawer.Item
                     label={state.routeNames[0]}

@@ -9,7 +9,7 @@ export const Dark = {
         accentName: "nunti",
         primary: "#1eba81",
         accent: '#1eba81',
-        background: "#121212"
+        background: "#121212",
     }
 };
 
@@ -20,7 +20,7 @@ export const Light = {
         accentName: "nunti",
         primary: "#1eba81",
         accent: '#1eba81',
-        background: "#f6f6f6"
+        background: "#f6f6f6",
     }
 };
 

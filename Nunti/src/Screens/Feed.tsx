@@ -13,7 +13,8 @@ import {
     Paragraph,
     Portal,
     Modal,
-    Button
+    Button,
+    Snackbar
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -45,17 +46,20 @@ class Articles extends Component {
         this.shareArticle = this.shareArticle.bind(this);
         this.saveArticle = this.saveArticle.bind(this);
         this.prepareArticles = this.prepareArticles.bind(this);
+        this.toggleSnack = this.toggleSnack.bind(this);
 
         this.state = {
             detailsVisible: false,
+            snackbarVisible: false,
             refreshing: false,
             articles: Backend.DefaultArticleList
         }
         
+        this.snackMessage = "";
         this.currentIndex = 0;
         this.swiping = false;
         this.rowTranslateValues = {};
-        Array(20) // temporary until articles load
+        Array(5) // temporary until articles load
             .fill('')
             .forEach((_, i) => {
                 this.rowTranslateValues[`${i}`] = new Animated.Value(1);
@@ -78,6 +82,11 @@ class Articles extends Component {
         
         this.setState({ articles: arts });
         this.setState({ refreshing: false });
+    }
+
+    private async toggleSnack(message: string, visible: bool){
+        this.snackMessage = message;
+        this.setState({ snackbarVisible: visible });
     }
 
     private async readMore(articleIndex: number) {
@@ -105,9 +114,9 @@ class Articles extends Component {
 
     private async saveArticle() {
         if(await Backend.TrySaveArticle(this.state.articles[this.currentIndex])) {
-            // TODO: show snackbar success
+            this.toggleSnack("Article saved!", true)
         } else {
-            // TODO: show snackbar fail
+            console.error("Saving article failed");
         }
     }
 
@@ -120,8 +129,10 @@ class Articles extends Component {
     // article is the full article item so the article can get deleted from the list immediately
     private async rate(article: any, isGood: bool) {
         if(isGood){
+            this.toggleSnack("Article rated up!", true)
             // TODO: function to rate
         } else {
+            this.toggleSnack("Article rated down!", true)
             // TODO: function to rate
         }
     }
@@ -200,7 +211,6 @@ class Articles extends Component {
                         if(data.translateX > 100 || data.translateX < -100){
                             this.rowTranslateValues[rowKey].setValue(1);
 
-
                             Animated.timing(this.rowTranslateValues[rowKey], {
                                 toValue: 0,
                                 duration: 400,
@@ -210,9 +220,9 @@ class Articles extends Component {
                                 let removingIndex = updatedArticles.findIndex(item => item.id === rowKey);
 
                                 if(data.translateX > 0){
-                                    this.rate(updatedArticles[removingIndex], true);
-                                } else {
                                     this.rate(updatedArticles[removingIndex], false);
+                                } else {
+                                    this.rate(updatedArticles[removingIndex], true);
                                 }
 
                                 updatedArticles.splice(removingIndex, 1);
@@ -225,7 +235,13 @@ class Articles extends Component {
                     refreshing={this.state.refreshing}
                     onRefresh={this.prepareArticles}
                 ></SwipeListView>
-                    <Modal visible={this.detailsVisible} onDismiss={this.hideDetails}>
+                <Snackbar
+                    visible={this.state.snackbarVisible}
+                    duration={4000}
+                    onDismiss={() => { this.toggleSnack("", false); }}
+                >{this.snackMessage}
+                </Snackbar>
+                    <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
                         <ScrollView>
                             <Card>
                                 <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />
