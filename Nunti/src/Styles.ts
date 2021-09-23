@@ -84,6 +84,6 @@ export default Styles = StyleSheet.create ({
         justifyContent: 'space-between',
         marginTop: "3%",
         marginBottom: "3%",
-    }
+    },
 });
 

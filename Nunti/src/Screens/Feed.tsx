@@ -154,6 +154,7 @@ class Articles extends Component {
     }
     
     private async hideDetails(){
+        this.currentIndex = 0; // resets current index, otherwise causes bugs when removing articles (out of range etc)
         this.setState({ detailsVisible: false });
     }
 
@@ -189,6 +190,7 @@ class Articles extends Component {
             <View style={Styles.safeAreaView}>
                 <SwipeListView
                     data={this.state.articles}
+                    recalculateHiddenLayout={true}
                     renderItem={ (rowData, rowMap) => (
                         <Animated.View style={{ 
                             maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({
@@ -225,10 +227,10 @@ class Articles extends Component {
                                 outputRange: [0, 0.05, 1],
                             }),
                         }]}>
-                            <Button icon="thumb-down" mode="contained" 
+                            <Button icon="thumb-down" mode="contained"
                                 contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Rate</Button>
-                            <Button icon="thumb-up" mode="contained" 
-                                contentStyle={Styles.buttonRateUpContent} style={Styles.buttonRateUp}>Rate</Button>
+                            <Button icon="thumb-up" mode="contained"
+                                contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateUp}>Rate</Button>
                         </Animated.View>
                     )}
                     useNativeDriver={false}
@@ -285,35 +287,34 @@ class Articles extends Component {
                     refreshing={this.state.refreshing}
                     onRefresh={this.prepareArticles}
                 ></SwipeListView>
-                <Snackbar
-                    visible={this.state.snackbarVisible}
-                    duration={4000}
-                    action={{
-                        label: "Dismiss",
-                        onPress: () => {this.toggleSnack("", false);},
-                    }}
-                    onDismiss={() => { this.toggleSnack("", false); }}
-                >{this.snackMessage}
-                </Snackbar>
-                <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
-                    <ScrollView>
-                        <Card>
-                            <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />
-                            <Card.Content>
-                                <Title>{this.state.articles[this.currentIndex].title}</Title>
-                                <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
-                            </Card.Content>
-                            <Card.Actions>
-                                <Button icon="book" onPress={this.readMore}>Read more</Button>
-                                <Button icon="bookmark" onPress={this.saveArticle}>Save</Button>
-                                <Button icon="share" onPress={this.shareArticle} style={Styles.cardButtonLeft}>Share</Button>
-                            </Card.Actions>
-                        </Card>
-                    </ScrollView>
-                </Modal>
-
-                {/*prerenders webview, making the initial article opening much smoother*/}
-                <WebView source={{uri: "about:blank"}} style={{height: 0, width: 0, opacity: 0}}></WebView>
+                <Portal>
+                    <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} contentContainerStyle={Styles.modal}>
+                        <ScrollView>
+                            <Card>
+                                <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />
+                                <Card.Content>
+                                    <Title>{this.state.articles[this.currentIndex].title}</Title>
+                                    <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
+                                </Card.Content>
+                                <Card.Actions>
+                                    <Button icon="book" onPress={this.readMore}>Read more</Button>
+                                    <Button icon="bookmark" onPress={this.saveArticle}>Save</Button>
+                                    <Button icon="share" onPress={this.shareArticle} style={Styles.cardButtonLeft}>Share</Button>
+                                </Card.Actions>
+                            </Card>
+                        </ScrollView>
+                    </Modal>
+                    <Snackbar
+                        visible={this.state.snackbarVisible}
+                        duration={4000}
+                        action={{
+                            label: "Dismiss",
+                            onPress: () => {this.toggleSnack("", false);},
+                        }}
+                        onDismiss={() => { this.toggleSnack("", false); }}
+                    >{this.snackMessage}
+                    </Snackbar>
+                </Portal>
             </View>
         );
     }
