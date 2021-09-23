@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import {
-    SafeAreaView,
     View,
     Share,
     ScrollView,
-    Animated
+    Animated,
 } from 'react-native';
 
 import { 
@@ -20,7 +19,7 @@ import {
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { WebView } from 'react-native-webview';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import ReactNativeHapticFeedback from "react-native-haptic-feedback";
+import * as Haptics from 'expo-haptics';
 import Backend from '../Backend';
 
 const NavigationStack = createNativeStackNavigator();
@@ -72,7 +71,18 @@ class Articles extends Component {
 
     UNSAFE_componentWillMount(){
         this.prepareArticles(true);
+
+        // when the user leaves this window (mainly to the webview), hides the modal
+        // this is the optimal way to do this to avoid jerky transitions
+        this._unsubscribe = this.props.navigation.addListener('state', () => {
+            this.hideDetails();
+        });
     }
+    
+    componentWillUnmount() {
+        this._unsubscribe();
+    }
+
 
     private async prepareArticles(){
         this.setState({ refreshing: true });
@@ -127,8 +137,6 @@ class Articles extends Component {
     }
 
     private async readMore(articleIndex: number) {
-        this.hideDetails();
-
         let url = "";
         if(typeof(articleIndex) !== typeof(0)) {
             // when readMore is called without articleIndex, we need to take it from this.state
@@ -178,7 +186,7 @@ class Articles extends Component {
     // Therefore use index for getting the right url from article list, and use the id/rowKey for finding the right row for actions
     render() {
         return (
-            <SafeAreaView style={{ flex: 1 }}>
+            <View style={Styles.safeAreaView}>
                 <SwipeListView
                     data={this.state.articles}
                     renderItem={ (rowData, rowMap) => (
@@ -200,8 +208,8 @@ class Articles extends Component {
                                 onPress={() => { this.readMore(rowData.index) }} onLongPress={() => { this.viewDetails(rowData.index) }}>
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
-                                        <Title>{rowData.item.title}</Title>
-                                        <Paragraph numberOfLines={4}>{rowData.item.description}</Paragraph>
+                                        <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
+                                        <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
                                     </Card.Content>
                                     <View style={Styles.cardContentCoverContainer}>
                                         <Card.Cover source={{ uri: rowData.item.cover }}/>
@@ -211,16 +219,16 @@ class Articles extends Component {
                         </Animated.View>
                     )}
                     renderHiddenItem={(rowData, rowMap) => (
-                        <Animated.View style={[Styles.swipeListBack, { //if refreshing then hides the hidden row
+                        <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
                             opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({
                                 inputRange: [0, 0.95, 1],
                                 outputRange: [0, 0.05, 1],
                             }),
                         }]}>
                             <Button icon="thumb-down" mode="contained" 
-                                contentStyle={{height: "100%"}} style={Styles.buttonBad}>Rate</Button>
+                                contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Rate</Button>
                             <Button icon="thumb-up" mode="contained" 
-                                contentStyle={{height: "100%"}} style={Styles.buttonGood}>Rate</Button>
+                                contentStyle={Styles.buttonRateUpContent} style={Styles.buttonRateUp}>Rate</Button>
                         </Animated.View>
                     )}
                     useNativeDriver={false}
@@ -233,12 +241,12 @@ class Articles extends Component {
 
                     onLeftActionStatusChange={() => {
                         if(this.swiping == true){
-                            ReactNativeHapticFeedback.trigger("impactLight", { ignoreAndroidSystemSettings: true });
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         }
                     }}
                     onRightActionStatusChange={() => {
                         if(this.swiping == true){
-                            ReactNativeHapticFeedback.trigger("impactLight", { ignoreAndroidSystemSettings: true });
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         }
                     }}
 
@@ -280,26 +288,33 @@ class Articles extends Component {
                 <Snackbar
                     visible={this.state.snackbarVisible}
                     duration={4000}
+                    action={{
+                        label: "Dismiss",
+                        onPress: () => {this.toggleSnack("", false);},
+                    }}
                     onDismiss={() => { this.toggleSnack("", false); }}
                 >{this.snackMessage}
                 </Snackbar>
-                    <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
-                        <ScrollView>
-                            <Card>
-                                <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />
-                                <Card.Content>
-                                    <Title>{this.state.articles[this.currentIndex].title}</Title>
-                                    <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
-                                </Card.Content>
-                                <Card.Actions>
-                                    <Button icon="book" onPress={this.readMore}>Read more</Button>
-                                    <Button icon="bookmark" onPress={this.saveArticle}>Save</Button>
-                                    <Button icon="share" onPress={this.shareArticle} style={Styles.buttonLeft}>Share</Button>
-                                </Card.Actions>
-                            </Card>
-                        </ScrollView>
-                    </Modal>
-            </SafeAreaView>
+                <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
+                    <ScrollView>
+                        <Card>
+                            <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />
+                            <Card.Content>
+                                <Title>{this.state.articles[this.currentIndex].title}</Title>
+                                <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
+                            </Card.Content>
+                            <Card.Actions>
+                                <Button icon="book" onPress={this.readMore}>Read more</Button>
+                                <Button icon="bookmark" onPress={this.saveArticle}>Save</Button>
+                                <Button icon="share" onPress={this.shareArticle} style={Styles.cardButtonLeft}>Share</Button>
+                            </Card.Actions>
+                        </Card>
+                    </ScrollView>
+                </Modal>
+
+                {/*prerenders webview, making the initial article opening much smoother*/}
+                <WebView source={{uri: "about:blank"}} style={{height: 0, width: 0, opacity: 0}}></WebView>
+            </View>
         );
     }
 }

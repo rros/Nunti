@@ -9,7 +9,6 @@ export const Dark = {
         accentName: "nunti",
         primary: "#1eba81",
         accent: '#1eba81',
-        background: "#121212",
     }
 };
 
@@ -20,18 +19,22 @@ export const Light = {
         accentName: "nunti",
         primary: "#1eba81",
         accent: '#1eba81',
-        background: "#f6f6f6",
     }
 };
 
 // custom css here
 export default Styles = StyleSheet.create ({
+    safeAreaView: {
+        flex: 1,
+    },
+
     card: {
         marginTop: "2%",
         marginBottom: "2%",
     },
 
     cardContentContainer: {
+        flex: 0,
         flexDirection: "row",
     },
 
@@ -39,25 +42,42 @@ export default Styles = StyleSheet.create ({
         flex: 2,
     },
     
+    cardContentTitle: {
+        flex: 0,
+    },
+
+    cardContentParagraph: {
+        flex: 1,
+        marginBottom: "4%"
+    },
+    
     cardContentCoverContainer: {
         flex: 1,
     },
 
-    buttonLeft: {
+    cardButtonLeft: {
         marginLeft: "auto"
     },
 
-    buttonBad: {
+    buttonRateDown: {
         paddingRight: "20%",
         backgroundColor: "#d32f2f"
     },
 
-    buttonGood: {
+    buttonRateDownContent: {
+        height: "100%"
+    },
+
+    buttonRateUp: {
         paddingLeft: "20%",
         backgroundColor: "#4caf50"
     },
 
-    swipeListBack: {
+    buttonRateUpContent: {
+        height: "100%"
+    },
+
+    swipeListHidden: {
         alignItems: 'center',
         flex: 1,
         flexDirection: 'row',

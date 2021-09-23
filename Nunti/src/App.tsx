@@ -42,7 +42,7 @@ export default class App extends Component {
 
 function CustomHeader ({ navigation, route }) {
     return (
-        <Appbar.Header>
+        <Appbar.Header statusBarHeight={0}>
             <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} />
             <Appbar.Content title={route.name} />
         </Appbar.Header>
