@@ -50,7 +50,10 @@ class Articles extends Component {
             refreshing: true,
             articles: Backend.DefaultArticleList
         }
-        
+        this.reloadSaved();
+    }
+
+    private reloadSaved(): void {
         Backend.GetSavedArticles().then( async (arts) => {
             if (arts.length == 0)
                 await this.setState({ articles:Backend.DefaultArticleList, refreshing:false });
@@ -89,6 +92,7 @@ class Articles extends Component {
     }
 
     render() {
+        this.reloadSaved();
         return (
             <SafeAreaView style={{ flex: 1 }}>
                 <FlatList
