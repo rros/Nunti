@@ -14,10 +14,12 @@ class Article {
 }
 
 class UserSettings {
-    public ArticleCacheTime: number = 60; //minutes
-    public FeedList: string[] = ["https://www.irozhlas.cz/rss/irozhlas"];
+    public FeedList: string[] = ["https://www.irozhlas.cz/rss/irozhlas"]; //TODO: expand
     public DownloadWifiOnly: boolean = false; //TODO: implement
     public DisableVibrations = false; //TODO: implement
+
+    /* Advanced */
+    public ArticleCacheTime: number = 60; //minutes
 }
 
 class Backend {
@@ -32,7 +34,7 @@ class Backend {
         let arts: Article[];
         
         let cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp)) / 60000;
-        if (cacheAgeMinutes >= (await this.StorageGet('user_settings')).ArticleCacheTime) {
+        if (cacheAgeMinutes >= (await this.GetUserSettings()).ArticleCacheTime) {
             arts = await this.DownloadArticles();
             this.StorageSave('articles_cache', {"timestamp": Date.now(), "articles": arts})
         } else {
@@ -44,7 +46,6 @@ class Backend {
         console.log("Backend: Loaded.");
         return arts;
     }
-
     /* Tries to save an article, true on success, false on fail. */
     public static async TrySaveArticle(article: Article): Promise<boolean> {
         try {
@@ -62,25 +63,37 @@ class Backend {
             return false;
         }
     }
-
     /* Returns list of saved articles. */
     public static async GetSavedArticles(): Promise<Article[]> {
         return await this.StorageGet('saved');
     }
-
     /* Resets cache */
     public static async ResetCache() {
         console.info('Backend: Resetting cache..');
         await this.CheckDB();
         await this.StorageSave("articles_cache",{"timestamp":0, "articles":[]});
     }
-    
     /* Resets all data in the app storage. */
     public static async ResetAllData() {
         console.warn('Backend: Resetting all data.');
         await AsyncStorage.clear();
         await this.CheckDB();
     }
+    /* Gets UserSettings object from storage to nicely use in frontend. */
+    public static async GetUserSettings(): Promise<UserSettings> {
+        return await this.StorageGet("user_settings");
+    }
+    /* Saved UserSettings object to storage. */
+    public static async SaveUserSettings(us: UserSettings) {
+        await this.StorageSave("user_settings",us);
+    }
+    /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
+    public static async RateArticle(art: Article, rating: number) {
+        //TODO adaptive learning
+        //TODO rating
+    }
+
+
 
     /* Private methods */
     private static async DownloadArticles(): Promise<Article[]> {
@@ -107,8 +120,8 @@ class Backend {
                 }
             } else
                 console.error('Cannot read RSS ' + url);
-            return arts;
         }
+        return arts;
     }
     private static async SortArticles(articles: Article[]) {
         //TODO: sorting AI
@@ -144,6 +157,8 @@ class Backend {
             await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
         if (await AsyncStorage.getItem('articles_cache') === null)
             await AsyncStorage.setItem('articles_cache',JSON.stringify({"timestamp":0,"articles":[]}));
+        if (await AsyncStorage.getItem('learning_db') === null)
+            await AsyncStorage.setItem('learning_db',JSON.stringify({"upvotes":0, "downvotes":0, "keywords":{}}));
     }
 }
 export default Backend;

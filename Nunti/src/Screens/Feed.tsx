@@ -173,13 +173,13 @@ class Articles extends Component {
     }
 
     // article is the full article item so the article can get deleted from the list immediately
-    private async rate(article: any, isGood: bool) {
+    private async rate(article: any, isGood: boolean) {
         if(isGood){
             this.toggleSnack("Article rated up!", true)
-            // TODO: function to rate
+            Backend.RateArticle(article, 1);
         } else {
             this.toggleSnack("Article rated down!", true)
-            // TODO: function to rate
+            Backend.RateArticle(article, -1);
         }
     }
 
