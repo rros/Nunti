@@ -16,6 +16,8 @@ class Article {
 class UserSettings {
     public ArticleCacheTime: number = 60; //minutes
     public FeedList: string[] = ["https://www.irozhlas.cz/rss/irozhlas"];
+    public DownloadWifiOnly: boolean = false; //TODO: implement
+    public DisableVibrations = false; //TODO: implement
 }
 
 class Backend {
@@ -93,11 +95,9 @@ class Backend {
             if (r.ok) {
                 let parser = new DOMParser();
                 let xml = parser.parseFromString(await r.text());
-                console.debug("yeet"); //TODO remthis
                 let items = xml.getElementsByTagName("channel")[0].getElementsByTagName("item")
                 for (let y = 0; y < items.length; y++) {
                     let item = items[y];
-                    console.debug("found article " + item.getElementsByTagName("title")[0].childNodes[0].nodeValue); //TODO remthis
                     let art = new Article(0);
                     art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
                     art.description = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
