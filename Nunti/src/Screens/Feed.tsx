@@ -97,23 +97,23 @@ class Articles extends Component {
             this.loadingAnimation();
         }
 
-        let arts = await Backend.GetArticles();
-        
-        // create one animation value for each article (row)
-        this.rowTranslateValues = {};
-        Array(arts.length)
-            .fill('')
-            .forEach((_, i) => {
-                this.rowTranslateValues[`${i}`] = new Animated.Value(1);
-            });
-        
-        this.setState({ articles: arts });
+        Backend.GetArticles().then( (arts) => {
+            // create one animation value for each article (row)
+            this.rowTranslateValues = {};
+            Array(arts.length)
+                .fill('')
+                .forEach((_, i) => {
+                    this.rowTranslateValues[`${i}`] = new Animated.Value(1);
+                });
+            
+            this.setState({ articles: arts });
 
-        // stop the loading animation
-        this.allRowsLoadingOpacity.stopAnimation();
-        this.allRowsLoadingOpacity.setValue(1);
+            // stop the loading animation
+            this.allRowsLoadingOpacity.stopAnimation();
+            this.allRowsLoadingOpacity.setValue(1);
 
-        this.setState({ refreshing: false });
+            this.setState({ refreshing: false });
+        });
     }
 
     private async loadingAnimation() {
