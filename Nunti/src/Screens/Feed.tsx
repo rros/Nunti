@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PureComponent } from 'react';
 import {
     View,
     Share,
@@ -39,26 +39,31 @@ class Articles extends Component {
     constructor(props:any){
         super(props);
 
+        // function bindings
         this.readMore = this.readMore.bind(this);
         this.viewDetails = this.viewDetails.bind(this);
         this.hideDetails = this.hideDetails.bind(this);
         this.shareArticle = this.shareArticle.bind(this);
         this.saveArticle = this.saveArticle.bind(this);
-        this.prepareArticles = this.prepareArticles.bind(this);
+        this.refresh = this.refresh.bind(this);
         this.toggleSnack = this.toggleSnack.bind(this);
         this.loadingAnimation = this.loadingAnimation.bind(this);
+        this.hapticFeedback = this.hapticFeedback.bind(this);
 
+        // states
         this.state = {
             detailsVisible: false,
             snackbarVisible: false,
+            snackMessage: "",
             refreshing: false,
             articles: Backend.DefaultArticleList
         }
         
-        this.snackMessage = "";
+        // variables
         this.currentIndex = 0;
         this.swiping = false;
 
+        // animation values
         this.rowTranslateValues = {};
         Array(5) // temporary until articles load
             .fill('')
@@ -69,8 +74,8 @@ class Articles extends Component {
         this.allRowsLoadingOpacity = new Animated.Value(1);
     }
 
-    UNSAFE_componentWillMount(){
-        this.prepareArticles(true);
+    componentDidMount(){
+        this.refresh();
 
         // when the user leaves this window (mainly to the webview), hides the modal
         // this is the optimal way to do this to avoid jerky transitions
@@ -83,12 +88,12 @@ class Articles extends Component {
         this._unsubscribe();
     }
 
-
-    private async prepareArticles(){
+    // loading and refreshing
+    private async refresh(){
         this.setState({ refreshing: true });
 
         // check for placeholder "articles"
-        if(this.state.articles[0].url == "about:blank"){
+        if(this.state.articles.length != 0 && this.state.articles[0].url == "about:blank"){
             this.loadingAnimation();
         }
 
@@ -131,11 +136,18 @@ class Articles extends Component {
         ).start();
     }
 
-    private async toggleSnack(message: string, visible: bool){
-        this.snackMessage = message;
-        this.setState({ snackbarVisible: visible });
+    // modal functions
+    private async viewDetails(articleIndex: number){
+        this.currentIndex = articleIndex;
+        this.setState({ detailsVisible: true });
     }
-
+    
+    private async hideDetails(){
+        this.currentIndex = 0; // resets current index, otherwise causes bugs when removing articles (out of range etc)
+        this.setState({ detailsVisible: false });
+    }
+    
+    // article functions
     private async readMore(articleIndex: number) {
         let url = "";
         if(typeof(articleIndex) !== typeof(0)) {
@@ -145,17 +157,7 @@ class Articles extends Component {
         } else
             url = this.state.articles[articleIndex].url;
 
-        this.props.navigation.push("WebView", { uri: url });
-    }
-    
-    private async viewDetails(articleIndex: number){
-        this.currentIndex = articleIndex;
-        this.setState({ detailsVisible: true });
-    }
-    
-    private async hideDetails(){
-        this.currentIndex = 0; // resets current index, otherwise causes bugs when removing articles (out of range etc)
-        this.setState({ detailsVisible: false });
+        this.props.navigation.navigate("WebView", { uri: url });
     }
 
     private async saveArticle() {
@@ -172,7 +174,6 @@ class Articles extends Component {
         });
     }
 
-    // article is the full article item so the article can get deleted from the list immediately
     private async rate(article: any, isGood: boolean) {
         if(isGood){
             this.toggleSnack("Article rated up!", true)
@@ -183,30 +184,71 @@ class Articles extends Component {
         }
     }
 
+    // render functions
+    private async toggleSnack(message: string, visible: bool){
+        //this.snackMessage = message;
+        this.setState({ snackbarVisible: visible, snackMessage: message });
+    }
+
+    private async hapticFeedback(){
+        if(this.swiping == true){
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+    }
+
+    endSwipe = (rowKey, data) => {
+        this.swiping = false;
+
+        // don't remove anything if loading, swipe gestures still work
+        if(this.state.refreshing == false && (data.translateX > 100 || data.translateX < -100)){
+            this.rowTranslateValues[rowKey].setValue(1);
+            Animated.timing(this.rowTranslateValues[rowKey], {
+                toValue: 0,
+                duration: 400,
+                useNativeDriver: false,
+            }).start(() => {
+                let updatedArticles = this.state.articles;
+                let removingIndex = updatedArticles.findIndex(item => item.id === rowKey);
+                
+                if(data.translateX > 0){
+                    this.rate(updatedArticles[removingIndex], false);
+                } else {
+                    this.rate(updatedArticles[removingIndex], true);
+                }
+
+                updatedArticles.splice(removingIndex, 1);
+                this.setState({ articles: updatedArticles });
+            });
+        }
+    }
+
     // NOTE: rowKey and item.id is the same. They don't change like the index, and the list uses them internally.
     // Therefore use index for getting the right url from article list, and use the id/rowKey for finding the right row for actions
     render() {
         return (
-            <View style={Styles.safeAreaView}>
+            <View style={Styles.topView}>
                 <SwipeListView
                     data={this.state.articles}
                     recalculateHiddenLayout={true}
+                    
+                    keyExtractor={item => item.id}
+                    refreshing={this.state.refreshing}
+                    onRefresh={this.refresh}
+                    
+                    useNativeDriver={false}
+
+                    stopLeftSwipe={150}
+                    stopRightSwipe={-150}
+
+                    leftActivationValue={100}
+                    rightActivationValue={-100}
+
                     renderItem={ (rowData, rowMap) => (
                         <Animated.View style={{ 
-                            maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, 400],
-                            }), 
-                            opacity: this.rowTranslateValues[rowData.item.id].interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, 1],
-                            }), 
+                            maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 300],}), 
+                            opacity: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 1],}), 
                         }}>
-                            <Card style={[Styles.card, { opacity: this.allRowsLoadingOpacity.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [0.5, 1],
-                                })
-                            }]} 
+                            <Card style={[Styles.card, { opacity: this.allRowsLoadingOpacity.interpolate({inputRange: [0, 1], outputRange: [0.5, 1]})}]} 
                                 onPress={() => { this.readMore(rowData.index) }} onLongPress={() => { this.viewDetails(rowData.index) }}>
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
@@ -222,73 +264,26 @@ class Articles extends Component {
                     )}
                     renderHiddenItem={(rowData, rowMap) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
-                            opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({
-                                inputRange: [0, 0.95, 1],
-                                outputRange: [0, 0.05, 1],
-                            }),
+                            opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.95, 1], outputRange: [0, 0.05, 1],}),
                         }]}>
-                            <Button icon="thumb-down" mode="contained"
-                                contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Rate</Button>
-                            <Button icon="thumb-up" mode="contained"
-                                contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateUp}>Rate</Button>
+                            <Button icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Rate</Button>
+                            <Button icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateUp}>Rate</Button>
                         </Animated.View>
                     )}
-                    useNativeDriver={false}
+                    ListEmptyComponent={(
+                        <View style={Styles.topView}>
+                            <Title style={Styles.listEmptyComponent}>Swipe to refresh</Title>
+                        </View>
+                    )}
 
-                    stopLeftSwipe={150}
-                    stopRightSwipe={-150}
+                    onLeftActionStatusChange={this.hapticFeedback}
+                    onRightActionStatusChange={this.hapticFeedback}
 
-                    leftActivationValue={100}
-                    rightActivationValue={-100}
-
-                    onLeftActionStatusChange={() => {
-                        if(this.swiping == true){
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        }
-                    }}
-                    onRightActionStatusChange={() => {
-                        if(this.swiping == true){
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        }
-                    }}
-
-                    swipeGestureBegan={() => {
-                        this.swiping = true;
-                    }}
-
-                    swipeGestureEnded={(rowKey, data) => {
-                        this.swiping = false;
-
-                        // don't remove anything if loading, swipe gestures still work
-                        if(this.state.refreshing == false && (data.translateX > 100 || data.translateX < -100)){
-                            this.rowTranslateValues[rowKey].setValue(1);
-
-                            Animated.timing(this.rowTranslateValues[rowKey], {
-                                toValue: 0,
-                                duration: 400,
-                                useNativeDriver: false,
-                            }).start(() => {
-                                let updatedArticles = this.state.articles;
-                                let removingIndex = updatedArticles.findIndex(item => item.id === rowKey);
-
-                                if(data.translateX > 0){
-                                    this.rate(updatedArticles[removingIndex], false);
-                                } else {
-                                    this.rate(updatedArticles[removingIndex], true);
-                                }
-
-                                updatedArticles.splice(removingIndex, 1);
-                                this.setState({ articles: updatedArticles });
-                            })
-                        }
-                    }}
-
-                    keyExtractor={item => item.id}
-                    refreshing={this.state.refreshing}
-                    onRefresh={this.prepareArticles}
+                    swipeGestureBegan={() => { this.swiping = true; }}
+                    swipeGestureEnded={this.endSwipe}
                 ></SwipeListView>
                 <Portal>
-                    <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} contentContainerStyle={Styles.modal}>
+                    {this.state.articles.length > 0 && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} contentContainerStyle={Styles.modal}>
                         <ScrollView>
                             <Card>
                                 <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />
@@ -303,17 +298,13 @@ class Articles extends Component {
                                 </Card.Actions>
                             </Card>
                         </ScrollView>
-                    </Modal>
+                    </Modal>}
                     <Snackbar
                         visible={this.state.snackbarVisible}
                         duration={4000}
-                        action={{
-                            label: "Dismiss",
-                            onPress: () => {this.toggleSnack("", false);},
-                        }}
+                        action={{ label: "Dismiss", onPress: () => {this.toggleSnack("", false);}, }}
                         onDismiss={() => { this.toggleSnack("", false); }}
-                    >{this.snackMessage}
-                    </Snackbar>
+                    >{this.state.snackMessage}</Snackbar>
                 </Portal>
             </View>
         );

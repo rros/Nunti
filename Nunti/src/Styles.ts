@@ -24,7 +24,7 @@ export const Light = {
 
 // custom css here
 export default Styles = StyleSheet.create ({
-    safeAreaView: {
+    topView: {
         flex: 1,
     },
 
@@ -85,5 +85,10 @@ export default Styles = StyleSheet.create ({
         marginTop: "3%",
         marginBottom: "3%",
     },
+
+    listEmptyComponent: {
+        alignSelf: "center",
+        marginTop: "50%"
+    }
 });
 
