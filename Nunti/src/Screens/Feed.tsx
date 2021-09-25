@@ -24,7 +24,7 @@ import Backend from '../Backend';
 
 const NavigationStack = createNativeStackNavigator();
 
-export default class Feed extends Component {
+export default class Feed extends PureComponent {
     render() {
         return(
             <NavigationStack.Navigator screenOptions={{headerShown: false, animation: "slide_from_right"}}>
@@ -35,7 +35,7 @@ export default class Feed extends Component {
     }
 }
 
-class Articles extends Component {
+class Articles extends PureComponent {
     constructor(props:any){
         super(props);
 
@@ -65,7 +65,7 @@ class Articles extends Component {
 
         // animation values
         this.rowTranslateValues = {};
-        Array(5) // temporary until articles load
+        Array(3) // temporary until articles load
             .fill('')
             .forEach((_, i) => {
                 this.rowTranslateValues[`${i}`] = new Animated.Value(1);
@@ -75,6 +75,8 @@ class Articles extends Component {
     }
 
     componentDidMount(){
+        // loading animation runs only on mount (empty article list, placeholder cards)
+        this.loadingAnimation();
         this.refresh();
 
         // when the user leaves this window (mainly to the webview), hides the modal
@@ -83,7 +85,7 @@ class Articles extends Component {
             this.hideDetails();
         });
     }
-    
+
     componentWillUnmount() {
         this._unsubscribe();
     }
@@ -91,29 +93,25 @@ class Articles extends Component {
     // loading and refreshing
     private async refresh(){
         this.setState({ refreshing: true });
+        
+        // loading animation runs before this returns, currently too fast to be visible
+        let arts = await Backend.GetArticles();
+        
+        this.allRowsLoadingOpacity.stopAnimation();
+        this.allRowsLoadingOpacity.setValue(1);
 
-        // check for placeholder "articles"
-        if(this.state.articles.length != 0 && this.state.articles[0].url == "about:blank"){
-            this.loadingAnimation();
-        }
-
-        Backend.GetArticles().then( (arts) => {
-            // create one animation value for each article (row)
-            this.rowTranslateValues = {};
-            Array(arts.length)
-                .fill('')
-                .forEach((_, i) => {
-                    this.rowTranslateValues[`${i}`] = new Animated.Value(1);
-                });
-            
-            this.setState({ articles: arts });
-
-            // stop the loading animation
-            this.allRowsLoadingOpacity.stopAnimation();
-            this.allRowsLoadingOpacity.setValue(1);
-
-            this.setState({ refreshing: false });
-        });
+        // create one animation value for each article (row)
+        this.rowTranslateValues = {};
+        Array(arts.length)
+            .fill('')
+            .forEach((_, i) => {
+                this.rowTranslateValues[`${i}`] = new Animated.Value(1);
+            });
+        
+        // note: setting states kills animations for some re~~act~~tarded reason, so the loading animation can't run here
+        // setting this state directly is much faster then setState => rerender will happen when refresh ends
+        this.state.articles = arts;
+        this.setState({refreshing: false});
     }
 
     private async loadingAnimation() {
@@ -186,7 +184,6 @@ class Articles extends Component {
 
     // render functions
     private async toggleSnack(message: string, visible: bool){
-        //this.snackMessage = message;
         this.setState({ snackbarVisible: visible, snackMessage: message });
     }
 
