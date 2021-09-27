@@ -72,6 +72,11 @@ export default Styles = StyleSheet.create ({
         paddingLeft: "20%",
         backgroundColor: "#4caf50"
     },
+    
+    buttonRemoveRight: {
+        paddingLeft: "20%",
+        backgroundColor: "#d32f2f"
+    },
 
     buttonRateUpContent: {
         height: "100%"
