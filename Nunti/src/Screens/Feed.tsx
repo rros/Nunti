@@ -227,6 +227,7 @@ class Articles extends PureComponent {
                 <SwipeListView
                     data={this.state.articles}
                     recalculateHiddenLayout={true}
+                    removeClippedSubviews={true}
                     
                     keyExtractor={item => item.id}
                     refreshing={this.state.refreshing}
