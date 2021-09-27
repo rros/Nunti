@@ -1,11 +1,12 @@
 import { AsyncStorage } from 'react-native';
 var DOMParser = require('xmldom').DOMParser
+var XMLSerializer = require('xmldom').XMLSerializer;
 
 class Article {
     public id: number = 0;
     public title: string = "";
     public description: string = "";
-    public cover: string = "about:blank";
+    public cover: string | undefined = undefined;
     public url: string = "about:blank";
 
     constructor(id: number) {
@@ -14,12 +15,21 @@ class Article {
 }
 
 class UserSettings {
-    public FeedList: string[] = ["https://www.irozhlas.cz/rss/irozhlas"]; //TODO: expand
+    public FeedList: string[] = [
+        "https://www.irozhlas.cz/rss/irozhlas","https://www.theguardian.com/uk/rss",
+        "https://www.aktualne.cz/rss","https://novinky.cz/rss",
+        "https://www.root.cz/rss/clanky/","https://www.reutersagency.com/feed/?post_type=reuters-best",
+        "https://ct24.ceskatelevize.cz/rss", "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+        "https://www.seznamzpravy.cz/rss","https://www.cnews.cz/rss"
+    ]; //TODO: display feed source in frontend
     public DownloadWifiOnly: boolean = false; //TODO: implement
     public DisableVibrations = false; //TODO: implement
+    public DisableImages = false;
 
     /* Advanced */
     public ArticleCacheTime: number = 60; //minutes
+    public MaxArticles: number = 70;
+    public MaxArticlesPerChannel: number = 20;
 }
 
 class Backend {
@@ -28,6 +38,7 @@ class Backend {
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
         console.log("Backend: Loading new articles..");
+        let timeBegin: number = Date.now()
         await this.CheckDB();
 
         let cache = await this.StorageGet('articles_cache');
@@ -43,7 +54,8 @@ class Backend {
         }
 
         arts = await this.SortArticles(arts);
-        console.log("Backend: Loaded.");
+        let timeEnd = Date.now()
+        console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds.`);
         return arts;
     }
     /* Tries to save an article, true on success, false on fail. */
@@ -97,40 +109,98 @@ class Backend {
 
 
     /* Private methods */
-    private static async DownloadArticles(): Promise<Article[]> {
-        //TODO: user setting - download only on wifi
-        console.info("Downloading articles..");
-        let feedList = (await this.StorageGet("user_settings"))["FeedList"]
-
+    private static async DownloadArticlesOneChannel(url: string, maxperchannel: number, noimages: boolean): Promise<Article[]> {
+        console.debug('Backend: Downloading from ' + url);
         let arts: Article[] = [];
-        for (let i = 0; i < feedList.length; i++) {
-            let url = feedList[i];
-            let r = await fetch(url);
-            if (r.ok) {
-                let parser = new DOMParser();
+        let r = await fetch(url);
+        if (r.ok) {
+            let parser = new DOMParser({
+                    locator:{},
+                    errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e }}
+                });
+            let serializer = new XMLSerializer();
+            try {
                 let xml = parser.parseFromString(await r.text());
                 let items = xml.getElementsByTagName("channel")[0].getElementsByTagName("item")
                 for (let y = 0; y < items.length; y++) {
+                    if (y > maxperchannel)
+                        break
                     let item = items[y];
-                    let art = new Article(0);
-                    art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
-                    art.description = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
-                    art.cover = item.getElementsByTagName("enclosure")[0].getAttribute("url");
-                    art.url = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
-                    arts.push(art);
+                    try {
+                        let art = new Article(0);
+                        art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
+                        try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,""); } catch { }
+                        
+                        if (!noimages) {
+                            if (art.cover === undefined)
+                                try { art.cover = item.getElementsByTagName("enclosure")[0].getAttribute("url"); } catch { }
+                            if (art.cover === undefined)
+                                try { art.cover = item.getElementsByTagName("media:content")[0].getAttribute("url"); } catch { }
+                            if (art.cover === undefined)
+                                try { art.cover = item.getElementsByTagName("szn:url")[0].childNodes[0].nodeValue; } catch { }
+                            if (art.cover === undefined)
+                                try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(jpe?g)|(png))/)[0] } catch { }
+                        }
+                        art.url = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
+                        arts.push(art);
+                    } catch(err) {
+                        console.error(`Cannot process article, channel: ${url}, err: ${err}`)
+                    }
                 }
-            } else
-                console.error('Cannot read RSS ' + url);
+            } catch(err) {
+                console.error(`Channel ${url} faulty.`,err)
+            }
+        } else
+            console.error('Cannot read RSS ' + url);
+        return arts;
+    }
+    private static async DownloadArticles(): Promise<Article[]> {
+        //TODO: user setting - download only on wifi
+        console.info("Backend: Downloading articles..");
+        let timeBegin = Date.now()
+        let prefs = await this.GetUserSettings()
+        let feedList = prefs.FeedList
+
+        let arts: Article[] = [];
+        let promises: Promise<Article[]>[] = []
+        for (let i = 0; i < feedList.length; i++) {
+            promises.push(this.DownloadArticlesOneChannel(feedList[i],prefs.MaxArticlesPerChannel, prefs.DisableImages))
         }
+        let results: Article[][] = await Promise.all(promises)
+        for (let i = 0; i < results.length; i++) {
+            for(let y = 0; y < results[i].length; y++) {
+                arts.push(results[i][y])
+            }
+        }
+        let timeEnd = Date.now()
+        console.info(`Backend: Download finished in ${((timeEnd - timeBegin)/1000)} seconds.`);
         return arts;
     }
     private static async SortArticles(articles: Article[]) {
         //TODO: sorting AI
+        let timeBegin = Date.now()
+        function shuffle(a: any) {
+            var j, x, i;
+            for (i = a.length - 1; i > 0; i--) {
+                j = Math.floor(Math.random() * (i + 1));
+                x = a[i];
+                a[i] = a[j];
+                a[j] = x;
+            }
+            return a;
+        }
+        
+        articles = shuffle(articles)
         let arts: Article[] = [];
+        let prefs = await this.GetUserSettings()
         for(let i = 0; i < articles.length; i++) {
+            if(i >= prefs.MaxArticles)
+                break;
             arts.push(articles[i]);
             arts[i].id = i;
         }
+        let timeEnd = Date.now()
+        console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms`);
         return arts;
     }
     private static async FindArticleByUrl(url: string, haystack: Article[]): Promise<number> {
