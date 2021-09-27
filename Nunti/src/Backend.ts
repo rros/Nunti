@@ -52,6 +52,7 @@ class Backend {
             console.log("Backend: Saving article", article.url);
             let saved = await this.StorageGet('saved');
             if (await this.FindArticleByUrl(article.url, saved) < 0) {
+                article.id = saved.length
                 saved.push(article);
                 await this.StorageSave('saved',saved);
             } else {
