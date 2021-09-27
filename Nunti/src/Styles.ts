@@ -6,7 +6,7 @@ export const Dark = {
     ...DarkTheme,
     colors: {
         ...DarkTheme.colors,
-        accentName: "nunti",
+        accentName: "default",
         primary: "#1eba81",
         accent: '#1eba81',
     }
@@ -16,7 +16,7 @@ export const Light = {
     ...DefaultTheme,
     colors: {
         ...DefaultTheme.colors,
-        accentName: "nunti",
+        accentName: "default",
         primary: "#1eba81",
         accent: '#1eba81',
     }
@@ -89,6 +89,10 @@ export default Styles = StyleSheet.create ({
     listEmptyComponent: {
         alignSelf: "center",
         marginTop: "50%"
-    }
+    },
+
+    settingsButton: {
+        justifyContent: "center"
+    },
 });
 

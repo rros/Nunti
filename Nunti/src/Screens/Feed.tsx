@@ -1,9 +1,9 @@
-import React, { Component, PureComponent } from 'react';
+import React, { PureComponent } from 'react';
 import {
     View,
     Share,
-    ScrollView,
     Animated,
+    ScrollView
 } from 'react-native';
 
 import { 
