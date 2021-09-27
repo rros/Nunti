@@ -3,7 +3,8 @@ import {
     View,
     Share,
     Animated,
-    ScrollView
+    ScrollView,
+    Image
 } from 'react-native';
 
 import { 
@@ -214,7 +215,9 @@ class Articles extends PureComponent {
                 }
 
                 updatedArticles.splice(removingIndex, 1);
-                this.setState({ articles: updatedArticles });
+                this.setState({ articles: updatedArticles }, () => {
+                    this.forceUpdate(); // when articles rerender empty, the empty list component appears only on next rerender
+                });
             });
         }
     }
@@ -269,8 +272,10 @@ class Articles extends PureComponent {
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
-                        <View style={Styles.topView}>
-                            <Title style={Styles.listEmptyComponent}>Swipe to refresh</Title>
+                        <View style={Styles.listEmptyComponent}>
+                            <Image source={require("../../Resources/ConfusedNunti.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
+                            <Title>Nothing to read</Title>
+                            <Paragraph style={Styles.listEmptyText}>Try refreshing or find something else to do for now.</Paragraph>
                         </View>
                     )}
 

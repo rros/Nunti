@@ -92,12 +92,21 @@ export default Styles = StyleSheet.create ({
     },
 
     listEmptyComponent: {
-        alignSelf: "center",
-        marginTop: "50%"
+        alignItems: "center",
+        margin: "10%"
+    },
+    
+    listEmptyImage: {
+        width: '100%',
+        height: undefined,
+        aspectRatio: 1,
+    },
+
+    listEmptyText: {
+        textAlign: 'center'
     },
 
     settingsButton: {
         justifyContent: "center"
     },
 });
-

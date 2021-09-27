@@ -3,7 +3,8 @@ import {
     View,
     Share,
     Animated,
-    ScrollView
+    ScrollView,
+    Image
 } from 'react-native';
 
 import { 
@@ -20,6 +21,7 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 import { WebView } from 'react-native-webview';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
+
 import Backend from '../Backend';
 
 const NavigationStack = createNativeStackNavigator();
@@ -144,7 +146,11 @@ class Articles extends PureComponent {
         updatedArticles.splice(index, 1);
         // TODO: remove from backend bookmarks
 
-        this.setState({ articles: updatedArticles });
+        this.setState({ articles: updatedArticles }, () => {
+            if(this.state.articles.length == 0){
+                this.forceUpdate(); // when articles rerender empty, the empty list component appears only on next rerender
+            }
+        });
     }
 
     private async shareArticle() {
@@ -231,8 +237,10 @@ class Articles extends PureComponent {
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
-                        <View style={Styles.topView}>
-                            <Title style={Styles.listEmptyComponent}>No articles saved yet!</Title>
+                        <View style={Styles.listEmptyComponent}>
+                            <Image source={require("../../Resources/ConfusedNunti.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
+                            <Title>No bookmarks</Title>
+                            <Paragraph style={Styles.listEmptyText}>Save an article to see it on this screen.</Paragraph>
                         </View>
                     )}
 
