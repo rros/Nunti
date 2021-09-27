@@ -20,10 +20,12 @@ export default class Settings extends PureComponent {
 
         this.toggleWifiOnly = this.toggleWifiOnly.bind(this);
         this.toggleHapticFeedback = this.toggleHapticFeedback.bind(this);
+        this.toggleNoImages = this.toggleNoImages.bind(this);
         
         this.state = { // TODO: get these from saved data
             wifiOnlySwitch: false,
             hapticFeedbackSwitch: true,
+            noImagesSwitch: false,
             theme: "follow system",
             accent: "default",
             themeDialogVisible: false,
@@ -37,6 +39,10 @@ export default class Settings extends PureComponent {
     
     private async toggleHapticFeedback() {
         this.setState({ hapticFeedbackSwitch: !this.state.hapticFeedbackSwitch});
+    }
+
+    private async toggleNoImages() {
+        this.setState({ noImagesSwitch: !this.state.noImagesSwitch});
     }
 
     private async changeTheme(newTheme: string) {
@@ -65,6 +71,9 @@ export default class Settings extends PureComponent {
                     <List.Item title="Haptic feedback"
                         left={() => <List.Icon icon="vibrate" />}
                         right={() => <Switch value={this.state.hapticFeedbackSwitch} onValueChange={this.toggleHapticFeedback} />} />
+                    <List.Item title="Disable Images"
+                        left={() => <List.Icon icon="image-off" />}
+                        right={() => <Switch value={this.state.noImagesSwitch} onValueChange={this.toggleNoImages} />} />
                 </List.Section>
                 <List.Section>
                     <List.Subheader>Theme</List.Subheader>
@@ -78,8 +87,8 @@ export default class Settings extends PureComponent {
                 <List.Section>
                     <List.Subheader>Danger zone</List.Subheader>
                     <List.Item title="Reset article cache"
-                        left={() => <List.Icon icon="alert" />}
-                        right={() => <Button mode="outlined" color="#d32f2f" style={Styles.settingsButton} onPress={this.resetAllData}>Reset</Button>} />
+                        left={() => <List.Icon icon="cached" />}
+                        right={() => <Button mode="outlined" color="#d32f2f" style={Styles.settingsButton} onPress={this.resetArtsCache}>Reset</Button>} />
                     <List.Item title="Reset all data"
                         left={() => <List.Icon icon="alert" />}
                         right={() => <Button mode="outlined" color="#d32f2f" style={Styles.settingsButton} onPress={this.resetAllData}>Reset</Button>} />
