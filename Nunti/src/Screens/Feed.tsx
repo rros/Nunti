@@ -14,7 +14,8 @@ import {
     Portal,
     Modal,
     Button,
-    Snackbar
+    Snackbar,
+    Caption
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -48,8 +49,8 @@ class Articles extends PureComponent {
         this.saveArticle = this.saveArticle.bind(this);
         this.refresh = this.refresh.bind(this);
         this.toggleSnack = this.toggleSnack.bind(this);
-        this.loadingAnimation = this.loadingAnimation.bind(this);
         this.hapticFeedback = this.hapticFeedback.bind(this);
+        this.endSwipe = this.endSwipe.bind(this);
 
         // states
         this.state = {
@@ -57,7 +58,7 @@ class Articles extends PureComponent {
             snackbarVisible: false,
             snackMessage: "",
             refreshing: false,
-            articles: Backend.DefaultArticleList
+            articles: []
         }
         
         // variables
@@ -66,18 +67,9 @@ class Articles extends PureComponent {
 
         // animation values
         this.rowTranslateValues = {};
-        Array(3) // temporary until articles load
-            .fill('')
-            .forEach((_, i) => {
-                this.rowTranslateValues[`${i}`] = new Animated.Value(1);
-            });
-
-        this.allRowsLoadingOpacity = new Animated.Value(1);
     }
 
     componentDidMount(){
-        // loading animation runs only on mount (empty article list, placeholder cards)
-        this.loadingAnimation();
         this.refresh();
 
         // when the user leaves this window (mainly to the webview), hides the modal
@@ -95,11 +87,7 @@ class Articles extends PureComponent {
     private async refresh(){
         this.setState({ refreshing: true });
         
-        // loading animation runs before this returns, currently too fast to be visible
         let arts = await Backend.GetArticles();
-        
-        this.allRowsLoadingOpacity.stopAnimation();
-        this.allRowsLoadingOpacity.setValue(1);
 
         // create one animation value for each article (row)
         this.rowTranslateValues = {};
@@ -108,36 +96,13 @@ class Articles extends PureComponent {
             .forEach((_, i) => {
                 this.rowTranslateValues[`${i}`] = new Animated.Value(1);
             });
-        
-        // note: setting states kills animations for some re~~act~~tarded reason, so the loading animation can't run here
-        // setting this state directly is much faster then setState => rerender will happen when refresh ends
-        this.state.articles = arts;
-        this.setState({refreshing: false});
-    }
 
-    private async loadingAnimation() {
-        this.allRowsLoadingOpacity.setValue(1);
-        
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(this.allRowsLoadingOpacity, {
-                    toValue: 0,
-                    duration: 500,
-                    useNativeDriver: false,
-                }),
-                Animated.timing(this.allRowsLoadingOpacity, {
-                    toValue: 1,
-                    duration: 500,
-                    useNativeDriver: false,
-                })
-            ]),
-            {resetBeforeIteration: true, iterations: Number.MAX_SAFE_INTEGER}
-        ).start();
+        this.setState({articles: arts, refreshing: false});
     }
 
     // modal functions
-    private async viewDetails(articleIndex: number){
-        this.currentIndex = articleIndex;
+    private async viewDetails(articleID: number){
+        this.currentIndex = this.state.articles.findIndex(item => item.id === articleID);
         this.setState({ detailsVisible: true });
     }
     
@@ -147,21 +112,21 @@ class Articles extends PureComponent {
     }
     
     // article functions
-    private async readMore(articleIndex: number) {
+    private async readMore(articleID: number) {
         let url = "";
-        if(typeof(articleIndex) !== typeof(0)) {
-            // when readMore is called without articleIndex, we need to take it from this.state
-            // this happens on "Read More" button in article details
+        if(typeof(articleID) !== typeof(0)) { 
+            // if readmore is called without articleIndex(details modal), get it from this.state
             url = this.state.articles[this.currentIndex].url;
-        } else
-            url = this.state.articles[articleIndex].url;
+        } else  {
+            url = this.state.articles.find(item => item.id === articleID).url;
+        }
 
         this.props.navigation.navigate("WebView", { uri: url });
     }
 
     private async saveArticle() {
         if(await Backend.TrySaveArticle(this.state.articles[this.currentIndex])) {
-            this.toggleSnack("Article saved!", true)
+            this.toggleSnack("Article saved!", true);
         } else {
             console.error("Saving article failed");
         }
@@ -175,10 +140,8 @@ class Articles extends PureComponent {
 
     private async rate(article: any, isGood: boolean) {
         if(isGood){
-            this.toggleSnack("Article rated up!", true)
             Backend.RateArticle(article, 1);
         } else {
-            this.toggleSnack("Article rated down!", true)
             Backend.RateArticle(article, -1);
         }
     }
@@ -194,36 +157,37 @@ class Articles extends PureComponent {
         }
     }
 
-    endSwipe = (rowKey, data) => {
+    public async endSwipe(rowKey: number, data: any) {
         this.swiping = false;
 
-        // don't remove anything if loading, swipe gestures still work
-        if(this.state.refreshing == false && (data.translateX > 100 || data.translateX < -100)){
+        if(data.translateX > 100 || data.translateX < -100){
+            let updatedArticles = this.state.articles;
+            let removingIndex = updatedArticles.findIndex(item => item.id === rowKey);
+            updatedArticles.splice(removingIndex, 1); // TODO: stop article from reappearing (backend) for example 24 hour stop as part of article cache?
+            
+            if(data.translateX > 0){
+                this.rate(updatedArticles[removingIndex], false);
+            } else {
+                this.rate(updatedArticles[removingIndex], true);
+            }
+
             this.rowTranslateValues[rowKey].setValue(1);
             Animated.timing(this.rowTranslateValues[rowKey], {
                 toValue: 0,
                 duration: 400,
                 useNativeDriver: false,
             }).start(() => {
-                let updatedArticles = this.state.articles;
-                let removingIndex = updatedArticles.findIndex(item => item.id === rowKey);
-                
-                if(data.translateX > 0){
-                    this.rate(updatedArticles[removingIndex], false);
-                } else {
-                    this.rate(updatedArticles[removingIndex], true);
-                }
-
-                updatedArticles.splice(removingIndex, 1);
                 this.setState({ articles: updatedArticles }, () => {
-                    this.forceUpdate(); // when articles rerender empty, the empty list component appears only on next rerender
+                    if(this.state.articles.length == 0){
+                        this.forceUpdate(); // when articles rerender empty, the empty list component appears only on next rerender
+                    }
                 });
             });
         }
     }
 
     // NOTE: rowKey and item.id is the same. They don't change like the index, and the list uses them internally.
-    // Therefore use index for getting the right url from article list, and use the id/rowKey for finding the right row for actions
+    // use id instead of index, as the state.articles changes often and a delay may mean opening the wrong article
     render() {
         return (
             <View style={Styles.topView}>
@@ -249,16 +213,17 @@ class Articles extends PureComponent {
                             maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 300],}), 
                             opacity: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 1],}), 
                         }}>
-                            <Card style={[Styles.card, { opacity: this.allRowsLoadingOpacity.interpolate({inputRange: [0, 1], outputRange: [0.5, 1]})}]} 
-                                onPress={() => { this.readMore(rowData.index) }} onLongPress={() => { this.viewDetails(rowData.index) }}>
+                            <Card style={Styles.card} 
+                                onPress={() => { this.readMore(rowData.item.id) }} onLongPress={() => { this.viewDetails(rowData.item.id) }}>
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
                                         <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
+                                        <Caption style={Styles.cardContentSource}>{"Article from " + rowData.item.source}</Caption>
                                     </Card.Content>
-                                    <View style={Styles.cardContentCoverContainer}>
+                                    {rowData.item.cover !== undefined && <View style={Styles.cardContentCoverContainer}>
                                         <Card.Cover source={{ uri: rowData.item.cover }}/>
-                                    </View>
+                                    </View> }
                                 </View>
                             </Card>
                         </Animated.View>
@@ -286,13 +251,14 @@ class Articles extends PureComponent {
                     swipeGestureEnded={this.endSwipe}
                 ></SwipeListView>
                 <Portal>
-                    {this.state.articles.length > 0 && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} contentContainerStyle={Styles.modal}>
+                    {this.state.articles.length > 0 && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} style={Styles.modal}>
                         <ScrollView>
                             <Card>
-                                <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />
+                                {this.state.articles[this.currentIndex].cover !== undefined && <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />}
                                 <Card.Content>
                                     <Title>{this.state.articles[this.currentIndex].title}</Title>
                                     <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
+                                    <Caption>{"Article from " + this.state.articles[this.currentIndex].source}</Caption>
                                 </Card.Content>
                                 <Card.Actions>
                                     <Button icon="book" onPress={this.readMore}>Read more</Button>

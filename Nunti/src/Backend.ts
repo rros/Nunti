@@ -8,6 +8,7 @@ class Article {
     public description: string = "";
     public cover: string | undefined = undefined;
     public url: string = "about:blank";
+    public source: string = "bazos.cz"; //TODO: "" placeholder
 
     constructor(id: number) {
         this.id = id;
@@ -33,8 +34,6 @@ class UserSettings {
 }
 
 class Backend {
-    public static DefaultArticleList: Article[] = [new Article(0), new Article(1), new Article(2)];
-
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
         console.log("Backend: Loading new articles..");

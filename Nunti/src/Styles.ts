@@ -28,6 +28,10 @@ export default Styles = StyleSheet.create ({
         flex: 1,
     },
 
+    modal: {
+        marginTop: 0
+    },
+
     card: {
         marginTop: "2%",
         marginBottom: "2%",
@@ -48,9 +52,12 @@ export default Styles = StyleSheet.create ({
 
     cardContentParagraph: {
         flex: 1,
-        marginBottom: "4%"
     },
     
+    cardContentSource: {
+        marginBottom: "2%"
+    },
+
     cardContentCoverContainer: {
         flex: 1,
     },
@@ -93,13 +100,15 @@ export default Styles = StyleSheet.create ({
 
     listEmptyComponent: {
         alignItems: "center",
+        justifyContent: "center",
         margin: "10%"
     },
     
     listEmptyImage: {
-        width: '100%',
+        width: '80%',
         height: undefined,
         aspectRatio: 1,
+        marginBottom: "20%"
     },
 
     listEmptyText: {
