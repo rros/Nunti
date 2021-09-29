@@ -19,26 +19,15 @@ import {
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { WebView } from 'react-native-webview';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
+import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 
 import Backend from '../Backend';
 
 const NavigationStack = createNativeStackNavigator();
 
 export default class Bookmarks extends PureComponent {
-    render() {
-        return(
-            <NavigationStack.Navigator screenOptions={{headerShown: false, animation: "slide_from_right"}}>
-                <NavigationStack.Screen name="Articles" component={Articles} />
-                <NavigationStack.Screen name="WebView" component={WebViewComponent} />
-            </NavigationStack.Navigator>
-        );
-    }
-}
-
-class Articles extends PureComponent {
     constructor(props:any){
         super(props);
 
@@ -72,12 +61,6 @@ class Articles extends PureComponent {
 
     componentDidMount(){
         this.refresh();
-
-        // when the user leaves this window (mainly to the webview), hides the modal
-        // this is the optimal way to do this to avoid jerky transitions
-        this._unsubscribe = this.props.navigation.addListener('state', () => {
-            this.hideDetails();
-        });
         
         // reload bookmarks on each access
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
@@ -126,7 +109,7 @@ class Articles extends PureComponent {
             url = this.state.articles.find(item => item.id === articleID).url;
         }
 
-        this.props.navigation.navigate("WebView", { uri: url });
+        await InAppBrowser.open(url);
     }
 
     private async removeSavedArticle(articleID: number) {
@@ -275,8 +258,4 @@ class Articles extends PureComponent {
             </View>
         );
     }
-}
-
-function WebViewComponent ({route}: any) {
-    return(<WebView source={{ uri: route.params.uri }}/>);
 }
