@@ -67,7 +67,7 @@ class Articles extends PureComponent {
         this.swiping = false;
 
         // animation values
-        this.rowTranslateValues = {};
+        this.rowTranslateValues = [];
     }
 
     componentDidMount(){
@@ -95,6 +95,7 @@ class Articles extends PureComponent {
         
         let arts = await Backend.GetSavedArticles();
         
+        this.rowTranslateValues = [];
         Array(arts.length)
             .fill('')
             .forEach((_, i) => {

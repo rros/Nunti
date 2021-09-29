@@ -22,6 +22,8 @@ export const Light = {
     }
 };
 
+export const ErrorColour = "#d32f2f";
+
 // custom css here
 export default Styles = StyleSheet.create ({
     topView: {
