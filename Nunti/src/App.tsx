@@ -52,6 +52,13 @@ function CustomHeader ({ navigation, route }) {
 function CustomDrawer ({ state, navigation }) {
     const [active, setActive] = React.useState(state.routes[state.index].name);
 
+    // update selected tab when going back with backbutton   
+    React.useEffect(() => { 
+        if(active != state.routes[state.index].name) {
+            setActive(state.routes[state.index].name);
+        }
+     });
+
     return (
         <Drawer.Section title="Nunti" style={{backgroundColor: Dark.colors.background, height: "100%"}}>
             <Drawer.Section>
