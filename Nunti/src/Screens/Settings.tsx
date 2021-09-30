@@ -107,7 +107,7 @@ export default class Settings extends Component { // not using purecomponent as 
         } */
 
         this.state.feeds.push({
-                key: this.state.feeds[this.state.feeds.length-1].key + 1,
+                key: this.state.feeds.length != 0 ? this.state.feeds[this.state.feeds.length-1].key + 1 : 0,
                 hostname: this.state.rssInputValue, 
                 url: this.state.rssInputValue
             });
