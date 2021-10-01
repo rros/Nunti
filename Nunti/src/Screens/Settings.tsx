@@ -33,7 +33,7 @@ export default class Settings extends Component { // not using purecomponent as 
         
         this.toggleSnack = this.toggleSnack.bind(this);
         
-        this.state = { // TODO: get these from saved data
+        this.state = {
             wifiOnlySwitch: false,
             hapticFeedbackSwitch: true,
             noImagesSwitch: false,
@@ -41,18 +41,8 @@ export default class Settings extends Component { // not using purecomponent as 
             accent: "default",
             feeds: [{
                 key: 0,
-                hostname: "bazos.cz", // to display
+                name: "bazos.cz", // to display
                 url: "bazos.cz" // full url
-            },
-            {
-                key: 1,
-                hostname: "irozhlas.cz", // to display
-                url: "irozhlas.cz" // full url
-            },
-            {
-                key: 2,
-                hostname: "denikn.cz", // to display
-                url: "denikn.cz" // full url
             }],
 
             rssInputValue: "",
@@ -67,6 +57,15 @@ export default class Settings extends Component { // not using purecomponent as 
             snackVisible: false,
             snackMessage: "",
         }
+
+        Backend.GetUserSettings().then( async (prefs) => {
+            this.setState({
+                wifiOnlySwitch: prefs.DownloadWifiOnly,
+                hapticFeedbackSwitch: prefs.EnableVibrations,
+                noImagesSwitch: prefs.DisableImages,
+                feeds: prefs.FeedList
+            })
+        });
     }
 
     private async toggleWifiOnly() {
@@ -79,6 +78,9 @@ export default class Settings extends Component { // not using purecomponent as 
 
     private async toggleNoImages() {
         this.setState({ noImagesSwitch: !this.state.noImagesSwitch});
+        let prefs = await Backend.GetUserSettings();
+        prefs.DisableImages = this.state.noImagesSwitch;
+        await Backend.SaveUserSettings();
     }
 
     private async changeTheme(newTheme: string) {
@@ -98,19 +100,20 @@ export default class Settings extends Component { // not using purecomponent as 
     }
     
     private async addRss(){
-        // TODO: add rss to backend (get hostname from url, check if url exists and is rss)
-        // let hostname = await backend.address
-        /* if(hostname === undefined){
-            show snack fail
-        } else {
-            show snack success
-        } */
-
-        this.state.feeds.push({
+        try {
+            let prefs = await Backend.GetUserSettings();
+            let feed = new Feed(this.state.rssInputValue);
+            prefs.FeedList.push(feed)
+            Backend.SaveUserSettings(prefs);
+            this.state.feeds.push({
                 key: this.state.feeds.length != 0 ? this.state.feeds[this.state.feeds.length-1].key + 1 : 0,
-                hostname: this.state.rssInputValue, 
-                url: this.state.rssInputValue
+                name: feed.name, 
+                url: feed.url,
             });
+            //TODO: show snack yeah man
+        } catch {
+            //TODO: show snack fail
+        }
 
         this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
     }
@@ -121,7 +124,7 @@ export default class Settings extends Component { // not using purecomponent as 
         let index = this.state.feeds.findIndex(item => item.key === key);
         let updatedFeeds = this.state.feeds;
         
-        this.toggleSnack(`Removed ${this.state.feeds[index].hostname} from feeds`, true);
+        this.toggleSnack(`Removed ${this.state.feeds[index].name} from feeds`, true);
         
         updatedFeeds.splice(index, 1);
         this.setState({feeds: updatedFeeds});
@@ -176,7 +179,7 @@ export default class Settings extends Component { // not using purecomponent as 
                         right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ rssDialogVisible: true })}}>Add</Button>} />
                     { this.state.feeds.map((element) => {
                         return (
-                            <List.Item title={element.hostname}
+                            <List.Item title={element.name}
                                 left={() => <List.Icon icon="rss" />}
                                 right={() => <Button style={Styles.settingsButton} onPress={() => { this.removeRss(element.key) }}>Remove</Button>} />
                         );

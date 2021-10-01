@@ -2,6 +2,20 @@ import { AsyncStorage } from 'react-native';
 var DOMParser = require('xmldom').DOMParser
 var XMLSerializer = require('xmldom').XMLSerializer;
 
+class Feed {
+    public name: string;
+    public url: string;
+
+    constructor(url: string) {
+        this.url = url;
+        let r = url.match(/https?:\/\/(?:www\.)?(?:rss\.)?([^\/]+)(\/|$)/);
+        if (r && r.length > 1)
+            this.name = r[1];
+        else
+            throw new Error('invalid url');
+    }
+}
+
 class Article {
     public id: number = 0;
     public title: string = "";
@@ -16,15 +30,15 @@ class Article {
 }
 
 class UserSettings {
-    public FeedList: string[] = [
-        "https://www.irozhlas.cz/rss/irozhlas","https://www.theguardian.com/uk/rss",
-        "https://www.aktualne.cz/rss","https://novinky.cz/rss",
-        "https://www.root.cz/rss/clanky/","https://www.reutersagency.com/feed/?post_type=reuters-best",
-        "https://ct24.ceskatelevize.cz/rss", "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
-        "https://www.seznamzpravy.cz/rss","https://www.cnews.cz/rss"
-    ]; //TODO: display feed source in frontend
+    public FeedList: Feed[] = [
+        new Feed("https://www.irozhlas.cz/rss/irozhlas"),new Feed("https://www.theguardian.com/uk/rss"),
+        new Feed("https://www.aktualne.cz/rss"),new Feed("https://novinky.cz/rss"),
+        new Feed("https://www.root.cz/rss/clanky/"),new Feed("https://www.reutersagency.com/feed/?post_type=reuters-best"),
+        new Feed("https://ct24.ceskatelevize.cz/rss"), new Feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"),
+        new Feed("https://www.seznamzpravy.cz/rss"),new Feed("https://www.cnews.cz/rss")
+    ];
     public DownloadWifiOnly: boolean = false; //TODO: implement
-    public DisableVibrations = false; //TODO: implement
+    public EnableVibrations = true; //TODO: implement
     public DisableImages = false;
 
     /* Advanced */
@@ -124,10 +138,10 @@ class Backend {
 
 
     /* Private methods */
-    private static async DownloadArticlesOneChannel(url: string, maxperchannel: number, noimages: boolean): Promise<Article[]> {
-        console.debug('Backend: Downloading from ' + url);
+    private static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, noimages: boolean): Promise<Article[]> {
+        console.debug('Backend: Downloading from ' + feed.name);
         let arts: Article[] = [];
-        let r = await fetch(url);
+        let r = await fetch(feed.url);
         if (r.ok) {
             let parser = new DOMParser({
                     locator:{},
@@ -143,11 +157,7 @@ class Backend {
                     let item = items[y];
                     try {
                         let art = new Article(0);
-                        {
-                            let r = url.match(/https?:\/\/(?:www\.)?([^\/]+)(\/|$)/);
-                            if (r && r.length > 1)
-                                art.source = r[1];
-                        }
+                        art.source = feed.name;
                         art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
                         try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,""); } catch { }
                         
@@ -164,14 +174,14 @@ class Backend {
                         art.url = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
                         arts.push(art);
                     } catch(err) {
-                        console.error(`Cannot process article, channel: ${url}, err: ${err}`)
+                        console.error(`Cannot process article, channel: ${feed.url}, err: ${err}`)
                     }
                 }
             } catch(err) {
-                console.error(`Channel ${url} faulty.`,err)
+                console.error(`Channel ${feed.name} faulty.`,err)
             }
         } else
-            console.error('Cannot read RSS ' + url);
+            console.error('Cannot read RSS ' + feed.name);
         return arts;
     }
     private static async DownloadArticles(): Promise<Article[]> {
