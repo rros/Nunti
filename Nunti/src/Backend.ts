@@ -8,7 +8,7 @@ class Article {
     public description: string = "";
     public cover: string | undefined = undefined;
     public url: string = "about:blank";
-    public source: string = "bazos.cz"; //TODO: "" placeholder
+    public source: string = "unknown";
 
     constructor(id: number) {
         this.id = id;
@@ -127,6 +127,11 @@ class Backend {
                     let item = items[y];
                     try {
                         let art = new Article(0);
+                        {
+                            let r = url.match(/https?:\/\/(?:www\.)?([^\/]+)(\/|$)/);
+                            if (r && r.length > 1)
+                                art.source = r[1];
+                        }
                         art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
                         try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,""); } catch { }
                         
