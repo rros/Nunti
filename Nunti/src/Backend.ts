@@ -138,7 +138,7 @@ class Backend {
                             if (art.cover === undefined)
                                 try { art.cover = item.getElementsByTagName("szn:url")[0].childNodes[0].nodeValue; } catch { }
                             if (art.cover === undefined)
-                                try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(jpe?g)|(png))/)[0] } catch { }
+                                try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(?:(?:jpe?g)|(?:png)))/)[0] } catch { }
                         }
                         art.url = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
                         arts.push(art);
