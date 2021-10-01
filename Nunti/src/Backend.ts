@@ -75,6 +75,22 @@ class Backend {
             return false;
         }
     }
+    /* Tries to remove an article from saved, true on success, false on fail. */
+    public static async TryRemoveSavedArticle(article: Article): Promise<boolean> {
+        try {
+            let saved = await this.StorageGet('saved');
+            let index = await this.FindArticleByUrl(article.url, saved);
+            if (index >= 0) {
+                saved.splice(index,1);
+                await this.StorageSave('saved',saved);
+                return true;
+            } else
+                throw new Error('not found in saved');
+        } catch(err) {
+            console.error('Backend: Cannot remove saved article.',err);
+            return false;
+        }
+    }
     /* Returns list of saved articles. */
     public static async GetSavedArticles(): Promise<Article[]> {
         return await this.StorageGet('saved');
