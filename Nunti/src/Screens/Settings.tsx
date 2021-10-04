@@ -22,7 +22,6 @@ export default class Settings extends Component { // not using purecomponent as 
     constructor(props: any){
         super(props);
 
-        this.toggleWifiOnly = this.toggleWifiOnly.bind(this);
         this.toggleHapticFeedback = this.toggleHapticFeedback.bind(this);
         this.toggleNoImages = this.toggleNoImages.bind(this);
 
@@ -60,7 +59,6 @@ export default class Settings extends Component { // not using purecomponent as 
 
         Backend.GetUserSettings().then( async (prefs) => {
             this.setState({
-                wifiOnlySwitch: prefs.DownloadWifiOnly,
                 hapticFeedbackSwitch: prefs.EnableVibrations,
                 noImagesSwitch: prefs.DisableImages,
                 feeds: prefs.FeedList
@@ -68,10 +66,6 @@ export default class Settings extends Component { // not using purecomponent as 
         });
     }
 
-    private async toggleWifiOnly() {
-        this.setState({ wifiOnlySwitch: !this.state.wifiOnlySwitch});
-    }
-    
     private async toggleHapticFeedback() {
         this.setState({ hapticFeedbackSwitch: !this.state.hapticFeedbackSwitch});
     }
@@ -80,7 +74,7 @@ export default class Settings extends Component { // not using purecomponent as 
         this.setState({ noImagesSwitch: !this.state.noImagesSwitch});
         let prefs = await Backend.GetUserSettings();
         prefs.DisableImages = this.state.noImagesSwitch;
-        await Backend.SaveUserSettings();
+        await Backend.SaveUserSettings(prefs);
     }
 
     private async changeTheme(newTheme: string) {
@@ -104,7 +98,7 @@ export default class Settings extends Component { // not using purecomponent as 
             let prefs = await Backend.GetUserSettings();
             let feed = new Feed(this.state.rssInputValue);
             prefs.FeedList.push(feed)
-            Backend.SaveUserSettings(prefs);
+            await Backend.SaveUserSettings(prefs);
             this.state.feeds.push({
                 key: this.state.feeds.length != 0 ? this.state.feeds[this.state.feeds.length-1].key + 1 : 0,
                 name: feed.name, 
@@ -153,9 +147,6 @@ export default class Settings extends Component { // not using purecomponent as 
             <ScrollView style={Styles.topView}>
                 <List.Section>
                     <List.Subheader>General</List.Subheader>
-                    <List.Item title="Download on wifi only"
-                        left={() => <List.Icon icon="wifi" />}
-                        right={() => <Switch value={this.state.wifiOnlySwitch} onValueChange={this.toggleWifiOnly} />} />
                     <List.Item title="Haptic feedback"
                         left={() => <List.Icon icon="vibrate" />}
                         right={() => <Switch value={this.state.hapticFeedbackSwitch} onValueChange={this.toggleHapticFeedback} />} />

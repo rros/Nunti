@@ -37,7 +37,6 @@ class UserSettings {
         new Feed("https://ct24.ceskatelevize.cz/rss"), new Feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"),
         new Feed("https://www.seznamzpravy.cz/rss"),new Feed("https://www.cnews.cz/rss")
     ];
-    public DownloadWifiOnly: boolean = false; //TODO: implement
     public EnableVibrations = true; //TODO: implement
     public DisableImages = false;
 
@@ -141,7 +140,9 @@ class Backend {
     private static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, noimages: boolean): Promise<Article[]> {
         console.debug('Backend: Downloading from ' + feed.name);
         let arts: Article[] = [];
-        let r = await fetch(feed.url);
+        const controller = new AbortController();
+        const timeoutid = setTimeout(() => controller.abort(), 5000);
+        let r = await fetch(feed.url, { signal: controller.signal });
         if (r.ok) {
             let parser = new DOMParser({
                     locator:{},
@@ -185,7 +186,6 @@ class Backend {
         return arts;
     }
     private static async DownloadArticles(): Promise<Article[]> {
-        //TODO: user setting - download only on wifi
         console.info("Backend: Downloading articles..");
         let timeBegin = Date.now()
         let prefs = await this.GetUserSettings()
