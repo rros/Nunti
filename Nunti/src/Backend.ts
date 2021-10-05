@@ -35,7 +35,8 @@ class UserSettings {
         new Feed("https://www.aktualne.cz/rss"),new Feed("https://novinky.cz/rss"),
         new Feed("https://www.root.cz/rss/clanky/"),new Feed("https://www.reutersagency.com/feed/?post_type=reuters-best"),
         new Feed("https://ct24.ceskatelevize.cz/rss"), new Feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"),
-        new Feed("https://www.seznamzpravy.cz/rss"),new Feed("https://www.cnews.cz/rss")
+        new Feed("https://www.seznamzpravy.cz/rss"),new Feed("https://www.cnews.cz/rss"),
+        new Feed("https://www.theverge.com/rss/index.xml"), new Feed("https://servis.lidovky.cz/rss.aspx")
     ];
     public EnableVibrations = true; //TODO: implement
     public DisableImages = false;
