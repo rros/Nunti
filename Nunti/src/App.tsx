@@ -6,6 +6,8 @@ import {
     Drawer
 } from 'react-native-paper';
 
+import BackgroundTask from 'react-native-background-task';
+
 // our files
 import Styles, { Dark, Light } from "./Styles";
 import Feed from "./Screens/Feed"
@@ -18,12 +20,20 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 
 const NavigationDrawer = createDrawerNavigator();
 
+BackgroundTask.define(async () => {
+    //TODO
+    BackgroundTask.finish();
+});
+
 export default class App extends Component {
     constructor(props: any) {
         super(props);
         
         // load theme here
         // end splash screen
+    }
+    componentDidMount() {
+        BackgroundTask.schedule({ period: 10800 }); // 3 hours in seconds
     }
     render() {
         return(

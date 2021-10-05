@@ -125,7 +125,7 @@ export default class Bookmarks extends PureComponent {
         }
 
         let updatedArticles = this.state.articles;
-        Backend.TryRemoveSavedArticle(updatedArticles.splice(index, 1)[0]);
+        await Backend.TryRemoveSavedArticle(updatedArticles.splice(index, 1)[0]);
 
         this.setState({ articles: updatedArticles }, () => {
             if(this.state.articles.length == 0){
