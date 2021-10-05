@@ -13,6 +13,7 @@ import Styles, { Dark, Light } from "./Styles";
 import Feed from "./Screens/Feed"
 import Bookmarks from "./Screens/Bookmarks"
 import Settings from "./Screens/Settings"
+import Backend from "./Backend";
 
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -21,7 +22,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 const NavigationDrawer = createDrawerNavigator();
 
 BackgroundTask.define(async () => {
-    //TODO
+    await Backend.GetArticles();
     BackgroundTask.finish();
 });
 
