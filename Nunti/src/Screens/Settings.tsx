@@ -105,7 +105,8 @@ export default class Settings extends Component { // not using purecomponent as 
                 url: feed.url,
             });
             //TODO: show snack yeah man
-        } catch {
+        } catch(err) {
+            console.error("Can't add RSS feed",err);
             //TODO: show snack fail
         }
 
@@ -113,15 +114,26 @@ export default class Settings extends Component { // not using purecomponent as 
     }
     
     private async removeRss(key: string){
-        // TODO: remove rss from backend
-        
-        let index = this.state.feeds.findIndex(item => item.key === key);
-        let updatedFeeds = this.state.feeds;
-        
-        this.toggleSnack(`Removed ${this.state.feeds[index].name} from feeds`, true);
-        
-        updatedFeeds.splice(index, 1);
-        this.setState({feeds: updatedFeeds});
+        try {
+            let index = this.state.feeds.findIndex(item => item.key === key);
+            let updatedFeeds = this.state.feeds;
+            let url = this.state.feeds[index].url;
+
+            let prefs = await Backend.GetUserSettings();
+            let i = prefs.FeedList.findIndex(feed => feed.url = url);
+            prefs.FeedList.splice(i,1);
+            await Backend.SaveUserSettings(prefs);
+            
+            
+            this.toggleSnack(`Removed ${this.state.feeds[index].name} from feeds`, true);
+            
+            updatedFeeds.splice(index, 1);
+            this.setState({feeds: updatedFeeds});
+            //TODO: show snack oh yeah
+        } catch (err) {
+            console.error("Can't remove RSS feed",err);
+            //TODO: show snack smth wong
+        }
     }
 
     private async resetArtsCache() {
