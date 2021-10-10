@@ -153,10 +153,13 @@ export default class Bookmarks extends PureComponent {
 
     private async endSwipe(rowKey, data) {
         this.swiping = false;
+        
+        // bookmarks don't update their id as they are saved as they come, so we have to remove based on their index
+        let index = this.state.articles.findIndex(item => item.id === rowKey);
 
         if(data.translateX > 100 || data.translateX < -100){
-            this.rowTranslateValues[rowKey].setValue(1);
-            Animated.timing(this.rowTranslateValues[rowKey], {
+            this.rowTranslateValues[index].setValue(1);
+            Animated.timing(this.rowTranslateValues[index], {
                 toValue: 0,
                 duration: 400,
                 useNativeDriver: false,
@@ -190,8 +193,8 @@ export default class Bookmarks extends PureComponent {
 
                     renderItem={ (rowData, rowMap) => (
                         <Animated.View style={{ 
-                            maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 300],}), 
-                            opacity: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 1],}), 
+                            maxHeight: this.rowTranslateValues[rowData.index].interpolate({inputRange: [0, 1], outputRange: [0, 300],}), 
+                            opacity: this.rowTranslateValues[rowData.index].interpolate({inputRange: [0, 1], outputRange: [0, 1],}), 
                         }}>
                             <Card style={Styles.card} 
                                 onPress={() => { this.readMore(rowData.item.id) }} onLongPress={() => { this.viewDetails(rowData.item.id) }}>
@@ -210,7 +213,7 @@ export default class Bookmarks extends PureComponent {
                     )}
                     renderHiddenItem={(rowData, rowMap) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
-                            opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.95, 1], outputRange: [0, 0.05, 1],}),
+                            opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.index].interpolate({inputRange: [0, 0.95, 1], outputRange: [0, 0.05, 1],}),
                         }]}>
                             <Button icon="delete" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Remove</Button>
                             <Button icon="delete" mode="contained" contentStyle={Styles.buttonRateUpContent} style={Styles.buttonRemoveRight}>Remove</Button>

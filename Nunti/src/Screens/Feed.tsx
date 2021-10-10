@@ -101,7 +101,7 @@ export default class Feed extends PureComponent {
             url = this.state.articles.find(item => item.id === articleID).url;
         }
 
-        await InAppBrowser.open(url);
+        await InAppBrowser.open(url, { forceCloseOnRedirection: false, showInRecents: true });
     }
 
     private async saveArticle() {
