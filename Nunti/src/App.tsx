@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { StatusBar } from 'react-native';
 
 import { 
     Provider as PaperProvider,
@@ -30,7 +31,10 @@ export default class App extends Component {
     constructor(props: any) {
         super(props);
         
-        // load theme here
+        this.state = {
+            theme: Dark
+        }
+
         // end splash screen
     }
     componentDidMount() {
@@ -38,9 +42,12 @@ export default class App extends Component {
     }
     render() {
         return(
-            <PaperProvider theme={Dark}>
-                <NavigationContainer theme={Dark}>
-                    <NavigationDrawer.Navigator drawerContent={(props) => <CustomDrawer {...props}/>} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
+            <PaperProvider theme={this.state.theme}>
+                <StatusBar 
+                    backgroundColor="rgba(0, 0, 0, 0.3)"
+                    translucent={true}/>
+                <NavigationContainer theme={this.state.theme}>
+                    <NavigationDrawer.Navigator drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} />} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
                         <NavigationDrawer.Screen name="Feed" component={Feed}/>
                         <NavigationDrawer.Screen name="Bookmarks" component={Bookmarks} />
                         <NavigationDrawer.Screen name="Settings" component={Settings} />
@@ -53,14 +60,14 @@ export default class App extends Component {
 
 function CustomHeader ({ navigation, route }) {
     return (
-        <Appbar.Header statusBarHeight={0}>
+        <Appbar.Header>
             <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} />
             <Appbar.Content title={route.name} />
         </Appbar.Header>
       );
 }
 
-function CustomDrawer ({ state, navigation }) {
+function CustomDrawer ({ state, navigation, theme }) {
     const [active, setActive] = React.useState(state.routes[state.index].name);
 
     // update selected tab when going back with backbutton   
@@ -71,7 +78,7 @@ function CustomDrawer ({ state, navigation }) {
      });
 
     return (
-        <Drawer.Section title="Nunti" style={{backgroundColor: Dark.colors.background, height: "100%"}}>
+        <Drawer.Section title="Nunti" style={{backgroundColor: theme.colors.surface, height: "100%", paddingTop: "10%" /*not sure if this padding will work on all devices*/}}>
             <Drawer.Section>
                 <Drawer.Item
                     label={state.routeNames[0]}
