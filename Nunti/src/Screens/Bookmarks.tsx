@@ -55,8 +55,6 @@ class Bookmarks extends PureComponent {
 
         // animation values
         this.rowTranslateValues = [];
-        
-        console.log(this.props.prefs)
     }
 
     componentDidMount(){
@@ -221,7 +219,7 @@ class Bookmarks extends PureComponent {
                     )}
                     ListEmptyComponent={(
                         <View style={Styles.listEmptyComponent}>
-                            <Image source={require("../../Resources/ConfusedNunti.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
+                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
                             <Title>No bookmarks</Title>
                             <Paragraph style={Styles.listEmptyText}>Save an article to see it on this screen.</Paragraph>
                         </View>

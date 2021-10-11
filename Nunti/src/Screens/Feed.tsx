@@ -218,7 +218,7 @@ class Feed extends PureComponent {
                     )}
                     ListEmptyComponent={(
                         <View style={Styles.listEmptyComponent}>
-                            <Image source={require("../../Resources/ConfusedNunti.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
+                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
                             <Title>Nothing to read</Title>
                             <Paragraph style={Styles.listEmptyText}>Try refreshing or find something else to do for now.</Paragraph>
                         </View>
