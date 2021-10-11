@@ -23,6 +23,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import changeNavigationBarColor from "react-native-navigation-bar-color";
+import SplashScreen from 'react-native-splash-screen'
 
 const NavigationDrawer = createDrawerNavigator();
 
@@ -48,7 +49,6 @@ export default class App extends Component {
             snackVisible: false,
             snackMessage: "",
         }
-
     }
 
     async componentDidMount() {
@@ -57,7 +57,7 @@ export default class App extends Component {
         await this.loadPrefs();
         BackgroundTask.schedule({ period: 10800 }); // 3 hours in seconds
         
-        // end splash screen
+        SplashScreen.hide();
     }
 
     public async loadPrefs() {
