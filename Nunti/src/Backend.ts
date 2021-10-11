@@ -17,6 +17,7 @@ class Feed {
 }
 
 class Article {
+    //TODO: add date time and display in frontend. Don't care till v0.4
     public id: number = 0;
     public title: string = "";
     public description: string = "";
@@ -126,6 +127,7 @@ class Backend {
     }
     /* Gets UserSettings object from storage to nicely use in frontend. */
     public static async GetUserSettings(): Promise<UserSettings> {
+        await this.CheckDB();
         return await this.StorageGet("user_settings");
     }
     /* Saved UserSettings object to storage. */
@@ -145,8 +147,13 @@ class Backend {
         console.debug('Backend: Downloading from ' + feed.name);
         let arts: Article[] = [];
         const controller = new AbortController();
-        const timeoutid = setTimeout(() => controller.abort(), 5000);
-        let r = await fetch(feed.url, { signal: controller.signal });
+        const timeoutid = setTimeout(() => { controller.abort(); }, 5000);
+        try {
+            var r = await fetch(feed.url, { signal: controller.signal });
+        } catch {
+            console.error('Cannot read RSS ' + feed.name);
+            return [];
+        }
         if (r.ok) {
             let parser = new DOMParser({
                     locator:{},
@@ -155,7 +162,11 @@ class Backend {
             let serializer = new XMLSerializer();
             try {
                 let xml = parser.parseFromString(await r.text());
-                let items = xml.getElementsByTagName("channel")[0].getElementsByTagName("item")
+                try {
+                    var items = xml.getElementsByTagName("channel")[0].getElementsByTagName("item");
+                } catch {
+                    var items = xml.getElementsByTagName("feed")[0].getElementsByTagName("entry");
+                }
                 for (let y = 0; y < items.length; y++) {
                     if (y > maxperchannel)
                         break
@@ -164,7 +175,11 @@ class Backend {
                         let art = new Article(0);
                         art.source = feed.name;
                         art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
-                        try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,""); } catch { }
+                        try {
+                            art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,"");
+                        } catch {
+                        }
+                        try { art.description = item.getElementsByTagName("content")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
                         
                         if (!noimages) {
                             if (art.cover === undefined)
@@ -176,12 +191,17 @@ class Backend {
                             if (art.cover === undefined)
                                 try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(?:(?:jpe?g)|(?:png)))/)[0] } catch { }
                         }
-                        art.url = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
+                        try { 
+                            art.url = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
+                        } catch {
+                            art.url = item.getElementsByTagName("link")[0].getAttribute("href");
+                        }
                         arts.push(art);
                     } catch(err) {
                         console.error(`Cannot process article, channel: ${feed.url}, err: ${err}`)
                     }
                 }
+                console.debug(`Finished download from ${feed.name}, got ${arts.length} articles.`)
             } catch(err) {
                 console.error(`Channel ${feed.name} faulty.`,err)
             }
