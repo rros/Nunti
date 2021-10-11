@@ -22,6 +22,8 @@ import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
+import changeNavigationBarColor from "react-native-navigation-bar-color";
+
 const NavigationDrawer = createDrawerNavigator();
 
 BackgroundTask.define(async () => {
@@ -46,9 +48,12 @@ export default class App extends Component {
             snackVisible: false,
             snackMessage: "",
         }
+
     }
 
     async componentDidMount() {
+        await changeNavigationBarColor("translucent");
+        
         await this.loadPrefs();
         BackgroundTask.schedule({ period: 10800 }); // 3 hours in seconds
         
