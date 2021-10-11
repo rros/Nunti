@@ -143,7 +143,6 @@ export default Styles = StyleSheet.create ({
     },
     
     buttonRemoveRight: {
-        paddingLeft: "20%",
         backgroundColor: "#d32f2f"
     },
 

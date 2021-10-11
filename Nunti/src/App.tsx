@@ -60,10 +60,10 @@ export default class App extends Component {
         let theme;
         if(themeName == "dark"){
             theme = Dark;
-            this.appearanceSubscription.remove();
+            this.appearanceSubscription?.remove();
         } else if (themeName == "light"){
             theme = Light;
-            this.appearanceSubscription.remove();
+            this.appearanceSubscription?.remove();
         } else {
             let scheme = Appearance.getColorScheme();
             if(scheme == "dark") {
@@ -129,7 +129,7 @@ export default class App extends Component {
                             {props => <Feed {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="Bookmarks">
-                            {props => <Bookmarks {...props} toggleSnack={this.toggleSnack}/>}
+                            {props => <Bookmarks {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="Settings">
                             {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} toggleSnack={this.toggleSnack}/>}

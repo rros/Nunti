@@ -57,6 +57,8 @@ class Bookmarks extends PureComponent {
 
         // animation values
         this.rowTranslateValues = [];
+        
+        console.log(this.props.prefs)
     }
 
     componentDidMount(){
@@ -142,7 +144,7 @@ class Bookmarks extends PureComponent {
 
     // render functions
     private async hapticFeedback(){
-        if(this.swiping == true){
+        if(this.swiping == true && this.props.prefs.HapticFeedback){
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }
     }

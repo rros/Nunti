@@ -57,6 +57,8 @@ class Feed extends PureComponent {
 
         // animation values
         this.rowTranslateValues = [];
+
+        console.log(this.props.prefs)
     }
 
     componentDidMount(){
