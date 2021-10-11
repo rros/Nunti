@@ -45,8 +45,6 @@ class Bookmarks extends PureComponent {
         // states
         this.state = {
             detailsVisible: false,
-            snackbarVisible: false,
-            snackMessage: "",
             refreshing: false,
             articles: []
         }

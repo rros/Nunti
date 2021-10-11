@@ -141,6 +141,9 @@ class Backend {
         //TODO adaptive learning
         //TODO rating
     }
+    public static async CreateFeed(url: string): Feed {
+        return new Feed(url);
+    }
 
 
     /* Private methods */

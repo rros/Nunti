@@ -27,7 +27,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.removeRss = this.removeRss.bind(this);
         this.addRss = this.addRss.bind(this);
         this.resetArtsCache = this.resetArtsCache.bind(this);
-        this.deleteAllData = this.deleteAllData.bind(this);
+        this.resetAllData = this.resetAllData.bind(this);
         
         this.state = {
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
@@ -44,9 +44,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             rssDialogVisible: false,
             cacheDialogVisible: false,
             dataDialogVisible: false,
-            
-            snackVisible: false,
-            snackMessage: "",
         }
     }
 
@@ -78,7 +75,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.updateAccent(newAccent);
     }
 
-    private async rssInputChange(text: string) {
+    private rssInputChange(text: string) {
         if(text == ""){
             this.setState({rssInputValue: text, rssAddDisabled: true});
         } else {
@@ -88,15 +85,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     
     private async addRss(){
         try {
-            let feed = new Feed(this.state.rssInputValue);
+            let feed = await Backend.CreateFeed(this.state.rssInputValue);
+
             this.props.prefs.FeedList.push(feed)
             await this.props.saveUserSettings(this.props.prefs);
-            this.state.feeds.push({
-                key: this.state.feeds.length != 0 ? this.state.feeds[this.state.feeds.length-1].key + 1 : 0,
-                name: feed.name, 
-                url: feed.url,
-            });
-            this.props.toggleSnack(`Added ${this.state.rssInputValue} to feeds`, true);
+
+            this.props.toggleSnack(`Added ${feed.name} to feeds`, true);
         } catch(err) {
             console.error("Can't add RSS feed",err);
             this.props.toggleSnack("Failed to add RSS feed", true);
@@ -105,22 +99,20 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
     }
     
-    private async removeRss(key: string){
+    private async removeRss(rssName: string){
         try {
-            let index = this.state.feeds.findIndex(item => item.key === key);
             let updatedFeeds = this.state.feeds;
-            let url = this.state.feeds[index].url;
+            
+            let index = updatedFeeds.findIndex(item => item.name === rssName);
+            updatedFeeds.splice(index, 1);
 
-            let i = this.props.prefs.FeedList.findIndex(feed => feed.url = url);
-            this.props.prefs.FeedList.splice(i,1);
+            this.props.prefs.FeedList = updatedFeeds;
             await this.props.saveUserSettings(this.props.prefs);
             
-            this.props.toggleSnack(`Removed ${this.state.feeds[index].name} from feeds`, true);
-            
-            updatedFeeds.splice(index, 1);
             this.setState({feeds: updatedFeeds});
+            this.props.toggleSnack(`Removed ${rssName} from feeds`, true);
         } catch (err) {
-            console.error("Can't remove RSS feed",err);
+            console.error("Can't remove RSS feed", err);
             this.props.toggleSnack("Failed to remove RSS feed", true);
         }
     }
@@ -132,11 +124,21 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await Backend.ResetCache();
     }
     
-    private async deleteAllData() {
+    private async resetAllData() {
         this.props.toggleSnack("Deleted all data!", true);
         this.setState({ dataDialogVisible: false });
 
         await Backend.ResetAllData();
+
+        // reload prefs
+        await this.props.loadPrefs();
+        this.setState({
+            hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
+            noImagesSwitch: this.props.prefs.DisableImages,
+            theme: this.props.prefs.Theme,
+            accent: this.props.prefs.Accent,
+            feeds: this.props.prefs.FeedList,
+        });
     }
 
     render() {
@@ -169,7 +171,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         return (
                             <List.Item title={element.name}
                                 left={() => <List.Icon icon="rss" />}
-                                right={() => <Button style={Styles.settingsButton} onPress={() => { this.removeRss(element.key) }}>Remove</Button>} />
+                                right={() => <Button style={Styles.settingsButton} onPress={() => { this.removeRss(element.name) }}>Remove</Button>} />
                         );
                     })}
                 </List.Section>
@@ -178,9 +180,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title="Reset article cache"
                         left={() => <List.Icon icon="cached" />}
                         right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({cacheDialogVisible: true}) }}>Reset</Button>} />
-                    <List.Item title="Delete all data"
+                    <List.Item title="Reset all data"
                         left={() => <List.Icon icon="alert" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>Delete</Button>} />
+                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>Reset</Button>} />
                 </List.Section>
 
                 <Portal>
@@ -211,7 +213,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <Dialog visible={this.state.rssDialogVisible} onDismiss={() => { this.setState({ rssDialogVisible: false })}}>
                         <Dialog.Title>Add new RSS feed</Dialog.Title>
                         <Dialog.Content>
-                            <TextInput label="RSS url" autoCapitalize="none" value={this.state.rssInputValue} 
+                            <TextInput label="RSS url" autoCapitalize="none" defaultValue={this.state.rssInputValue}
                                 onChangeText={text => this.rssInputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
@@ -230,13 +232,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.Actions>
                     </Dialog>
                     <Dialog visible={this.state.dataDialogVisible} onDismiss={() => { this.setState({ dataDialogVisible: false })}}>
-                        <Dialog.Title>Delete all data?</Dialog.Title>
+                        <Dialog.Title>Reset all data?</Dialog.Title>
                         <Dialog.Content>
-                            <Paragraph>This will delete all data, including your bookmarks and settings. This step is irreversible.</Paragraph>
+                            <Paragraph>This will reset all data, including your bookmarks and settings. This step is irreversible.</Paragraph>
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ dataDialogVisible: false }) }}>Cancel</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.deleteAllData}>Delete</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}>Reset</Button>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>

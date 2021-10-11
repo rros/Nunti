@@ -38,6 +38,7 @@ export default class App extends Component {
         this.updateAccent = this.updateAccent.bind(this);
         this.saveUserSettings = this.saveUserSettings.bind(this);
         this.toggleSnack = this.toggleSnack.bind(this);
+        this.loadPrefs = this.loadPrefs.bind(this);
         
         this.state = {
             theme: Dark, // temporary until theme loads
@@ -48,12 +49,15 @@ export default class App extends Component {
     }
 
     async componentDidMount() {
-        this.prefs = await Backend.GetUserSettings();
-        this.updateTheme(this.prefs.Theme);
-
+        await this.loadPrefs();
         BackgroundTask.schedule({ period: 10800 }); // 3 hours in seconds
         
         // end splash screen
+    }
+
+    public async loadPrefs() {
+        this.prefs = await Backend.GetUserSettings();
+        this.updateTheme(this.prefs.Theme);
     }
 
     public async updateTheme(themeName: string){
@@ -132,7 +136,7 @@ export default class App extends Component {
                             {props => <Bookmarks {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="Settings">
-                            {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} toggleSnack={this.toggleSnack}/>}
+                            {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
                 </NavigationContainer>
