@@ -25,6 +25,8 @@ class Article {
     public url: string = "about:blank";
     public source: string = "unknown";
 
+    public keywords: {[id:string]: number} = {};
+
     constructor(id: number) {
         this.id = id;
     }
@@ -39,7 +41,7 @@ class UserSettings {
         new Feed("https://www.seznamzpravy.cz/rss"),new Feed("https://www.cnews.cz/rss"),
         new Feed("https://www.theverge.com/rss/index.xml"), new Feed("https://servis.lidovky.cz/rss.aspx")
     ];
-    public HapticFeedback = true; //TODO: implement
+    public HapticFeedback = true;
     public DisableImages = false;
 
     public Theme: string = "follow system";
@@ -139,7 +141,6 @@ class Backend {
         //TODO adaptive learning
         //TODO rating
     }
-
 
 
     /* Private methods */
@@ -256,6 +257,35 @@ class Backend {
         let timeEnd = Date.now()
         console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms`);
         return arts;
+    }
+    /* Fills in article.keywords property, does all the TF-IDF magic. */
+    private static async ExtractKeywords(arts: Article[]) {
+        // divide by feeds
+        let sorted: {[id: string]: Article[]} = {}
+        let feedWordCount: {[id: string]: number} = {}
+        for(let i = 0; i < arts.length; i++) {
+            let art = arts[i];
+            if (sorted[art.source] === undefined)
+                sorted[art.source] = [art];
+            else
+                sorted[art.source].push(art);
+        }
+        /*
+        // calculate frequencies
+        for(let i = 0; i < arts.length; i++) {
+            let art = arts[i];
+            for (let y = 0; //TODO finish this
+        }*/
+    }
+    private static async UpdateWordCount(text: string, counts: {[id: string]: number}) {
+        let words = text.split(' ');
+        for (let i = 0; i < words.length; i++) {
+            if (counts[words[i]] === undefined)
+                counts[words[i]] = 1;
+            else
+                counts[words[i]] += 1;
+        }
+        return counts;
     }
     private static async FindArticleByUrl(url: string, haystack: Article[]): Promise<number> {
         for(let i = 0; i < haystack.length; i++) {
