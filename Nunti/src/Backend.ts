@@ -38,7 +38,7 @@ class UserSettings {
         new Feed("https://www.seznamzpravy.cz/rss"),new Feed("https://www.cnews.cz/rss"),
         new Feed("https://www.theverge.com/rss/index.xml"), new Feed("https://servis.lidovky.cz/rss.aspx")
     ];
-    public EnableVibrations = true; //TODO: implement
+    public HapticFeedback = true; //TODO: implement
     public DisableImages = false;
 
     public Theme: string = "follow system";

@@ -133,7 +133,7 @@ class Feed extends PureComponent {
     }
 
     private async hapticFeedback(){
-        if(this.swiping == true){
+        if(this.swiping == true && this.props.prefs.HapticFeedback){
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }
     }

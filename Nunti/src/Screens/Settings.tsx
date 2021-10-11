@@ -33,8 +33,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.toggleSnack = this.toggleSnack.bind(this);
         
         this.state = {
-            wifiOnlySwitch: false,
-            hapticFeedbackSwitch: this.props.prefs.EnableVibrations,
+            hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
             noImagesSwitch: this.props.prefs.DisableImages,
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
@@ -55,7 +54,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
 
     private async toggleHapticFeedback() {
+        this.props.prefs.HapticFeedback = !this.state.hapticFeedbackSwitch;
         this.setState({ hapticFeedbackSwitch: !this.state.hapticFeedbackSwitch});
+        await this.props.saveUserSettings(this.props.prefs);
     }
 
     private async toggleNoImages() {

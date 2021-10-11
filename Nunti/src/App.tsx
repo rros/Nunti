@@ -98,7 +98,9 @@ export default class App extends Component {
                     translucent={true}/>
                 <NavigationContainer theme={this.state.theme}>
                     <NavigationDrawer.Navigator drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} />} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
-                        <NavigationDrawer.Screen name="Feed" component={Feed}/>
+                        <NavigationDrawer.Screen name="Feed">
+                            {props => <Feed {...props} prefs={this.prefs}/>}
+                        </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="Bookmarks" component={Bookmarks} />
                         <NavigationDrawer.Screen name="Settings">
                             {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent}/>}
