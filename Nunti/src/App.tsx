@@ -34,23 +34,20 @@ export default class App extends Component {
         // function bindings
         this.updateTheme = this.updateTheme.bind(this);
         this.updateAccent = this.updateAccent.bind(this);
+        this.saveUserSettings = this.saveUserSettings.bind(this);
         
         this.state = {
-            theme: Dark
+            theme: Dark // temporary until theme loads
         }
-
-        // load settings
-        Backend.GetUserSettings().then(async (prefs) => {
-            this.updateTheme(prefs.Theme);
-            
-            // end splash screen
-        });
-
-        this.prefs = Backend.GetUserSettings();
     }
 
-    componentDidMount() {
+    async componentDidMount() {
+        this.prefs = await Backend.GetUserSettings();
+        this.updateTheme(this.prefs.Theme);
+
         BackgroundTask.schedule({ period: 10800 }); // 3 hours in seconds
+        
+        // end splash screen
     }
 
     public async updateTheme(themeName: string){
@@ -69,7 +66,7 @@ export default class App extends Component {
         }
         
         // no need to rerender here, rerender will happen in updateAccent
-        // updateAccent is called here to change accent light dark according to new theme
+        // updateAccent is called here to change accent light/dark colour according to new theme
         this.state.theme = theme;
         this.updateAccent(this.prefs.Accent);
     }
@@ -77,16 +74,20 @@ export default class App extends Component {
     public async updateAccent(accentName: string){
         let theme = this.state.theme;
 
-        // TODO: get the right accent hex depending on accent name
-        /*if(theme.dark){
-            theme.colors.accent = Colors[`${accentName}`].dark;
-            theme.colors.primary = Colors[`${accentName}`].dark;
+        if(theme.dark){
+            theme.colors.accent = Colors[accentName].dark;
+            theme.colors.primary = Colors[accentName].dark;
         } else {
-            theme.colors.accent = Colors[`${accentName}`].light;
-            theme.colors.primary = Colors[`${accentName}`].light;
-        }*/
+            theme.colors.accent = Colors[accentName].light;
+            theme.colors.primary = Colors[accentName].light;
+        }
 
         this.setState({theme: theme});
+    }
+
+    public async saveUserSettings(prefs: []){
+        this.prefs = prefs;
+        await Backend.SaveUserSettings(prefs);
     }
 
     render() {
@@ -100,7 +101,7 @@ export default class App extends Component {
                         <NavigationDrawer.Screen name="Feed" component={Feed}/>
                         <NavigationDrawer.Screen name="Bookmarks" component={Bookmarks} />
                         <NavigationDrawer.Screen name="Settings">
-                            {props => <Settings {...props} prefs={this.prefs} updateTheme={this.updateTheme} updateAccent={this.updateAccent}/>}
+                            {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent}/>}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
                 </NavigationContainer>

@@ -3,46 +3,57 @@ import { DarkTheme, DefaultTheme } from 'react-native-paper';
 
 export const Colors = {
     error: {
+        key: "error",
         light: "#ff4444",
         dark: "#cc0000"
     },
     success: {
+        key: "success",
         light: "#00c851",
         dark: "#007e33"
     },
     default: {
+        key: "default",
         light: "#1eba81",
         dark: "#1eba81"
     },
     amethyst: {
+        key: "amethyst",
         light: "#725aff",
         dark: "#b5a9fc"
     },
     aqua: {
+        key: "aqua",
         light: "#4586e2",
         dark: "#72b4f5"
     },
     black: {
+        key: "black",
         light: "#202020",
         dark: "#d7dee6"
     },
     cinnamon: {
+        key: "cinnamon",
         light: "#af6050",
         dark: "#c3a6a2"
     },
     forest: {
+        key: "forest",
         light: "#1b873b",
         dark: "#84c188"
     },
     ocean: {
+        key: "ocean",
         light: "#0c80a7",
         dark: "#28bdd7"
     },
     orchid: {
+        key: "orchid",
         light: "#c42cc9",
         dark: "#e68aed"
     },
     space: {
+        key: "space",
         light: "#47618a",
         dark: "#99accc"
     },

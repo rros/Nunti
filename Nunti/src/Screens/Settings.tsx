@@ -12,14 +12,13 @@ import {
     RadioButton,
     Snackbar,
     Paragraph,
-    TextInput
+    TextInput,
+    withTheme
 } from 'react-native-paper';
 
-import { ErrorColour } from "../Styles";
 import Backend from '../Backend';
-import { Colors } from "../Styles";
 
-export default class Settings extends Component { // not using purecomponent as it doesn't rerender array map
+class Settings extends Component { // not using purecomponent as it doesn't rerender array map
     constructor(props: any){
         super(props);
 
@@ -35,11 +34,11 @@ export default class Settings extends Component { // not using purecomponent as 
         
         this.state = {
             wifiOnlySwitch: false,
-            hapticFeedbackSwitch: true,
-            noImagesSwitch: false,
-            theme: "follow system",
-            accent: "default",
-            feeds: [],
+            hapticFeedbackSwitch: this.props.prefs.EnableVibrations,
+            noImagesSwitch: this.props.prefs.DisableImages,
+            theme: this.props.prefs.Theme,
+            accent: this.props.prefs.Accent,
+            feeds: this.props.prefs.FeedList,
 
             rssInputValue: "",
             rssAddDisabled: true, // add button in rss dialog disabled when input empty
@@ -55,44 +54,28 @@ export default class Settings extends Component { // not using purecomponent as 
         }
     }
 
-    // TODO: fix pref load
-    componentDidMount() {
-        this.setState({
-            hapticFeedbackSwitch: this.props.prefs.EnableVibrations,
-            noImagesSwitch: this.props.prefs.DisableImages,
-            theme: this.props.prefs.Theme,
-            accent: this.props.prefs.Accent,
-            feeds: this.props.prefs.FeedList
-        }, () => {
-            console.log(this.props.prefs.DisableImages);
-            console.log(this.state.accent);
-        });
-    }
-
     private async toggleHapticFeedback() {
         this.setState({ hapticFeedbackSwitch: !this.state.hapticFeedbackSwitch});
     }
 
     private async toggleNoImages() {
+        this.props.prefs.DisableImages = !this.state.noImagesSwitch;
         this.setState({ noImagesSwitch: !this.state.noImagesSwitch});
-        this.props.prefs.DisableImages = this.state.noImagesSwitch;
-        await Backend.SaveUserSettings(this.props.prefs);
+        await this.props.saveUserSettings(this.props.prefs);
     }
 
     private async changeTheme(newTheme: string) {
+        this.props.prefs.Theme = newTheme;
         this.setState({ theme: newTheme });
-
-        this.props.prefs.Theme = this.state.theme;
-        await Backend.SaveUserSettings(this.props.prefs);
+        await this.props.saveUserSettings(this.props.prefs);
  
         this.props.updateTheme(newTheme);
     }
     
     private async changeAccent(newAccent: string) {
+        this.props.prefs.Accent = newAccent;
         this.setState({ accent: newAccent });
-        
-        this.props.prefs.Accent = this.state.accent;
-        await Backend.SaveUserSettings(this.props.prefs);
+        await this.props.saveUserSettings(this.props.prefs);
         
         this.props.updateAccent(newAccent);
     }
@@ -109,7 +92,7 @@ export default class Settings extends Component { // not using purecomponent as 
         try {
             let feed = new Feed(this.state.rssInputValue);
             this.props.prefs.FeedList.push(feed)
-            await Backend.SaveUserSettings(this.props.prefs);
+            await this.props.saveUserSettings(this.props.prefs);
             this.state.feeds.push({
                 key: this.state.feeds.length != 0 ? this.state.feeds[this.state.feeds.length-1].key + 1 : 0,
                 name: feed.name, 
@@ -132,7 +115,7 @@ export default class Settings extends Component { // not using purecomponent as 
 
             let i = this.props.prefs.FeedList.findIndex(feed => feed.url = url);
             this.props.prefs.FeedList.splice(i,1);
-            await Backend.SaveUserSettings(this.props.prefs);
+            await this.props.saveUserSettings(this.props.prefs);
             
             this.toggleSnack(`Removed ${this.state.feeds[index].name} from feeds`, true);
             
@@ -200,10 +183,10 @@ export default class Settings extends Component { // not using purecomponent as 
                     <List.Subheader>Danger zone</List.Subheader>
                     <List.Item title="Reset article cache"
                         left={() => <List.Icon icon="cached" />}
-                        right={() => <Button color={ErrorColour} style={Styles.settingsButton} onPress={() => { this.setState({cacheDialogVisible: true}) }}>Reset</Button>} />
+                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({cacheDialogVisible: true}) }}>Reset</Button>} />
                     <List.Item title="Delete all data"
                         left={() => <List.Icon icon="alert" />}
-                        right={() => <Button color={ErrorColour} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>Delete</Button>} />
+                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>Delete</Button>} />
                 </List.Section>
 
                 <Portal>
@@ -249,7 +232,7 @@ export default class Settings extends Component { // not using purecomponent as 
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ cacheDialogVisible: false }) }}>Cancel</Button>
-                            <Button mode="contained" color={ErrorColour} onPress={this.resetArtsCache}>Reset</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetArtsCache}>Reset</Button>
                         </Dialog.Actions>
                     </Dialog>
                     <Dialog visible={this.state.dataDialogVisible} onDismiss={() => { this.setState({ dataDialogVisible: false })}}>
@@ -259,7 +242,7 @@ export default class Settings extends Component { // not using purecomponent as 
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ dataDialogVisible: false }) }}>Cancel</Button>
-                            <Button mode="contained" color={ErrorColour} onPress={this.deleteAllData}>Delete</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.deleteAllData}>Delete</Button>
                         </Dialog.Actions>
                     </Dialog>
                     <Snackbar
@@ -273,3 +256,5 @@ export default class Settings extends Component { // not using purecomponent as 
         );
     }
 }
+
+export default withTheme(Settings);
