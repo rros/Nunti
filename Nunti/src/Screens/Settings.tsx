@@ -17,6 +17,7 @@ import {
 
 import { ErrorColour } from "../Styles";
 import Backend from '../Backend';
+import { Colors } from "../Styles";
 
 export default class Settings extends Component { // not using purecomponent as it doesn't rerender array map
     constructor(props: any){
@@ -38,11 +39,7 @@ export default class Settings extends Component { // not using purecomponent as 
             noImagesSwitch: false,
             theme: "follow system",
             accent: "default",
-            feeds: [{
-                key: 0,
-                name: "bazos.cz", // to display
-                url: "bazos.cz" // full url
-            }],
+            feeds: [],
 
             rssInputValue: "",
             rssAddDisabled: true, // add button in rss dialog disabled when input empty
@@ -56,13 +53,19 @@ export default class Settings extends Component { // not using purecomponent as 
             snackVisible: false,
             snackMessage: "",
         }
+    }
 
-        Backend.GetUserSettings().then( async (prefs) => {
-            this.setState({
-                hapticFeedbackSwitch: prefs.EnableVibrations,
-                noImagesSwitch: prefs.DisableImages,
-                feeds: prefs.FeedList
-            })
+    // TODO: fix pref load
+    componentDidMount() {
+        this.setState({
+            hapticFeedbackSwitch: this.props.prefs.EnableVibrations,
+            noImagesSwitch: this.props.prefs.DisableImages,
+            theme: this.props.prefs.Theme,
+            accent: this.props.prefs.Accent,
+            feeds: this.props.prefs.FeedList
+        }, () => {
+            console.log(this.props.prefs.DisableImages);
+            console.log(this.state.accent);
         });
     }
 
@@ -72,17 +75,26 @@ export default class Settings extends Component { // not using purecomponent as 
 
     private async toggleNoImages() {
         this.setState({ noImagesSwitch: !this.state.noImagesSwitch});
-        let prefs = await Backend.GetUserSettings();
-        prefs.DisableImages = this.state.noImagesSwitch;
-        await Backend.SaveUserSettings(prefs);
+        this.props.prefs.DisableImages = this.state.noImagesSwitch;
+        await Backend.SaveUserSettings(this.props.prefs);
     }
 
     private async changeTheme(newTheme: string) {
         this.setState({ theme: newTheme });
+
+        this.props.prefs.Theme = this.state.theme;
+        await Backend.SaveUserSettings(this.props.prefs);
+ 
+        this.props.updateTheme(newTheme);
     }
     
     private async changeAccent(newAccent: string) {
         this.setState({ accent: newAccent });
+        
+        this.props.prefs.Accent = this.state.accent;
+        await Backend.SaveUserSettings(this.props.prefs);
+        
+        this.props.updateAccent(newAccent);
     }
 
     private async rssInputChange(text: string) {
@@ -95,19 +107,18 @@ export default class Settings extends Component { // not using purecomponent as 
     
     private async addRss(){
         try {
-            let prefs = await Backend.GetUserSettings();
             let feed = new Feed(this.state.rssInputValue);
-            prefs.FeedList.push(feed)
-            await Backend.SaveUserSettings(prefs);
+            this.props.prefs.FeedList.push(feed)
+            await Backend.SaveUserSettings(this.props.prefs);
             this.state.feeds.push({
                 key: this.state.feeds.length != 0 ? this.state.feeds[this.state.feeds.length-1].key + 1 : 0,
                 name: feed.name, 
                 url: feed.url,
             });
-            //TODO: show snack yeah man
+            this.toggleSnack(`Added ${this.state.rssInputValue} to feeds`, true);
         } catch(err) {
             console.error("Can't add RSS feed",err);
-            //TODO: show snack fail
+            this.toggleSnack("Failed to add RSS feed", true);
         }
 
         this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
@@ -119,20 +130,17 @@ export default class Settings extends Component { // not using purecomponent as 
             let updatedFeeds = this.state.feeds;
             let url = this.state.feeds[index].url;
 
-            let prefs = await Backend.GetUserSettings();
-            let i = prefs.FeedList.findIndex(feed => feed.url = url);
-            prefs.FeedList.splice(i,1);
-            await Backend.SaveUserSettings(prefs);
-            
+            let i = this.props.prefs.FeedList.findIndex(feed => feed.url = url);
+            this.props.prefs.FeedList.splice(i,1);
+            await Backend.SaveUserSettings(this.props.prefs);
             
             this.toggleSnack(`Removed ${this.state.feeds[index].name} from feeds`, true);
             
             updatedFeeds.splice(index, 1);
             this.setState({feeds: updatedFeeds});
-            //TODO: show snack oh yeah
         } catch (err) {
             console.error("Can't remove RSS feed",err);
-            //TODO: show snack smth wong
+            this.toggleSnack("Failed to remove RSS feed", true);
         }
     }
 

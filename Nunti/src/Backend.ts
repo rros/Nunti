@@ -41,6 +41,9 @@ class UserSettings {
     public EnableVibrations = true; //TODO: implement
     public DisableImages = false;
 
+    public Theme: string = "follow system";
+    public Accent: string = "default";
+
     /* Advanced */
     public ArticleCacheTime: number = 60; //minutes
     public MaxArticles: number = 70;

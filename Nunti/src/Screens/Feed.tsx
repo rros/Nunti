@@ -15,7 +15,8 @@ import {
     Modal,
     Button,
     Snackbar,
-    Caption
+    Caption,
+    withTheme
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -27,7 +28,7 @@ import Backend from '../Backend';
 
 const NavigationStack = createNativeStackNavigator();
 
-export default class Feed extends PureComponent {
+class Feed extends PureComponent {
     constructor(props:any){
         super(props);
 
@@ -212,8 +213,12 @@ export default class Feed extends PureComponent {
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
                             opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.95, 1], outputRange: [0, 0.05, 1],}),
                         }]}>
-                            <Button icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Rate</Button>
-                            <Button icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateUp}>Rate</Button>
+                            <Button 
+                                color={this.props.theme.colors.error} dark={false} 
+                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Rate</Button>
+                            <Button 
+                                color={this.props.theme.colors.success} dark={false} 
+                                icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateUp}>Rate</Button>
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
@@ -259,3 +264,5 @@ export default class Feed extends PureComponent {
         );
     }
 }
+
+export default withTheme(Feed);

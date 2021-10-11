@@ -15,7 +15,8 @@ import {
     Modal,
     Button,
     Snackbar,
-    Caption
+    Caption,
+    withTheme
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -27,7 +28,7 @@ import Backend from '../Backend';
 
 const NavigationStack = createNativeStackNavigator();
 
-export default class Bookmarks extends PureComponent {
+class Bookmarks extends PureComponent {
     constructor(props:any){
         super(props);
 
@@ -215,8 +216,12 @@ export default class Bookmarks extends PureComponent {
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
                             opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.index].interpolate({inputRange: [0, 0.95, 1], outputRange: [0, 0.05, 1],}),
                         }]}>
-                            <Button icon="delete" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Remove</Button>
-                            <Button icon="delete" mode="contained" contentStyle={Styles.buttonRateUpContent} style={Styles.buttonRemoveRight}>Remove</Button>
+                            <Button 
+                                color={this.props.theme.colors.error} dark={false} 
+                                icon="delete" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Remove</Button>
+                            <Button 
+                                color={this.props.theme.colors.error} dark={false} 
+                                icon="delete" mode="contained" contentStyle={Styles.buttonRateUpContent} style={Styles.buttonRemoveRight}>Remove</Button>
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
@@ -262,3 +267,5 @@ export default class Bookmarks extends PureComponent {
         );
     }
 }
+
+export default withTheme(Bookmarks);

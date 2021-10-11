@@ -1,6 +1,53 @@
 import { StyleSheet } from "react-native";
 import { DarkTheme, DefaultTheme } from 'react-native-paper';
 
+export const Colors = {
+    error: {
+        light: "#ff4444",
+        dark: "#cc0000"
+    },
+    success: {
+        light: "#00c851",
+        dark: "#007e33"
+    },
+    default: {
+        light: "#1eba81",
+        dark: "#1eba81"
+    },
+    amethyst: {
+        light: "#725aff",
+        dark: "#b5a9fc"
+    },
+    aqua: {
+        light: "#4586e2",
+        dark: "#72b4f5"
+    },
+    black: {
+        light: "#202020",
+        dark: "#d7dee6"
+    },
+    cinnamon: {
+        light: "#af6050",
+        dark: "#c3a6a2"
+    },
+    forest: {
+        light: "#1b873b",
+        dark: "#84c188"
+    },
+    ocean: {
+        light: "#0c80a7",
+        dark: "#28bdd7"
+    },
+    orchid: {
+        light: "#c42cc9",
+        dark: "#e68aed"
+    },
+    space: {
+        light: "#47618a",
+        dark: "#99accc"
+    },
+}
+
 // customise default dark and white themes from paper
 export const Dark = {
     ...DarkTheme,
@@ -9,6 +56,8 @@ export const Dark = {
         accentName: "default",
         primary: "#1eba81",
         accent: '#1eba81',
+        error: Colors.error.dark,
+        success: Colors.success.dark
     }
 };
 
@@ -19,10 +68,10 @@ export const Light = {
         accentName: "default",
         primary: "#1eba81",
         accent: '#1eba81',
+        error: Colors.error.light,
+        success: Colors.success.light
     }
 };
-
-export const ErrorColour = "#d32f2f";
 
 // custom css here
 export default Styles = StyleSheet.create ({
@@ -70,7 +119,6 @@ export default Styles = StyleSheet.create ({
 
     buttonRateDown: {
         paddingRight: "20%",
-        backgroundColor: "#d32f2f"
     },
 
     buttonRateDownContent: {
@@ -79,7 +127,6 @@ export default Styles = StyleSheet.create ({
 
     buttonRateUp: {
         paddingLeft: "20%",
-        backgroundColor: "#4caf50"
     },
     
     buttonRemoveRight: {
