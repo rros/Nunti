@@ -54,8 +54,10 @@ export default class App extends Component {
         let theme;
         if(themeName == "dark"){
             theme = Dark;
+            this.appearanceSubscription.remove();
         } else if (themeName == "light"){
             theme = Light;
+            this.appearanceSubscription.remove();
         } else {
             let scheme = Appearance.getColorScheme();
             if(scheme == "dark") {
@@ -63,6 +65,19 @@ export default class App extends Component {
             } else {
                 theme = Light;
             }
+
+            // live update
+            this.appearanceSubscription = Appearance.addChangeListener(() => {
+                let scheme = Appearance.getColorScheme();
+                if(scheme == "dark") {
+                    theme = Dark;
+                } else {
+                    theme = Light;
+                }
+                
+                this.state.theme = theme;
+                this.updateAccent(this.prefs.Accent);
+            });
         }
         
         // no need to rerender here, rerender will happen in updateAccent
