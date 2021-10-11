@@ -10,7 +10,6 @@ import {
     Portal,
     Dialog,
     RadioButton,
-    Snackbar,
     Paragraph,
     TextInput,
     withTheme
@@ -29,8 +28,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.addRss = this.addRss.bind(this);
         this.resetArtsCache = this.resetArtsCache.bind(this);
         this.deleteAllData = this.deleteAllData.bind(this);
-        
-        this.toggleSnack = this.toggleSnack.bind(this);
         
         this.state = {
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
@@ -99,10 +96,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                 name: feed.name, 
                 url: feed.url,
             });
-            this.toggleSnack(`Added ${this.state.rssInputValue} to feeds`, true);
+            this.props.toggleSnack(`Added ${this.state.rssInputValue} to feeds`, true);
         } catch(err) {
             console.error("Can't add RSS feed",err);
-            this.toggleSnack("Failed to add RSS feed", true);
+            this.props.toggleSnack("Failed to add RSS feed", true);
         }
 
         this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
@@ -118,32 +115,28 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             this.props.prefs.FeedList.splice(i,1);
             await this.props.saveUserSettings(this.props.prefs);
             
-            this.toggleSnack(`Removed ${this.state.feeds[index].name} from feeds`, true);
+            this.props.toggleSnack(`Removed ${this.state.feeds[index].name} from feeds`, true);
             
             updatedFeeds.splice(index, 1);
             this.setState({feeds: updatedFeeds});
         } catch (err) {
             console.error("Can't remove RSS feed",err);
-            this.toggleSnack("Failed to remove RSS feed", true);
+            this.props.toggleSnack("Failed to remove RSS feed", true);
         }
     }
 
     private async resetArtsCache() {
-        this.toggleSnack("Reset article cache!", true);
+        this.props.toggleSnack("Reset article cache!", true);
         this.setState({ cacheDialogVisible: false });
 
         await Backend.ResetCache();
     }
     
     private async deleteAllData() {
-        this.toggleSnack("Deleted all data!", true);
+        this.props.toggleSnack("Deleted all data!", true);
         this.setState({ dataDialogVisible: false });
 
         await Backend.ResetAllData();
-    }
-    
-    private async toggleSnack(message: string, visible: bool){
-        this.setState({ snackVisible: visible, snackMessage: message });
     }
 
     render() {
@@ -154,7 +147,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title="Haptic feedback"
                         left={() => <List.Icon icon="vibrate" />}
                         right={() => <Switch value={this.state.hapticFeedbackSwitch} onValueChange={this.toggleHapticFeedback} />} />
-                    <List.Item title="Disable Images"
+                    <List.Item title="Compact mode"
                         left={() => <List.Icon icon="image-off" />}
                         right={() => <Switch value={this.state.noImagesSwitch} onValueChange={this.toggleNoImages} />} />
                 </List.Section>
@@ -202,7 +195,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         <Dialog.ScrollArea>
                             <ScrollView>
                                 <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
-                                    <RadioButton.Item label="Default" value="default" />
+                                    <RadioButton.Item label="Default (Nunti)" value="default" />
                                     <RadioButton.Item label="Amethyst" value="amethyst" />
                                     <RadioButton.Item label="Aqua" value="aqua" />
                                     <RadioButton.Item label="Black" value="black" />
@@ -246,12 +239,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             <Button mode="contained" color={this.props.theme.colors.error} onPress={this.deleteAllData}>Delete</Button>
                         </Dialog.Actions>
                     </Dialog>
-                    <Snackbar
-                        visible={this.state.snackVisible}
-                        duration={4000}
-                        action={{ label: "Dismiss", onPress: () => {this.setState({ snackVisible: false })} }}
-                        onDismiss={() => { this.setState({ snackVisible: false }) }}
-                    >{this.state.snackMessage}</Snackbar>
                 </Portal>
             </ScrollView>
         );

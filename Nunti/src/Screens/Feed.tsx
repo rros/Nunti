@@ -39,7 +39,6 @@ class Feed extends PureComponent {
         this.shareArticle = this.shareArticle.bind(this);
         this.saveArticle = this.saveArticle.bind(this);
         this.refresh = this.refresh.bind(this);
-        this.toggleSnack = this.toggleSnack.bind(this);
         this.hapticFeedback = this.hapticFeedback.bind(this);
         this.endSwipe = this.endSwipe.bind(this);
 
@@ -107,7 +106,7 @@ class Feed extends PureComponent {
 
     private async saveArticle() {
         if(await Backend.TrySaveArticle(this.state.articles[this.currentIndex])) {
-            this.toggleSnack("Article saved!", true);
+            this.props.toggleSnack("Article saved!", true);
         } else {
             console.error("Saving article failed");
         }
@@ -128,10 +127,6 @@ class Feed extends PureComponent {
     }
 
     // render functions
-    private async toggleSnack(message: string, visible: bool){
-        this.setState({ snackbarVisible: visible, snackMessage: message });
-    }
-
     private async hapticFeedback(){
         if(this.swiping == true && this.props.prefs.HapticFeedback){
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -253,12 +248,6 @@ class Feed extends PureComponent {
                             </Card>
                         </ScrollView>
                     </Modal>}
-                    <Snackbar
-                        visible={this.state.snackbarVisible}
-                        duration={4000}
-                        action={{ label: "Dismiss", onPress: () => {this.toggleSnack("", false);}, }}
-                        onDismiss={() => { this.toggleSnack("", false); }}
-                    >{this.state.snackMessage}</Snackbar>
                 </Portal>
             </View>
         );

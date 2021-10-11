@@ -39,7 +39,6 @@ class Bookmarks extends PureComponent {
         this.shareArticle = this.shareArticle.bind(this);
         this.removeSavedArticle = this.removeSavedArticle.bind(this);
         this.refresh = this.refresh.bind(this);
-        this.toggleSnack = this.toggleSnack.bind(this);
         this.hapticFeedback = this.hapticFeedback.bind(this);
         this.endSwipe = this.endSwipe.bind(this);
 
@@ -117,7 +116,7 @@ class Bookmarks extends PureComponent {
         let index = 0
 
         if(typeof(articleID) !== typeof(0)) { // this happens in article details
-            this.toggleSnack("Removed saved article!", true);
+            this.props.toggleSnack("Removed saved article!", true);
             
             index = this.currentIndex;
             this.hideDetails();
@@ -142,10 +141,6 @@ class Bookmarks extends PureComponent {
     }
 
     // render functions
-    private async toggleSnack(message: string, visible: bool){
-        this.setState({ snackbarVisible: visible, snackMessage: message });
-    }
-
     private async hapticFeedback(){
         if(this.swiping == true){
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -256,12 +251,6 @@ class Bookmarks extends PureComponent {
                             </Card>
                         </ScrollView>
                     </Modal>}
-                    <Snackbar
-                        visible={this.state.snackbarVisible}
-                        duration={4000}
-                        action={{ label: "Dismiss", onPress: () => {this.toggleSnack("", false);}, }}
-                        onDismiss={() => { this.toggleSnack("", false); }}
-                    >{this.state.snackMessage}</Snackbar>
                 </Portal>
             </View>
         );

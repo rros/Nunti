@@ -4,7 +4,9 @@ import { StatusBar, Appearance } from 'react-native';
 import { 
     Provider as PaperProvider,
     Appbar,
-    Drawer
+    Drawer,
+    Portal,
+    Snackbar
 } from 'react-native-paper';
 
 import BackgroundTask from 'react-native-background-task';
@@ -35,9 +37,13 @@ export default class App extends Component {
         this.updateTheme = this.updateTheme.bind(this);
         this.updateAccent = this.updateAccent.bind(this);
         this.saveUserSettings = this.saveUserSettings.bind(this);
+        this.toggleSnack = this.toggleSnack.bind(this);
         
         this.state = {
-            theme: Dark // temporary until theme loads
+            theme: Dark, // temporary until theme loads
+            
+            snackVisible: false,
+            snackMessage: "",
         }
     }
 
@@ -92,9 +98,11 @@ export default class App extends Component {
         if(theme.dark){
             theme.colors.accent = Colors[accentName].dark;
             theme.colors.primary = Colors[accentName].dark;
+            theme.colors.accentReverse = Colors[accentName].light;
         } else {
             theme.colors.accent = Colors[accentName].light;
             theme.colors.primary = Colors[accentName].light;
+            theme.colors.accentReverse = Colors[accentName].dark;
         }
 
         this.setState({theme: theme});
@@ -103,6 +111,10 @@ export default class App extends Component {
     public async saveUserSettings(prefs: []){
         this.prefs = prefs;
         await Backend.SaveUserSettings(prefs);
+    }
+    
+    public async toggleSnack(message: string, visible: bool){
+        this.setState({ snackVisible: visible, snackMessage: message });
     }
 
     render() {
@@ -114,14 +126,25 @@ export default class App extends Component {
                 <NavigationContainer theme={this.state.theme}>
                     <NavigationDrawer.Navigator drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} />} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
                         <NavigationDrawer.Screen name="Feed">
-                            {props => <Feed {...props} prefs={this.prefs}/>}
+                            {props => <Feed {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="Bookmarks" component={Bookmarks} />
+                        <NavigationDrawer.Screen name="Bookmarks">
+                            {props => <Bookmarks {...props} toggleSnack={this.toggleSnack}/>}
+                        </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="Settings">
-                            {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent}/>}
+                            {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
                 </NavigationContainer>
+                <Portal>
+                    <Snackbar
+                        visible={this.state.snackVisible}
+                        duration={4000}
+                        action={{ label: "Dismiss", onPress: () => {this.setState({ snackVisible: false })} }}
+                        onDismiss={() => { this.setState({ snackVisible: false }) }}
+                        theme={{ colors: { accent: this.state.theme.colors.accentReverse }}}
+                    >{this.state.snackMessage}</Snackbar>
+                </Portal>
             </PaperProvider>
         );
     }

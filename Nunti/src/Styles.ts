@@ -67,6 +67,7 @@ export const Dark = {
         accentName: "default",
         primary: "#1eba81",
         accent: '#1eba81',
+        accentReverse: "#1eba81",
         error: Colors.error.dark,
         success: Colors.success.dark
     }
@@ -79,6 +80,7 @@ export const Light = {
         accentName: "default",
         primary: "#1eba81",
         accent: '#1eba81',
+        accentReverse: "#1eba81",
         error: Colors.error.light,
         success: Colors.success.light
     }
