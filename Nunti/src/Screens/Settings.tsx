@@ -100,6 +100,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         }
 
         this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
+        
+        // show change on next refresh
+        await Backend.ResetCache();
     }
     
     private async removeRss(rssName: string){
@@ -118,6 +121,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             console.error("Can't remove RSS feed", err);
             this.props.toggleSnack("Failed to remove RSS feed", true);
         }
+        
+        // show change on next refresh
+        await Backend.ResetCache();
     }
 
     private async resetArtsCache() {
