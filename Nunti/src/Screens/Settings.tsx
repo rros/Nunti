@@ -57,6 +57,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.prefs.DisableImages = !this.state.noImagesSwitch;
         this.setState({ noImagesSwitch: !this.state.noImagesSwitch});
         await this.props.saveUserSettings(this.props.prefs);
+        
+        // show change on next refresh
+        await Backend.ResetCache();
     }
 
     private async changeTheme(newTheme: string) {
@@ -125,7 +128,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
     
     private async resetAllData() {
-        this.props.toggleSnack("Deleted all data!", true);
+        this.props.toggleSnack("Restore all data!", true);
         this.setState({ dataDialogVisible: false });
 
         await Backend.ResetAllData();
@@ -180,9 +183,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title="Reset article cache"
                         left={() => <List.Icon icon="cached" />}
                         right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({cacheDialogVisible: true}) }}>Reset</Button>} />
-                    <List.Item title="Reset all data"
+                    <List.Item title="Restore all data"
                         left={() => <List.Icon icon="alert" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>Reset</Button>} />
+                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>Restore</Button>} />
                 </List.Section>
 
                 <Portal>
@@ -232,13 +235,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.Actions>
                     </Dialog>
                     <Dialog visible={this.state.dataDialogVisible} onDismiss={() => { this.setState({ dataDialogVisible: false })}}>
-                        <Dialog.Title>Reset all data?</Dialog.Title>
+                        <Dialog.Title>Restore all data?</Dialog.Title>
                         <Dialog.Content>
                             <Paragraph>This will reset all data, including your bookmarks and settings. This step is irreversible.</Paragraph>
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ dataDialogVisible: false }) }}>Cancel</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}>Reset</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}>Restore</Button>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>
