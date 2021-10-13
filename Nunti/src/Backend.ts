@@ -263,6 +263,10 @@ class Backend {
     }
     /* Fills in article.keywords property, does all the TF-IDF magic. */
     private static async ExtractKeywords(arts: Article[]) {
+        // TF-IDF: tf * idf
+        // TF = term count in document / sum of all counts of all terms
+        // IDF = log (Total Documents in Corpus/(1+Total Documents containing the term)) + 1
+
         // divide by feeds
         let sorted: {[id: string]: Article[]} = {}
         let feedWordCount: {[id: string]: number} = {}
@@ -273,12 +277,43 @@ class Backend {
             else
                 sorted[art.source].push(art);
         }
-        /*
-        // calculate frequencies
-        for(let i = 0; i < arts.length; i++) {
-            let art = arts[i];
-            for (let y = 0; //TODO finish this
-        }*/
+        
+        // calculate tf-idf
+        // pass 1 - gather term counts
+        let feedTermCount: {[term: string]: number} = {}
+        let artTermCount: {[artUrl: string]: {[term: string]: number}} = {}
+        for(let feedName in sorted) {
+            let artsInFeed = sorted[feedName];
+            for (let i = 0; i < artsInFeed.length; i++) {
+                let art = artsInFeed[i];
+                let words = (art.title + " " + art.description).split(" ")
+                for (let y = 0; y < words.length; y++) {
+                    if (feedTermCount[words[y]] === undefined)
+                        feedTermCount[words[y]] = 1;
+                    else
+                        feedTermCount[words[y]] += 1;
+
+                    if (artTermCount[art.url][words[y]] === undefined)
+                        artTermCount[art.url][words[y]] = 1;
+                    else
+                        artTermCount[art.url][words[y]] += 1;
+                }
+            }
+        }
+        
+        //pass 2 - calculate tf-idf, get keywords
+        for(let feedName in sorted) {
+            let artsInFeed = sorted[feedName];
+            for (let i = 0; i < artsInFeed.length; i++) {
+                let art = artsInFeed[i];
+                let words = (art.title + " " + art.description).split(" ")
+                for (let y = 0; y < words.length; y++) {
+                    let word = words[y];
+                    let tf = artTermCount[art.url][word] / artTermCount[art.url].length;
+                    //TODO: finish tf-idf magic
+                }
+            }
+        }
     }
     private static async UpdateWordCount(text: string, counts: {[id: string]: number}) {
         let words = text.split(' ');
