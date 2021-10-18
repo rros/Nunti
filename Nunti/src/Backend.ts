@@ -2,7 +2,7 @@ import { AsyncStorage } from 'react-native';
 var DOMParser = require('xmldom').DOMParser
 var XMLSerializer = require('xmldom').XMLSerializer;
 
-class Feed {
+export class Feed {
     public name: string;
     public url: string;
 
@@ -13,6 +13,10 @@ class Feed {
             this.name = r[1];
         else
             throw new Error('invalid url');
+    }
+
+    static New(url: string): Feed {
+        return new Feed(url);
     }
 }
 
@@ -53,7 +57,7 @@ class UserSettings {
     public MaxArticlesPerChannel: number = 20;
 }
 
-class Backend {
+export class Backend {
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
         console.log("Backend: Loading new articles..");
@@ -141,16 +145,13 @@ class Backend {
         //TODO adaptive learning
         //TODO rating
     }
-    public static async CreateFeed(url: string): Feed {
-        return new Feed(url);
-    }
-
 
     /* Private methods */
     private static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, noimages: boolean): Promise<Article[]> {
         console.debug('Backend: Downloading from ' + feed.name);
         let arts: Article[] = [];
         const controller = new AbortController();
+        //@ts-ignore
         const timeoutid = setTimeout(() => { controller.abort(); }, 5000);
         try {
             var r = await fetch(feed.url, { signal: controller.signal });

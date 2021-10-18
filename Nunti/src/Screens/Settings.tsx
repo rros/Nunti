@@ -15,7 +15,7 @@ import {
     withTheme
 } from 'react-native-paper';
 
-import Backend from '../Backend';
+import { Backend, Feed } from '../Backend';
 
 class Settings extends Component { // not using purecomponent as it doesn't rerender array map
     constructor(props: any){
@@ -88,15 +88,16 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     
     private async addRss(){
         try {
-            let feed = await Backend.CreateFeed(this.state.rssInputValue);
+            let feed:Feed = Feed.New(this.state.rssInputValue);
 
             this.props.prefs.FeedList.push(feed)
             await this.props.saveUserSettings(this.props.prefs);
 
             this.props.toggleSnack(`Added ${feed.name} to feeds`, true);
         } catch(err) {
-            console.error("Can't add RSS feed",err);
+            console.error("Can't add RSS feed",err);ubl
             this.props.toggleSnack("Failed to add RSS feed", true);
+        console.debug("contrscutor called");
         }
 
         this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
