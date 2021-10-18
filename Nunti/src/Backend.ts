@@ -179,10 +179,8 @@ class Backend {
                         let art = new Article(0);
                         art.source = feed.name;
                         art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
-                        try {
-                            art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,"");
-                        } catch {
-                        }
+                        //TODO: cut description and title to limit memory overflow later
+                        try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
                         try { art.description = item.getElementsByTagName("content")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
                         
                         if (!noimages) {
@@ -232,6 +230,7 @@ class Backend {
         }
         let timeEnd = Date.now()
         console.info(`Backend: Download finished in ${((timeEnd - timeBegin)/1000)} seconds.`);
+        await this.ExtractKeywords(arts);
         return arts;
     }
     private static async SortArticles(articles: Article[]) {
@@ -263,13 +262,14 @@ class Backend {
     }
     /* Fills in article.keywords property, does all the TF-IDF magic. */
     private static async ExtractKeywords(arts: Article[]) {
+        let timeBegin = Date.now()
+        console.info(`Backend: Extracting keywords..`);
         // TF-IDF: tf * idf
         // TF = term count in document / sum of all counts of all terms
         // IDF = log (Total Documents in Corpus/(1+Total Documents containing the term)) + 1
 
         // divide by feeds
         let sorted: {[id: string]: Article[]} = {}
-        let feedWordCount: {[id: string]: number} = {}
         for(let i = 0; i < arts.length; i++) {
             let art = arts[i];
             if (sorted[art.source] === undefined)
@@ -287,6 +287,7 @@ class Backend {
             for (let i = 0; i < artsInFeed.length; i++) {
                 let art = artsInFeed[i];
                 let words = (art.title + " " + art.description).split(" ")
+                artTermCount[art.url] = {}
                 for (let y = 0; y < words.length; y++) {
                     if (feedTermCount[words[y]] === undefined)
                         feedTermCount[words[y]] = 1;
@@ -300,6 +301,7 @@ class Backend {
                 }
             }
         }
+        console.info(`Backend: Extracting keywords (pass 1 finished)`);
         
         //pass 2 - calculate tf-idf, get keywords
         for(let feedName in sorted) {
@@ -309,21 +311,53 @@ class Backend {
                 let words = (art.title + " " + art.description).split(" ")
                 for (let y = 0; y < words.length; y++) {
                     let word = words[y];
-                    let tf = artTermCount[art.url][word] / artTermCount[art.url].length;
-                    //TODO: finish tf-idf magic
+
+                    // calculate tf
+                    let totalTermCount = 0;
+                    for (let term in artTermCount[art.url]) {
+                        totalTermCount += artTermCount[art.url][term];
+                    }
+                    let tf = artTermCount[art.url][word] / totalTermCount;
+
+                    //calculate idf
+                    let totalDocuments = artsInFeed.length;
+                    let documentsContainingTerm = 0;
+                    for (let a = 0; a < artsInFeed.length; a++) {
+                        let art = artsInFeed[a]
+                        if ((art.title + " " + art.description).indexOf(word) > -1)
+                            documentsContainingTerm += 1;
+                    }
+                    let idf = Math.log(totalDocuments / (1 + documentsContainingTerm)) + 1;
+
+                    // save tfidf
+                    let tfidf = tf * idf;
+                    art.keywords[word] = tfidf;
+                }
+                
+                // cut only the top
+                var items = Object.keys(art.keywords).map(function(key) {
+                    return [key, art.keywords[key]];
+                });
+
+                items.sort(function(first:any, second:any) {
+                    return second[1] - first[1];
+                });
+
+                items = items.slice(0, 10);
+                art.keywords = {}
+                art.description = ""
+                for(let p = 0; p < items.length; p++) {
+                    let item = items[p];
+                    if (typeof(item[1]) !== "number")
+                        throw Error('Something real wrong.');
+                    art.keywords[item[0]] = item[1];
+                    art.description += `${item[0]}: ${item[1]},` //TODO: debug only, remove this
                 }
             }
         }
-    }
-    private static async UpdateWordCount(text: string, counts: {[id: string]: number}) {
-        let words = text.split(' ');
-        for (let i = 0; i < words.length; i++) {
-            if (counts[words[i]] === undefined)
-                counts[words[i]] = 1;
-            else
-                counts[words[i]] += 1;
-        }
-        return counts;
+        console.info(`Backend: Extracting keywords (pass 2 finished)`);
+        let timeEnd = Date.now()
+        console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
     }
     private static async FindArticleByUrl(url: string, haystack: Article[]): Promise<number> {
         for(let i = 0; i < haystack.length; i++) {
