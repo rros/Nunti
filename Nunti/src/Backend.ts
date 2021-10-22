@@ -77,6 +77,7 @@ export class Backend {
         }
 
         arts = await this.SortArticles(arts);
+        console.debug(arts);
         let timeEnd = Date.now()
         console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds.`);
         return arts;
@@ -177,7 +178,7 @@ export class Backend {
                         break
                     let item = items[y];
                     try {
-                        let art = new Article(0);
+                        let art = new Article(Math.floor(Math.random() * 1e16));
                         art.source = feed.name;
                         art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
                         //TODO: cut description and title to limit memory overflow later
@@ -234,9 +235,7 @@ export class Backend {
         await this.ExtractKeywords(arts);
         return arts;
     }
-    private static async SortArticles(articles: Article[]) {
-        //TODO: sorting AI
-        let timeBegin = Date.now()
+    private static async SortArticles(articles: Article[]): Promise<Article[]> {
         function shuffle(a: any) {
             var j, x, i;
             for (i = a.length - 1; i > 0; i--) {
@@ -248,18 +247,44 @@ export class Backend {
             return a;
         }
         
-        articles = shuffle(articles)
-        let arts: Article[] = [];
-        let prefs = await this.GetUserSettings()
+        let timeBegin = Date.now()
+        articles = shuffle(articles);
+        let scores: [Article,number][] = [];
         for(let i = 0; i < articles.length; i++) {
-            if(i >= prefs.MaxArticles)
-                break;
-            arts.push(articles[i]);
+            scores.push([articles[i], await this.GetArticleScore(articles[i])]);
+        }
+        scores.sort(function(first:any, second:any) {
+            return second[1] - first[1];
+        });
+        scores = scores.slice(0, (await this.GetUserSettings()).MaxArticles);
+
+        let arts: Article[] = [];
+        for(let i = 0; i < scores.length; i++) {
+            let art = scores[i][0];
+            if (typeof(art) === "number")
+                throw new Error('smth wrong');
+            arts.push(art);
+        }
+
+        // repair ids //
+        for(let i = 0; i < arts.length; i++) {
             arts[i].id = i;
         }
+        // TODO
+
         let timeEnd = Date.now()
         console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms`);
         return arts;
+    }
+    private static async GetArticleScore(art: Article): Promise<number> {
+        let score = 0;
+        let db: {[term: string]: number} = (await this.StorageGet('learning_db'))["keywords"];
+        for(let term in art.keywords) {
+            if (db[term] === undefined)
+                continue;
+            score += art.keywords[term] * db[term];
+        }
+        return score;
     }
     /* Fills in article.keywords property, does all the TF-IDF magic. */
     private static async ExtractKeywords(arts: Article[]) {
@@ -290,6 +315,8 @@ export class Backend {
                 let words = (art.title + " " + art.description).split(" ")
                 artTermCount[art.url] = {}
                 for (let y = 0; y < words.length; y++) {
+                    if (words[y] == "")
+                        continue;
                     if (feedTermCount[words[y]] === undefined)
                         feedTermCount[words[y]] = 1;
                     else
@@ -312,6 +339,8 @@ export class Backend {
                 let words = (art.title + " " + art.description).split(" ")
                 for (let y = 0; y < words.length; y++) {
                     let word = words[y];
+                    if (word == "")
+                        continue
 
                     // calculate tf
                     let totalTermCount = 0;
@@ -346,13 +375,11 @@ export class Backend {
 
                 items = items.slice(0, 10);
                 art.keywords = {}
-                art.description = ""
                 for(let p = 0; p < items.length; p++) {
                     let item = items[p];
                     if (typeof(item[1]) !== "number")
                         throw Error('Something real wrong.');
                     art.keywords[item[0]] = item[1];
-                    art.description += `${item[0]}: ${item[1]},` //TODO: debug only, remove this
                 }
             }
         }
