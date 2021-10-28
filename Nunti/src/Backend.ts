@@ -28,11 +28,19 @@ class Article {
     public cover: string | undefined = undefined;
     public url: string = "about:blank";
     public source: string = "unknown";
-
+    
+    public score: number = 0;
     public keywords: {[id:string]: number} = {};
 
     constructor(id: number) {
         this.id = id;
+    }
+    
+    private keywordBase = "";
+    public GetKeywordBase(): string {
+        if (this.keywordBase == "")
+            this.keywordBase = (this.title + " " + this.description).replace(/[\s\.,–\"\n\r!?\:\-\{\}\/\\;\[\]\(\)]/g," ").replace("  "," ");
+        return this.keywordBase;
     }
 }
 
@@ -70,17 +78,20 @@ export class Backend {
         let cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp)) / 60000;
         if (cacheAgeMinutes >= (await this.GetUserSettings()).ArticleCacheTime) {
             arts = await this.DownloadArticles();
-            this.StorageSave('articles_cache', {"timestamp": Date.now(), "articles": arts})
+            if (arts.length > 0)
+                await this.StorageSave('articles_cache', {"timestamp": Date.now(), "articles": arts})
         } else {
             console.log(`Backend: Using cached articles. (${cacheAgeMinutes} minutes old)`);
             arts = cache.articles;
         }
 
+        arts = await this.CleanArticles(arts);
         arts = await this.SortArticles(arts);
         
         // repair article ids, frontend will crash if index doesnt match up with id.
         for (let i = 0; i < arts.length; i++) {
             arts[i].id = i;
+            arts[i].description += `\n\nScore: ${arts[i].score}`; //TODO: remove this after testing
         }
 
         let timeEnd = Date.now()
@@ -148,8 +159,29 @@ export class Backend {
     }
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
     public static async RateArticle(art: Article, rating: number) {
-        //TODO adaptive learning
-        //TODO rating
+        let learning_db = await this.StorageGet('learning_db');
+        if (rating > 0) {
+            //upvote
+            rating = rating * (learning_db["downvotes"] / learning_db["upvotes"]);
+            learning_db["upvotes"] += 1;
+        } else if (rating < 0) {
+            //downvote
+            rating = rating * (learning_db["upvotes"] / learning_db["downvotes"]);
+            learning_db["downvotes"] += 1;
+        } else
+            return;
+        
+        console.debug(`rating article ${art.title}`);
+        for(let keyword in art.keywords) {
+            let wordRating = rating * art.keywords[keyword]
+            if (learning_db["keywords"][keyword] === undefined)
+                learning_db["keywords"][keyword] = wordRating
+            else
+                learning_db["keywords"][keyword] += wordRating
+        }
+        learning_db["seen"].push(art);
+        await this.StorageSave('learning_db', learning_db);
+        console.info(`Backend: Saved rating for article '${art.title}'`)
     }
 
     /* Private methods */
@@ -161,8 +193,8 @@ export class Backend {
         const timeoutid = setTimeout(() => { controller.abort(); }, 5000);
         try {
             var r = await fetch(feed.url, { signal: controller.signal });
-        } catch {
-            console.error('Cannot read RSS ' + feed.name);
+        } catch(err) {
+            console.error('Cannot read RSS ' + feed.name, err);
             return [];
         }
         if (r.ok) {
@@ -189,6 +221,7 @@ export class Backend {
                         try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
                         try { art.description = item.getElementsByTagName("content")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
                         try { art.description = art.description.substr(0,1024); } catch { }
+                        try { art.description = art.description.replace(/[^\S ]/g,""); } catch { }
                         
                         if (!noimages) {
                             if (art.cover === undefined)
@@ -236,8 +269,20 @@ export class Backend {
             }
         }
         let timeEnd = Date.now()
-        console.info(`Backend: Download finished in ${((timeEnd - timeBegin)/1000)} seconds.`);
+        console.info(`Backend: Download finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
         await this.ExtractKeywords(arts);
+        return arts;
+    }
+    /* Removes seen (already rated) articles from article list. */
+    private static async CleanArticles(arts: Article[]): Promise<Article[]> {
+        let seen = (await this.StorageGet('learning_db'))["seen"];
+        for(let i = 0; i < seen.length; i++) {
+            let index = await this.FindArticleByUrl(seen[i].url,arts);
+            while(index >= 0) {
+                arts.splice(index,1);
+                index = await this.FindArticleByUrl(seen[i].url,arts);
+            }
+        }
         return arts;
     }
     private static async SortArticles(articles: Article[]): Promise<Article[]> {
@@ -283,6 +328,7 @@ export class Backend {
                 continue;
             score += art.keywords[term] * db[term];
         }
+        art.score = score;
         return score;
     }
     /* Fills in article.keywords property, does all the TF-IDF magic. */
@@ -311,7 +357,7 @@ export class Backend {
             let artsInFeed = sorted[feedName];
             for (let i = 0; i < artsInFeed.length; i++) {
                 let art = artsInFeed[i];
-                let words = (art.title + " " + art.description).split(" ")
+                let words = art.GetKeywordBase().split(" ")
                 artTermCount[art.url] = {}
                 for (let y = 0; y < words.length; y++) {
                     if (words[y] == "")
@@ -332,10 +378,11 @@ export class Backend {
         
         //pass 2 - calculate tf-idf, get keywords
         for(let feedName in sorted) {
+            console.debug(`Backend: Extracting keywords (pass 2 - ${feedName})`)
             let artsInFeed = sorted[feedName];
             for (let i = 0; i < artsInFeed.length; i++) {
                 let art = artsInFeed[i];
-                let words = (art.title + " " + art.description).split(" ")
+                let words = art.GetKeywordBase().split(" ")
                 for (let y = 0; y < words.length; y++) {
                     let word = words[y];
                     if (word == "")
@@ -353,7 +400,7 @@ export class Backend {
                     let documentsContainingTerm = 0;
                     for (let a = 0; a < artsInFeed.length; a++) {
                         let art = artsInFeed[a]
-                        if ((art.title + " " + art.description).indexOf(word) > -1)
+                        if (art.GetKeywordBase().indexOf(word) > -1)
                             documentsContainingTerm += 1;
                     }
                     let idf = Math.log(totalDocuments / (1 + documentsContainingTerm)) + 1;
@@ -372,7 +419,7 @@ export class Backend {
                     return second[1] - first[1];
                 });
 
-                items = items.slice(0, 10);
+                items = items.slice(0, 20);
                 art.keywords = {}
                 for(let p = 0; p < items.length; p++) {
                     let item = items[p];
@@ -398,6 +445,7 @@ export class Backend {
         await AsyncStorage.setItem(key,JSON.stringify(value));
     }
     private static async StorageGet(key:string): Promise<any> {
+        //TODO: locking request?
         let data = await AsyncStorage.getItem(key);
         if (data === null)
             throw new Error(`Cannot retrieve data, possibly unknown key '${key}'.`);
@@ -412,7 +460,7 @@ export class Backend {
         if (await AsyncStorage.getItem('articles_cache') === null)
             await AsyncStorage.setItem('articles_cache',JSON.stringify({"timestamp":0,"articles":[]}));
         if (await AsyncStorage.getItem('learning_db') === null)
-            await AsyncStorage.setItem('learning_db',JSON.stringify({"upvotes":0, "downvotes":0, "keywords":{}}));
+            await AsyncStorage.setItem('learning_db',JSON.stringify({"upvotes":1, "downvotes":1, "keywords":{}, "seen": []}));
     }
 }
 export default Backend;
