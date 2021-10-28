@@ -77,7 +77,12 @@ export class Backend {
         }
 
         arts = await this.SortArticles(arts);
-        console.debug(arts);
+        
+        // repair article ids, frontend will crash if index doesnt match up with id.
+        for (let i = 0; i < arts.length; i++) {
+            arts[i].id = i;
+        }
+
         let timeEnd = Date.now()
         console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds.`);
         return arts;
@@ -180,10 +185,10 @@ export class Backend {
                     try {
                         let art = new Article(Math.floor(Math.random() * 1e16));
                         art.source = feed.name;
-                        art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue;
-                        //TODO: cut description and title to limit memory overflow later
+                        art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue.substr(0,256)
                         try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
                         try { art.description = item.getElementsByTagName("content")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
+                        try { art.description = art.description.substr(0,1024); } catch { }
                         
                         if (!noimages) {
                             if (art.cover === undefined)
@@ -262,15 +267,9 @@ export class Backend {
         for(let i = 0; i < scores.length; i++) {
             let art = scores[i][0];
             if (typeof(art) === "number")
-                throw new Error('smth wrong');
+                throw new Error('Something is really wrong in Backend.SortArticles method.');
             arts.push(art);
         }
-
-        // repair ids //
-        for(let i = 0; i < arts.length; i++) {
-            arts[i].id = i;
-        }
-        // TODO
 
         let timeEnd = Date.now()
         console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms`);
