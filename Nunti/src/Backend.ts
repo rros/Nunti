@@ -63,6 +63,7 @@ class UserSettings {
     public ArticleCacheTime: number = 60; //minutes
     public MaxArticles: number = 70;
     public MaxArticlesPerChannel: number = 20;
+    public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
 }
 
 export class Backend {
@@ -91,7 +92,6 @@ export class Backend {
         // repair article ids, frontend will crash if index doesnt match up with id.
         for (let i = 0; i < arts.length; i++) {
             arts[i].id = i;
-            arts[i].description += `\n\nScore: ${arts[i].score}`; //TODO: remove this after testing
         }
 
         let timeEnd = Date.now()
@@ -299,6 +299,14 @@ export class Backend {
         
         let timeBegin = Date.now()
         articles = shuffle(articles);
+        
+        let learning_db = await this.StorageGet('learning_db');
+        let prefs = await this.GetUserSettings();
+        if (learning_db["upvotes"] + learning_db["downvotes"] <= prefs.NoSortUntil) {
+            console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db["upvotes"] + learning_db["downvotes"])}, ${prefs.NoSortUntil} required)`);
+            return articles;
+        }
+
         let scores: [Article,number][] = [];
         for(let i = 0; i < articles.length; i++) {
             scores.push([articles[i], await this.GetArticleScore(articles[i])]);

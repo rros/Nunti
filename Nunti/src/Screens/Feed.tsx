@@ -29,6 +29,8 @@ import Backend from '../Backend';
 const NavigationStack = createNativeStackNavigator();
 
 class Feed extends PureComponent {
+    private firstRefresh = true;
+
     constructor(props:any){
         super(props);
 
@@ -67,6 +69,9 @@ class Feed extends PureComponent {
     private async refresh(){
         this.setState({ refreshing: true });
         
+        if (this.firstRefresh) {
+            await Backend.ResetCache();
+        }
         let arts = await Backend.GetArticles();
 
         // create one animation value for each article (row)
@@ -76,7 +81,8 @@ class Feed extends PureComponent {
             .forEach((_, i) => {
                 this.rowTranslateValues[`${i}`] = new Animated.Value(1);
             });
-
+        
+        this.firstRefresh = false;
         this.setState({articles: arts, refreshing: false});
     }
 
