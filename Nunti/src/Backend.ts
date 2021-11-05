@@ -28,19 +28,19 @@ class Article {
     public cover: string | undefined = undefined;
     public url: string = "about:blank";
     public source: string = "unknown";
-    
+
     public score: number = 0;
     public keywords: {[id:string]: number} = {};
 
     constructor(id: number) {
         this.id = id;
     }
-    
+
     private keywordBase = "";
     public GetKeywordBase(): string {
         if (this.keywordBase == "")
             this.keywordBase = (this.title + " " + this.description).replace(/[\s\.,–\"\n\r!?\:\-\{\}\/\\;\[\]\(\)]/g," ").replace("  "," ");
-        return this.keywordBase;
+                                                                             return this.keywordBase;
     }
 }
 
@@ -66,7 +66,28 @@ class UserSettings {
     public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
 }
 
+class Backup {
+    public Version: string | undefined;
+    public TimeStamp: number | undefined;
+    public UserSettings: UserSettings | undefined;
+    public LearningDB: {} | undefined;
+    public Saved: Article[] | undefined;
+
+    public static async MakeBackup(): Promise<Backup> {
+        await Backend.CheckDB();
+        let b = new Backup();
+        b.Version = Backend.DB_VERSION;
+        b.TimeStamp = Date.now();
+        b.UserSettings = await Backend.GetUserSettings();
+        b.LearningDB = await Backend.StorageGet('learning_db');
+        b.Saved = await Backend.StorageGet('saved');
+        return b;
+    }
+}
+
 export class Backend {
+    public static DB_VERSION = "1.0";
+
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
         console.log("Backend: Loading new articles..");
@@ -75,7 +96,7 @@ export class Backend {
 
         let cache = await this.StorageGet('articles_cache');
         let arts: Article[];
-        
+
         let cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp)) / 60000;
         if (cacheAgeMinutes >= (await this.GetUserSettings()).ArticleCacheTime) {
             arts = await this.DownloadArticles();
@@ -88,7 +109,7 @@ export class Backend {
 
         arts = await this.CleanArticles(arts);
         arts = await this.SortArticles(arts);
-        
+
         // repair article ids, frontend will crash if index doesnt match up with id.
         for (let i = 0; i < arts.length; i++) {
             arts[i].id = i;
@@ -170,7 +191,7 @@ export class Backend {
             learning_db["downvotes"] += 1;
         } else
             return;
-        
+
         console.debug(`rating article ${art.title}`);
         for(let keyword in art.keywords) {
             let wordRating = rating * art.keywords[keyword]
@@ -182,6 +203,31 @@ export class Backend {
         learning_db["seen"].push(art);
         await this.StorageSave('learning_db', learning_db);
         console.info(`Backend: Saved rating for article '${art.title}'`)
+    }
+    /* Save data to storage. */
+    public static async StorageSave(key: string, value: any) {
+        console.debug(`Backend: Saving key '${key}'.`);
+        await AsyncStorage.setItem(key,JSON.stringify(value));
+    }
+    /* Get data from storage. */
+    public static async StorageGet(key:string): Promise<any> {
+        //TODO: locking request?
+        let data = await AsyncStorage.getItem(key);
+        if (data === null)
+            throw new Error(`Cannot retrieve data, possibly unknown key '${key}'.`);
+        return JSON.parse(data);
+    }
+    /* Perform checkDB, makes sure things are not null and stuff. */
+    public static async CheckDB() {
+        console.debug('Backend: Checking DB..');
+        if (await AsyncStorage.getItem('saved') === null)
+            await AsyncStorage.setItem('saved',JSON.stringify([]));
+        if (await AsyncStorage.getItem('user_settings') === null)
+            await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
+        if (await AsyncStorage.getItem('articles_cache') === null)
+            await AsyncStorage.setItem('articles_cache',JSON.stringify({"timestamp":0,"articles":[]}));
+        if (await AsyncStorage.getItem('learning_db') === null)
+            await AsyncStorage.setItem('learning_db',JSON.stringify({"upvotes":1, "downvotes":1, "keywords":{}, "seen": []}));
     }
 
     /* Private methods */
@@ -199,9 +245,9 @@ export class Backend {
         }
         if (r.ok) {
             let parser = new DOMParser({
-                    locator:{},
-                    errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e }}
-                });
+                locator:{},
+                errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e }}
+            });
             let serializer = new XMLSerializer();
             try {
                 let xml = parser.parseFromString(await r.text());
@@ -222,7 +268,7 @@ export class Backend {
                         try { art.description = item.getElementsByTagName("content")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
                         try { art.description = art.description.substr(0,1024); } catch { }
                         try { art.description = art.description.replace(/[^\S ]/g,""); } catch { }
-                        
+
                         if (!noimages) {
                             if (art.cover === undefined)
                                 try { art.cover = item.getElementsByTagName("enclosure")[0].getAttribute("url"); } catch { }
@@ -233,7 +279,7 @@ export class Backend {
                             if (art.cover === undefined)
                                 try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(?:(?:jpe?g)|(?:png)))/)[0] } catch { }
                         }
-                        try { 
+                        try {
                             art.url = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
                         } catch {
                             art.url = item.getElementsByTagName("link")[0].getAttribute("href");
@@ -296,10 +342,10 @@ export class Backend {
             }
             return a;
         }
-        
+
         let timeBegin = Date.now()
         articles = shuffle(articles);
-        
+
         let learning_db = await this.StorageGet('learning_db');
         let prefs = await this.GetUserSettings();
         if (learning_db["upvotes"] + learning_db["downvotes"] <= prefs.NoSortUntil) {
@@ -356,7 +402,7 @@ export class Backend {
             else
                 sorted[art.source].push(art);
         }
-        
+
         // calculate tf-idf
         // pass 1 - gather term counts
         let feedTermCount: {[term: string]: number} = {}
@@ -383,7 +429,7 @@ export class Backend {
             }
         }
         console.info(`Backend: Extracting keywords (pass 1 finished)`);
-        
+
         //pass 2 - calculate tf-idf, get keywords
         for(let feedName in sorted) {
             console.debug(`Backend: Extracting keywords (pass 2 - ${feedName})`)
@@ -417,7 +463,7 @@ export class Backend {
                     let tfidf = tf * idf;
                     art.keywords[word] = tfidf;
                 }
-                
+
                 // cut only the top
                 var items = Object.keys(art.keywords).map(function(key) {
                     return [key, art.keywords[key]];
@@ -448,27 +494,35 @@ export class Backend {
         }
         return -1;
     }
-    private static async StorageSave(key: string, value: any) {
-        console.debug(`Backend: Saving key '${key}'.`);
-        await AsyncStorage.setItem(key,JSON.stringify(value));
+    private static async CreateBackup(): Promise<string> {
+        return JSON.stringify(await Backup.MakeBackup());
     }
-    private static async StorageGet(key:string): Promise<any> {
-        //TODO: locking request?
-        let data = await AsyncStorage.getItem(key);
-        if (data === null)
-            throw new Error(`Cannot retrieve data, possibly unknown key '${key}'.`);
-        return JSON.parse(data);
-    }
-    private static async CheckDB() {
-        console.debug('Backend: Checking DB..');
-        if (await AsyncStorage.getItem('saved') === null)
-            await AsyncStorage.setItem('saved',JSON.stringify([]));
-        if (await AsyncStorage.getItem('user_settings') === null)
-            await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
-        if (await AsyncStorage.getItem('articles_cache') === null)
-            await AsyncStorage.setItem('articles_cache',JSON.stringify({"timestamp":0,"articles":[]}));
-        if (await AsyncStorage.getItem('learning_db') === null)
-            await AsyncStorage.setItem('learning_db',JSON.stringify({"upvotes":1, "downvotes":1, "keywords":{}, "seen": []}));
+    private static async TryLoadBackup(backupStr: string): Promise<boolean> {
+        try {
+            var backup: Backup = JSON.parse(backupStr);
+            if (backup.TimeStamp !== undefined)
+                console.info(`Backend: Loading backup from ${(new Date(backup.TimeStamp)).toISOString()}, ver.: ${backup.Version}`);
+            else
+                console.info(`Backend: Loading backup from (unknown date)`);
+            
+            if (backup.Version === undefined)
+                throw Error('Cannot determine backup version.');
+            if (parseInt(backup.Version.split('.')[0]) != parseInt(this.DB_VERSION.split('.')[0]))
+                throw Error(`Version mismatch! Backup: ${backup.Version}, current: ${this.DB_VERSION}`);
+
+            await this.ResetAllData();
+            if (backup.UserSettings !== undefined)
+                await this.SaveUserSettings(backup.UserSettings);
+            if (backup.LearningDB !== undefined)
+                await this.StorageSave('learning_db', backup.LearningDB);
+            if (backup.Saved !== undefined)
+                await this.StorageSave('saved', backup.Saved);
+            console.info('Backend: Backup loaded.');
+            return true;
+        } catch (err) {
+            console.error('Backend: Failed to load backup.',err);
+            return false;
+        }
     }
 }
 export default Backend;
