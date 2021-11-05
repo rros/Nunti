@@ -60,7 +60,7 @@ class UserSettings {
     public Accent: string = "default";
 
     /* Advanced */
-    public ArticleCacheTime: number = 60; //minutes
+    public ArticleCacheTime: number = 3*60; //minutes
     public MaxArticles: number = 70;
     public MaxArticlesPerChannel: number = 20;
     public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
