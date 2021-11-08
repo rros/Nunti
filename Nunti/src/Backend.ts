@@ -38,9 +38,11 @@ class Article {
 
     private keywordBase = "";
     public GetKeywordBase(): string {
-        if (this.keywordBase == "")
+        if (this.keywordBase == "") {
             this.keywordBase = (this.title + " " + this.description).replace(/[\s\.,–\"\n\r!?\:\-\{\}\/\\;\[\]\(\)]/g," ").replace("  "," ");
-                                                                             return this.keywordBase;
+            return this.keywordBase;
+        } else
+            return "";
     }
 }
 
@@ -58,6 +60,7 @@ class UserSettings {
 
     public Theme: string = "follow system";
     public Accent: string = "default";
+    public DiscoverRatio: number = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)
 
     /* Advanced */
     public ArticleCacheTime: number = 3*60; //minutes
@@ -70,7 +73,7 @@ class Backup {
     public Version: string | undefined;
     public TimeStamp: number | undefined;
     public UserSettings: UserSettings | undefined;
-    public LearningDB: {} | undefined;
+    public LearningDB: any | undefined;
     public Saved: Article[] | undefined;
 
     public static async MakeBackup(): Promise<Backup> {
@@ -80,17 +83,21 @@ class Backup {
         b.TimeStamp = Date.now();
         b.UserSettings = await Backend.GetUserSettings();
         b.LearningDB = await Backend.StorageGet('learning_db');
+        if (b.LearningDB !== undefined)
+            b.LearningDB["seen"] = undefined; //wipe seen arts, saves lots of space
+        //TODO: wipe seen arts even when running sometimes
         b.Saved = await Backend.StorageGet('saved');
         return b;
     }
 }
 
 export class Backend {
-    public static DB_VERSION = "1.0";
+    public static DB_VERSION = "1.1";
 
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
         console.log("Backend: Loading new articles..");
+        console.error(await this.CreateBackup())
         let timeBegin: number = Date.now()
         await this.CheckDB();
 
@@ -343,8 +350,10 @@ export class Backend {
             return a;
         }
 
-        let timeBegin = Date.now()
+        let timeBegin = Date.now();
         articles = shuffle(articles);
+        let originalShuffledArts = articles.slice();
+
 
         let learning_db = await this.StorageGet('learning_db');
         let prefs = await this.GetUserSettings();
@@ -360,14 +369,21 @@ export class Backend {
         scores.sort(function(first:any, second:any) {
             return second[1] - first[1];
         });
-        scores = scores.slice(0, (await this.GetUserSettings()).MaxArticles);
+        scores = scores.slice(0, prefs.MaxArticles);
 
         let arts: Article[] = [];
+        console.debug(`discover feature set to: ${prefs.DiscoverRatio*100} %`)
         for(let i = 0; i < scores.length; i++) {
-            let art = scores[i][0];
-            if (typeof(art) === "number")
-                throw new Error('Something is really wrong in Backend.SortArticles method.');
-            arts.push(art);
+            if (parseInt(`${Math.random() * (1/prefs.DiscoverRatio)}`) == 0) {
+                // Throw in a random article instead
+                console.debug('discover feature triggered');
+                arts.push(originalShuffledArts.splice(0,1)[0])
+            } else {
+                let art = scores[i][0];
+                if (typeof(art) === "number")
+                    throw new Error('Something is really wrong in Backend.SortArticles method.');
+                arts.push(art);
+            }
         }
 
         let timeEnd = Date.now()
