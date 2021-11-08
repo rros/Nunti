@@ -114,7 +114,7 @@ class Bookmarks extends PureComponent {
         let index = 0
 
         if(typeof(articleID) !== typeof(0)) { // this happens in article details
-            this.props.toggleSnack("Removed saved article!", true);
+            this.props.toggleSnack("Removed saved article", true);
             
             index = this.currentIndex;
             this.hideDetails();

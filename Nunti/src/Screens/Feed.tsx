@@ -112,7 +112,7 @@ class Feed extends PureComponent {
 
     private async saveArticle() {
         if(await Backend.TrySaveArticle(this.state.articles[this.currentIndex])) {
-            this.props.toggleSnack("Article saved!", true);
+            this.props.toggleSnack("Article saved", true);
         } else {
             console.error("Saving article failed");
         }

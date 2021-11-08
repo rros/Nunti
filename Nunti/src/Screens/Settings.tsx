@@ -15,6 +15,8 @@ import {
     withTheme
 } from 'react-native-paper';
 
+import * as ScopedStorage from "react-native-scoped-storage";
+
 import { Backend, Feed } from '../Backend';
 
 class Settings extends Component { // not using purecomponent as it doesn't rerender array map
@@ -28,6 +30,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.addRss = this.addRss.bind(this);
         this.resetArtsCache = this.resetArtsCache.bind(this);
         this.resetAllData = this.resetAllData.bind(this);
+        this.reloadPrefs = this.reloadPrefs.bind(this);
+        
+        this.import = this.import.bind(this);
+        this.export = this.export.bind(this);
         
         this.state = {
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
@@ -78,6 +84,33 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.updateAccent(newAccent);
     }
 
+    private async import() {
+        let file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, "utf8");
+        if(file.mime != "text/plain"){
+            this.props.toggleSnack("Failed to import, file format is invalid", true);
+            return;
+        }
+
+        if(await Backend.TryLoadBackup(file.data)){
+            this.props.toggleSnack("Imported backup file", true);
+            this.reloadPrefs();
+        } else {
+            this.props.toggleSnack("Failed to import, backup is invalid", true);
+        }
+    }
+
+    private async export() {
+        let backup: string = await Backend.CreateBackup();
+
+        try {
+            await ScopedStorage.createDocument("NuntiBackup.txt", "text/plain", backup, "utf8");
+            this.props.toggleSnack("Exported backup", true);
+        } catch (err) {
+            this.props.toggleSnack("Failed to export backup", true);
+            console.log("Failed to export backup. " + err);
+        }
+    }
+
     private rssInputChange(text: string) {
         if(text == ""){
             this.setState({rssInputValue: text, rssAddDisabled: true});
@@ -97,7 +130,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         } catch(err) {
             console.error("Can't add RSS feed",err);ubl
             this.props.toggleSnack("Failed to add RSS feed", true);
-        console.debug("contrscutor called");
         }
 
         this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
@@ -128,19 +160,23 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
 
     private async resetArtsCache() {
-        this.props.toggleSnack("Reset article cache!", true);
+        this.props.toggleSnack("Reset article cache", true);
         this.setState({ cacheDialogVisible: false });
 
         await Backend.ResetCache();
     }
     
     private async resetAllData() {
-        this.props.toggleSnack("Restore all data!", true);
+        this.props.toggleSnack("Restore all data", true);
         this.setState({ dataDialogVisible: false });
 
         await Backend.ResetAllData();
 
         // reload prefs
+        await this.reloadPrefs();
+    }
+
+    private async reloadPrefs() {
         await this.props.loadPrefs();
         this.setState({
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
@@ -171,6 +207,15 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title="App accent"
                         left={() => <List.Icon icon="palette" />}
                         right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ accentDialogVisible: true })}}>{this.state.accent}</Button>} />
+                </List.Section>
+                <List.Section>
+                    <List.Subheader>Storage</List.Subheader>
+                    <List.Item title="Import database"
+                        left={() => <List.Icon icon="application-import" />}
+                        right={() => <Button style={Styles.settingsButton} onPress={this.import}>Import</Button>} />
+                    <List.Item title="Export database"
+                        left={() => <List.Icon icon="application-export" />}
+                        right={() => <Button style={Styles.settingsButton} onPress={this.export}>Export</Button>} />
                 </List.Section>
                 <List.Section>
                     <List.Subheader>RSS feeds</List.Subheader>
