@@ -40,9 +40,8 @@ class Article {
     public GetKeywordBase(): string {
         if (this.keywordBase == "") {
             this.keywordBase = (this.title + " " + this.description).replace(/[\s\.,–\"\n\r!?\:\-\{\}\/\\;\[\]\(\)]/g," ").replace("  "," ");
-            return this.keywordBase;
-        } else
-            return "";
+        }
+        return this.keywordBase;
     }
 }
 
@@ -60,7 +59,7 @@ class UserSettings {
 
     public Theme: string = "follow system";
     public Accent: string = "default";
-    public DiscoverRatio: number = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)
+    public DiscoverRatio: number = 0.2; //0.2 means 20% of articles will be random (preventing bubble effect)
 
     /* Advanced */
     public ArticleCacheTime: number = 3*60; //minutes
@@ -92,7 +91,7 @@ class Backup {
 }
 
 export class Backend {
-    public static DB_VERSION = "1.1";
+    public static DB_VERSION = "2.0";
 
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
@@ -199,7 +198,6 @@ export class Backend {
         } else
             return;
 
-        console.debug(`rating article ${art.title}`);
         for(let keyword in art.keywords) {
             let wordRating = rating * art.keywords[keyword]
             if (learning_db["keywords"][keyword] === undefined)
@@ -374,10 +372,15 @@ export class Backend {
         let arts: Article[] = [];
         console.debug(`discover feature set to: ${prefs.DiscoverRatio*100} %`)
         for(let i = 0; i < scores.length; i++) {
-            if (parseInt(`${Math.random() * (1/prefs.DiscoverRatio)}`) == 0) {
+            if (i > 5 && parseInt(`${Math.random() * (1/prefs.DiscoverRatio)}`) == 0) {
                 // Throw in a random article instead
-                console.debug('discover feature triggered');
-                arts.push(originalShuffledArts.splice(0,1)[0])
+                let art = undefined
+                do {
+                    art = originalShuffledArts.splice(0,1)[0];
+                    if (originalShuffledArts.length == 0)
+                        break;
+                } while(art === undefined || (await this.FindArticleByUrl(art.url,arts)) >= 0);
+                arts.push(art);
             } else {
                 let art = scores[i][0];
                 if (typeof(art) === "number")
@@ -476,7 +479,7 @@ export class Backend {
                     let idf = Math.log(totalDocuments / (1 + documentsContainingTerm)) + 1;
 
                     // save tfidf
-                    let tfidf = tf * idf;
+                    let tfidf = tf * idf * 1000;
                     art.keywords[word] = tfidf;
                 }
 
@@ -520,7 +523,7 @@ export class Backend {
                 console.info(`Backend: Loading backup from ${(new Date(backup.TimeStamp)).toISOString()}, ver.: ${backup.Version}`);
             else
                 console.info(`Backend: Loading backup from (unknown date)`);
-            
+
             if (backup.Version === undefined)
                 throw Error('Cannot determine backup version.');
             if (parseInt(backup.Version.split('.')[0]) != parseInt(this.DB_VERSION.split('.')[0]))
