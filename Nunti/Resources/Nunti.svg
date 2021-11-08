@@ -7,7 +7,7 @@
    viewBox="0 0 210 297"
    height="297mm"
    width="210mm"
-   inkscape:export-filename="/home/richard/Projects/School/nunti/Nunti/Resources/Nunti.png"
+   inkscape:export-filename="/home/richard/Projects/School/nunti/Nunti/Resources/NuntiIcon.png"
    inkscape:export-xdpi="831.09253"
    inkscape:export-ydpi="831.09253"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -129,15 +129,15 @@
      inkscape:window-maximized="0"
      inkscape:window-y="23"
      inkscape:window-x="26"
-     inkscape:window-height="1342"
-     inkscape:window-width="2528"
+     inkscape:window-height="644"
+     inkscape:window-width="1256"
      showgrid="true"
      inkscape:document-rotation="0"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      inkscape:document-units="mm"
-     inkscape:cy="458.65101"
-     inkscape:cx="-686.86866"
-     inkscape:zoom="0.45132355"
+     inkscape:cy="388.85629"
+     inkscape:cx="275.85531"
+     inkscape:zoom="0.9026471"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0"
      borderopacity="1.0"
@@ -160,6 +160,10 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Background" />
   <g
      id="layer1"
      inkscape:groupmode="layer"
@@ -199,7 +203,7 @@
        style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.266108;stroke-linecap:round;stroke-linejoin:round" />
     <ellipse
        ry="16.548435"
-       rx="14.456708"
+       rx="14.457"
        cy="130.16133"
        cx="110.63647"
        id="path870"
