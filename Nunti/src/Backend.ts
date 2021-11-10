@@ -96,7 +96,6 @@ export class Backend {
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
         console.log("Backend: Loading new articles..");
-        console.error(await this.CreateBackup())
         let timeBegin: number = Date.now()
         await this.CheckDB();
 
@@ -131,7 +130,6 @@ export class Backend {
             console.log("Backend: Saving article", article.url);
             let saved = await this.StorageGet('saved');
             if (await this.FindArticleByUrl(article.url, saved) < 0) {
-                article.id = saved.length
                 saved.push(article);
                 await this.StorageSave('saved',saved);
             } else {
@@ -161,7 +159,7 @@ export class Backend {
     }
     /* Returns list of saved articles. */
     public static async GetSavedArticles(): Promise<Article[]> {
-        return await this.StorageGet('saved');
+        return await this.SortArticles(await this.StorageGet('saved'))
     }
     /* Resets cache */
     public static async ResetCache() {
