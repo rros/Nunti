@@ -130,23 +130,15 @@ export default Styles = StyleSheet.create ({
         marginLeft: "auto"
     },
 
-    buttonRateDown: {
+    buttonRateLeft: {
         paddingRight: "20%",
     },
-
-    buttonRateDownContent: {
-        height: "100%"
-    },
-
-    buttonRateUp: {
+    
+    buttonRateRight: {
         paddingLeft: "20%",
     },
-    
-    buttonRemoveRight: {
-        backgroundColor: "#d32f2f"
-    },
 
-    buttonRateUpContent: {
+    buttonRateContent: {
         height: "100%"
     },
 

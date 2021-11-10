@@ -213,14 +213,14 @@ class Feed extends PureComponent {
                     )}
                     renderHiddenItem={(rowData, rowMap) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
-                            opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.95, 1], outputRange: [0, 0.05, 1],}),
+                            opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.99, 1], outputRange: [0, 0, 1],}),
                         }]}>
                             <Button 
                                 color={this.props.theme.colors.error} dark={false} 
-                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateDown}>Rate</Button>
+                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateLeft}>Rate</Button>
                             <Button 
                                 color={this.props.theme.colors.success} dark={false} 
-                                icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateDownContent} style={Styles.buttonRateUp}>Rate</Button>
+                                icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateRight}>Rate</Button>
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
