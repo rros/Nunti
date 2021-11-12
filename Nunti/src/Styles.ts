@@ -151,20 +151,20 @@ export default Styles = StyleSheet.create ({
         marginBottom: "3%",
     },
 
-    listEmptyComponent: {
+    centerView: {
         alignItems: "center",
         justifyContent: "center",
-        margin: "10%"
+        margin: "5%"
     },
     
-    listEmptyImage: {
+    fullscreenImage: {
         width: '80%',
         height: undefined,
         aspectRatio: 1,
         marginBottom: "20%"
     },
 
-    listEmptyText: {
+    centerText: {
         textAlign: 'center'
     },
 
@@ -172,7 +172,8 @@ export default Styles = StyleSheet.create ({
         justifyContent: "center"
     },
 
-    navigationIcon: {
+    wizardNavigationIcon: {
         alignSelf: "center"
-    }
+    },
+
 });

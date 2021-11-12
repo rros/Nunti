@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import {
     ScrollView,
-    View,
     Image
 } from "react-native";
 
 import { 
-    Text,
-    Card,
     Title,
+    Subheading,
     Paragraph,
     RadioButton,
+    Button,
+    Switch,
+    List,
     withTheme
 } from 'react-native-paper';
 
@@ -24,23 +25,17 @@ const NavigationTabs = createMaterialTopTabNavigator();
 class Wizard extends Component {
     constructor(props: any) {
         super(props);
-
-        console.log(Styles);
     }
 
-    /*screenOptions={{ tabBarStyle: { visible: false, height: 0, }}}>*/
-    /*screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.surface } }}> */
-
-    
     render() {
         return(
             <NavigationContainer theme={this.props.theme} >
                 <NavigationTabs.Navigator tabBarPosition="bottom" 
                     screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background }, tabBarIndicatorStyle: { backgroundColor: "transparent"}, tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused, color }) => { 
                         if(focused)
-                            return <Icon style={Styles.navigationIcon} name="circle" size={15} color={this.props.theme.colors.accent} />;
+                            return <Icon style={Styles.wizardNavigationIcon} name="circle" size={15} color={this.props.theme.colors.accent} />;
                         else
-                            return <Icon style={Styles.navigationIcon} name="radio-button-off" size={15} color={this.props.theme.colors.disabled} />;}
+                            return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off" size={15} color={this.props.theme.colors.disabled} />;}
                 }}>
                     <NavigationTabs.Screen name="Welcome">
                         { props => <Step1Welcome {...props} theme={this.props.theme} />}
@@ -52,7 +47,7 @@ class Wizard extends Component {
                         { props => <Step3Topics {...props}  />}
                     </NavigationTabs.Screen>
                     <NavigationTabs.Screen name="Learning">
-                        { props => <Step4Learning {...props} theme={this.props.theme}  />}
+                        { props => <Step4Learning {...props} prefs={this.props.prefs} exitWizard={this.props.exitWizard} />}
                     </NavigationTabs.Screen>
                 </NavigationTabs.Navigator>
             </NavigationContainer>
@@ -62,11 +57,11 @@ class Wizard extends Component {
 
 function Step1Welcome({theme}) {
     return(
-        <View style={Styles.listEmptyComponent}>
-            <Image source={theme.dark ? require("../Resources/ConfusedNunti.png") : require("../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
-            <Title style={Styles.listEmptyText}>Welcome to Nunti!</Title>
-            <Paragraph style={Styles.listEmptyText}>Enjoy your articles knowing nobody is looking over your shoulder</Paragraph>
-        </View>
+        <ScrollView contentContainerStyle={Styles.centerView}>
+            <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
+            <Title style={Styles.centerText}>Welcome to Nunti!</Title>
+            <Paragraph style={Styles.centerText}>Enjoy reading your articles knowing nobody is looking over your shoulder.</Paragraph>
+        </ScrollView>
     );
 }
 
@@ -99,55 +94,104 @@ class Step2Theme extends Component {
     render() {
         return(
             <ScrollView>
-                <Card style={Styles.card}>
-                    <Card.Content>
-                        <Title>Theme</Title>
-                        <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
-                            <RadioButton.Item label="Follow system" value="follow system" />
-                            <RadioButton.Item label="Light theme" value="light" />
-                            <RadioButton.Item label="Dark theme" value="dark" />
-                        </RadioButton.Group>
-                    </Card.Content>
-                </Card>
-                <Card style={Styles.card}>
-                    <Card.Content>
-                        <Title>Accent</Title>
-                        <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
-                            <RadioButton.Item label="Default (Nunti)" value="default" />
-                            <RadioButton.Item label="Amethyst" value="amethyst" />
-                            <RadioButton.Item label="Aqua" value="aqua" />
-                            <RadioButton.Item label="Black" value="black" />
-                            <RadioButton.Item label="Cinnamon" value="cinnamon" />
-                            <RadioButton.Item label="Forest" value="forest" />
-                            <RadioButton.Item label="Ocean" value="ocean" />
-                            <RadioButton.Item label="Orchid" value="orchid" />
-                            <RadioButton.Item label="Space" value="space" />
-                        </RadioButton.Group>
-                    </Card.Content>
-                </Card>
+                <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
+                    <List.Section>
+                        <List.Subheader>Theme</List.Subheader>
+                        <List.Item title="Follow system"
+                            right={() => <RadioButton.Item value="follow system" />} />
+                        <List.Item title="Light theme"
+                            right={() => <RadioButton.Item value="light" />} />
+                        <List.Item title="Dark theme"
+                            right={() => <RadioButton.Item value="dark" />} />
+                    </List.Section>
+                </RadioButton.Group>
+                <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
+                    <List.Section>
+                        <List.Subheader>Theme</List.Subheader>
+                        <List.Item title="Default (Nunti)"
+                            right={() => <RadioButton.Item value="default" />} />
+                        <List.Item title="Amethyst"
+                            right={() => <RadioButton.Item value="amethyst" />} />
+                        <List.Item title="Aqua"
+                            right={() => <RadioButton.Item value="aqua" />} />
+                        <List.Item title="Black"
+                            right={() => <RadioButton.Item value="black" />} />
+                        <List.Item title="Cinnamon"
+                            right={() => <RadioButton.Item value="cinnamon" />} />
+                        <List.Item title="Forest"
+                            right={() => <RadioButton.Item value="forest" />} />
+                        <List.Item title="Ocean"
+                            right={() => <RadioButton.Item value="ocean" />} />
+                        <List.Item title="Orchid"
+                            right={() => <RadioButton.Item value="orchid" />} />
+                        <List.Item title="Space"
+                            right={() => <RadioButton.Item value="space" />} />
+                    </List.Section>
+                </RadioButton.Group>
             </ScrollView>
         );
     }
 }
 
-function Step3Topics() {
-    return(
-        <ScrollView>
-            <Text>lmao</Text>
-        </ScrollView>
-    );
+class Step3Topics extends Component {
+    constructor(props: any){
+        super(props);
+        
+        // TODO: load default RSS topics from storage (default is all false, but if the user adds one and then leaves the app while in wizard)
+        this.state = {
+            technology: false,
+            worldPolitics: false,
+            sport: false,
+            czechNews: false,
+        }
+    }
+
+    private async changeRSS(topic: string) {
+        // TODO: Backend.ChangeDefaultRSS(topic, !this.state[topic]);
+        
+        this.setState({[topic]: !this.state[topic]});
+    }
+    
+    render() {
+        return(
+            <ScrollView>
+                <List.Section>
+                    <List.Subheader>Topics</List.Subheader>
+                    <List.Item title="Technology"
+                        left={() => <List.Icon icon="cog" />}
+                        right={() => <Switch value={this.state.technology} onValueChange={() => this.changeRSS("technology", !this.state.technology)} />} />
+                    <List.Item title="World politics"
+                        left={() => <List.Icon icon="account-voice" />}
+                        right={() => <Switch value={this.state.worldPolitics} onValueChange={() => this.changeRSS("worldPolitics", !this.state.worldPolitics)} />} />
+                    <List.Item title="Sport"
+                        left={() => <List.Icon icon="basketball" />}
+                        right={() => <Switch value={this.state.sport} onValueChange={() => this.changeRSS("sport", !this.state.sport)} />} />
+                    <List.Item title="Czech news"
+                        left={() => <List.Icon icon="glass-mug-variant" />}
+                        right={() => <Switch value={this.state.czechNews} onValueChange={() => this.changeRSS("czechNews", !this.state.czechNews)} />} />
+                </List.Section>
+            </ScrollView>
+        );
+    }
 }
 
-function Step4Learning({theme}) {
-    return(
-        <View style={Styles.listEmptyComponent}>
-            <Image source={theme.dark ? require("../Resources/ConfusedNunti.png") : require("../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
-            <Title style={Styles.listEmptyText}>Nunti will adapt to your preferences!</Title>
-            <Paragraph style={Styles.listEmptyText}>
-                Nunti will analyze what articles you like and dislike and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated 50 articles, at which point your feed will become your own.
-            </Paragraph>
-        </View>
-    );
+class Step4Learning extends Component {
+    constructor(props: any){
+        super(props);
+    }
+
+    render() {
+        return(
+            <ScrollView contentContainerStyle={Styles.centerView}>
+                <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
+                <Title style={Styles.centerText}>Nunti will adapt to your preferences!</Title>
+                <Paragraph style={Styles.centerText}>
+                    Nunti will analyze what articles you like and dislike and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated 50 articles, at which point your feed will become your own.
+                </Paragraph>
+                <Button style={{marginTop: "20%"}} icon="book" onPress={this.props.exitWizard}>Start reading</Button>
+            </ScrollView>
+        );
+    }
 }
 
 export default withTheme(Wizard);

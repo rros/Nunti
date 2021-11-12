@@ -218,10 +218,10 @@ class Bookmarks extends PureComponent {
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
-                        <View style={Styles.listEmptyComponent}>
-                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
+                        <View style={Styles.centerView}>
+                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
                             <Title>No bookmarks</Title>
-                            <Paragraph style={Styles.listEmptyText}>Save an article to see it on this screen.</Paragraph>
+                            <Paragraph style={Styles.centerText}>Save an article to see it on this screen.</Paragraph>
                         </View>
                     )}
 

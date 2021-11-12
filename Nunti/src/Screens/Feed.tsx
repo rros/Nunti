@@ -224,10 +224,10 @@ class Feed extends PureComponent {
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
-                        <View style={Styles.listEmptyComponent}>
-                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.listEmptyImage}></Image>
+                        <View style={Styles.centerView}>
+                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
                             <Title>Nothing to read</Title>
-                            <Paragraph style={Styles.listEmptyText}>Try refreshing or find something else to do for now.</Paragraph>
+                            <Paragraph style={Styles.centerText}>Try refreshing or find something else to do for now.</Paragraph>
                         </View>
                     )}
 

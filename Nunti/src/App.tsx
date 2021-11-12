@@ -42,6 +42,7 @@ export default class App extends Component {
         this.saveUserSettings = this.saveUserSettings.bind(this);
         this.toggleSnack = this.toggleSnack.bind(this);
         this.loadPrefs = this.loadPrefs.bind(this);
+        this.exitWizard = this.exitWizard.bind(this);
         
         this.state = {
             theme: Dark, // temporary until theme loads
@@ -123,6 +124,13 @@ export default class App extends Component {
         this.prefs = prefs;
         await Backend.SaveUserSettings(prefs);
     }
+
+    public async exitWizard(){
+        this.prefs.FirstLaunch = false;
+        await this.saveUserSettings(this.prefs);
+
+        this.setState({ firstLaunch: this.prefs.FirstLaunch });
+    }
     
     public async toggleSnack(message: string, visible: bool){
         this.setState({ snackVisible: visible, snackMessage: message });
@@ -134,7 +142,7 @@ export default class App extends Component {
         } else if(this.state.firstLaunch == true){
             return(
                 <PaperProvider theme={this.state.theme}>
-                    <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} />
+                    <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} exitWizard={this.exitWizard} />
                 </PaperProvider>
             );
         } else {
