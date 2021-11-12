@@ -61,6 +61,8 @@ class UserSettings {
     public Accent: string = "default";
     public DiscoverRatio: number = 0.2; //0.2 means 20% of articles will be random (preventing bubble effect)
 
+    public FirstLaunch: boolean = true;
+
     /* Advanced */
     public ArticleCacheTime: number = 3*60; //minutes
     public MaxArticles: number = 70;

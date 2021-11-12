@@ -23,14 +23,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     constructor(props: any){
         super(props);
 
-        this.toggleHapticFeedback = this.toggleHapticFeedback.bind(this);
-        this.toggleNoImages = this.toggleNoImages.bind(this);
-
-        this.removeRss = this.removeRss.bind(this);
-        this.addRss = this.addRss.bind(this);
-        this.resetArtsCache = this.resetArtsCache.bind(this);
-        this.resetAllData = this.resetAllData.bind(this);
-        this.reloadPrefs = this.reloadPrefs.bind(this);
         
         this.import = this.import.bind(this);
         this.export = this.export.bind(this);

@@ -171,4 +171,8 @@ export default Styles = StyleSheet.create ({
     settingsButton: {
         justifyContent: "center"
     },
+
+    navigationIcon: {
+        alignSelf: "center"
+    }
 });
