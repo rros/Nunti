@@ -107,7 +107,7 @@ class Step2Theme extends Component {
                 </RadioButton.Group>
                 <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
                     <List.Section>
-                        <List.Subheader>Theme</List.Subheader>
+                        <List.Subheader>Accent</List.Subheader>
                         <List.Item title="Default (Nunti)"
                             right={() => <RadioButton.Item value="default" />} />
                         <List.Item title="Amethyst"
