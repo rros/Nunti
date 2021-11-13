@@ -135,7 +135,8 @@ export class Backend {
                 saved.push(article);
                 await this.StorageSave('saved',saved);
             } else {
-                console.log('Backend: Article is already saved.');
+                console.warn('Backend: Article is already saved.');
+                return false;
             }
             return true;
         } catch(error) {
