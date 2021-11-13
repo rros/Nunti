@@ -161,7 +161,11 @@ export class Backend {
     }
     /* Returns list of saved articles. */
     public static async GetSavedArticles(): Promise<Article[]> {
-        return await this.SortArticles(await this.StorageGet('saved'))
+        let arts = await this.SortArticles(await this.StorageGet('saved'));
+        for (let i = 0; i < arts.length; i++) {
+            arts[i].id = i;
+        }
+        return arts;
     }
     /* Resets cache */
     public static async ResetCache() {
