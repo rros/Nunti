@@ -42,7 +42,7 @@ export default class App extends Component {
         this.saveUserSettings = this.saveUserSettings.bind(this);
         this.toggleSnack = this.toggleSnack.bind(this);
         this.loadPrefs = this.loadPrefs.bind(this);
-        this.exitWizard = this.exitWizard.bind(this);
+        this.setWizard = this.setWizard.bind(this);
         
         this.state = {
             theme: Dark, // temporary until theme loads
@@ -125,8 +125,8 @@ export default class App extends Component {
         await Backend.SaveUserSettings(prefs);
     }
 
-    public async exitWizard(){
-        this.prefs.FirstLaunch = false;
+    public async setWizard(firstLaunch: boolean){
+        this.prefs.FirstLaunch = firstLaunch;
         await this.saveUserSettings(this.prefs);
 
         this.setState({ firstLaunch: this.prefs.FirstLaunch });
@@ -142,7 +142,7 @@ export default class App extends Component {
         } else if(this.state.firstLaunch == true){
             return(
                 <PaperProvider theme={this.state.theme}>
-                    <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} exitWizard={this.exitWizard} />
+                    <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} setWizard={this.setWizard} />
                 </PaperProvider>
             );
         } else {
@@ -160,7 +160,7 @@ export default class App extends Component {
                                 {props => <Bookmarks {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
                             </NavigationDrawer.Screen>
                             <NavigationDrawer.Screen name="Settings">
-                                {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack}/>}
+                                {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack} setWizard={this.setWizard}/>}
                             </NavigationDrawer.Screen>
                         </NavigationDrawer.Navigator>
                     </NavigationContainer>

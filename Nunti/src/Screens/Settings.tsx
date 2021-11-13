@@ -23,6 +23,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     constructor(props: any){
         super(props);
 
+        this.toggleHapticFeedback = this.toggleHapticFeedback.bind(this);
+        this.toggleNoImages = this.toggleNoImages.bind(this);
+
+        this.removeRss = this.removeRss.bind(this);
+        this.addRss = this.addRss.bind(this);
+        this.resetArtsCache = this.resetArtsCache.bind(this);
+        this.resetAllData = this.resetAllData.bind(this);
         
         this.import = this.import.bind(this);
         this.export = this.export.bind(this);
@@ -159,17 +166,17 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
     
     private async resetAllData() {
-        this.props.toggleSnack("Restore all data", true);
+        this.props.toggleSnack("Restored all data", true);
         this.setState({ dataDialogVisible: false });
 
         await Backend.ResetAllData();
-
-        // reload prefs
         await this.reloadPrefs();
+        await this.props.setWizard(true);
     }
 
     private async reloadPrefs() {
         await this.props.loadPrefs();
+        
         this.setState({
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
             noImagesSwitch: this.props.prefs.DisableImages,

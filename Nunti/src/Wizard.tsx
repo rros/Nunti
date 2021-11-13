@@ -47,7 +47,7 @@ class Wizard extends Component {
                         { props => <Step3Topics {...props}  />}
                     </NavigationTabs.Screen>
                     <NavigationTabs.Screen name="Learning">
-                        { props => <Step4Learning {...props} prefs={this.props.prefs} exitWizard={this.props.exitWizard} />}
+                        { props => <Step4Learning {...props} prefs={this.props.prefs} setWizard={this.props.setWizard} />}
                     </NavigationTabs.Screen>
                 </NavigationTabs.Navigator>
             </NavigationContainer>
@@ -188,7 +188,7 @@ class Step4Learning extends Component {
                 <Paragraph style={Styles.centerText}>
                     Nunti will analyze what articles you like and dislike and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated 50 articles, at which point your feed will become your own.
                 </Paragraph>
-                <Button style={{marginTop: "20%"}} icon="book" onPress={this.props.exitWizard}>Start reading</Button>
+                <Button style={{marginTop: "20%"}} icon="book" onPress={() => { this.props.setWizard(false) }}>Start reading</Button>
             </ScrollView>
         );
     }

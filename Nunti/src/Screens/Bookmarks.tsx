@@ -147,13 +147,10 @@ class Bookmarks extends PureComponent {
 
     private async endSwipe(rowKey, data) {
         this.swiping = false;
-        
-        // bookmarks don't update their id as they are saved as they come, so we have to remove based on their index
-        let index = this.state.articles.findIndex(item => item.id === rowKey);
 
         if(data.translateX > 100 || data.translateX < -100){
-            this.rowTranslateValues[index].setValue(1);
-            Animated.timing(this.rowTranslateValues[index], {
+            this.rowTranslateValues[rowKey].setValue(1);
+            Animated.timing(this.rowTranslateValues[rowKey], {
                 toValue: 0,
                 duration: 400,
                 useNativeDriver: false,
@@ -187,8 +184,8 @@ class Bookmarks extends PureComponent {
 
                     renderItem={ (rowData, rowMap) => (
                         <Animated.View style={{ 
-                            maxHeight: this.rowTranslateValues[rowData.index].interpolate({inputRange: [0, 1], outputRange: [0, 300],}), 
-                            opacity: this.rowTranslateValues[rowData.index].interpolate({inputRange: [0, 1], outputRange: [0, 1],}), 
+                            maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 300],}), 
+                            opacity: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 1],}), 
                         }}>
                             <Card style={Styles.card} 
                                 onPress={() => { this.readMore(rowData.item.id) }} onLongPress={() => { this.viewDetails(rowData.item.id) }}>
