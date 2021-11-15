@@ -39,7 +39,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             noImagesSwitch: this.props.prefs.DisableImages,
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
-            feeds: this.props.prefs.FeedList,
+            feeds: this.props.prefs.CustomFeeds,
 
             rssInputValue: "",
             rssAddDisabled: true, // add button in rss dialog disabled when input empty
@@ -122,7 +122,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         try {
             let feed:Feed = Feed.New(this.state.rssInputValue);
 
-            this.props.prefs.FeedList.push(feed)
+            this.props.prefs.CustomFeeds.push(feed)
             await this.props.saveUserSettings(this.props.prefs);
 
             this.props.toggleSnack(`Added ${feed.name} to feeds`, true);
@@ -144,7 +144,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             let index = updatedFeeds.findIndex(item => item.name === rssName);
             updatedFeeds.splice(index, 1);
 
-            this.props.prefs.FeedList = updatedFeeds;
+            this.props.prefs.CustomFeeds = updatedFeeds;
             await this.props.saveUserSettings(this.props.prefs);
             
             this.setState({feeds: updatedFeeds});
@@ -182,7 +182,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             noImagesSwitch: this.props.prefs.DisableImages,
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
-            feeds: this.props.prefs.FeedList,
+            feeds: this.props.prefs.CustomFeeds,
         });
     }
 

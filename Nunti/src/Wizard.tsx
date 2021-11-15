@@ -20,6 +20,9 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
+import { Backend } from './Backend';
+import DefaultTopics from './DefaultTopics';
+
 const NavigationTabs = createMaterialTopTabNavigator();
 
 class Wizard extends Component {
@@ -144,10 +147,17 @@ class Step3Topics extends Component {
             sport: false,
             czechNews: false,
         }
+
+        Backend.GetUserSettings().then( (prefs) => {
+            for (let topicName in DefaultTopics.Topics) {
+            //TODO: frontend, make this work however you want, idk what you're planning on here
+                this.state[topicName] = (prefs.EnabledTopics.indexOf(topicName) >= 0)
+            }
+        });
     }
 
     private async changeRSS(topic: string) {
-        // TODO: Backend.ChangeDefaultRSS(topic, !this.state[topic]);
+        await Backend.ChangeDefaultTopics(topic, !this.state[topic]);
         
         this.setState({[topic]: !this.state[topic]});
     }

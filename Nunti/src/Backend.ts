@@ -2,6 +2,8 @@ import { AsyncStorage } from 'react-native';
 var DOMParser = require('xmldom').DOMParser
 var XMLSerializer = require('xmldom').XMLSerializer;
 
+import DefaultTopics from './DefaultTopics';
+
 export class Feed {
     public name: string;
     public url: string;
@@ -46,14 +48,8 @@ class Article {
 }
 
 class UserSettings {
-    public FeedList: Feed[] = [
-        new Feed("https://www.irozhlas.cz/rss/irozhlas"),new Feed("https://www.theguardian.com/uk/rss"),
-        new Feed("https://www.aktualne.cz/rss"),new Feed("https://novinky.cz/rss"),
-        new Feed("https://www.root.cz/rss/clanky/"),new Feed("https://www.reutersagency.com/feed/?post_type=reuters-best"),
-        new Feed("https://ct24.ceskatelevize.cz/rss"), new Feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"),
-        new Feed("https://www.seznamzpravy.cz/rss"),new Feed("https://www.cnews.cz/rss"),
-        new Feed("https://www.theverge.com/rss/index.xml"), new Feed("https://servis.lidovky.cz/rss.aspx")
-    ];
+    public CustomFeeds: Feed[] = [];
+    public EnabledTopics: string[] = [];
     public HapticFeedback = true;
     public DisableImages = false;
 
@@ -125,6 +121,17 @@ export class Backend {
         let timeEnd = Date.now()
         console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds.`);
         return arts;
+    }
+    /* Compiles a feed-list with all the feeds including custom and topics. ̇*/
+    public static async GetFeedList(): Promise<Feed[]> {
+        let prefs = await this.GetUserSettings();
+        let feeds = [...prefs.CustomFeeds];
+        for (let i = 0; i < prefs.EnabledTopics.length; i++) {
+            for (let y = 0; y < DefaultTopics.Topics[prefs.EnabledTopics[i]].length; y++) {
+                feeds.push(DefaultTopics.Topics[prefs.EnabledTopics[i]][y])
+            }
+        }
+        return feeds;
     }
     /* Tries to save an article, true on success, false on fail. */
     public static async TrySaveArticle(article: Article): Promise<boolean> {
@@ -239,6 +246,23 @@ export class Backend {
         if (await AsyncStorage.getItem('learning_db') === null)
             await AsyncStorage.setItem('learning_db',JSON.stringify({"upvotes":1, "downvotes":1, "keywords":{}, "seen": []}));
     }
+    /* Change RSS topics */
+    public static async ChangeDefaultTopics(topicName: string, enable: boolean) {
+        let prefs = await this.GetUserSettings();
+        if (enable) {
+            console.info(`Backend: Changing default topics, ${topicName} - add`);
+            if (prefs.EnabledTopics.indexOf(topicName) < 0) {
+                prefs.EnabledTopics.push(topicName);
+            }
+        } else {
+            console.info(`Backend: Changing default topics, ${topicName} - remove`);
+            let i = prefs.EnabledTopics.indexOf(topicName);
+            if (i >= 0) {
+                prefs.EnabledTopics.splice(i, 1);
+            } else
+                console.warn(`Backend: Topic not found in list.`)
+        }
+    }
 
     /* Private methods */
     private static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, noimages: boolean): Promise<Article[]> {
@@ -309,22 +333,22 @@ export class Backend {
     }
     private static async DownloadArticles(): Promise<Article[]> {
         console.info("Backend: Downloading articles..");
-        let timeBegin = Date.now()
-        let prefs = await this.GetUserSettings()
-        let feedList = prefs.FeedList
+        let timeBegin = Date.now();
+        let prefs = await this.GetUserSettings();
+        let feedList = await this.GetFeedList();
 
         let arts: Article[] = [];
-        let promises: Promise<Article[]>[] = []
+        let promises: Promise<Article[]>[] = [];
         for (let i = 0; i < feedList.length; i++) {
             promises.push(this.DownloadArticlesOneChannel(feedList[i],prefs.MaxArticlesPerChannel, prefs.DisableImages))
         }
         let results: Article[][] = await Promise.all(promises)
         for (let i = 0; i < results.length; i++) {
             for(let y = 0; y < results[i].length; y++) {
-                arts.push(results[i][y])
+                arts.push(results[i][y]);
             }
         }
-        let timeEnd = Date.now()
+        let timeEnd = Date.now();
         console.info(`Backend: Download finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
         await this.ExtractKeywords(arts);
         return arts;
@@ -361,7 +385,7 @@ export class Backend {
         let learning_db = await this.StorageGet('learning_db');
         let prefs = await this.GetUserSettings();
         if (learning_db["upvotes"] + learning_db["downvotes"] <= prefs.NoSortUntil) {
-            console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db["upvotes"] + learning_db["downvotes"])}, ${prefs.NoSortUntil} required)`);
+            console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db["upvotes"] + learning_db["downvotes"])} out of ${prefs.NoSortUntil} required)`);
             return articles;
         }
 
