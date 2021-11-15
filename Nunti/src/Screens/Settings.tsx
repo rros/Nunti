@@ -171,7 +171,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         await Backend.ResetAllData();
         await this.reloadPrefs();
-        await this.props.setWizard(true);
+        await this.props.navigation.navigate("Wizard");
     }
 
     private async reloadPrefs() {

@@ -17,12 +17,10 @@ import {
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import { NavigationContainer } from '@react-navigation/native';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-
 import { Backend } from './Backend';
 import DefaultTopics from './DefaultTopics';
 
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 const NavigationTabs = createMaterialTopTabNavigator();
 
 class Wizard extends Component {
@@ -32,28 +30,26 @@ class Wizard extends Component {
 
     render() {
         return(
-            <NavigationContainer theme={this.props.theme} >
-                <NavigationTabs.Navigator tabBarPosition="bottom" 
-                    screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background }, tabBarIndicatorStyle: { backgroundColor: "transparent"}, tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused, color }) => { 
-                        if(focused)
-                            return <Icon style={Styles.wizardNavigationIcon} name="circle" size={15} color={this.props.theme.colors.accent} />;
-                        else
-                            return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off" size={15} color={this.props.theme.colors.disabled} />;}
-                }}>
-                    <NavigationTabs.Screen name="Welcome">
-                        { props => <Step1Welcome {...props} theme={this.props.theme} />}
-                    </NavigationTabs.Screen>
-                    <NavigationTabs.Screen name="Theming">
-                        { props => <Step2Theme {...props} prefs={this.props.prefs} updateTheme={this.props.updateTheme} updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
-                    </NavigationTabs.Screen>
-                    <NavigationTabs.Screen name="Topics">
-                        { props => <Step3Topics {...props}  />}
-                    </NavigationTabs.Screen>
-                    <NavigationTabs.Screen name="Learning">
-                        { props => <Step4Learning {...props} prefs={this.props.prefs} setWizard={this.props.setWizard} />}
-                    </NavigationTabs.Screen>
-                </NavigationTabs.Navigator>
-            </NavigationContainer>
+            <NavigationTabs.Navigator tabBarPosition="bottom" 
+                screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background }, tabBarIndicatorStyle: { backgroundColor: "transparent"}, tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused, color }) => { 
+                    if(focused)
+                        return <Icon style={Styles.wizardNavigationIcon} name="circle" size={15} color={this.props.theme.colors.accent} />;
+                    else
+                        return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off" size={15} color={this.props.theme.colors.disabled} />;}
+            }}>
+                <NavigationTabs.Screen name="Welcome">
+                    { props => <Step1Welcome {...props} theme={this.props.theme} />}
+                </NavigationTabs.Screen>
+                <NavigationTabs.Screen name="Theming">
+                    { props => <Step2Theme {...props} prefs={this.props.prefs} updateTheme={this.props.updateTheme} updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
+                </NavigationTabs.Screen>
+                <NavigationTabs.Screen name="Topics">
+                    { props => <Step3Topics {...props}  />}
+                </NavigationTabs.Screen>
+                <NavigationTabs.Screen name="Learning">
+                    { props => <Step4Learning {...props} prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings} setWizard={this.props.setWizard} />}
+                </NavigationTabs.Screen>
+            </NavigationTabs.Navigator>
         );
     }
 }
@@ -188,6 +184,15 @@ class Step3Topics extends Component {
 class Step4Learning extends Component {
     constructor(props: any){
         super(props);
+        
+        this.exitWizard = this.exitWizard.bind(this);
+    }
+
+    private async exitWizard() {
+        this.props.prefs.FirstLaunch = false;
+        await this.props.saveUserSettings(this.props.prefs);
+
+        this.props.navigation.navigate("Feed");
     }
 
     render() {
@@ -198,7 +203,7 @@ class Step4Learning extends Component {
                 <Paragraph style={Styles.centerText}>
                     Nunti will analyze what articles you like and dislike and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated 50 articles, at which point your feed will become your own.
                 </Paragraph>
-                <Button style={{marginTop: "20%"}} icon="book" onPress={() => { this.props.setWizard(false) }}>Start reading</Button>
+                <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>Start reading</Button>
             </ScrollView>
         );
     }

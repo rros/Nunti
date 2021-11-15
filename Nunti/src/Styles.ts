@@ -175,5 +175,4 @@ export default Styles = StyleSheet.create ({
     wizardNavigationIcon: {
         alignSelf: "center"
     },
-
 });

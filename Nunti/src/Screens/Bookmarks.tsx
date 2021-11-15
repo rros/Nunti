@@ -20,13 +20,10 @@ import {
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 
 import Backend from '../Backend';
-
-const NavigationStack = createNativeStackNavigator();
 
 class Bookmarks extends PureComponent {
     constructor(props:any){

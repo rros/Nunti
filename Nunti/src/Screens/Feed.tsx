@@ -20,13 +20,10 @@ import {
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 
 import Backend from '../Backend';
-
-const NavigationStack = createNativeStackNavigator();
 
 class Feed extends PureComponent {
     private firstRefresh = true;
@@ -112,7 +109,7 @@ class Feed extends PureComponent {
         if(await Backend.TrySaveArticle(this.state.articles[this.currentIndex])) {
             this.props.toggleSnack("Article saved", true);
         } else {
-            console.error("Saving article failed");
+            this.props.toggleSnack("Article already saved", true);
         }
     }
 

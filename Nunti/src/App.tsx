@@ -42,7 +42,6 @@ export default class App extends Component {
         this.saveUserSettings = this.saveUserSettings.bind(this);
         this.toggleSnack = this.toggleSnack.bind(this);
         this.loadPrefs = this.loadPrefs.bind(this);
-        this.setWizard = this.setWizard.bind(this);
         
         this.state = {
             theme: Dark, // temporary until theme loads
@@ -50,22 +49,21 @@ export default class App extends Component {
             snackVisible: false,
             snackMessage: "",
 
-            firstLaunch: null
+            prefsLoaded: false,
         }
     }
 
     async componentDidMount() {
         await this.loadPrefs();
-        this.setState({ firstLaunch: this.prefs.FirstLaunch });
-
         BackgroundTask.schedule({ period: 10800 }); // 3 hours in seconds
-        
         SplashScreen.hide();
     }
 
     public async loadPrefs() {
         this.prefs = await Backend.GetUserSettings();
         this.updateTheme(this.prefs.Theme);
+
+        this.setState({prefsLoaded: true});
     }
 
     public async updateTheme(themeName: string){
@@ -124,58 +122,49 @@ export default class App extends Component {
         this.prefs = prefs;
         await Backend.SaveUserSettings(prefs);
     }
-
-    public async setWizard(firstLaunch: boolean){
-        this.prefs.FirstLaunch = firstLaunch;
-        await this.saveUserSettings(this.prefs);
-
-        this.setState({ firstLaunch: this.prefs.FirstLaunch });
-    }
     
     public async toggleSnack(message: string, visible: bool){
         this.setState({ snackVisible: visible, snackMessage: message });
     }
 
     render() {
-        if(this.state.firstLaunch === null){
+        if(this.state.prefsLoaded == false){
             return null;
-        } else if(this.state.firstLaunch == true){
-            return(
-                <PaperProvider theme={this.state.theme}>
-                    <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} setWizard={this.setWizard} />
-                </PaperProvider>
-            );
-        } else {
-            return(
-                <PaperProvider theme={this.state.theme}>
-                    <StatusBar 
-                        backgroundColor="rgba(0, 0, 0, 0.3)"
-                        translucent={true}/>
-                    <NavigationContainer theme={this.state.theme}>
-                        <NavigationDrawer.Navigator drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} />} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
-                            <NavigationDrawer.Screen name="Feed">
-                                {props => <Feed {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
-                            </NavigationDrawer.Screen>
-                            <NavigationDrawer.Screen name="Bookmarks">
-                                {props => <Bookmarks {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
-                            </NavigationDrawer.Screen>
-                            <NavigationDrawer.Screen name="Settings">
-                                {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack} setWizard={this.setWizard}/>}
-                            </NavigationDrawer.Screen>
-                        </NavigationDrawer.Navigator>
-                    </NavigationContainer>
-                    <Portal>
-                        <Snackbar
-                            visible={this.state.snackVisible}
-                            duration={4000}
-                            action={{ label: "Dismiss", onPress: () => {this.setState({ snackVisible: false })} }}
-                            onDismiss={() => { this.setState({ snackVisible: false }) }}
-                            theme={{ colors: { accent: this.state.theme.colors.accentReverse }}}
-                        >{this.state.snackMessage}</Snackbar>
-                    </Portal>
-                </PaperProvider>
-            );
-        }
+        } // else
+        
+        return(
+            <PaperProvider theme={this.state.theme}>
+                <StatusBar 
+                    backgroundColor="rgba(0, 0, 0, 0.3)"
+                    translucent={true}/>
+                <NavigationContainer theme={this.state.theme}>
+                    <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? "Wizard" : "Feed"}
+                        drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} />} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
+                        <NavigationDrawer.Screen name="Feed">
+                            {props => <Feed {...props}prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
+                        </NavigationDrawer.Screen>
+                        <NavigationDrawer.Screen name="Bookmarks">
+                            {props => <Bookmarks {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
+                        </NavigationDrawer.Screen>
+                        <NavigationDrawer.Screen name="Settings">
+                            {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack} />}
+                        </NavigationDrawer.Screen>
+                        <NavigationDrawer.Screen name="Wizard" options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
+                            {props => <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} />}
+                        </NavigationDrawer.Screen>
+                    </NavigationDrawer.Navigator>
+                </NavigationContainer>
+                <Portal>
+                    <Snackbar
+                        visible={this.state.snackVisible}
+                        duration={4000}
+                        action={{ label: "Dismiss", onPress: () => {this.setState({ snackVisible: false })} }}
+                        onDismiss={() => { this.setState({ snackVisible: false }) }}
+                        theme={{ colors: { accent: this.state.theme.colors.accentReverse }}}
+                    >{this.state.snackMessage}</Snackbar>
+                </Portal>
+            </PaperProvider>
+        );
     }
 }
 
