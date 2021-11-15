@@ -56,7 +56,8 @@ export default class App extends Component {
     async componentDidMount() {
         await this.loadPrefs();
         BackgroundTask.schedule({ period: 10800 }); // 3 hours in seconds
-        SplashScreen.hide();
+
+        // splash screen will hide when navigator has finished loading
     }
 
     public async loadPrefs() {
@@ -137,7 +138,7 @@ export default class App extends Component {
                 <StatusBar 
                     backgroundColor="rgba(0, 0, 0, 0.3)"
                     translucent={true}/>
-                <NavigationContainer theme={this.state.theme}>
+                <NavigationContainer theme={this.state.theme} onReady={SplashScreen.hide}>
                     <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? "Wizard" : "Feed"}
                         drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} />} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
                         <NavigationDrawer.Screen name="Feed">
@@ -150,7 +151,7 @@ export default class App extends Component {
                             {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="Wizard" options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
-                            {props => <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} />}
+                            {props => <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent}/>}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
                 </NavigationContainer>

@@ -171,6 +171,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         await Backend.ResetAllData();
         await this.reloadPrefs();
+
+        await this.props.navigation.reset({index: 0, routes: [{ name: 'Feed' }]}); // remove "cached" feed page // force it to reload next time
         await this.props.navigation.navigate("Wizard");
     }
 

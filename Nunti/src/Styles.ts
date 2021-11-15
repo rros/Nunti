@@ -154,7 +154,7 @@ export default Styles = StyleSheet.create ({
     centerView: {
         alignItems: "center",
         justifyContent: "center",
-        margin: "5%"
+        margin: "5%",
     },
     
     fullscreenImage: {
@@ -175,4 +175,8 @@ export default Styles = StyleSheet.create ({
     wizardNavigationIcon: {
         alignSelf: "center"
     },
+
+    wizardStatusOffset: {
+        paddingTop: "10%"
+    }
 });

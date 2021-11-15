@@ -56,7 +56,7 @@ class Wizard extends Component {
 
 function Step1Welcome({theme}) {
     return(
-        <ScrollView contentContainerStyle={Styles.centerView}>
+        <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
             <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
             <Title style={Styles.centerText}>Welcome to Nunti!</Title>
             <Paragraph style={Styles.centerText}>Enjoy reading your articles knowing nobody is looking over your shoulder.</Paragraph>
@@ -92,7 +92,7 @@ class Step2Theme extends Component {
 
     render() {
         return(
-            <ScrollView>
+            <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
                 <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
                     <List.Section>
                         <List.Subheader>Theme</List.Subheader>
@@ -160,7 +160,7 @@ class Step3Topics extends Component {
     
     render() {
         return(
-            <ScrollView>
+            <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
                 <List.Section>
                     <List.Subheader>Topics</List.Subheader>
                     <List.Item title="Technology"
@@ -197,7 +197,7 @@ class Step4Learning extends Component {
 
     render() {
         return(
-            <ScrollView contentContainerStyle={Styles.centerView}>
+            <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
                 <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.centerText}>Nunti will adapt to your preferences!</Title>
                 <Paragraph style={Styles.centerText}>
