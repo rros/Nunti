@@ -44,7 +44,7 @@ class Wizard extends Component {
                     { props => <Step2Theme {...props} prefs={this.props.prefs} updateTheme={this.props.updateTheme} updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Topics">
-                    { props => <Step3Topics {...props}  />}
+                    { props => <Step3Topics {...props} prefs={this.props.prefs}/>}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Learning">
                     { props => <Step4Learning {...props} prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings} setWizard={this.props.setWizard} />}
@@ -136,7 +136,6 @@ class Step3Topics extends Component {
     constructor(props: any){
         super(props);
         
-        // TODO: load default RSS topics from storage (default is all false, but if the user adds one and then leaves the app while in wizard)
         this.state = {
             technology: false,
             worldPolitics: false,
@@ -144,18 +143,14 @@ class Step3Topics extends Component {
             czechNews: false,
         }
 
-        Backend.GetUserSettings().then( (prefs) => {
-            for (let topicName in DefaultTopics.Topics) {
-            //TODO: frontend, make this work however you want, idk what you're planning on here
-                this.state[topicName] = (prefs.EnabledTopics.indexOf(topicName) >= 0)
-            }
-        });
+        for (let topicName in DefaultTopics.Topics) {
+            this.state[topicName] = (this.props.prefs.EnabledTopics.indexOf(topicName) >= 0);
+        }
     }
 
-    private async changeRSS(topic: string) {
-        await Backend.ChangeDefaultTopics(topic, !this.state[topic]);
-        
+    private async changeDefaultTopics(topic: string) {
         this.setState({[topic]: !this.state[topic]});
+        await Backend.ChangeDefaultTopics(topic, !this.state[topic]);
     }
     
     render() {
@@ -165,16 +160,16 @@ class Step3Topics extends Component {
                     <List.Subheader>Topics</List.Subheader>
                     <List.Item title="Technology"
                         left={() => <List.Icon icon="cog" />}
-                        right={() => <Switch value={this.state.technology} onValueChange={() => this.changeRSS("technology", !this.state.technology)} />} />
+                        right={() => <Switch value={this.state.technology} onValueChange={() => this.changeDefaultTopics("technology")} />} />
                     <List.Item title="World politics"
                         left={() => <List.Icon icon="account-voice" />}
-                        right={() => <Switch value={this.state.worldPolitics} onValueChange={() => this.changeRSS("worldPolitics", !this.state.worldPolitics)} />} />
+                        right={() => <Switch value={this.state.worldPolitics} onValueChange={() => this.changeDefaultTopics("worldPolitics")} />} />
                     <List.Item title="Sport"
                         left={() => <List.Icon icon="basketball" />}
-                        right={() => <Switch value={this.state.sport} onValueChange={() => this.changeRSS("sport", !this.state.sport)} />} />
+                        right={() => <Switch value={this.state.sport} onValueChange={() => this.changeDefaultTopics("sport")} />} />
                     <List.Item title="Czech news"
                         left={() => <List.Icon icon="glass-mug-variant" />}
-                        right={() => <Switch value={this.state.czechNews} onValueChange={() => this.changeRSS("czechNews", !this.state.czechNews)} />} />
+                        right={() => <Switch value={this.state.czechNews} onValueChange={() => this.changeDefaultTopics("czechNews")} />} />
                 </List.Section>
             </ScrollView>
         );
