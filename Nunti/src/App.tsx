@@ -120,8 +120,6 @@ export default class App extends Component {
     }
 
     public async saveUserSettings(prefs: []){
-        let currentPrefs = await Backend.GetUserSettings();
-        this.prefs = {...prefs, ...currentPrefs};
         await Backend.SaveUserSettings(prefs);
     }
     
@@ -152,7 +150,7 @@ export default class App extends Component {
                             {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="Wizard" options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
-                            {props => <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent}/>}
+                            {props => <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} updateTheme={this.updateTheme} updateAccent={this.updateAccent}/>}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
                 </NavigationContainer>

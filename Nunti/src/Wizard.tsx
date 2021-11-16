@@ -44,10 +44,10 @@ class Wizard extends Component {
                     { props => <Step2Theme {...props} prefs={this.props.prefs} updateTheme={this.props.updateTheme} updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Topics">
-                    { props => <Step3Topics {...props} prefs={this.props.prefs}/>}
+                    { props => <Step3Topics {...props} prefs={this.props.prefs} loadPrefs={this.props.loadPrefs}/>}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Learning">
-                    { props => <Step4Learning {...props} prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings} setWizard={this.props.setWizard} />}
+                    { props => <Step4Learning {...props} prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings}/>}
                 </NavigationTabs.Screen>
             </NavigationTabs.Navigator>
         );
@@ -143,18 +143,23 @@ class Step3Topics extends Component {
             czechNews: false,
         }
         
-        let updateTopics = async () => {
-            for (let topicName in DefaultTopics.Topics) {
-                this.state[topicName] = (await Backend.IsTopicEnabled(topicName));
-            }
-        };
+        this.isTopicEnabled();
+    }
 
-        updateTopics();
+    private async isTopicEnabled(){
+        for (let topicName in DefaultTopics.Topics) {
+            this.state[topicName] = (await Backend.IsTopicEnabled(topicName));
+        }
     }
 
     private async changeDefaultTopics(topic: string) {
         this.setState({[topic]: !this.state[topic]});
         await Backend.ChangeDefaultTopics(topic, !this.state[topic]);
+
+        // reload prefs, as backend saves new ones straight into storage and this.props.prefs will become outdated
+        await this.props.loadPrefs();
+
+        console.log(this.props.prefs);
     }
     
     render() {
@@ -200,7 +205,7 @@ class Step4Learning extends Component {
                 <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.centerText}>Nunti will adapt to your preferences!</Title>
                 <Paragraph style={Styles.centerText}>
-                    Nunti will analyze what articles you like and dislike and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated 50 articles, at which point your feed will become your own.
+                    Nunti will analyze what articles you like and dislike by swiping on them and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated 50 articles, at which point your feed will become your own.
                 </Paragraph>
                 <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>Start reading</Button>
             </ScrollView>
