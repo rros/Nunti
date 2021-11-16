@@ -10,7 +10,7 @@ export class Feed {
 
     constructor(url: string) {
         this.url = url;
-        let r = url.match(/https?:\/\/(?:www\.)?(?:rss\.)?([^\/]+)(\/|$)/);
+        let r = url.match(/(?:(?:https?:\/\/)|(?:www\.))(?:www\.)?(?:rss\.)?([^\/]+)(?:\/|$)/);
         if (r && r.length > 1)
             this.name = r[1];
         else
