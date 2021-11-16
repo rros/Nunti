@@ -189,11 +189,11 @@ export class Backend {
         let learning_db = await this.StorageGet('learning_db');
         if (rating > 0) {
             //upvote
-            rating = rating * (learning_db["downvotes"] / learning_db["upvotes"]);
+            rating = rating * (learning_db["downvotes"] + 1 / learning_db["upvotes"] + 1);
             learning_db["upvotes"] += 1;
         } else if (rating < 0) {
             //downvote
-            rating = rating * (learning_db["upvotes"] / learning_db["downvotes"]);
+            rating = rating * (learning_db["upvotes"] + 1 / learning_db["downvotes"] + 1);
             learning_db["downvotes"] += 1;
         } else
             return;
@@ -232,7 +232,7 @@ export class Backend {
         if (await AsyncStorage.getItem('articles_cache') === null)
             await AsyncStorage.setItem('articles_cache',JSON.stringify({"timestamp":0,"articles":[]}));
         if (await AsyncStorage.getItem('learning_db') === null)
-            await AsyncStorage.setItem('learning_db',JSON.stringify({"upvotes":1, "downvotes":1, "keywords":{}, "seen": []}));
+            await AsyncStorage.setItem('learning_db',JSON.stringify({"upvotes":0, "downvotes":0, "keywords":{}, "seen": []}));
     }
     /* Change RSS topics */
     public static async ChangeDefaultTopics(topicName: string, enable: boolean) {
@@ -247,15 +247,15 @@ export class Backend {
                         prefs.FeedList.push(topicFeed);
                     }
                 } else {
-                    let index = prefs.FeedList.indexOf(topicFeed)
+                    let index = await this.FindFeedByUrl(topicFeed.url, prefs.FeedList);
                     if (index >= 0) {
                         console.debug(`remove feed ${topicFeed.name} from feedlist`);
                         prefs.FeedList.splice(index, 1);
                     }
                 }
             }
+            await this.SaveUserSettings(prefs);
         }
-        await this.SaveUserSettings(prefs);
     }
     /* Checks wheter use has at least X percent of the topic enabled. */
     public static async IsTopicEnabled(topicName: string, threshold: number = 0.5): Promise<boolean> {
@@ -264,7 +264,7 @@ export class Backend {
             let enabledFeedsCount = 0;
             for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
                 let topicFeed = DefaultTopics.Topics[topicName][i];
-                if (prefs.FeedList.indexOf(topicFeed) >= 0)
+                if (await this.FindFeedByUrl(topicFeed.url, prefs.FeedList) >= 0)
                     enabledFeedsCount++;
             }
             if (enabledFeedsCount / DefaultTopics.Topics[topicName].length >= threshold)
@@ -547,6 +547,13 @@ export class Backend {
         console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
     }
     private static async FindArticleByUrl(url: string, haystack: Article[]): Promise<number> {
+        for(let i = 0; i < haystack.length; i++) {
+            if (haystack[i].url === url)
+                return i;
+        }
+        return -1;
+    }
+    private static async FindFeedByUrl(url: string, haystack: Feed[]): Promise<number> {
         for(let i = 0; i < haystack.length; i++) {
             if (haystack[i].url === url)
                 return i;
