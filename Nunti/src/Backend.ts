@@ -255,9 +255,7 @@ export class Backend {
                 }
             }
         }
-        console.debug(prefs); //TODO
         await this.SaveUserSettings(prefs);
-        console.debug(await this.GetUserSettings()); //TODO
     }
     /* Checks wheter use has at least X percent of the topic enabled. */
     public static async IsTopicEnabled(topicName: string, threshold: number = 0.5): Promise<boolean> {
@@ -349,7 +347,6 @@ export class Backend {
         let timeBegin = Date.now();
         let prefs = await this.GetUserSettings();
         let feedList = prefs.FeedList;
-        console.debug(prefs); //TODO
 
         let arts: Article[] = [];
         let promises: Promise<Article[]>[] = [];
