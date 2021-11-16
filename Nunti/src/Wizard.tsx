@@ -142,10 +142,12 @@ class Step3Topics extends Component {
             sport: false,
             czechNews: false,
         }
-
-        for (let topicName in DefaultTopics.Topics) {
-            this.state[topicName] = (this.props.prefs.EnabledTopics.indexOf(topicName) >= 0);
-        }
+        
+        (async () => {
+            for (let topicName in DefaultTopics.Topics) {
+                this.state[topicName] = (await Backend.IsTopicEnabled(topicName));
+            }
+        });
     }
 
     private async changeDefaultTopics(topic: string) {

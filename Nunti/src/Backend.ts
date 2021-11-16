@@ -48,8 +48,7 @@ class Article {
 }
 
 class UserSettings {
-    public CustomFeeds: Feed[] = [];
-    public EnabledTopics: string[] = [];
+    public FeedList: Feed[] = [];
     public HapticFeedback = true;
     public DisableImages = false;
 
@@ -121,17 +120,6 @@ export class Backend {
         let timeEnd = Date.now()
         console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds.`);
         return arts;
-    }
-    /* Compiles a feed-list with all the feeds including custom and topics. ̇*/
-    public static async GetFeedList(): Promise<Feed[]> {
-        let prefs = await this.GetUserSettings();
-        let feeds = [...prefs.CustomFeeds];
-        for (let i = 0; i < prefs.EnabledTopics.length; i++) {
-            for (let y = 0; y < DefaultTopics.Topics[prefs.EnabledTopics[i]].length; y++) {
-                feeds.push(DefaultTopics.Topics[prefs.EnabledTopics[i]][y])
-            }
-        }
-        return feeds;
     }
     /* Tries to save an article, true on success, false on fail. */
     public static async TrySaveArticle(article: Article): Promise<boolean> {
@@ -249,20 +237,42 @@ export class Backend {
     /* Change RSS topics */
     public static async ChangeDefaultTopics(topicName: string, enable: boolean) {
         let prefs = await this.GetUserSettings();
-        if (enable) {
-            console.info(`Backend: Changing default topics, ${topicName} - add`);
-            if (prefs.EnabledTopics.indexOf(topicName) < 0) {
-                prefs.EnabledTopics.push(topicName);
+        console.info(`Backend: Changing default topics, ${topicName} - ${enable ? "add" : "remove"}`);
+        if (DefaultTopics.Topics[topicName] !== undefined) {
+            for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
+                let topicFeed = DefaultTopics.Topics[topicName][i];
+                if (enable) {
+                    if (prefs.FeedList.indexOf(topicFeed) < 0) {
+                        console.debug(`add feed ${topicFeed.name} to feedlist`);
+                        prefs.FeedList.push(topicFeed);
+                    }
+                } else {
+                    let index = prefs.FeedList.indexOf(topicFeed)
+                    if (index >= 0) {
+                        console.debug(`remove feed ${topicFeed.name} from feedlist`);
+                        prefs.FeedList.splice(index, 1);
+                    }
+                }
             }
-        } else {
-            console.info(`Backend: Changing default topics, ${topicName} - remove`);
-            let i = prefs.EnabledTopics.indexOf(topicName);
-            if (i >= 0) {
-                prefs.EnabledTopics.splice(i, 1);
-            } else
-                console.warn(`Backend: Topic not found in list.`)
         }
         await this.SaveUserSettings(prefs);
+    }
+    /* Checks wheter use has at least X percent of the topic enabled. */
+    public static async IsTopicEnabled(topicName: string, threshold: number = 0.5): Promise<boolean> {
+        let prefs = await this.GetUserSettings();
+        if (DefaultTopics.Topics[topicName] !== undefined) {
+            let enabledFeedsCount = 0;
+            for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
+                let topicFeed = DefaultTopics.Topics[topicName][i];
+                if (prefs.FeedList.indexOf(topicFeed) >= 0)
+                    enabledFeedsCount++;
+            }
+            if (enabledFeedsCount / DefaultTopics.Topics[topicName].length >= threshold)
+                return true;
+            else
+                return false;
+        } else
+            return false;
     }
 
     /* Private methods */
@@ -336,7 +346,7 @@ export class Backend {
         console.info("Backend: Downloading articles..");
         let timeBegin = Date.now();
         let prefs = await this.GetUserSettings();
-        let feedList = await this.GetFeedList();
+        let feedList = await prefs.FeedList;
 
         let arts: Article[] = [];
         let promises: Promise<Article[]>[] = [];
