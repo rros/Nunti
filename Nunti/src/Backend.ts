@@ -262,6 +262,7 @@ export class Backend {
             } else
                 console.warn(`Backend: Topic not found in list.`)
         }
+        await this.SaveUserSettings(prefs);
     }
 
     /* Private methods */
