@@ -143,11 +143,13 @@ class Step3Topics extends Component {
             czechNews: false,
         }
         
-        (async () => {
+        let updateTopics = async () => {
             for (let topicName in DefaultTopics.Topics) {
                 this.state[topicName] = (await Backend.IsTopicEnabled(topicName));
             }
-        });
+        };
+
+        updateTopics();
     }
 
     private async changeDefaultTopics(topic: string) {

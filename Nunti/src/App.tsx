@@ -120,7 +120,8 @@ export default class App extends Component {
     }
 
     public async saveUserSettings(prefs: []){
-        this.prefs = prefs;
+        let currentPrefs = await Backend.GetUserSettings();
+        this.prefs = {...prefs, ...currentPrefs};
         await Backend.SaveUserSettings(prefs);
     }
     
