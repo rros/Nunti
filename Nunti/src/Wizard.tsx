@@ -205,7 +205,7 @@ class Step4Learning extends Component {
                 <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.centerText}>Nunti will adapt to your preferences!</Title>
                 <Paragraph style={Styles.centerText}>
-                    Nunti will analyze what articles you like and dislike by swiping on them and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated 50 articles, at which point your feed will become your own.
+                    Nunti will analyze what articles you like and dislike by swiping on them and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated {this.props.prefs.NoSortUntil} articles, at which point your feed will become your own.
                 </Paragraph>
                 <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>Start reading</Button>
             </ScrollView>
