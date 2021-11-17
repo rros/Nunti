@@ -53,15 +53,16 @@ class UserSettings {
 
     public Theme: string = "follow system";
     public Accent: string = "default";
-    public DiscoverRatio: number = 0.2; //0.2 means 20% of articles will be random (preventing bubble effect)
+    public DiscoverRatio: number = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)
 
     public FirstLaunch: boolean = true;
 
     /* Advanced */
     public ArticleCacheTime: number = 3*60; //minutes
-    public MaxArticles: number = 70;
+    public MaxArticles: number = 70; //total in feed
     public MaxArticlesPerChannel: number = 20;
     public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
+    public RotateDBAfter = this.NoSortUntil * 1.5; //effectively evaluate only last X ratings when scoring articles
 }
 
 class Backup {
@@ -78,15 +79,13 @@ class Backup {
         b.TimeStamp = Date.now();
         b.UserSettings = await Backend.GetUserSettings();
         b.LearningDB = await Backend.StorageGet('learning_db');
-        if (b.LearningDB !== undefined)
-            b.LearningDB["seen"] = undefined; //wipe seen arts, saves lots of space
         b.Saved = await Backend.StorageGet('saved');
         return b;
     }
 }
 
 export class Backend {
-    public static DB_VERSION = "2.0";
+    public static DB_VERSION = "3.0";
 
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
@@ -185,28 +184,52 @@ export class Backend {
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
     public static async RateArticle(art: Article, rating: number) {
         let learning_db = await this.StorageGet('learning_db');
+        let learning_db_secondary = await this.StorageGet('learning_db_secondary');
+
         if (rating > 0) {
             //upvote
             rating = rating * (learning_db["downvotes"] + 1 / learning_db["upvotes"] + 1);
             learning_db["upvotes"] += 1;
+            learning_db_secondary["upvotes"] += 1;
         } else if (rating < 0) {
             //downvote
             rating = rating * (learning_db["upvotes"] + 1 / learning_db["downvotes"] + 1);
             learning_db["downvotes"] += 1;
+            learning_db_secondary["downvotes"] += 1;
         } else
             return;
 
         for(let keyword in art.keywords) {
-            let wordRating = rating * art.keywords[keyword]
-            if (learning_db["keywords"][keyword] === undefined)
-                learning_db["keywords"][keyword] = wordRating
-            else
-                learning_db["keywords"][keyword] += wordRating
+            let wordRating = rating * art.keywords[keyword];
+            if (learning_db["keywords"][keyword] === undefined) {
+                learning_db["keywords"][keyword] = wordRating;
+            } else {
+                learning_db["keywords"][keyword] += wordRating;
+            }
+
+            if (learning_db_secondary["keywords"][keyword] === undefined) {
+                learning_db_secondary["keywords"][keyword] = wordRating;
+            } else {
+                learning_db_secondary["keywords"][keyword] += wordRating;
+            }
         }
-        learning_db["seen"].push(art);
-        learning_db["seen"].splice(0, learning_db["seen"].length - (await this.GetUserSettings()).MaxArticles); //To prevent flooding storage with seen arts.
+
+        let seen = await this.StorageGet("seen");
+        seen.push(art);
+        seen.splice(0, seen.length - (await this.GetUserSettings()).MaxArticles); //To prevent flooding storage with seen arts.
+        await this.StorageSave('seen', seen);
+
+        /* if secondary DB is ready, replace the main and create new secondary. */
+        if (learning_db_secondary['upvotes'] + learning_db_secondary['downvotes'] > (await this.GetUserSettings()).RotateDBAfter) {
+            learning_db = {...learning_db_secondary};
+            learning_db_secondary = {upvotes: 0, downvotes: 0, keywords: {}}
+            console.warn(`Backend: [OK] Rotating DB and wiping secondary DB now..`);
+        }
+
         await this.StorageSave('learning_db', learning_db);
-        console.info(`Backend: Saved rating for article '${art.title}'`)
+        await this.StorageSave('learning_db_secondary', learning_db);
+        console.info(`Backend: Saved rating for article '${art.title}'`);
+        await this.CheckDB();
     }
     /* Save data to storage. */
     public static async StorageSave(key: string, value: any) {
@@ -222,15 +245,36 @@ export class Backend {
     }
     /* Perform checkDB, makes sure things are not null and stuff. */
     public static async CheckDB() {
-        console.debug('Backend: Checking DB..');
-        if (await AsyncStorage.getItem('saved') === null)
+        if (await AsyncStorage.getItem('saved') === null) {
+            console.debug('Backend: CheckDB(): Init "saved" key in DB..');
             await AsyncStorage.setItem('saved',JSON.stringify([]));
-        if (await AsyncStorage.getItem('user_settings') === null)
+        }
+        if (await AsyncStorage.getItem('user_settings') === null) {
+            console.debug('Backend: CheckDB(): Init "user_settings" key in DB..');
             await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
-        if (await AsyncStorage.getItem('articles_cache') === null)
+        }
+        if (await AsyncStorage.getItem('articles_cache') === null) {
+            console.debug('Backend: CheckDB(): Init "articles_cache" key in DB..');
             await AsyncStorage.setItem('articles_cache',JSON.stringify({"timestamp":0,"articles":[]}));
-        if (await AsyncStorage.getItem('learning_db') === null)
-            await AsyncStorage.setItem('learning_db',JSON.stringify({"upvotes":0, "downvotes":0, "keywords":{}, "seen": []}));
+        }
+        if (await AsyncStorage.getItem('seen') === null) {
+            console.debug('Backend: CheckDB(): Init "seen" key in DB..');
+            await AsyncStorage.setItem('seen',JSON.stringify([]));
+        }
+        if (await AsyncStorage.getItem('learning_db') === null) {
+            console.debug('Backend: CheckDB(): Init "learning_db" key in DB..');
+            await AsyncStorage.setItem('learning_db',JSON.stringify({
+                upvotes:0, downvotes:0,
+                keywords:{}
+            }));
+        }
+        if (await AsyncStorage.getItem('learning_db_secondary') === null) {
+            console.debug('Backend: CheckDB(): Init "learning_db_secondary" key in DB..');
+            await AsyncStorage.setItem('learning_db_secondary',JSON.stringify({
+                upvotes:0, downvotes:0,
+                keywords:{}
+            }));
+        }
     }
     /* Change RSS topics */
     public static async ChangeDefaultTopics(topicName: string, enable: boolean) {
@@ -364,7 +408,7 @@ export class Backend {
     }
     /* Removes seen (already rated) articles from article list. */
     private static async CleanArticles(arts: Article[]): Promise<Article[]> {
-        let seen = (await this.StorageGet('learning_db'))["seen"];
+        let seen = await this.StorageGet('seen');
         for(let i = 0; i < seen.length; i++) {
             let index = await this.FindArticleByUrl(seen[i].url,arts);
             while(index >= 0) {
@@ -432,7 +476,6 @@ export class Backend {
         return arts;
     }
     private static async GetArticleScore(art: Article): Promise<number> {
-        // TODO: make this rolling average to represent recent changes in user's preferences
         let score = 0;
         let db: {[term: string]: number} = (await this.StorageGet('learning_db'))["keywords"];
         for(let term in art.keywords) {
