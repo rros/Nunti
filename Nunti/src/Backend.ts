@@ -62,7 +62,7 @@ class UserSettings {
     public MaxArticles: number = 70; //total in feed
     public MaxArticlesPerChannel: number = 20;
     public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
-    public RotateDBAfter = this.NoSortUntil * 1.5; //effectively evaluate only last X ratings when scoring articles
+    public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
 }
 
 class Backup {
@@ -188,12 +188,12 @@ export class Backend {
 
         if (rating > 0) {
             //upvote
-            rating = rating * (learning_db["downvotes"] + 1 / learning_db["upvotes"] + 1);
+            rating = rating * Math.abs(learning_db["downvotes"] + 1 / learning_db["upvotes"] + 1);
             learning_db["upvotes"] += 1;
             learning_db_secondary["upvotes"] += 1;
         } else if (rating < 0) {
             //downvote
-            rating = rating * (learning_db["upvotes"] + 1 / learning_db["downvotes"] + 1);
+            rating = rating * Math.abs(learning_db["upvotes"] + 1 / learning_db["downvotes"] + 1);
             learning_db["downvotes"] += 1;
             learning_db_secondary["downvotes"] += 1;
         } else
@@ -267,11 +267,13 @@ export class Backend {
                 upvotes:0, downvotes:0,
                 keywords:{}
             }));
+            await AsyncStorage.removeItem('learning_db_secondary');
         }
         if (await AsyncStorage.getItem('learning_db_secondary') === null) {
             console.debug('Backend: CheckDB(): Init "learning_db_secondary" key in DB..');
+            let prefs = await this.GetUserSettings();
             await AsyncStorage.setItem('learning_db_secondary',JSON.stringify({
-                upvotes:0, downvotes:0,
+                upvotes: -prefs.RotateDBAfter / 4, downvotes: -prefs.RotateDBAfter / 4,
                 keywords:{}
             }));
         }
@@ -316,6 +318,39 @@ export class Backend {
         } else
             return false;
     }
+    /* Creates a backup/export in the form of JSON string. */
+    public static async CreateBackup(): Promise<string> {
+        return JSON.stringify(await Backup.MakeBackup());
+    }
+    /* Wipes current data and loads backup created by CreateBackup() method. */
+    public static async TryLoadBackup(backupStr: string): Promise<boolean> {
+        try {
+            var backup: Backup = JSON.parse(backupStr);
+            if (backup.TimeStamp !== undefined)
+                console.info(`Backend: Loading backup from ${(new Date(backup.TimeStamp)).toISOString()}, ver.: ${backup.Version}`);
+            else
+                console.info(`Backend: Loading backup from (unknown date)`);
+
+            if (backup.Version === undefined)
+                throw Error('Cannot determine backup version.');
+            if (parseInt(backup.Version.split('.')[0]) != parseInt(this.DB_VERSION.split('.')[0]))
+                throw Error(`Version mismatch! Backup: ${backup.Version}, current: ${this.DB_VERSION}`);
+
+            await this.ResetAllData();
+            if (backup.UserSettings !== undefined)
+                await this.SaveUserSettings({...(await this.GetUserSettings()), ...backup.UserSettings});
+            if (backup.LearningDB !== undefined)
+                await this.StorageSave('learning_db', {... (await this.StorageGet('learning_db')), ...backup.LearningDB});
+            if (backup.Saved !== undefined)
+                await this.StorageSave('saved', backup.Saved);
+            console.info('Backend: Backup loaded.');
+            return true;
+        } catch (err) {
+            console.error('Backend: Failed to load backup.',err);
+            return false;
+        }
+    }
+
 
     /* Private methods */
     private static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, noimages: boolean): Promise<Article[]> {
@@ -601,36 +636,6 @@ export class Backend {
                 return i;
         }
         return -1;
-    }
-    private static async CreateBackup(): Promise<string> {
-        return JSON.stringify(await Backup.MakeBackup());
-    }
-    private static async TryLoadBackup(backupStr: string): Promise<boolean> {
-        try {
-            var backup: Backup = JSON.parse(backupStr);
-            if (backup.TimeStamp !== undefined)
-                console.info(`Backend: Loading backup from ${(new Date(backup.TimeStamp)).toISOString()}, ver.: ${backup.Version}`);
-            else
-                console.info(`Backend: Loading backup from (unknown date)`);
-
-            if (backup.Version === undefined)
-                throw Error('Cannot determine backup version.');
-            if (parseInt(backup.Version.split('.')[0]) != parseInt(this.DB_VERSION.split('.')[0]))
-                throw Error(`Version mismatch! Backup: ${backup.Version}, current: ${this.DB_VERSION}`);
-
-            await this.ResetAllData();
-            if (backup.UserSettings !== undefined)
-                await this.SaveUserSettings(backup.UserSettings);
-            if (backup.LearningDB !== undefined)
-                await this.StorageSave('learning_db', backup.LearningDB);
-            if (backup.Saved !== undefined)
-                await this.StorageSave('saved', backup.Saved);
-            console.info('Backend: Backup loaded.');
-            return true;
-        } catch (err) {
-            console.error('Backend: Failed to load backup.',err);
-            return false;
-        }
     }
 }
 export default Backend;
