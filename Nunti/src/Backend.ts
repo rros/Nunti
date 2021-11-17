@@ -23,7 +23,6 @@ export class Feed {
 }
 
 class Article {
-    //TODO: add date time and display in frontend. Don't care till v0.4
     public id: number = 0;
     public title: string = "";
     public description: string = "";
@@ -81,7 +80,6 @@ class Backup {
         b.LearningDB = await Backend.StorageGet('learning_db');
         if (b.LearningDB !== undefined)
             b.LearningDB["seen"] = undefined; //wipe seen arts, saves lots of space
-        //TODO: wipe seen arts even when running sometimes
         b.Saved = await Backend.StorageGet('saved');
         return b;
     }
@@ -206,6 +204,7 @@ export class Backend {
                 learning_db["keywords"][keyword] += wordRating
         }
         learning_db["seen"].push(art);
+        learning_db["seen"].splice(0, learning_db["seen"].length - (await this.GetUserSettings()).MaxArticles); //To prevent flooding storage with seen arts.
         await this.StorageSave('learning_db', learning_db);
         console.info(`Backend: Saved rating for article '${art.title}'`)
     }
@@ -216,7 +215,6 @@ export class Backend {
     }
     /* Get data from storage. */
     public static async StorageGet(key:string): Promise<any> {
-        //TODO: locking request?
         let data = await AsyncStorage.getItem(key);
         if (data === null)
             throw new Error(`Cannot retrieve data, possibly unknown key '${key}'.`);

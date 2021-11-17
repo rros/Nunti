@@ -147,7 +147,7 @@ class Feed extends PureComponent {
                 this.rate(updatedArticles[removingIndex], true);
             }
 
-            updatedArticles.splice(removingIndex, 1); // TODO: stop article from reappearing (backend) for example 24 hour stop as part of article cache?
+            updatedArticles.splice(removingIndex, 1);
             
             this.rowTranslateValues[rowKey].setValue(1);
             Animated.timing(this.rowTranslateValues[rowKey], {
