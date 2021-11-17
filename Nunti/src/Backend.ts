@@ -434,6 +434,7 @@ export class Backend {
         return arts;
     }
     private static async GetArticleScore(art: Article): Promise<number> {
+        // TODO: make this rolling average to represent recent changes in user's preferences
         let score = 0;
         let db: {[term: string]: number} = (await this.StorageGet('learning_db'))["keywords"];
         for(let term in art.keywords) {
