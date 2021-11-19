@@ -9,8 +9,6 @@ import {
     Snackbar
 } from 'react-native-paper';
 
-import BackgroundTask from 'react-native-background-task';
-
 // our files
 import Styles, { Dark, Light, Colors } from "./Styles";
 import Wizard from "./Wizard";
@@ -26,11 +24,6 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import SplashScreen from 'react-native-splash-screen'
 
 const NavigationDrawer = createDrawerNavigator();
-
-BackgroundTask.define(async () => {
-    await Backend.GetArticles();
-    BackgroundTask.finish();
-});
 
 export default class App extends Component {
     constructor(props: any) {
@@ -55,8 +48,6 @@ export default class App extends Component {
 
     async componentDidMount() {
         await this.loadPrefs();
-        BackgroundTask.schedule({ period: 10800 }); // 3 hours in seconds
-
         // splash screen will hide when navigator has finished loading
     }
 
