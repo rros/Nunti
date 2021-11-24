@@ -271,7 +271,7 @@ export class Backend {
         }
         if (await AsyncStorage.getItem('learning_db_secondary') === null) {
             console.debug('Backend: CheckDB(): Init "learning_db_secondary" key in DB..');
-            let prefs = await this.GetUserSettings();
+            let prefs = JSON.parse(await AsyncStorage.getItem('user_settings') ?? JSON.stringify(new UserSettings()));
             await AsyncStorage.setItem('learning_db_secondary',JSON.stringify({
                 upvotes: -prefs.RotateDBAfter / 4, downvotes: -prefs.RotateDBAfter / 4,
                 keywords:{}
