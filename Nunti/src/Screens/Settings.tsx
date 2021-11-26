@@ -23,6 +23,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     constructor(props: any){
         super(props);
 
+        this.changeLanguage = this.changeLanguage.bind(this);
         this.toggleHapticFeedback = this.toggleHapticFeedback.bind(this);
         this.toggleNoImages = this.toggleNoImages.bind(this);
 
@@ -35,6 +36,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.export = this.export.bind(this);
         
         this.state = {
+            language: this.props.prefs.Language,
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
             noImagesSwitch: this.props.prefs.DisableImages,
             theme: this.props.prefs.Theme,
@@ -44,12 +46,19 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             rssInputValue: "",
             rssAddDisabled: true, // add button in rss dialog disabled when input empty
             
+            languageDialogVisible: false,
             themeDialogVisible: false,
             accentDialogVisible: false,
             rssDialogVisible: false,
             cacheDialogVisible: false,
             dataDialogVisible: false,
         }
+    }
+
+    private async changeLanguage(newLanguage: string) {
+        this.props.prefs.Language = newLanguage;
+        this.setState({ language: newLanguage });
+        await this.props.saveUserSettings(this.props.prefs);
     }
 
     private async toggleHapticFeedback() {
@@ -182,6 +191,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await this.props.loadPrefs();
         
         this.setState({
+            language: this.props.prefs.Language,
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
             noImagesSwitch: this.props.prefs.DisableImages,
             theme: this.props.prefs.Theme,
@@ -195,6 +205,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             <ScrollView style={Styles.topView}>
                 <List.Section>
                     <List.Subheader>General</List.Subheader>
+                    <List.Item title="Language"
+                        left={() => <List.Icon icon="translate" />}
+                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ languageDialogVisible: true })}}>{this.state.language}</Button>} />
                     <List.Item title="Haptic feedback"
                         left={() => <List.Icon icon="vibrate" />}
                         right={() => <Switch value={this.state.hapticFeedbackSwitch} onValueChange={this.toggleHapticFeedback} />} />
@@ -244,6 +257,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                 </List.Section>
 
                 <Portal>
+                    <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false })}}>
+                        <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
+                            <RadioButton.Item label="English" value="english" />
+                            <RadioButton.Item label="Czech" value="czech" />
+                        </RadioButton.Group>
+                    </Dialog>
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false })}}>
                         <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
                             <RadioButton.Item label="Follow system" value="follow system" />

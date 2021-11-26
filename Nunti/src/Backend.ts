@@ -48,16 +48,18 @@ class Article {
 
 class UserSettings {
     public FeedList: Feed[] = [];
+
     public HapticFeedback = true;
     public DisableImages = false;
+    public Language: string = "english"
 
     public Theme: string = "follow system";
     public Accent: string = "default";
-    public DiscoverRatio: number = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)
 
     public FirstLaunch: boolean = true;
 
     /* Advanced */
+    public DiscoverRatio: number = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)
     public ArticleCacheTime: number = 3*60; //minutes
     public MaxArticles: number = 70; //total in feed
     public MaxArticlesPerChannel: number = 20;

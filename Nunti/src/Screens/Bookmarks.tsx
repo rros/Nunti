@@ -205,10 +205,10 @@ class Bookmarks extends PureComponent {
                         }]}>
                             <Button 
                                 color={this.props.theme.colors.error} dark={false} 
-                                icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateLeft}>Trash</Button>
+                                icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateLeft}></Button>
                             <Button 
                                 color={this.props.theme.colors.error} dark={false} 
-                                icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateRight}>Trash</Button>
+                                icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateRight}></Button>
                         </Animated.View>
                     )}
                     ListEmptyComponent={(

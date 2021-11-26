@@ -212,10 +212,10 @@ class Feed extends PureComponent {
                         }]}>
                             <Button 
                                 color={this.props.theme.colors.error} dark={false} 
-                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateLeft}>Rate</Button>
+                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateLeft}></Button>
                             <Button 
                                 color={this.props.theme.colors.success} dark={false} 
-                                icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateRight}>Rate</Button>
+                                icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateRight}></Button>
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
