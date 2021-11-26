@@ -4,18 +4,14 @@ export default class DefaultTopics {
     public static Topics: {[name: string]: Feed[]} = {
         "czechNews": [
             new Feed("https://www.irozhlas.cz/rss/irozhlas"),
-            new Feed("https://novinky.cz/rss"),
-            new Feed("https://www.aktualne.cz/rss"),
             new Feed("https://ct24.ceskatelevize.cz/rss"),
-            new Feed("https://www.seznamzpravy.cz/rss"),
-            new Feed("https://rss.msn.com/cs-cz"),
         ],
         "technology": [
-            new Feed("https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"),
-            new Feed("https://www.theverge.com/rss/index.xml"),
+            new Feed("https://www.reutersagency.com/feed/?best-topics=tech&post_type=best"),
+            new Feed("https://www.cnbc.com/id/19854910/device/rss/rss.html"),
         ],
         "worldPolitics": [
-            new Feed("https://www.reutersagency.com/feed/?post_type=reuters-best"),
+            new Feed("https://www.reutersagency.com/feed/?best-topics=political-general&post_type=best"),
             new Feed("http://rss.cnn.com/rss/edition.rss"),
             new Feed("https://rss.msn.com/en-GB"),
         ],
@@ -25,12 +21,21 @@ export default class DefaultTopics {
         "economy": [
             new Feed("https://www.cnbc.com/id/20910258/device/rss/rss.html"),
             new Feed("https://www.ft.com/global-economy?format=rss"),
-        ],
-        "tabloids": [
-            new Feed("https://www.thesun.co.uk/rss"),
+            new Feed("https://www.reutersagency.com/feed/?best-sectors=economy&post_type=best"),
         ],
         "travel": [
             new Feed("https://www.cnbc.com/id/10000739/device/rss/rss.html"),
+        ],
+        "sport": [
+            new Feed("https://www.reutersagency.com/feed/?best-topics=sports&post_type=best"),
+            new Feed("https://www.ceskatelevize.cz/sport/rss/hlavni-zpravy/"),
+        ],
+        "environment": [
+            new Feed("https://www.reutersagency.com/feed/?best-topics=environment&post_type=best"),
+            new Feed("https://www.sciencedaily.com/rss/top/environment.xml"),
+        ],
+        "science": [
+            new Feed("https://www.sciencedaily.com/rss/top/science.xml"),
         ],
     }
 }

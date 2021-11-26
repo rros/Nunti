@@ -141,6 +141,11 @@ class Step3Topics extends Component {
             worldPolitics: false,
             sport: false,
             czechNews: false,
+            economy: false,
+            weather: false,
+            travel: false,
+            environment: false,
+            science: false,
         }
         
         this.isTopicEnabled();
@@ -158,8 +163,6 @@ class Step3Topics extends Component {
 
         // reload prefs, as backend saves new ones straight into storage and this.props.prefs will become outdated
         await this.props.loadPrefs();
-
-        console.log(this.props.prefs);
     }
     
     render() {
@@ -167,18 +170,33 @@ class Step3Topics extends Component {
             <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
                 <List.Section>
                     <List.Subheader>Topics</List.Subheader>
-                    <List.Item title="Technology"
-                        left={() => <List.Icon icon="cog" />}
-                        right={() => <Switch value={this.state.technology} onValueChange={() => this.changeDefaultTopics("technology")} />} />
                     <List.Item title="World politics"
                         left={() => <List.Icon icon="account-voice" />}
                         right={() => <Switch value={this.state.worldPolitics} onValueChange={() => this.changeDefaultTopics("worldPolitics")} />} />
-                    <List.Item title="Sport"
-                        left={() => <List.Icon icon="basketball" />}
-                        right={() => <Switch value={this.state.sport} onValueChange={() => this.changeDefaultTopics("sport")} />} />
                     <List.Item title="Czech news"
                         left={() => <List.Icon icon="glass-mug-variant" />}
                         right={() => <Switch value={this.state.czechNews} onValueChange={() => this.changeDefaultTopics("czechNews")} />} />
+                    <List.Item title="Sport"
+                        left={() => <List.Icon icon="basketball" />}
+                        right={() => <Switch value={this.state.sport} onValueChange={() => this.changeDefaultTopics("sport")} />} />
+                    <List.Item title="Economy"
+                        left={() => <List.Icon icon="currency-usd" />}
+                        right={() => <Switch value={this.state.economy} onValueChange={() => this.changeDefaultTopics("economy")} />} />
+                    <List.Item title="Technology"
+                        left={() => <List.Icon icon="cog" />}
+                        right={() => <Switch value={this.state.technology} onValueChange={() => this.changeDefaultTopics("technology")} />} />
+                    <List.Item title="Science"
+                        left={() => <List.Icon icon="beaker-question" />}
+                        right={() => <Switch value={this.state.science} onValueChange={() => this.changeDefaultTopics("science")} />} />
+                    <List.Item title="Environment"
+                        left={() => <List.Icon icon="nature" />}
+                        right={() => <Switch value={this.state.environment} onValueChange={() => this.changeDefaultTopics("environment")} />} />
+                    <List.Item title="Travel"
+                        left={() => <List.Icon icon="train-car" />}
+                        right={() => <Switch value={this.state.travel} onValueChange={() => this.changeDefaultTopics("travel")} />} />
+                    <List.Item title="Weather"
+                        left={() => <List.Icon icon="weather-sunny" />}
+                        right={() => <Switch value={this.state.weather} onValueChange={() => this.changeDefaultTopics("weather")} />} />
                 </List.Section>
             </ScrollView>
         );
