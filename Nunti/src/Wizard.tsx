@@ -18,6 +18,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { Backend } from './Backend';
+import Locale from './Locale';
 import DefaultTopics from './DefaultTopics';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
@@ -58,8 +59,8 @@ function Step1Welcome({theme}) {
     return(
         <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
             <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
-            <Title style={Styles.centerText}>Welcome to Nunti!</Title>
-            <Paragraph style={Styles.centerText}>Enjoy reading your articles knowing nobody is looking over your shoulder.</Paragraph>
+            <Title style={Styles.centerText}>{Locale.Get('wizard:welcome')}</Title>
+            <Paragraph style={Styles.centerText}>{Locale.Get('wizard:enjoy')}</Paragraph>
         </ScrollView>
     );
 }
@@ -91,7 +92,7 @@ class Step2Theme extends Component {
     }
 
     render() {
-        return(
+        return( //TODO: add colours translation
             <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
                 <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
                     <List.Section>
@@ -166,7 +167,7 @@ class Step3Topics extends Component {
     }
     
     render() {
-        return(
+        return( //TODO: add topics translation
             <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
                 <List.Section>
                     <List.Subheader>Topics</List.Subheader>
@@ -221,10 +222,8 @@ class Step4Learning extends Component {
         return(
             <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
                 <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Title style={Styles.centerText}>Nunti will adapt to your preferences!</Title>
-                <Paragraph style={Styles.centerText}>
-                    Nunti will analyze what articles you like and dislike by swiping on them and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated {this.props.prefs.NoSortUntil} articles, at which point your feed will become your own.
-                </Paragraph>
+                <Title style={Styles.centerText}>{Locale.Get('wizard:adapt')}</Title>
+                <Paragraph style={Styles.centerText}>{Locale.Get('wizard:learning').replace('%noSort%', this.state.prefs.NoSortUntil)}</Paragraph>
                 <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>Start reading</Button>
             </ScrollView>
         );

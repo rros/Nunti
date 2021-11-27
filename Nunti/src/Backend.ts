@@ -3,6 +3,7 @@ var DOMParser = require('xmldom').DOMParser
 var XMLSerializer = require('xmldom').XMLSerializer;
 
 import DefaultTopics from './DefaultTopics';
+import Locale from './Locale';
 
 export class Feed {
     public name: string;
@@ -51,7 +52,7 @@ class UserSettings {
 
     public HapticFeedback = true;
     public DisableImages = false;
-    public Language: string = "english"
+    public Language: string = "english";
 
     public Theme: string = "follow system";
     public Accent: string = "default";
@@ -87,7 +88,14 @@ class Backup {
 }
 
 export class Backend {
-    public static DB_VERSION = "3.0";
+    public static DB_VERSION = "3.1";
+    
+    /* Init some stuff like locale, meant to be called only once at app startup. */
+    public static async Init() {
+        console.info('Backend init.');
+        await this.CheckDB();
+        Locale.Language = (await this.GetUserSettings()).Language;
+    }
 
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {

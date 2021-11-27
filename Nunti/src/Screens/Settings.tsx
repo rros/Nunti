@@ -18,6 +18,7 @@ import {
 import * as ScopedStorage from "react-native-scoped-storage";
 
 import { Backend, Feed } from '../Backend';
+import Locale from '../Locale';
 
 class Settings extends Component { // not using purecomponent as it doesn't rerender array map
     constructor(props: any){
@@ -59,6 +60,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.prefs.Language = newLanguage;
         this.setState({ language: newLanguage });
         await this.props.saveUserSettings(this.props.prefs);
+        Locale.Language = newLanguage;
     }
 
     private async toggleHapticFeedback() {
@@ -95,15 +97,15 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     private async import() {
         let file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, "utf8");
         if(file.mime != "text/plain"){
-            this.props.toggleSnack("Failed to import, file format is invalid", true);
+            this.props.toggleSnack(Locale.Get("import_fail:format"), true);
             return;
         }
 
         if(await Backend.TryLoadBackup(file.data)){
-            this.props.toggleSnack("Imported backup file", true);
+            this.props.toggleSnack(Locale.Get("import_ok"), true);
             this.reloadPrefs();
         } else {
-            this.props.toggleSnack("Failed to import, backup is invalid", true);
+            this.props.toggleSnack(Locale.Get("import_fail:invalid"), true);
         }
     }
 
@@ -112,9 +114,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         try {
             await ScopedStorage.createDocument("NuntiBackup.txt", "text/plain", backup, "utf8");
-            this.props.toggleSnack("Exported backup", true);
+            this.props.toggleSnack(Locale.Get('export_ok'), true);
         } catch (err) {
-            this.props.toggleSnack("Failed to export backup", true);
+            this.props.toggleSnack(Locale.Get('export_ok'), true);
             console.log("Failed to export backup. " + err);
         }
     }
@@ -134,10 +136,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             this.props.prefs.FeedList.push(feed)
             await this.props.saveUserSettings(this.props.prefs);
 
-            this.props.toggleSnack(`Added ${feed.name} to feeds`, true);
+            this.props.toggleSnack(Locale.Get('added_feed').replace('%feed%',feed.name), true);
         } catch(err) {
-            console.error("Can't add RSS feed",err);ubl
-            this.props.toggleSnack("Failed to add RSS feed", true);
+            console.error("Can't add RSS feed",err);
+            this.props.toggleSnack(Locale.Get('add_feed_fail'), true);
         }
 
         this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
@@ -157,10 +159,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             await this.props.saveUserSettings(this.props.prefs);
             
             this.setState({feeds: updatedFeeds});
-            this.props.toggleSnack(`Removed ${rssName} from feeds`, true);
+            this.props.toggleSnack(Locale.Get('removed_feed').replace('%feed%',rssName), true);
         } catch (err) {
             console.error("Can't remove RSS feed", err);
-            this.props.toggleSnack("Failed to remove RSS feed", true);
+            this.props.toggleSnack(Locale.Get('remove_feed_fail'), true);
         }
         
         // show change on next refresh
@@ -168,14 +170,14 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
 
     private async resetArtsCache() {
-        this.props.toggleSnack("Reset article cache", true);
+        this.props.toggleSnack(Locale.Get('reset_art_cache'), true);
         this.setState({ cacheDialogVisible: false });
 
         await Backend.ResetCache();
     }
     
     private async resetAllData() {
-        this.props.toggleSnack("Restored all data", true);
+        this.props.toggleSnack(Locale.Get('wiped_data'), true);
         this.setState({ dataDialogVisible: false });
 
         await Backend.ResetAllData();
@@ -201,7 +203,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
 
     render() {
-        return(
+        return(//TODO finish translations of these
             <ScrollView style={Styles.topView}>
                 <List.Section>
                     <List.Subheader>General</List.Subheader>
@@ -216,7 +218,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         right={() => <Switch value={this.state.noImagesSwitch} onValueChange={this.toggleNoImages} />} />
                 </List.Section>
                 <List.Section>
-                    <List.Subheader>Theme</List.Subheader>
+                    <List.Subheader>{Locale.Get('theme')}</List.Subheader>
                     <List.Item title="App theme"
                         left={() => <List.Icon icon="theme-light-dark" />}
                         right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ themeDialogVisible: true })}}>{this.state.theme}</Button>} />
@@ -225,7 +227,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ accentDialogVisible: true })}}>{this.state.accent}</Button>} />
                 </List.Section>
                 <List.Section>
-                    <List.Subheader>Storage</List.Subheader>
+                    <List.Subheader>{Locale.Get('storage')}</List.Subheader>
                     <List.Item title="Import database"
                         left={() => <List.Icon icon="application-import" />}
                         right={() => <Button style={Styles.settingsButton} onPress={this.import}>Import</Button>} />
@@ -248,10 +250,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                 </List.Section>
                 <List.Section>
                     <List.Subheader>Danger zone</List.Subheader>
-                    <List.Item title="Reset article cache"
+                    <List.Item title={Locale.Get('wipe_cache')}
                         left={() => <List.Icon icon="cached" />}
                         right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({cacheDialogVisible: true}) }}>Reset</Button>} />
-                    <List.Item title="Restore all data"
+                    <List.Item title={Locale.Get('wipe_data')}
                         left={() => <List.Icon icon="alert" />}
                         right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>Restore</Button>} />
                 </List.Section>

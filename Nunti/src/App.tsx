@@ -16,6 +16,7 @@ import Feed from "./Screens/Feed"
 import Bookmarks from "./Screens/Bookmarks"
 import Settings from "./Screens/Settings"
 import Backend from "./Backend";
+import Locale from "./Locale";
 
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -47,6 +48,7 @@ export default class App extends Component {
     }
 
     async componentDidMount() {
+        await Backend.Init();
         await this.loadPrefs();
         // splash screen will hide when navigator has finished loading
     }
@@ -131,16 +133,16 @@ export default class App extends Component {
                 <NavigationContainer theme={this.state.theme} onReady={SplashScreen.hide}>
                     <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? "Wizard" : "Feed"}
                         drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} />} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
-                        <NavigationDrawer.Screen name="Feed">
+                        <NavigationDrawer.Screen name={Locale.Get("feed")}>
                             {props => <Feed {...props}prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="Bookmarks">
+                        <NavigationDrawer.Screen name={Locale.Get("bookmarks")}>
                             {props => <Bookmarks {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="Settings">
+                        <NavigationDrawer.Screen name={Locale.Get("settings")}>
                             {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="Wizard" options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
+                        <NavigationDrawer.Screen name={Locale.Get("wizard")} options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
                             {props => <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} updateTheme={this.updateTheme} updateAccent={this.updateAccent}/>}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
@@ -149,7 +151,7 @@ export default class App extends Component {
                     <Snackbar
                         visible={this.state.snackVisible}
                         duration={4000}
-                        action={{ label: "Dismiss", onPress: () => {this.setState({ snackVisible: false })} }}
+                        action={{ label: Locale.Get("dismiss"), onPress: () => {this.setState({ snackVisible: false })} }}
                         onDismiss={() => { this.setState({ snackVisible: false }) }}
                         theme={{ colors: { accent: this.state.theme.colors.accentReverse }}}
                     >{this.state.snackMessage}</Snackbar>
