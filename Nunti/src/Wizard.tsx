@@ -207,7 +207,7 @@ class Step3Topics extends Component {
 class Step4Learning extends Component {
     constructor(props: any){
         super(props);
-        
+
         this.exitWizard = this.exitWizard.bind(this);
     }
 
@@ -223,7 +223,7 @@ class Step4Learning extends Component {
             <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
                 <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.centerText}>{Locale.Get('wizard:adapt')}</Title>
-                <Paragraph style={Styles.centerText}>{Locale.Get('wizard:learning').replace('%noSort%', this.state.prefs.NoSortUntil)}</Paragraph>
+                <Paragraph style={Styles.centerText}>{Locale.Get('wizard:learning').replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
                 <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>Start reading</Button>
             </ScrollView>
         );
