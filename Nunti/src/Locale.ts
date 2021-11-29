@@ -1,5 +1,5 @@
 export default class Locale {
-    public static Language = "english"; //TODO: change according to prefs
+    public static Language = "english";
 
     /* Gets localised translation. */
     public static Get(code: string): string {
