@@ -261,8 +261,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                 <Portal>
                     <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false })}}>
                         <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
-                            <RadioButton.Item label="English" value="english" />
-                            <RadioButton.Item label="Čeština" value="czech" />
+                            <RadioButton.Item label={Locale.Get("sett_english")} value="english" />
+                            <RadioButton.Item label={Locale.Get("sett_czech")} value="czech" />
                         </RadioButton.Group>
                     </Dialog>
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false })}}>
