@@ -203,121 +203,121 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
 
     render() {
-        return(//TODO finish translations of these
+        return(
             <ScrollView style={Styles.topView}>
                 <List.Section>
-                    <List.Subheader>General</List.Subheader>
-                    <List.Item title="Language"
+                    <List.Subheader>{Locale.Get("sett_general")}</List.Subheader>
+                    <List.Item title={Locale.Get("sett_language")}
                         left={() => <List.Icon icon="translate" />}
                         right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ languageDialogVisible: true })}}>{this.state.language}</Button>} />
-                    <List.Item title="Haptic feedback"
+                    <List.Item title={Locale.Get("sett_vibrate")}
                         left={() => <List.Icon icon="vibrate" />}
                         right={() => <Switch value={this.state.hapticFeedbackSwitch} onValueChange={this.toggleHapticFeedback} />} />
-                    <List.Item title="Compact mode"
+                    <List.Item title={Locale.Get("sett_compact")}
                         left={() => <List.Icon icon="image-off" />}
                         right={() => <Switch value={this.state.noImagesSwitch} onValueChange={this.toggleNoImages} />} />
                 </List.Section>
                 <List.Section>
                     <List.Subheader>{Locale.Get('theme')}</List.Subheader>
-                    <List.Item title="App theme"
+                    <List.Item title={Locale.Get("sett_theme")}
                         left={() => <List.Icon icon="theme-light-dark" />}
                         right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ themeDialogVisible: true })}}>{this.state.theme}</Button>} />
-                    <List.Item title="App accent"
+                    <List.Item title={Locale.Get("sett_accent")}
                         left={() => <List.Icon icon="palette" />}
                         right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ accentDialogVisible: true })}}>{this.state.accent}</Button>} />
                 </List.Section>
                 <List.Section>
                     <List.Subheader>{Locale.Get('storage')}</List.Subheader>
-                    <List.Item title="Import database"
+                    <List.Item title={Locale.Get("sett_import")}
                         left={() => <List.Icon icon="application-import" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={this.import}>Import</Button>} />
-                    <List.Item title="Export database"
+                        right={() => <Button style={Styles.settingsButton} onPress={this.import}>{Locale.Get("sett_import")}</Button>} />
+                    <List.Item title={Locale.Get("sett_export")}
                         left={() => <List.Icon icon="application-export" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={this.export}>Export</Button>} />
+                        right={() => <Button style={Styles.settingsButton} onPress={this.export}>{Locale.Get("sett_export")}</Button>} />
                 </List.Section>
                 <List.Section>
-                    <List.Subheader>RSS feeds</List.Subheader>
-                    <List.Item title="Add RSS feed"
+                    <List.Subheader>{Locale.Get("sett_feeds")}</List.Subheader>
+                    <List.Item title={Locale.Get("sett_add_feeds")}
                         left={() => <List.Icon icon="plus" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ rssDialogVisible: true })}}>Add</Button>} />
+                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ rssDialogVisible: true })}}>{Locale.Get("sett_add_feed")}</Button>} />
                     { this.state.feeds.map((element) => {
                         return (
                             <List.Item title={element.name}
                                 left={() => <List.Icon icon="rss" />}
-                                right={() => <Button style={Styles.settingsButton} onPress={() => { this.removeRss(element.name) }}>Remove</Button>} />
+                                right={() => <Button style={Styles.settingsButton} onPress={() => { this.removeRss(element.name) }}>{Locale.Get("sett_remove_feed")}</Button>} />
                         );
                     })}
                 </List.Section>
                 <List.Section>
-                    <List.Subheader>Danger zone</List.Subheader>
+                    <List.Subheader>{Locale.Get("sett_danger")}</List.Subheader>
                     <List.Item title={Locale.Get('wipe_cache')}
                         left={() => <List.Icon icon="cached" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({cacheDialogVisible: true}) }}>Reset</Button>} />
+                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({cacheDialogVisible: true}) }}>{Locale.Get("sett_reset")}</Button>} />
                     <List.Item title={Locale.Get('wipe_data')}
                         left={() => <List.Icon icon="alert" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>Restore</Button>} />
+                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>{Locale.Get("sett_restore")}</Button>} />
                 </List.Section>
 
                 <Portal>
                     <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false })}}>
                         <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
                             <RadioButton.Item label="English" value="english" />
-                            <RadioButton.Item label="Czech" value="czech" />
+                            <RadioButton.Item label="Čeština" value="czech" />
                         </RadioButton.Group>
                     </Dialog>
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false })}}>
                         <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
-                            <RadioButton.Item label="Follow system" value="follow system" />
-                            <RadioButton.Item label="Light theme" value="light" />
-                            <RadioButton.Item label="Dark theme" value="dark" />
+                            <RadioButton.Item label={Locale.Get("color_system")} value="follow system" />
+                            <RadioButton.Item label={Locale.Get("color_light")} value="light" />
+                            <RadioButton.Item label={Locale.Get("color_dark")} value="dark" />
                         </RadioButton.Group>
                     </Dialog>
                     <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false })}}>
                         <Dialog.ScrollArea>
                             <ScrollView>
                                 <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
-                                    <RadioButton.Item label="Default (Nunti)" value="default" />
-                                    <RadioButton.Item label="Amethyst" value="amethyst" />
-                                    <RadioButton.Item label="Aqua" value="aqua" />
-                                    <RadioButton.Item label="Black" value="black" />
-                                    <RadioButton.Item label="Cinnamon" value="cinnamon" />
-                                    <RadioButton.Item label="Forest" value="forest" />
-                                    <RadioButton.Item label="Ocean" value="ocean" />
-                                    <RadioButton.Item label="Orchid" value="orchid" />
-                                    <RadioButton.Item label="Space" value="space" />
+                                    <RadioButton.Item label={Locale.Get("color_default")} value="default" />
+                                    <RadioButton.Item label={Locale.Get("color_amethyst")} value="amethyst" />
+                                    <RadioButton.Item label={Locale.Get("color_aqua")} value="aqua" />
+                                    <RadioButton.Item label={Locale.Get("color_black")}value="black" />
+                                    <RadioButton.Item label={Locale.Get("color_cinnamon")} value="cinnamon" />
+                                    <RadioButton.Item label={Locale.Get("color_forest")} value="forest" />
+                                    <RadioButton.Item label={Locale.Get("color_ocean")} value="ocean" />
+                                    <RadioButton.Item label={Locale.Get("color_orchid")} value="orchid" />
+                                    <RadioButton.Item label={Locale.Get("color_space")} value="space" />
                                 </RadioButton.Group>
                             </ScrollView>
                         </Dialog.ScrollArea>
                     </Dialog>
                     <Dialog visible={this.state.rssDialogVisible} onDismiss={() => { this.setState({ rssDialogVisible: false })}}>
-                        <Dialog.Title>Add new RSS feed</Dialog.Title>
+                        <Dialog.Title>{Locale.Get("sett_add_feeds")}</Dialog.Title>
                         <Dialog.Content>
-                            <TextInput label="RSS url" autoCapitalize="none" defaultValue={this.state.rssInputValue}
+                            <TextInput label={Locale.Get("sett_url")} autoCapitalize="none" defaultValue={this.state.rssInputValue}
                                 onChangeText={text => this.rssInputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true }) }}>Cancel</Button>
-                            <Button disabled={this.state.rssAddDisabled} onPress={this.addRss}>Add</Button>
+                            <Button onPress={() => { this.setState({ rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true }) }}>{Locale.Get("sett_cancel")}</Button>
+                            <Button disabled={this.state.rssAddDisabled} onPress={this.addRss}>{Locale.Get("sett_add_feed")}</Button>
                         </Dialog.Actions>
                     </Dialog>
                     <Dialog visible={this.state.cacheDialogVisible} onDismiss={() => { this.setState({ cacheDialogVisible: false })}}>
-                        <Dialog.Title>Reset article cache?</Dialog.Title>
+                        <Dialog.Title>{Locale.Get("sett_reset_title")}</Dialog.Title>
                         <Dialog.Content>
-                            <Paragraph>This will reset article cache, forcing a reload of articles. Use this if you experience problems with article loading.</Paragraph>
+                            <Paragraph>{Locale.Get("sett_reset_dialog")}</Paragraph>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ cacheDialogVisible: false }) }}>Cancel</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetArtsCache}>Reset</Button>
+                            <Button onPress={() => { this.setState({ cacheDialogVisible: false }) }}>{Locale.Get("sett_cancel")}</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetArtsCache}>{Locale.Get("sett_reset")}</Button>
                         </Dialog.Actions>
                     </Dialog>
                     <Dialog visible={this.state.dataDialogVisible} onDismiss={() => { this.setState({ dataDialogVisible: false })}}>
-                        <Dialog.Title>Restore all data?</Dialog.Title>
+                        <Dialog.Title>{Locale.Get("sett_restore_title")}</Dialog.Title>
                         <Dialog.Content>
-                            <Paragraph>This will reset all data, including your bookmarks and settings. This step is irreversible.</Paragraph>
+                            <Paragraph>{Locale.Get("sett_restore_dialog")}</Paragraph>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ dataDialogVisible: false }) }}>Cancel</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}>Restore</Button>
+                            <Button onPress={() => { this.setState({ dataDialogVisible: false }) }}>{Locale.Get("sett_cancel")}</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}>{Locale.Get("sett_restore")}</Button>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>

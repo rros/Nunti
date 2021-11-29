@@ -167,35 +167,35 @@ class Step3Topics extends Component {
     }
     
     render() {
-        return( //TODO: add topics translation
+        return(
             <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
                 <List.Section>
-                    <List.Subheader>Topics</List.Subheader>
-                    <List.Item title="World politics"
+                    <List.Subheader>{Locale.Get("wizard_topics")}</List.Subheader>
+                    <List.Item title={Locale.Get("wizard_politics")}
                         left={() => <List.Icon icon="account-voice" />}
                         right={() => <Switch value={this.state.worldPolitics} onValueChange={() => this.changeDefaultTopics("worldPolitics")} />} />
-                    <List.Item title="Czech news"
+                    <List.Item title={Locale.Get("wizard_czech")}
                         left={() => <List.Icon icon="glass-mug-variant" />}
                         right={() => <Switch value={this.state.czechNews} onValueChange={() => this.changeDefaultTopics("czechNews")} />} />
-                    <List.Item title="Sport"
+                    <List.Item title={Locale.Get("wizard_sport")}
                         left={() => <List.Icon icon="basketball" />}
                         right={() => <Switch value={this.state.sport} onValueChange={() => this.changeDefaultTopics("sport")} />} />
-                    <List.Item title="Economy"
+                    <List.Item title={Locale.Get("wizard_economy")}
                         left={() => <List.Icon icon="currency-usd" />}
                         right={() => <Switch value={this.state.economy} onValueChange={() => this.changeDefaultTopics("economy")} />} />
-                    <List.Item title="Technology"
+                    <List.Item title={Locale.Get("wizard_technology")}
                         left={() => <List.Icon icon="cog" />}
                         right={() => <Switch value={this.state.technology} onValueChange={() => this.changeDefaultTopics("technology")} />} />
-                    <List.Item title="Science"
+                    <List.Item title={Locale.Get("wizard_science")}
                         left={() => <List.Icon icon="beaker-question" />}
                         right={() => <Switch value={this.state.science} onValueChange={() => this.changeDefaultTopics("science")} />} />
-                    <List.Item title="Environment"
+                    <List.Item title={Locale.Get("wizard_environment")}
                         left={() => <List.Icon icon="nature" />}
                         right={() => <Switch value={this.state.environment} onValueChange={() => this.changeDefaultTopics("environment")} />} />
-                    <List.Item title="Travel"
+                    <List.Item title={Locale.Get("wizard_travel")}
                         left={() => <List.Icon icon="train-car" />}
                         right={() => <Switch value={this.state.travel} onValueChange={() => this.changeDefaultTopics("travel")} />} />
-                    <List.Item title="Weather"
+                    <List.Item title={Locale.Get("wizard_weather")}
                         left={() => <List.Icon icon="weather-sunny" />}
                         right={() => <Switch value={this.state.weather} onValueChange={() => this.changeDefaultTopics("weather")} />} />
                 </List.Section>
@@ -224,7 +224,7 @@ class Step4Learning extends Component {
                 <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.centerText}>{Locale.Get('wizard:adapt')}</Title>
                 <Paragraph style={Styles.centerText}>{Locale.Get('wizard:learning').replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
-                <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>Start reading</Button>
+                <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>{Locale.Get("wizard_start")}</Button>
             </ScrollView>
         );
     }
