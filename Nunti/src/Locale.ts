@@ -42,6 +42,8 @@ export default class Locale {
             "wiped_data": "Restored all data.",
             "wipe_data": "Restore all data",
             "wipe_cache": "Reset article cache",
+            "no_bookmarks": "No bookmarks",
+            "no_bookmarks:desc": "Save an article to see it on this screen.",
         },
         "czech": {
             "article_saved": "Článek uložen.",
@@ -77,6 +79,8 @@ export default class Locale {
             "wiped_data": "Všechna data aplikace resetována.",
             "wipe_data": "Obnovit tovární nastavení",
             "wipe_cache": "Vymazat mezipaměť",
+            "no_bookmarks": "Prázdno",
+            "no_bookmarks:desc": "Uložte nejprve nějaký článek do záložek, objeví se tady.",
         },
     }
 }

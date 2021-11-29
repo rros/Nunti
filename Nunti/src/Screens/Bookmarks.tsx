@@ -215,8 +215,8 @@ class Bookmarks extends PureComponent {
                     ListEmptyComponent={(
                         <View style={Styles.centerView}>
                             <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                            <Title>No bookmarks</Title>
-                            <Paragraph style={Styles.centerText}>Save an article to see it on this screen.</Paragraph>
+                            <Title>{Locale.Get("no_bookmarks")}</Title>
+                            <Paragraph style={Styles.centerText}>{Locale.Get("no_bookmarks:desc")}</Paragraph>
                         </View>
                     )}
 
