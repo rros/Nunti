@@ -54,7 +54,7 @@ class UserSettings {
     public DisableImages = false;
     public Language: string = "english";
 
-    public Theme: string = "follow system";
+    public Theme: string = "system";
     public Accent: string = "default";
 
     public FirstLaunch: boolean = true;

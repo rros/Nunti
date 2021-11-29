@@ -209,7 +209,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Subheader>{Locale.Get("sett_general")}</List.Subheader>
                     <List.Item title={Locale.Get("sett_language")}
                         left={() => <List.Icon icon="translate" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ languageDialogVisible: true })}}>{this.state.language}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ languageDialogVisible: true })}}>{Locale.Get("sett_this_language")}</Button>} />
                     <List.Item title={Locale.Get("sett_vibrate")}
                         left={() => <List.Icon icon="vibrate" />}
                         right={() => <Switch value={this.state.hapticFeedbackSwitch} onValueChange={this.toggleHapticFeedback} />} />
@@ -221,10 +221,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Subheader>{Locale.Get('theme')}</List.Subheader>
                     <List.Item title={Locale.Get("sett_theme")}
                         left={() => <List.Icon icon="theme-light-dark" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ themeDialogVisible: true })}}>{this.state.theme}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ themeDialogVisible: true })}}>{Locale.Get("color_" + this.state.theme)}</Button>} />
                     <List.Item title={Locale.Get("sett_accent")}
                         left={() => <List.Icon icon="palette" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ accentDialogVisible: true })}}>{this.state.accent}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ accentDialogVisible: true })}}>{Locale.Get("color_" + this.state.accent)}</Button>} />
                 </List.Section>
                 <List.Section>
                     <List.Subheader>{Locale.Get('storage')}</List.Subheader>
@@ -267,7 +267,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     </Dialog>
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false })}}>
                         <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
-                            <RadioButton.Item label={Locale.Get("color_system")} value="follow system" />
+                            <RadioButton.Item label={Locale.Get("color_system")} value="system" />
                             <RadioButton.Item label={Locale.Get("color_light")} value="light" />
                             <RadioButton.Item label={Locale.Get("color_dark")} value="dark" />
                         </RadioButton.Group>
