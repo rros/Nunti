@@ -3,7 +3,6 @@ var DOMParser = require('xmldom').DOMParser
 var XMLSerializer = require('xmldom').XMLSerializer;
 
 import DefaultTopics from './DefaultTopics';
-import Locale from './Locale';
 
 export class Feed {
     public name: string;
@@ -94,7 +93,6 @@ export class Backend {
     public static async Init() {
         console.info('Backend init.');
         await this.CheckDB();
-        Locale.Language = (await this.GetUserSettings()).Language;
     }
 
     /* Retrieves sorted articles to show in feed. */

@@ -18,7 +18,6 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { Backend } from './Backend';
-import Locale from './Locale';
 import DefaultTopics from './DefaultTopics';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
@@ -39,33 +38,76 @@ class Wizard extends Component {
                         return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off" size={15} color={this.props.theme.colors.disabled} />;}
             }}>
                 <NavigationTabs.Screen name="Welcome">
-                    { props => <Step1Welcome {...props} theme={this.props.theme} />}
+                    { props => <Step1Welcome {...props} lang={this.props.lang} theme={this.props.theme} />}
+                </NavigationTabs.Screen>
+                <NavigationTabs.Screen name="Language">
+                    { props => <Step2Language {...props} lang={this.props.lang} prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings} updateLanguage={this.props.updateLanguage} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Theming">
-                    { props => <Step2Theme {...props} prefs={this.props.prefs} updateTheme={this.props.updateTheme} updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
+                    { props => <Step3Theme {...props} lang={this.props.lang} prefs={this.props.prefs} updateTheme={this.props.updateTheme} updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Topics">
-                    { props => <Step3Topics {...props} prefs={this.props.prefs} loadPrefs={this.props.loadPrefs}/>}
+                    { props => <Step4Topics {...props} lang={this.props.lang} prefs={this.props.prefs} loadPrefs={this.props.loadPrefs}/>}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Learning">
-                    { props => <Step4Learning {...props} prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings}/>}
+                    { props => <Step5Learning {...props} lang={this.props.lang} prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings}/>}
                 </NavigationTabs.Screen>
             </NavigationTabs.Navigator>
         );
     }
 }
 
-function Step1Welcome({theme}) {
-    return(
-        <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
-            <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
-            <Title style={Styles.centerText}>{Locale.Get('wizard:welcome')}</Title>
-            <Paragraph style={Styles.centerText}>{Locale.Get('wizard:enjoy')}</Paragraph>
-        </ScrollView>
-    );
+class Step1Welcome extends Component {
+    constructor(props: any) {
+        super(props);
+    }
+
+    render() {
+        return(
+            <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
+                <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
+                <Title style={Styles.centerText}>{this.props.lang.welcome}</Title>
+                <Paragraph style={Styles.centerText}>{this.props.lang.enjoy}</Paragraph>
+            </ScrollView>
+        );
+    }
 }
 
-class Step2Theme extends Component {
+class Step2Language extends Component {
+    constructor(props: any){
+        super(props);
+        
+        this.state = {
+            language: this.props.prefs.Language,
+        }
+    }
+    
+    private async changeLanguage(newLanguage: string) {
+        this.props.prefs.Language = newLanguage;
+        this.setState({ language: newLanguage });
+        await this.props.saveUserSettings(this.props.prefs);
+
+        this.props.updateLanguage(newLanguage);
+    }
+
+    render() {
+        return(
+            <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
+                <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
+                    <List.Section>
+                        <List.Subheader>{this.props.lang.language}</List.Subheader>
+                        <List.Item title={this.props.lang.english}
+                            right={() => <RadioButton.Item value="english" />} />
+                        <List.Item title={this.props.lang.czech}
+                            right={() => <RadioButton.Item value="czech" />} />
+                    </List.Section>
+                </RadioButton.Group>
+            </ScrollView>
+        );
+    }
+}
+
+class Step3Theme extends Component {
     constructor(props: any){
         super(props);
         
@@ -92,39 +134,39 @@ class Step2Theme extends Component {
     }
 
     render() {
-        return( //TODO: add colours translation
+        return(
             <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
                 <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
                     <List.Section>
-                        <List.Subheader>Theme</List.Subheader>
-                        <List.Item title="Follow system"
-                            right={() => <RadioButton.Item value="follow system" />} />
-                        <List.Item title="Light theme"
+                        <List.Subheader>{this.props.lang.theme}</List.Subheader>
+                        <List.Item title={this.props.lang.system}
+                            right={() => <RadioButton.Item value="system" />} />
+                        <List.Item title={this.props.lang.light}
                             right={() => <RadioButton.Item value="light" />} />
-                        <List.Item title="Dark theme"
+                        <List.Item title={this.props.lang.dark}
                             right={() => <RadioButton.Item value="dark" />} />
                     </List.Section>
                 </RadioButton.Group>
                 <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
                     <List.Section>
-                        <List.Subheader>Accent</List.Subheader>
-                        <List.Item title="Default (Nunti)"
+                        <List.Subheader>{this.props.lang.accent}</List.Subheader>
+                        <List.Item title={this.props.lang.default}
                             right={() => <RadioButton.Item value="default" />} />
-                        <List.Item title="Amethyst"
+                        <List.Item title={this.props.lang.amethyst}
                             right={() => <RadioButton.Item value="amethyst" />} />
-                        <List.Item title="Aqua"
+                        <List.Item title={this.props.lang.aqua}
                             right={() => <RadioButton.Item value="aqua" />} />
-                        <List.Item title="Black"
+                        <List.Item title={this.props.lang.black}
                             right={() => <RadioButton.Item value="black" />} />
-                        <List.Item title="Cinnamon"
+                        <List.Item title={this.props.lang.cinnamon}
                             right={() => <RadioButton.Item value="cinnamon" />} />
-                        <List.Item title="Forest"
+                        <List.Item title={this.props.lang.forest}
                             right={() => <RadioButton.Item value="forest" />} />
-                        <List.Item title="Ocean"
+                        <List.Item title={this.props.lang.ocean}
                             right={() => <RadioButton.Item value="ocean" />} />
-                        <List.Item title="Orchid"
+                        <List.Item title={this.props.lang.orchid}
                             right={() => <RadioButton.Item value="orchid" />} />
-                        <List.Item title="Space"
+                        <List.Item title={this.props.lang.space}
                             right={() => <RadioButton.Item value="space" />} />
                     </List.Section>
                 </RadioButton.Group>
@@ -133,7 +175,7 @@ class Step2Theme extends Component {
     }
 }
 
-class Step3Topics extends Component {
+class Step4Topics extends Component {
     constructor(props: any){
         super(props);
         
@@ -170,32 +212,32 @@ class Step3Topics extends Component {
         return(
             <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
                 <List.Section>
-                    <List.Subheader>{Locale.Get("wizard_topics")}</List.Subheader>
-                    <List.Item title={Locale.Get("wizard_politics")}
+                    <List.Subheader>{this.props.lang.topics}</List.Subheader>
+                    <List.Item title={this.props.lang.politics}
                         left={() => <List.Icon icon="account-voice" />}
                         right={() => <Switch value={this.state.worldPolitics} onValueChange={() => this.changeDefaultTopics("worldPolitics")} />} />
-                    <List.Item title={Locale.Get("wizard_czech")}
+                    <List.Item title={this.props.lang.czech_news}
                         left={() => <List.Icon icon="glass-mug-variant" />}
                         right={() => <Switch value={this.state.czechNews} onValueChange={() => this.changeDefaultTopics("czechNews")} />} />
-                    <List.Item title={Locale.Get("wizard_sport")}
+                    <List.Item title={this.props.lang.sport}
                         left={() => <List.Icon icon="basketball" />}
                         right={() => <Switch value={this.state.sport} onValueChange={() => this.changeDefaultTopics("sport")} />} />
-                    <List.Item title={Locale.Get("wizard_economy")}
+                    <List.Item title={this.props.lang.economy}
                         left={() => <List.Icon icon="currency-usd" />}
                         right={() => <Switch value={this.state.economy} onValueChange={() => this.changeDefaultTopics("economy")} />} />
-                    <List.Item title={Locale.Get("wizard_technology")}
+                    <List.Item title={this.props.lang.technology}
                         left={() => <List.Icon icon="cog" />}
                         right={() => <Switch value={this.state.technology} onValueChange={() => this.changeDefaultTopics("technology")} />} />
-                    <List.Item title={Locale.Get("wizard_science")}
+                    <List.Item title={this.props.lang.science}
                         left={() => <List.Icon icon="beaker-question" />}
                         right={() => <Switch value={this.state.science} onValueChange={() => this.changeDefaultTopics("science")} />} />
-                    <List.Item title={Locale.Get("wizard_environment")}
+                    <List.Item title={this.props.lang.environment}
                         left={() => <List.Icon icon="nature" />}
                         right={() => <Switch value={this.state.environment} onValueChange={() => this.changeDefaultTopics("environment")} />} />
-                    <List.Item title={Locale.Get("wizard_travel")}
+                    <List.Item title={this.props.lang.travel}
                         left={() => <List.Icon icon="train-car" />}
                         right={() => <Switch value={this.state.travel} onValueChange={() => this.changeDefaultTopics("travel")} />} />
-                    <List.Item title={Locale.Get("wizard_weather")}
+                    <List.Item title={this.props.lang.weather}
                         left={() => <List.Icon icon="weather-sunny" />}
                         right={() => <Switch value={this.state.weather} onValueChange={() => this.changeDefaultTopics("weather")} />} />
                 </List.Section>
@@ -204,7 +246,7 @@ class Step3Topics extends Component {
     }
 }
 
-class Step4Learning extends Component {
+class Step5Learning extends Component {
     constructor(props: any){
         super(props);
 
@@ -215,16 +257,16 @@ class Step4Learning extends Component {
         this.props.prefs.FirstLaunch = false;
         await this.props.saveUserSettings(this.props.prefs);
 
-        this.props.navigation.navigate("Feed");
+        this.props.navigation.navigate("feed");
     }
 
     render() {
         return(
             <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
                 <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Title style={Styles.centerText}>{Locale.Get('wizard:adapt')}</Title>
-                <Paragraph style={Styles.centerText}>{Locale.Get('wizard:learning').replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
-                <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>{Locale.Get("wizard_start")}</Button>
+                <Title style={Styles.centerText}>{this.props.lang.adapt}</Title>
+                <Paragraph style={Styles.centerText}>{(this.props.lang.learning).replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
+                <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>{this.props.lang.start}</Button>
             </ScrollView>
         );
     }

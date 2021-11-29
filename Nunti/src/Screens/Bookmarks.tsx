@@ -24,7 +24,6 @@ import * as Haptics from 'expo-haptics';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 
 import Backend from '../Backend';
-import Locale from '../Locale';
 
 class Bookmarks extends PureComponent {
     constructor(props:any){
@@ -112,7 +111,7 @@ class Bookmarks extends PureComponent {
         let index = 0
 
         if(typeof(articleID) !== typeof(0)) { // this happens in article details
-            this.props.toggleSnack(Locale.Get('removed_saved'), true);
+            this.props.toggleSnack(this.props.lang.removed_saved, true);
             
             index = this.currentIndex;
             this.hideDetails();
@@ -191,7 +190,7 @@ class Bookmarks extends PureComponent {
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
                                         <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
-                                        <Caption style={Styles.cardContentSource}>{Locale.Get('article_from') + rowData.item.source}</Caption>
+                                        <Caption style={Styles.cardContentSource}>{this.props.lang.article_from + rowData.item.source}</Caption>
                                     </Card.Content>
                                     {rowData.item.cover !== undefined && <View style={Styles.cardContentCoverContainer}>
                                         <Card.Cover source={{ uri: rowData.item.cover }}/>
@@ -215,8 +214,8 @@ class Bookmarks extends PureComponent {
                     ListEmptyComponent={(
                         <View style={Styles.centerView}>
                             <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                            <Title>{Locale.Get("no_bookmarks")}</Title>
-                            <Paragraph style={Styles.centerText}>{Locale.Get("no_bookmarks:desc")}</Paragraph>
+                            <Title>{this.props.lang.no_bookmarks}</Title>
+                            <Paragraph style={Styles.centerText}>{this.props.lang.no_bookmarks_desc}</Paragraph>
                         </View>
                     )}
 
@@ -234,12 +233,12 @@ class Bookmarks extends PureComponent {
                                 <Card.Content>
                                     <Title>{this.state.articles[this.currentIndex].title}</Title>
                                     <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
-                                    <Caption>{Locale.Get('article_from') + this.state.articles[this.currentIndex].source}</Caption>
+                                    <Caption>{this.props.lang.article_from + this.state.articles[this.currentIndex].source}</Caption>
                                 </Card.Content>
                                 <Card.Actions>
-                                    <Button icon="book" onPress={this.readMore}>{Locale.Get('read more')}</Button>
-                                    <Button icon="bookmark-remove" onPress={this.removeSavedArticle}>{Locale.Get('remove')}</Button>
-                                    <Button icon="share" onPress={this.shareArticle} style={Styles.cardButtonLeft}>{Locale.Get('share')}</Button>
+                                    <Button icon="book" onPress={this.readMore}>{this.props.lang.read_more}</Button>
+                                    <Button icon="bookmark-remove" onPress={this.removeSavedArticle}>{this.props.lang.remove}</Button>
+                                    <Button icon="share" onPress={this.shareArticle} style={Styles.cardButtonLeft}>{this.props.lang.share}</Button>
                                 </Card.Actions>
                             </Card>
                         </ScrollView>

@@ -11,6 +11,7 @@ import {
 
 // our files
 import Styles, { Dark, Light, Colors } from "./Styles";
+import { English, Czech } from "./Locale";
 import Wizard from "./Wizard";
 import Feed from "./Screens/Feed"
 import Bookmarks from "./Screens/Bookmarks"
@@ -31,6 +32,7 @@ export default class App extends Component {
         super(props);
 
         // function bindings
+        this.updateLanguage = this.updateLanguage.bind(this);
         this.updateTheme = this.updateTheme.bind(this);
         this.updateAccent = this.updateAccent.bind(this);
         this.saveUserSettings = this.saveUserSettings.bind(this);
@@ -39,6 +41,7 @@ export default class App extends Component {
         
         this.state = {
             theme: Dark, // temporary until theme loads
+            language: English, // temporary until language loads
             
             snackVisible: false,
             snackMessage: "",
@@ -50,14 +53,23 @@ export default class App extends Component {
     async componentDidMount() {
         await Backend.Init();
         await this.loadPrefs();
+
         // splash screen will hide when navigator has finished loading
     }
 
     public async loadPrefs() {
         this.prefs = await Backend.GetUserSettings();
+        await this.updateLanguage(this.prefs.Language);
         this.updateTheme(this.prefs.Theme);
+        
+        this.setState({prefsLoaded: true});     }
 
-        this.setState({prefsLoaded: true});
+    public async updateLanguage(language: string){
+        if(language == "english"){
+            this.setState({ language: English })
+        } else if (language == "czech"){
+            this.setState({ language: Czech })
+        }
     }
 
     public async updateTheme(themeName: string){
@@ -131,27 +143,27 @@ export default class App extends Component {
                     backgroundColor="rgba(0, 0, 0, 0.3)"
                     translucent={true}/>
                 <NavigationContainer theme={this.state.theme} onReady={SplashScreen.hide}>
-                    <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? "Wizard" : "Feed"}
-                        drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} />} screenOptions={{header: (props) => <CustomHeader {...props} />}}>
-                        <NavigationDrawer.Screen name={Locale.Get("feed")}>
-                            {props => <Feed {...props}prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
+                    <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? "wizard" : "feed"}
+                        drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
+                        <NavigationDrawer.Screen name="feed" options={{title: "omae"}}>
+                            {props => <Feed {...props} prefs={this.prefs} lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name={Locale.Get("bookmarks")}>
-                            {props => <Bookmarks {...props} prefs={this.prefs} toggleSnack={this.toggleSnack}/>}
+                        <NavigationDrawer.Screen name="bookmarks">
+                            {props => <Bookmarks {...props} prefs={this.prefs} lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name={Locale.Get("settings")}>
-                            {props => <Settings {...props} prefs={this.prefs} saveUserSettings={this.saveUserSettings} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack} />}
+                        <NavigationDrawer.Screen name="settings">
+                            {props => <Settings {...props} prefs={this.prefs} lang={this.state.language} saveUserSettings={this.saveUserSettings} updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name={Locale.Get("wizard")} options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
-                            {props => <Wizard prefs={this.prefs} saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} updateTheme={this.updateTheme} updateAccent={this.updateAccent}/>}
+                        <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
+                            {props => <Wizard prefs={this.prefs} lang={this.state.language} saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
-                </NavigationContainer>
+                </NavigationContainer> 
                 <Portal>
                     <Snackbar
                         visible={this.state.snackVisible}
                         duration={4000}
-                        action={{ label: Locale.Get("dismiss"), onPress: () => {this.setState({ snackVisible: false })} }}
+                        action={{ label: this.state.language.dismiss, onPress: () => {this.setState({ snackVisible: false })} }}
                         onDismiss={() => { this.setState({ snackVisible: false }) }}
                         theme={{ colors: { accent: this.state.theme.colors.accentReverse }}}
                     >{this.state.snackMessage}</Snackbar>
@@ -161,16 +173,16 @@ export default class App extends Component {
     }
 }
 
-function CustomHeader ({ navigation, route }) {
+function CustomHeader ({ navigation, route, lang }) {
     return (
         <Appbar.Header>
             <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} />
-            <Appbar.Content title={route.name} />
+            <Appbar.Content title={lang[route.name]} />
         </Appbar.Header>
       );
 }
 
-function CustomDrawer ({ state, navigation, theme }) {
+function CustomDrawer ({ state, navigation, theme, lang }) {
     const [active, setActive] = React.useState(state.routes[state.index].name);
 
     // update selected tab when going back with backbutton   
@@ -184,7 +196,7 @@ function CustomDrawer ({ state, navigation, theme }) {
         <Drawer.Section title="Nunti" style={{backgroundColor: theme.colors.surface, height: "100%", paddingTop: "10%" /*not sure if this padding will work on all devices*/}}>
             <Drawer.Section>
                 <Drawer.Item
-                    label={state.routeNames[0]}
+                    label={lang.feed}
                     icon="book"
                     active={active === state.routeNames[0]}
                     onPress={() => {
@@ -193,7 +205,7 @@ function CustomDrawer ({ state, navigation, theme }) {
                     }}
                 />
                 <Drawer.Item
-                    label={state.routeNames[1]}
+                    label={lang.bookmarks}
                     icon="bookmark"
                     active={active === state.routeNames[1]}
                     onPress={() => {
@@ -203,7 +215,7 @@ function CustomDrawer ({ state, navigation, theme }) {
                 />
             </Drawer.Section>
             <Drawer.Item
-                label={state.routeNames[2]}
+                label={lang.settings}
                 icon="tune"
                 active={active === state.routeNames[2]}
                 onPress={() => {

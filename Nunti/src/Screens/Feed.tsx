@@ -24,7 +24,6 @@ import * as Haptics from 'expo-haptics';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 
 import Backend from '../Backend';
-import Locale from '../Locale';
 
 class Feed extends PureComponent {
     private firstRefresh = true;
@@ -108,9 +107,9 @@ class Feed extends PureComponent {
 
     private async saveArticle() {
         if(await Backend.TrySaveArticle(this.state.articles[this.currentIndex])) {
-            this.props.toggleSnack(Locale.Get("article_saved"), true);
+            this.props.toggleSnack(this.props.lang.article_saved, true);
         } else {
-            this.props.toggleSnack(Locale.Get("article_already_saved"), true);
+            this.props.toggleSnack(this.props.lang.article_already_saved, true);
         }
     }
 
@@ -198,7 +197,7 @@ class Feed extends PureComponent {
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
                                         <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
-                                        <Caption style={Styles.cardContentSource}>{Locale.Get('article_from') + rowData.item.source}</Caption>
+                                        <Caption style={Styles.cardContentSource}>{this.props.lang.article_from + rowData.item.source}</Caption>
                                     </Card.Content>
                                     {rowData.item.cover !== undefined && <View style={Styles.cardContentCoverContainer}>
                                         <Card.Cover source={{ uri: rowData.item.cover }}/>
@@ -222,8 +221,8 @@ class Feed extends PureComponent {
                     ListEmptyComponent={(
                         <View style={Styles.centerView}>
                             <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                            <Title>{Locale.Get('empty_feed_title')}</Title>
-                            <Paragraph style={Styles.centerText}>{Locale.Get('empty_feed_desc')}</Paragraph>
+                            <Title>{this.props.lang.empty_feed_title}</Title>
+                            <Paragraph style={Styles.centerText}>{this.props.lang.empty_feed_desc}</Paragraph>
                         </View>
                     )}
 
@@ -241,12 +240,12 @@ class Feed extends PureComponent {
                                 <Card.Content>
                                     <Title>{this.state.articles[this.currentIndex].title}</Title>
                                     <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
-                                    <Caption>{Locale.Get('article_from') + this.state.articles[this.currentIndex].source}</Caption>
+                                    <Caption>{this.props.lang.article_from + this.state.articles[this.currentIndex].source}</Caption>
                                 </Card.Content>
                                 <Card.Actions>
-                                    <Button icon="book" onPress={this.readMore}>{Locale.Get('read_more')}</Button>
-                                    <Button icon="bookmark" onPress={this.saveArticle}>{Locale.Get('save')}</Button>
-                                    <Button icon="share" onPress={this.shareArticle} style={Styles.cardButtonLeft}>{Locale.Get('share')}</Button>
+                                    <Button icon="book" onPress={this.readMore}>{this.props.lang.read_more}</Button>
+                                    <Button icon="bookmark" onPress={this.saveArticle}>{this.props.lang.save}</Button>
+                                    <Button icon="share" onPress={this.shareArticle} style={Styles.cardButtonLeft}>{this.props.lang.share}</Button>
                                 </Card.Actions>
                             </Card>
                         </ScrollView>
