@@ -131,11 +131,11 @@ export default Styles = StyleSheet.create ({
     },
 
     buttonRateLeft: {
-        paddingRight: "20%",
+        paddingRight: "30%",
     },
     
     buttonRateRight: {
-        paddingLeft: "20%",
+        paddingLeft: "30%",
     },
 
     buttonRateContent: {
