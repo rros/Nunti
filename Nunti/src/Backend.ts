@@ -427,10 +427,26 @@ export class Backend {
                         let art = new Article(Math.floor(Math.random() * 1e16));
                         art.source = feed.name;
                         art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue.substr(0,256)
-                        try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
-                        try { art.description = item.getElementsByTagName("content")[0].childNodes[0].nodeValue.replaceAll(/<([^>]*)>/g,"").replaceAll(/&[A-z]+;/g,""); } catch { }
+                        try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue; } catch { }
+                        try { art.description = item.getElementsByTagName("content")[0].childNodes[0].nodeValue; } catch { }
+                        const entities = [
+                            ['amp', '&'],
+                            ['apos', '\''],
+                            ['#x27', '\''],
+                            ['#x2F', '/'],
+                            ['#39', '\''],
+                            ['#47', '/'],
+                            ['lt', '<'],
+                            ['gt', '>'],
+                            ['nbsp', ' '],
+                            ['quot', '"']
+                        ];
+                        for (var i = 0, max = entities.length; i < max; ++i) {
+                            try { art.description = art.description.replace(new RegExp('&'+entities[i][0]+';', 'g'), entities[i][1]); } catch { }
+                        }
+                        try { art.description = art.description.replace(/<([^>]*)>/g,"").replace(/&[\S]+;/g,"").replace(/\[\S+\]/g, ""); } catch { }
                         try { art.description = art.description.substr(0,1024); } catch { }
-                        try { art.description = art.description.replace(/[^\S ]/g,""); } catch { }
+                        try { art.description = art.description.replace(/[^\S ]/," ").replace(/[^\S]{3,}/g," "); } catch { }
 
                         if (!noimages) {
                             if (art.cover === undefined)
