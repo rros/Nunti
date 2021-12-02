@@ -43,7 +43,8 @@ class Bookmarks extends PureComponent {
         this.state = {
             detailsVisible: false,
             refreshing: false,
-            articles: []
+            articles: [],
+            showImages: !this.props.prefs.DisableImages
         }
         
         // variables
@@ -60,6 +61,7 @@ class Bookmarks extends PureComponent {
         // reload bookmarks on each access
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
             this.refresh();
+            this.setState({showImages: !this.props.prefs.DisableImages})
         });
     }
 
@@ -192,7 +194,8 @@ class Bookmarks extends PureComponent {
                                         <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
                                         <Caption style={Styles.cardContentSource}>{this.props.lang.article_from + rowData.item.source}</Caption>
                                     </Card.Content>
-                                    {rowData.item.cover !== undefined && <View style={Styles.cardContentCoverContainer}>
+                                    {this.state.showImages && rowData.item.cover !== undefined 
+                                        && <View style={Styles.cardContentCoverContainer}>
                                         <Card.Cover source={{ uri: rowData.item.cover }}/>
                                     </View> }
                                 </View>
@@ -231,6 +234,7 @@ class Bookmarks extends PureComponent {
                         <ScrollView>
                             <Card>
                                 {this.state.articles[this.currentIndex].cover !== undefined
+                                    && this.state.showImages
                                     && <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />}
                                 <Card.Content>
                                     <Title>{this.state.articles[this.currentIndex].title}</Title>

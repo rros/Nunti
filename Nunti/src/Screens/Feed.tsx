@@ -45,7 +45,8 @@ class Feed extends PureComponent {
         this.state = {
             detailsVisible: false,
             refreshing: false,
-            articles: []
+            articles: [],
+            showImages: !this.props.prefs.DisableImages
         }
         
         // variables
@@ -58,6 +59,14 @@ class Feed extends PureComponent {
 
     componentDidMount(){
         this.refresh();
+        
+        this._unsubscribe = this.props.navigation.addListener('focus', () => {
+            this.setState({showImages: !this.props.prefs.DisableImages})
+        });
+    }
+
+    componentWillUnmount() {
+        this._unsubscribe();
     }
 
     // loading and refreshing
@@ -196,7 +205,7 @@ class Feed extends PureComponent {
                                         <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
                                         <Caption style={Styles.cardContentSource}>{this.props.lang.article_from + rowData.item.source}</Caption>
                                     </Card.Content>
-                                    {this.props.prefs.DisableImages == false && <View style={Styles.cardContentCoverContainer}>
+                                    {this.state.showImages && rowData.item.cover !== undefined && <View style={Styles.cardContentCoverContainer}>
                                         <Card.Cover source={{ uri: rowData.item.cover }}/>
                                     </View> }
                                 </View>
@@ -234,7 +243,7 @@ class Feed extends PureComponent {
                     {this.state.articles.length > 0 && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} style={Styles.modal}>
                         <ScrollView>
                             <Card>
-                                {this.props.prefs.DisableImages == false && <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />}
+                                {this.state.showImages && this.state.articles[this.currentIndex].cover !== undefined && <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />}
                                 <Card.Content>
                                     <Title>{this.state.articles[this.currentIndex].title}</Title>
                                     <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
