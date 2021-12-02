@@ -420,7 +420,7 @@ export class Backend {
                     var items = xml.getElementsByTagName("feed")[0].getElementsByTagName("entry");
                 }
                 for (let y = 0; y < items.length; y++) {
-                    if (y > maxperchannel)
+                    if (y >= maxperchannel)
                         break
                     let item = items[y];
                     try {
@@ -531,7 +531,7 @@ export class Backend {
         let prefs = await this.GetUserSettings();
         if (learning_db["upvotes"] + learning_db["downvotes"] <= prefs.NoSortUntil) {
             console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db["upvotes"] + learning_db["downvotes"])} out of ${prefs.NoSortUntil} required)`);
-            return articles;
+            return articles.slice(0, prefs.MaxArticles);
         }
 
         let scores: [Article,number][] = [];
