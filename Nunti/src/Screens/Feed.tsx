@@ -63,10 +63,7 @@ class Feed extends PureComponent {
     // loading and refreshing
     private async refresh(){
         this.setState({ refreshing: true });
-        
-        if (!this.firstRefresh && !(await Backend.IsDoNotDownloadEnabled())) {
-            await Backend.ResetCache();
-        }
+
         let arts = await Backend.GetArticles();
 
         // create one animation value for each article (row)
@@ -199,7 +196,7 @@ class Feed extends PureComponent {
                                         <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
                                         <Caption style={Styles.cardContentSource}>{this.props.lang.article_from + rowData.item.source}</Caption>
                                     </Card.Content>
-                                    {rowData.item.cover !== undefined && <View style={Styles.cardContentCoverContainer}>
+                                    {this.props.prefs.DisableImages == false && <View style={Styles.cardContentCoverContainer}>
                                         <Card.Cover source={{ uri: rowData.item.cover }}/>
                                     </View> }
                                 </View>
@@ -236,7 +233,7 @@ class Feed extends PureComponent {
                     {this.state.articles.length > 0 && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} style={Styles.modal}>
                         <ScrollView>
                             <Card>
-                                {this.state.articles[this.currentIndex].cover !== undefined && <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />}
+                                {this.props.prefs.DisableImages == false && <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />}
                                 <Card.Content>
                                     <Title>{this.state.articles[this.currentIndex].title}</Title>
                                     <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>

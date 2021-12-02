@@ -91,9 +91,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.prefs.DisableImages = !this.state.noImagesSwitch;
         this.setState({ noImagesSwitch: !this.state.noImagesSwitch});
         await this.props.saveUserSettings(this.props.prefs);
-        
-        // show change on next refresh
-        await Backend.ResetCache();
     }
     
     private async toggleWifiOnly() {
@@ -165,8 +162,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         this.props.toggleSnack(this.props.lang.change_discovery_success, true);      
         this.setState({discovery: this.state.inputValue, discoveryDialogVisible: false, inputValue: "", dialogButtonDisabled: true});
-        
-        await Backend.ResetCache();
     }
 
     private async changeCacheTime(){
@@ -195,8 +190,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         this.props.toggleSnack(this.props.lang.change_max_art_success, true);
         this.setState({maxArt: this.state.inputValue, maxArtDialogVisible: false, inputValue: "", dialogButtonDisabled: true});
-        
-        await Backend.ResetCache();
     }
 
     private async changeMaxArtFeed(){
@@ -211,8 +204,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         this.props.toggleSnack(this.props.lang.change_max_art_feed_success, true);
         this.setState({maxArtFeed: this.state.inputValue, maxArtFeedDialogVisible: false, inputValue: "", dialogButtonDisabled: true});
-        
-        await Backend.ResetCache();
     }
     
     private async addRss(){
@@ -230,7 +221,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
         
-        // show change on next refresh
         await Backend.ResetCache();
     }
     
@@ -251,7 +241,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             this.props.toggleSnack(this.props.lang.remove_feed_fail, true);
         }
         
-        // show change on next refresh
         await Backend.ResetCache();
     }
 
