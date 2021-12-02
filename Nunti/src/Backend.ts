@@ -51,7 +51,7 @@ class UserSettings {
 
     public HapticFeedback = true;
     public DisableImages = false;
-    public WifiOnly = false; //TODO: frontend, add this to settings
+    public WifiOnly = false;
     public Language: string = "english";
 
     public Theme: string = "system";
