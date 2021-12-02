@@ -208,6 +208,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     
     private async addRss(){
         try {
+            // hide dialog early to show the user that the click registered
+            this.setState({rssDialogVisible: false, inputValue: "", rssAddDisabled: true});
+
             let feed:Feed = await Feed.New(this.state.inputValue);
 
             this.props.prefs.FeedList.push(feed)
@@ -219,7 +222,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             this.props.toggleSnack(this.props.lang.add_feed_fail, true);
         }
 
-        this.setState({feeds: this.state.feeds, rssDialogVisible: false, rssInputValue: "", rssAddDisabled: true});
+        this.setState({feeds: this.state.feeds});
         
         await Backend.ResetCache();
     }
@@ -414,7 +417,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button aonPress={() => { this.setState({ rssDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>
+                            <Button onPress={() => { this.setState({ rssDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>
                                 {this.props.lang.cancel}</Button>
                             <Button disabled={this.state.dialogButtonDisabled} onPress={this.addRss}>{this.props.lang.add_feed}</Button>
                         </Dialog.Actions>
