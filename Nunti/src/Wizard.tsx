@@ -31,20 +31,25 @@ class Wizard extends Component {
     render() {
         return(
             <NavigationTabs.Navigator tabBarPosition="bottom" 
-                screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background }, tabBarIndicatorStyle: { backgroundColor: "transparent"}, tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused, color }) => { 
-                    if(focused)
-                        return <Icon style={Styles.wizardNavigationIcon} name="circle" size={15} color={this.props.theme.colors.accent} />;
-                    else
-                        return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off" size={15} color={this.props.theme.colors.disabled} />;}
+                screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background }, tabBarIndicatorStyle: { backgroundColor: "transparent"},
+                    tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused, color }) => { 
+                        if(focused)
+                            return <Icon style={Styles.wizardNavigationIcon} name="circle" 
+                                        size={15} color={this.props.theme.colors.accent} />;
+                        else
+                            return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off"
+                                        size={15} color={this.props.theme.colors.disabled} />;}
             }}>
                 <NavigationTabs.Screen name="Welcome">
                     { props => <Step1Welcome {...props} lang={this.props.lang} theme={this.props.theme} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Language">
-                    { props => <Step2Language {...props} lang={this.props.lang} prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings} updateLanguage={this.props.updateLanguage} />}
+                    { props => <Step2Language {...props} lang={this.props.lang} prefs={this.props.prefs} 
+                        saveUserSettings={this.props.saveUserSettings} updateLanguage={this.props.updateLanguage} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Theming">
-                    { props => <Step3Theme {...props} lang={this.props.lang} prefs={this.props.prefs} updateTheme={this.props.updateTheme} updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
+                    { props => <Step3Theme {...props} lang={this.props.lang} prefs={this.props.prefs} updateTheme={this.props.updateTheme} 
+                        updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Topics">
                     { props => <Step4Topics {...props} lang={this.props.lang} prefs={this.props.prefs} loadPrefs={this.props.loadPrefs}/>}

@@ -62,7 +62,12 @@ export default class App extends Component {
         await this.updateLanguage(this.prefs.Language);
         this.updateTheme(this.prefs.Theme);
         
-        this.setState({prefsLoaded: true});     }
+        this.setState({prefsLoaded: true});
+    }
+
+    public async saveUserSettings(prefs: []){
+        await Backend.SaveUserSettings(prefs);
+    }
 
     public async updateLanguage(language: string){
         if(language == "english"){
@@ -124,10 +129,6 @@ export default class App extends Component {
         this.setState({theme: theme});
     }
 
-    public async saveUserSettings(prefs: []){
-        await Backend.SaveUserSettings(prefs);
-    }
-    
     public async toggleSnack(message: string, visible: bool){
         this.setState({ snackVisible: visible, snackMessage: message });
     }
@@ -144,7 +145,8 @@ export default class App extends Component {
                     translucent={true}/>
                 <NavigationContainer theme={this.state.theme} onReady={SplashScreen.hide}>
                     <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? "wizard" : "feed"}
-                        drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
+                        drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} 
+                        screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
                         <NavigationDrawer.Screen name="feed" options={{title: "omae"}}>
                             {props => <Feed {...props} prefs={this.prefs} lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
@@ -152,10 +154,12 @@ export default class App extends Component {
                             {props => <Bookmarks {...props} prefs={this.prefs} lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="settings">
-                            {props => <Settings {...props} prefs={this.prefs} lang={this.state.language} saveUserSettings={this.saveUserSettings} updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} updateAccent={this.updateAccent} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack} />}
+                            {props => <Settings {...props} prefs={this.prefs} loadPrefs={this.loadPrefs} saveUserSettings={this.saveUserSettings} lang={this.state.language}  
+                                updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} updateAccent={this.updateAccent} toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
-                            {props => <Wizard prefs={this.prefs} lang={this.state.language} saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
+                            {props => <Wizard prefs={this.prefs} lang={this.state.language} saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} 
+                                updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
                 </NavigationContainer> 

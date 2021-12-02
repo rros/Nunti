@@ -217,7 +217,8 @@ class Feed extends PureComponent {
                     )}
                     ListEmptyComponent={(
                         <View style={Styles.centerView}>
-                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
+                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")}
+                                resizeMode="contain" style={Styles.fullscreenImage}></Image>
                             <Title>{this.props.lang.empty_feed_title}</Title>
                             <Paragraph style={Styles.centerText}>{this.props.lang.empty_feed_desc}</Paragraph>
                         </View>

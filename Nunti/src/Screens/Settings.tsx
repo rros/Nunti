@@ -289,7 +289,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Subheader>{this.props.lang.general}</List.Subheader>
                     <List.Item title={this.props.lang.language}
                         left={() => <List.Icon icon="translate" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ languageDialogVisible: true })}}>{this.props.lang[this.state.language]}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ languageDialogVisible: true })}}>{this.props.lang[this.state.language]}</Button>} />
                     <List.Item title={this.props.lang.vibrate}
                         left={() => <List.Icon icon="vibrate" />}
                         right={() => <Switch value={this.state.hapticFeedbackSwitch} onValueChange={this.toggleHapticFeedback} />} />
@@ -300,49 +301,63 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         left={() => <List.Icon icon="wifi" />}
                         right={() => <Switch value={this.state.wifiOnlySwitch} onValueChange={this.toggleWifiOnly} />} />
                 </List.Section>
+
                 <List.Section>
                     <List.Subheader>{this.props.lang.theme}</List.Subheader>
                     <List.Item title={this.props.lang.theme}
                         left={() => <List.Icon icon="theme-light-dark" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ themeDialogVisible: true })}}>{this.props.lang[this.state.theme]}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => { this.setState({ themeDialogVisible: true })}}>{this.props.lang[this.state.theme]}</Button>} />
                     <List.Item title={this.props.lang.accent}
                         left={() => <List.Icon icon="palette" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => { this.setState({ accentDialogVisible: true })}}>{this.props.lang[this.state.accent]}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => { this.setState({ accentDialogVisible: true })}}>{this.props.lang[this.state.accent]}</Button>} />
                 </List.Section>
+
                 <List.Section>
                     <List.Subheader>{this.props.lang.storage}</List.Subheader>
                     <List.Item title={this.props.lang.import}
                         left={() => <List.Icon icon="application-import" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={this.import}>{this.props.lang.import}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={this.import}>{this.props.lang.import}</Button>} />
                     <List.Item title={this.props.lang.export}
                         left={() => <List.Icon icon="application-export" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={this.export}>{this.props.lang.export}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={this.export}>{this.props.lang.export}</Button>} />
                 </List.Section>
+
                 <List.Section>
                     <List.Subheader>{this.props.lang.advanced}</List.Subheader>
                     <List.Item title={this.props.lang.discovery}
                         left={() => <List.Icon icon="book-search" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ discoveryDialogVisible: true })}}>{this.state.discovery}%</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ discoveryDialogVisible: true })}}>{this.state.discovery}%</Button>} />
                     <List.Item title={this.props.lang.cache_time}
                         left={() => <List.Icon icon="clock-outline" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ cacheTimeDialogVisible: true })}}>{this.state.cacheTime} min.</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ cacheTimeDialogVisible: true })}}>{this.state.cacheTime} min.</Button>} />
                     <List.Item title={this.props.lang.max_art}
                         left={() => <List.Icon icon="arrow-collapse-up" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ maxArtDialogVisible: true })}}>{this.state.maxArt}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ maxArtDialogVisible: true })}}>{this.state.maxArt}</Button>} />
                     <List.Item title={this.props.lang.max_art_feed}
                         left={() => <List.Icon icon="arrow-collapse-up" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ maxArtFeedDialogVisible: true })}}>{this.state.maxArtFeed}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ maxArtFeedDialogVisible: true })}}>{this.state.maxArtFeed}</Button>} />
                 </List.Section>
+
                 <List.Section>
                     <List.Subheader>{this.props.lang.feeds}</List.Subheader>
                     <List.Item title={this.props.lang.add_feeds}
                         left={() => <List.Icon icon="plus" />}
-                        right={() => <Button style={Styles.settingsButton} onPress={() => {this.setState({ rssDialogVisible: true })}}>{this.props.lang.add_feed}</Button>} />
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ rssDialogVisible: true })}}>{this.props.lang.add_feed}</Button>} />
                     { this.state.feeds.map((element) => {
                         return (
                             <List.Item title={element.name}
                                 left={() => <List.Icon icon="rss" />}
-                                right={() => <Button style={Styles.settingsButton} onPress={() => { this.removeRss(element.name) }}>{this.props.lang.remove_feed}</Button>} />
+                                right={() => <Button style={Styles.settingsButton} 
+                                    onPress={() => { this.removeRss(element.name) }}>{this.props.lang.remove_feed}</Button>} />
                         );
                     })}
                 </List.Section>
@@ -350,10 +365,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Subheader>{this.props.lang.danger}</List.Subheader>
                     <List.Item title={this.props.lang.wipe_cache}
                         left={() => <List.Icon icon="cached" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({cacheDialogVisible: true}) }}>{this.props.lang.reset}</Button>} />
+                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
+                            onPress={() => { this.setState({cacheDialogVisible: true}) }}>{this.props.lang.reset}</Button>} />
                     <List.Item title={this.props.lang.wipe_data}
                         left={() => <List.Icon icon="alert" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} onPress={() => { this.setState({dataDialogVisible: true}) }}>{this.props.lang.restore}</Button>} />
+                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
+                            onPress={() => { this.setState({dataDialogVisible: true}) }}>{this.props.lang.restore}</Button>} />
                 </List.Section>
 
                 <Portal>
@@ -363,6 +380,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             <RadioButton.Item label={this.props.lang.czech} value="czech" />
                         </RadioButton.Group>
                     </Dialog>
+
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false })}}>
                         <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
                             <RadioButton.Item label={this.props.lang.system} value="system" />
@@ -370,6 +388,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             <RadioButton.Item label={this.props.lang.dark} value="dark" />
                         </RadioButton.Group>
                     </Dialog>
+
                     <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false })}}>
                         <Dialog.ScrollArea>
                             <ScrollView>
@@ -387,6 +406,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             </ScrollView>
                         </Dialog.ScrollArea>
                     </Dialog>
+
                     <Dialog visible={this.state.rssDialogVisible} onDismiss={() => { this.setState({ rssDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.add_feeds}</Dialog.Title>
                         <Dialog.Content>
@@ -394,10 +414,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ rssDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>{this.props.lang.cancel}</Button>
+                            <Button aonPress={() => { this.setState({ rssDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>
+                                {this.props.lang.cancel}</Button>
                             <Button disabled={this.state.dialogButtonDisabled} onPress={this.addRss}>{this.props.lang.add_feed}</Button>
                         </Dialog.Actions>
                     </Dialog>
+
                     <Dialog visible={this.state.discoveryDialogVisible} onDismiss={() => { this.setState({ discoveryDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.change_discovery}</Dialog.Title>
                         <Dialog.Content>
@@ -405,10 +427,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ discoveryDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>{this.props.lang.cancel}</Button>
+                            <Button onPress={() => { this.setState({ discoveryDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>
+                                {this.props.lang.cancel}</Button>
                             <Button disabled={this.state.dialogButtonDisabled} onPress={this.changeDiscovery}>{this.props.lang.change}</Button>
                         </Dialog.Actions>
                     </Dialog>
+
                     <Dialog visible={this.state.cacheTimeDialogVisible} onDismiss={() => { this.setState({ cacheTimeDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.change_cache_time}</Dialog.Title>
                         <Dialog.Content>
@@ -416,10 +440,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ cacheTimeDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>{this.props.lang.cancel}</Button>
+                            <Button onPress={() => { this.setState({ cacheTimeDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>
+                                {this.props.lang.cancel}</Button>
                             <Button disabled={this.state.dialogButtonDisabled} onPress={this.changeCacheTime}>{this.props.lang.change}</Button>
                         </Dialog.Actions>
                     </Dialog>
+
                     <Dialog visible={this.state.maxArtDialogVisible} onDismiss={() => { this.setState({ maxArtDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.change_max_art}</Dialog.Title>
                         <Dialog.Content>
@@ -427,10 +453,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ maxArtDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>{this.props.lang.cancel}</Button>
+                            <Button onPress={() => { this.setState({ maxArtDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>
+                                {this.props.lang.cancel}</Button>
                             <Button disabled={this.state.dialogButtonDisabled} onPress={this.changeMaxArt}>{this.props.lang.change}</Button>
                         </Dialog.Actions>
                     </Dialog>
+
                     <Dialog visible={this.state.maxArtFeedDialogVisible} onDismiss={() => { this.setState({ maxArtFeedDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.change_max_art_feed}</Dialog.Title>
                         <Dialog.Content>
@@ -438,10 +466,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ maxArtFeedDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>{this.props.lang.cancel}</Button>
+                            <Button onPress={() => { this.setState({ maxArtFeedDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>
+                                {this.props.lang.cancel}</Button>
                             <Button disabled={this.state.dialogButtonDisabled} onPress={this.changeMaxArtFeed}>{this.props.lang.change}</Button>
                         </Dialog.Actions>
                     </Dialog>
+
                     <Dialog visible={this.state.cacheDialogVisible} onDismiss={() => { this.setState({ cacheDialogVisible: false })}}>
                         <Dialog.Title>{this.props.lang.reset_title}</Dialog.Title>
                         <Dialog.Content>
@@ -449,9 +479,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ cacheDialogVisible: false }) }}>{this.props.lang.cancel}</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetArtsCache}>{this.props.lang.reset}</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetArtsCache}>
+                                {this.props.lang.reset}</Button>
                         </Dialog.Actions>
                     </Dialog>
+
                     <Dialog visible={this.state.dataDialogVisible} onDismiss={() => { this.setState({ dataDialogVisible: false })}}>
                         <Dialog.Title>{this.props.lang.restore_title}</Dialog.Title>
                         <Dialog.Content>
@@ -459,7 +491,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ dataDialogVisible: false }) }}>{this.props.lang.cancel}</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}>{this.props.lang.restore}</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}>
+                                {this.props.lang.restore}</Button>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>
