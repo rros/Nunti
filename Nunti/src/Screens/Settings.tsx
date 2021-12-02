@@ -217,7 +217,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     
     private async addRss(){
         try {
-            let feed:Feed = Feed.New(this.state.inputValue);
+            let feed:Feed = await Feed.New(this.state.inputValue);
 
             this.props.prefs.FeedList.push(feed)
             await this.props.saveUserSettings(this.props.prefs);
