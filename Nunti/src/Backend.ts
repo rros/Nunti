@@ -1,7 +1,7 @@
 import { AsyncStorage } from 'react-native';
 var DOMParser = require('xmldom').DOMParser
 var XMLSerializer = require('xmldom').XMLSerializer;
-
+import NetInfo from "@react-native-community/netinfo";
 import DefaultTopics from './DefaultTopics';
 
 export class Feed {
@@ -51,6 +51,7 @@ class UserSettings {
 
     public HapticFeedback = true;
     public DisableImages = false;
+    public WifiOnly = false; //TODO: frontend, add this to settings
     public Language: string = "english";
 
     public Theme: string = "system";
@@ -94,7 +95,6 @@ export class Backend {
         console.info('Backend init.');
         await this.CheckDB();
     }
-
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
         console.log("Backend: Loading new articles..");
@@ -105,7 +105,11 @@ export class Backend {
         let arts: Article[];
 
         let cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp)) / 60000;
-        if (cacheAgeMinutes >= (await this.GetUserSettings()).ArticleCacheTime) {
+
+        if(await this.IsDoNotDownloadEnabled()) {
+            console.log(`Backend: We are on cellular data and wifiOnly mode is enabled. Will use cache.`)
+            arts = cache.articles;
+        } else if (cacheAgeMinutes >= (await this.GetUserSettings()).ArticleCacheTime) {
             arts = await this.DownloadArticles();
             if (arts.length > 0)
                 await this.StorageSave('articles_cache', {"timestamp": Date.now(), "articles": arts})
@@ -358,6 +362,11 @@ export class Backend {
             return false;
         }
     }
+    /* returns true if user is on cellular data and wifionly mode is enabled */
+    public static async IsDoNotDownloadEnabled(): Promise<boolean> {
+        let prefs = await this.GetUserSettings();
+        return (((await NetInfo.fetch()).details?.isConnectionExpensive ?? false) && prefs.WifiOnly)
+    }
 
 
     /* Private methods */
@@ -365,12 +374,15 @@ export class Backend {
         console.debug('Backend: Downloading from ' + feed.name);
         let arts: Article[] = [];
         const controller = new AbortController();
-        //@ts-ignore
-        const timeoutid = setTimeout(() => { controller.abort(); }, 5000);
+        setTimeout(() => { controller.abort(); isTimeouted = true; }, 5000);
+        let isTimeouted = false
         try {
             var r = await fetch(feed.url, { signal: controller.signal });
         } catch(err) {
-            console.error('Cannot read RSS ' + feed.name, err);
+            if (isTimeouted)
+                console.error('Cannot read RSS (probably timeout)' + feed.name, err);
+            else
+                console.error('Cannot read RSS ' + feed.name, err);
             return [];
         }
         if (r.ok) {

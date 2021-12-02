@@ -64,7 +64,7 @@ class Feed extends PureComponent {
     private async refresh(){
         this.setState({ refreshing: true });
         
-        if (this.firstRefresh) {
+        if (!this.firstRefresh && !(await Backend.IsDoNotDownloadEnabled())) {
             await Backend.ResetCache();
         }
         let arts = await Backend.GetArticles();
