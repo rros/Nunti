@@ -322,11 +322,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title={this.props.lang.import}
                         left={() => <List.Icon icon="application-import" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={this.import}>{this.props.lang.import}</Button>} />
+                            onPress={this.import}>{this.props.lang.import_button}</Button>} />
                     <List.Item title={this.props.lang.export}
                         left={() => <List.Icon icon="application-export" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={this.export}>{this.props.lang.export}</Button>} />
+                            onPress={this.export}>{this.props.lang.export_button}</Button>} />
                 </List.Section>
 
                 <List.Section>
