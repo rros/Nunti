@@ -1,0 +1,2 @@
+//TODO
+Finally a smart news reader which doesn't suck ass or your data.
