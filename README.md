@@ -1,6 +1,6 @@
 # Nunti
 
-Finally a smart news reader which doesn't suck ass or your data.
+Finally a smart RSS reader which doesn't suck ass or your data!
 
 # Licence, disclaimer or whatever
 
