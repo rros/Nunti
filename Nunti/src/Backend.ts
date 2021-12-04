@@ -17,27 +17,8 @@ export class Feed {
             throw new Error('invalid url');
     }
 
-    public async InitPrettyName() {
-        await fetch(this.url).then( async (response) => {
-            let parser = new DOMParser({
-                locator:{},
-                errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e }}
-            });
-            let xml = parser.parseFromString(await response.text());
-            try {
-                var title = xml.getElementsByTagName("channel")[0].getElementsByTagName("title")[0].childNodes[0].nodeValue.substr(0,32);
-                if ((title ?? null !== null) && title.trim().length > 0) {
-                    this.name = `${title} (${this.name})`;
-                }
-            } catch {
-                console.info(`failed to get pretty name for ${this.url}, using ${this.name}`);
-            }
-        });
-    }
-
-    public static async New(url: string): Promise<Feed> {
+    public static New(url: string): Promise<Feed> {
         let f = new Feed(url);
-        await f.InitPrettyName();
         return f;
     }
 }
@@ -327,7 +308,6 @@ export class Backend {
         if (DefaultTopics.Topics[topicName] !== undefined) {
             for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
                 let topicFeed = DefaultTopics.Topics[topicName][i];
-                await topicFeed.InitPrettyName();
                 if (enable) {
                     if (prefs.FeedList.indexOf(topicFeed) < 0) {
                         console.debug(`add feed ${topicFeed.name} to feedlist`);

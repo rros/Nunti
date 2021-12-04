@@ -42,6 +42,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.import = this.import.bind(this);
         this.export = this.export.bind(this);
         
+        this.getLearningStatus = this.getLearningStatus.bind(this);
+        
         this.state = {
             language: this.props.prefs.Language,
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
@@ -52,6 +54,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             accent: this.props.prefs.Accent,
 
             feeds: this.props.prefs.FeedList,
+            
+            learningStatus: null,
 
             discovery: this.props.prefs.DiscoverRatio * 100,
             cacheTime: this.props.prefs.ArticleCacheTime,
@@ -72,6 +76,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             cacheDialogVisible: false,
             dataDialogVisible: false,
         }
+
+        this.getLearningStatus();
+    }
+
+    private async getLearningStatus(){
+        this.setState({learningStatus: await Backend.GetLearningStatus()});
     }
 
     private async changeLanguage(newLanguage: string) {
@@ -212,7 +222,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             // hide dialog early to show the user that the click registered
             this.setState({rssDialogVisible: false, inputValue: "", rssAddDisabled: true});
 
-            let feed:Feed = await Feed.New(this.state.inputValue);
+            let feed:Feed = Feed.New(this.state.inputValue);
 
             this.props.prefs.FeedList.push(feed)
             await this.props.saveUserSettings(this.props.prefs);
@@ -283,19 +293,14 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             cacheTime: this.props.prefs.ArticleCacheTime,
             maxArt: this.props.prefs.MaxArticles,
             maxArtFeed: this.props.prefs.MaxArticlesPerChannel,
-            learningStatus: await Backend.GetLearningStatus(),
+            
+            learningStatus: null,
         });
+        
+        await this.getLearningStatus();
     }
 
     render() {
-        (async () => {
-            if (this.state.learningStatus === undefined) {
-                let status = await Backend.GetLearningStatus();
-                console.debug(status);
-                await this.setState({learningStatus: status});
-            }
-        })();
-
         return(
             <ScrollView style={Styles.topView}>
                 <List.Section>
@@ -340,21 +345,18 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                 </List.Section>
 
                 <List.Section>
-                    <List.Subheader>{this.props.lang.learning_status}</List.Subheader>
-                    <List.Item title="Articles rated so far"
+                    <List.Subheader>{this.props.lang.learning}</List.Subheader>
+                    <List.Item title={this.props.lang.rated_articles}
                         left={() => <List.Icon icon="message-draw" />}
-                        right={() => <Text>{this.state.learningStatus?.TotalUpvotes + this.state.learningStatus?.TotalDownvotes}</Text> } />
-                    <List.Item title="Your vote ratio"
-                        left={() => <><List.Icon icon="thumb-up" /><List.Icon icon="thumb-down" /></>}
-                        right={() => <Text>{this.state.learningStatus?.VoteRatio}</Text> } />
-                    <List.Item title="Learning status"
+                        right={() => <Button style={Styles.settingsButton}>{this.state.learningStatus?.TotalUpvotes + this.state.learningStatus?.TotalDownvotes}</Button> } />
+                    <List.Item title={this.props.lang.rating_ratio}
+                        left={() => <List.Icon icon="thumbs-up-down" />}
+                        right={() => <Button style={Styles.settingsButton}>{this.state.learningStatus?.VoteRatio}</Button> } />
+                    <List.Item title={this.props.lang.sorting_status}
                         left={() => <List.Icon icon="school" />}
-                        right={() => {
-                            if (!this.state.learningStatus?.SortingEnabled)
-                                return (<Text>Rate {this.state.learningStatus?.SortingEnabledIn} more.</Text>)
-                            else
-                                return (<Text>ENABLED</Text>)
-                                }} />
+                        right={() => <Button style={Styles.settingsButton}>{this.state.learningStatus?.Enabled ? 
+                            this.props.lang.learning_enabled : 
+                            (this.props.lang.rate_more).replace('%articles%', this.state.learningStatus?.SortingEnabledIn)}</Button>}/>
                 </List.Section>
 
                 <List.Section>
@@ -392,6 +394,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         );
                     })}
                 </List.Section>
+
                 <List.Section>
                     <List.Subheader>{this.props.lang.danger}</List.Subheader>
                     <List.Item title={this.props.lang.wipe_cache}
@@ -454,6 +457,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <Dialog visible={this.state.discoveryDialogVisible} onDismiss={() => { this.setState({ discoveryDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.change_discovery}</Dialog.Title>
                         <Dialog.Content>
+                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.discovery_dialog}</Paragraph>
                             <TextInput label={this.props.lang.discovery} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
@@ -467,6 +471,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <Dialog visible={this.state.cacheTimeDialogVisible} onDismiss={() => { this.setState({ cacheTimeDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.change_cache_time}</Dialog.Title>
                         <Dialog.Content>
+                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.cache_time_dialog}</Paragraph>
                             <TextInput label={this.props.lang.cache_time} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
@@ -480,6 +485,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <Dialog visible={this.state.maxArtDialogVisible} onDismiss={() => { this.setState({ maxArtDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.change_max_art}</Dialog.Title>
                         <Dialog.Content>
+                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.max_art_dialog}</Paragraph>
                             <TextInput label={this.props.lang.max_art} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
@@ -493,6 +499,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <Dialog visible={this.state.maxArtFeedDialogVisible} onDismiss={() => { this.setState({ maxArtFeedDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.change_max_art_feed}</Dialog.Title>
                         <Dialog.Content>
+                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.max_art_feed_dialog}</Paragraph>
                             <TextInput label={this.props.lang.max_art_feed} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>

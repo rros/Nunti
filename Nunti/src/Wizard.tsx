@@ -270,7 +270,7 @@ class Step5Learning extends Component {
             <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
                 <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.centerText}>{this.props.lang.adapt}</Title>
-                <Paragraph style={Styles.centerText}>{(this.props.lang.learning).replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
+                <Paragraph style={Styles.centerText}>{(this.props.lang.wizard_learning).replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
                 <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>{this.props.lang.start}</Button>
             </ScrollView>
         );

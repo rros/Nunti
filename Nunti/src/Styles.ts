@@ -178,5 +178,9 @@ export default Styles = StyleSheet.create ({
 
     wizardStatusOffset: {
         paddingTop: "10%"
+    },
+
+    settingsDialogDesc: {
+        paddingBottom: "2%"
     }
 });
