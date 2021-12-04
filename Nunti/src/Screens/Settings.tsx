@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 
 import {
+    Text,
     Button,
     List,
     Switch,
@@ -282,10 +283,19 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             cacheTime: this.props.prefs.ArticleCacheTime,
             maxArt: this.props.prefs.MaxArticles,
             maxArtFeed: this.props.prefs.MaxArticlesPerChannel,
+            learningStatus: await Backend.GetLearningStatus(),
         });
     }
 
     render() {
+        (async () => {
+            if (this.state.learningStatus === undefined) {
+                let status = await Backend.GetLearningStatus();
+                console.debug(status);
+                await this.setState({learningStatus: status});
+            }
+        })();
+
         return(
             <ScrollView style={Styles.topView}>
                 <List.Section>
@@ -327,6 +337,24 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         left={() => <List.Icon icon="application-export" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={this.export}>{this.props.lang.export_button}</Button>} />
+                </List.Section>
+
+                <List.Section>
+                    <List.Subheader>{this.props.lang.learning_status}</List.Subheader>
+                    <List.Item title="Articles rated so far"
+                        left={() => <List.Icon icon="message-draw" />}
+                        right={() => <Text>{this.state.learningStatus?.TotalUpvotes + this.state.learningStatus?.TotalDownvotes}</Text> } />
+                    <List.Item title="Your vote ratio"
+                        left={() => <><List.Icon icon="thumb-up" /><List.Icon icon="thumb-down" /></>}
+                        right={() => <Text>{this.state.learningStatus?.VoteRatio}</Text> } />
+                    <List.Item title="Learning status"
+                        left={() => <List.Icon icon="school" />}
+                        right={() => {
+                            if (!this.state.learningStatus?.SortingEnabled)
+                                return (<Text>Rate {this.state.learningStatus?.SortingEnabledIn} more.</Text>)
+                            else
+                                return (<Text>ENABLED</Text>)
+                                }} />
                 </List.Section>
 
                 <List.Section>

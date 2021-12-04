@@ -86,6 +86,10 @@ class UserSettings {
     public MaxArticlesPerChannel: number = 20;
     public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
     public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
+
+    /* Not settings, just user-related info. */
+    public TotalUpvotes = 0;
+    public TotalDownvotes = 0;
 }
 
 class Backup {
@@ -220,11 +224,17 @@ export class Backend {
 
         if (rating > 0) {
             //upvote
+            let prefs = await this.GetUserSettings();
+            prefs.TotalUpvotes += 1;
+            await this.SaveUserSettings(prefs);
             rating = rating * Math.abs(learning_db["downvotes"] + 1 / learning_db["upvotes"] + 1);
             learning_db["upvotes"] += 1;
             learning_db_secondary["upvotes"] += 1;
         } else if (rating < 0) {
             //downvote
+            let prefs = await this.GetUserSettings();
+            prefs.TotalDownvotes += 1;
+            await this.SaveUserSettings(prefs);
             rating = rating * Math.abs(learning_db["upvotes"] + 1 / learning_db["downvotes"] + 1);
             learning_db["downvotes"] += 1;
             learning_db_secondary["downvotes"] += 1;
@@ -387,6 +397,20 @@ export class Backend {
     public static async IsDoNotDownloadEnabled(): Promise<boolean> {
         let prefs = await this.GetUserSettings();
         return (((await NetInfo.fetch()).details?.isConnectionExpensive ?? false) && prefs.WifiOnly)
+    }
+    /* Returns basic info about the learning process to inform the user. */
+    public static async GetLearningStatus(): Promise<any> {
+        let prefs = await this.GetUserSettings();
+        let learning_db = await this.StorageGet('learning_db');
+        return {
+            TotalUpvotes: prefs.TotalUpvotes,
+            TotalDownvotes: prefs.TotalDownvotes,
+            VoteRatio: ((learning_db['upvotes'] + 1) / (learning_db['downvotes'] + 1)).toFixed(2),
+            SortingEnabled: (learning_db['upvotes'] + learning_db['downvotes'] >= prefs.NoSortUntil),
+            SortingEnabledIn: (prefs.NoSortUntil - (learning_db['upvotes'] + learning_db['downvotes'])),
+            LearningLifetime: (prefs.RotateDBAfter),
+            LearningLifetimeRemaining: (prefs.RotateDBAfter - (learning_db['upvotes'] + learning_db['downvotes'])),
+        }
     }
 
 

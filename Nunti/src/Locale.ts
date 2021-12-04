@@ -101,6 +101,7 @@ export const English = {
     welcome: "Welcome to Nunti!",
     adapt:"Nunti will adapt to your preferences!",
     learning:"Nunti will analyze what articles you like and dislike by swiping on them and will progressively get better at recommending you topics you are interested in. Nunti won't take into account any of your preferences until you have rated %noSort% articles, at which point your feed will become your own.",
+    learning_status: "Learning"
 }
 
 export const Czech = {
