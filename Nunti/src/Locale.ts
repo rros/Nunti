@@ -219,7 +219,7 @@ export const Czech = {
     enjoy:"Užívejte si čtení článků s vědomím, že Vám nikdo nekouká přes rameno.",
     welcome: "Vítejte v Nunti!",
     adapt:"Nunti se adaptuje Vašim preferencím!",
-    wizard_learning:"Nunti se naučí, jaké články se Vám líbí a nelíbí, když je ohodnotíte přejetím prstem a postupně se tak bude zlepšovat v doporučování témat, která Vás zajímají. Nunti Vaše preference nebude brát v potaz dokud neohodnotíte alespoň %noSort% článků, aby měl dostatečně veliký vzorek.",
+    wizard_learning:"Nunti se naučí, jaké články se Vám líbí a nelíbí, když je ohodnotíte přejetím prstem. Postupně se tak bude zlepšovat v doporučování témat, která Vás zajímají. Nunti Vaše preference nebude brát v potaz dokud neohodnotíte alespoň %noSort% článků, aby měl dostatečně veliký vzorek.",
     learning: "Učení",
     rated_articles: "Ohodnocené články",
     rating_ratio: "Poměr hodnocení",
