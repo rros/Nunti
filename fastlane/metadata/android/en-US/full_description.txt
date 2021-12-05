@@ -1,2 +1,10 @@
-//TODO
-Finally a smart news reader which doesn't suck ass or your data.
+<p>Nunti is the RSS feed app you have been waiting for!</p>
+
+<p>Nunti has everything you always wanted:</p>
+<ul>
+<li>adaptive learning of preferences</li>
+<li>modern material design</li>
+<li>theming options</li>
+<li>import and export functions</li>
+<li>absolute privacy - no data ever leaves your device</li>
+</ul>

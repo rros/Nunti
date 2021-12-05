@@ -1,2 +1,10 @@
-//TODO
-Finally a smart news reader which doesn't suck ass or your data.
+<p>Nunti je ta RSS čtečka na kterou jste vždycky čekali!</p>
+
+<p>Nunti má vše co jste kdy chtěli:</p>
+<ul>
+<li>adaptivní učení preferencí</li>
+<li>moderní material design</li>
+<li>možnosti přizpůsobení vzhledu</li>
+<li>import and export funkce</li>
+<li>absolutní soukromí - Vaše data nikdy neopustí Vaše zařízení</li>
+</ul>
