@@ -1,28 +1,18 @@
 import React, { PureComponent } from 'react';
 import {
     View,
-    Share,
-    Animated,
     ScrollView,
     Image,
 } from 'react-native';
 
 import { 
-    Card,
-    Title,
-    Subheading,
-    Paragraph,
     List,
-    Portal,
-    Switch,
-    Modal,
     Button,
-    Snackbar,
-    Caption,
     withTheme
 } from 'react-native-paper';
 
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
+import { version } from '../../package.json';
 
 import Backend from '../Backend';
 import Styles from "../Styles";
@@ -49,6 +39,13 @@ class About extends PureComponent {
                     <Image source={require("../../Resources/FullNunti.png")} 
                         resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 </View>
+
+                <List.Section>
+                    <List.Subheader>{this.props.lang.app_info}</List.Subheader>
+                    <List.Item title={version}
+                        left={() => <List.Icon icon="check-decagram" />} />
+                </List.Section>
+
                 <List.Section>
                     <List.Subheader>{this.props.lang.made_by}</List.Subheader>
                     <List.Item title="Richard Klapáč"
@@ -56,6 +53,7 @@ class About extends PureComponent {
                     <List.Item title="Ondřej Foltýn"
                         left={() => <List.Icon icon="human-greeting" />} />
                 </List.Section>
+
                 <List.Section>
                     <List.Subheader>{this.props.lang.report_at}</List.Subheader>
                     <List.Item title={this.props.lang.issue_tracker}

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StatusBar, Appearance } from 'react-native';
+import { StatusBar, Appearance, NativeModules } from 'react-native';
 
 import { 
     Provider as PaperProvider,
@@ -70,11 +70,19 @@ export default class App extends Component {
         await Backend.SaveUserSettings(prefs);
     }
 
-    public async updateLanguage(language: string){
-        if(language == "english"){
-            this.setState({ language: English })
-        } else if (language == "czech"){
+    public async updateLanguage(savedLanguage: string){
+        let locale: string;
+
+        if(savedLanguage == "system"){
+            locale = NativeModules.I18nManager.localeIdentifier
+        } else {
+            locale = savedLanguage;
+        }
+
+        if(locale.includes("cs")){
             this.setState({ language: Czech })
+        } else { // default
+            this.setState({ language: English })
         }
     }
 
@@ -230,7 +238,7 @@ function CustomDrawer ({ state, navigation, theme, lang }) {
             </Drawer.Section>
             <Drawer.Item
                 label={lang.settings}
-                icon="tune"
+                icon="cog"
                 active={active === state.routeNames[2]}
                 onPress={() => {
                     setActive(state.routeNames[2]);

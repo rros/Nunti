@@ -53,7 +53,7 @@ class UserSettings {
     public DisableImages = false;
     public WifiOnly = false;
     public ThemeBrowser = true;
-    public Language: string = "english";
+    public Language: string = "system";
 
     public Theme: string = "system";
     public Accent: string = "default";

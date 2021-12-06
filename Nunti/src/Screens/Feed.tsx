@@ -14,7 +14,6 @@ import {
     Portal,
     Modal,
     Button,
-    Snackbar,
     Caption,
     withTheme
 } from 'react-native-paper';

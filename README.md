@@ -17,6 +17,14 @@ Get it on f-droid soon!
 5. run `npx react-native start` in one terminal
 6. run `npx react-native run-android` in the second terminal to build
 
+### Note for developers
+
+When creating a new version of the app (update fdroid) you must do these things:
+
+1. change the version in `Nunti/package.json` (used to display the app version in the about page of the app)
+2. change the version code and name in `Nunti/android/app/src/main/AndroidManifest.xml`
+3. add the same version code tag to the commit
+
 # Features
 
 ## Adaptive learning

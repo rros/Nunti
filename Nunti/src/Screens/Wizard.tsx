@@ -106,10 +106,12 @@ class Step2Language extends Component {
                 <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
                     <List.Section>
                         <List.Subheader>{this.props.lang.language}</List.Subheader>
-                        <List.Item title={this.props.lang.english}
-                            right={() => <RadioButton.Item value="english" />} />
-                        <List.Item title={this.props.lang.czech}
-                            right={() => <RadioButton.Item value="czech" />} />
+                        <List.Item title={this.props.lang.system}
+                            right={() => <RadioButton.Item value="system" />} />
+                        <List.Item title={this.props.lang.en}
+                            right={() => <RadioButton.Item value="en" />} />
+                        <List.Item title={this.props.lang.cs}
+                            right={() => <RadioButton.Item value="cs" />} />
                     </List.Section>
                 </RadioButton.Group>
             </ScrollView>
