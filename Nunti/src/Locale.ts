@@ -110,7 +110,9 @@ export const English = {
     rating_ratio: "Rating ratio",
     sorting_status: "Sorting status",
     learning_enabled: "Enabled",
-    rate_more: "%articles% more"
+    rate_more: "%articles% more",
+    refresh_learning: "Refresh data",
+    refresh: "Refresh",
 }
 
 export const Czech = {
@@ -225,5 +227,7 @@ export const Czech = {
     rating_ratio: "Poměr hodnocení",
     sorting_status: "Stav řazení",
     learning_enabled: "Aktivní",
-    rate_more: "Zbývá %articles%"
+    rate_more: "Zbývá %articles%",
+    refresh_learning: "Aktualizovat data",
+    refresh: "Aktualizovat",
 }

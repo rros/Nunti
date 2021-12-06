@@ -346,6 +346,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
                 <List.Section>
                     <List.Subheader>{this.props.lang.learning}</List.Subheader>
+                    <List.Item title={this.props.lang.refresh_learning}
+                        left={() => <List.Icon icon="refresh" />}
+                        right={() => <Button style={Styles.settingsButton}
+                            onPress={this.getLearningStatus}>{this.props.lang.refresh}</Button> } />
                     <List.Item title={this.props.lang.rated_articles}
                         left={() => <List.Icon icon="message-draw" />}
                         right={() => <Button style={Styles.settingsButton}>{this.state.learningStatus?.TotalUpvotes + this.state.learningStatus?.TotalDownvotes}</Button> } />
