@@ -108,7 +108,13 @@ class Feed extends PureComponent {
             url = this.state.articles.find(item => item.id === articleID).url;
         }
 
-        await InAppBrowser.open(url, { forceCloseOnRedirection: false, showInRecents: true });
+        console.log(this.props.prefs.ThemeBrowser)
+
+        await InAppBrowser.open(url, {
+            forceCloseOnRedirection: false, showInRecents: true,
+            toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+            navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+        });
     }
 
     private async saveArticle() {
@@ -205,7 +211,8 @@ class Feed extends PureComponent {
                                         <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
                                         <Caption style={Styles.cardContentSource}>{this.props.lang.article_from + rowData.item.source}</Caption>
                                     </Card.Content>
-                                    {this.state.showImages && rowData.item.cover !== undefined && <View style={Styles.cardContentCoverContainer}>
+                                    {this.state.showImages && rowData.item.cover !== undefined && 
+                                    <View style={Styles.cardContentCoverContainer}>
                                         <Card.Cover source={{ uri: rowData.item.cover }}/>
                                     </View> }
                                 </View>
@@ -214,19 +221,23 @@ class Feed extends PureComponent {
                     )}
                     renderHiddenItem={(rowData, rowMap) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
-                            opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.99, 1], outputRange: [0, 0, 1],}),
+                            opacity: this.state.refreshing ? 0 : 
+                            this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.99, 1], outputRange: [0, 0, 1],}),
                         }]}>
                             <Button 
                                 color={this.props.theme.colors.error} dark={false} 
-                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateLeft}></Button>
+                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent} 
+                                style={Styles.buttonRateLeft}></Button>
                             <Button 
                                 color={this.props.theme.colors.success} dark={false} 
-                                icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateRight}></Button>
+                                icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} 
+                                style={Styles.buttonRateRight}></Button>
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
                         <View style={Styles.centerView}>
-                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")}
+                            <Image source={this.props.theme.dark ? 
+                                require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")}
                                 resizeMode="contain" style={Styles.fullscreenImage}></Image>
                             <Title>{this.props.lang.empty_feed_title}</Title>
                             <Paragraph style={Styles.centerText}>{this.props.lang.empty_feed_desc}</Paragraph>
@@ -243,7 +254,8 @@ class Feed extends PureComponent {
                     {this.state.articles.length > 0 && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} style={Styles.modal}>
                         <ScrollView>
                             <Card>
-                                {this.state.showImages && this.state.articles[this.currentIndex].cover !== undefined && <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />}
+                                {this.state.showImages && this.state.articles[this.currentIndex].cover !== undefined && 
+                                <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />}
                                 <Card.Content>
                                     <Title>{this.state.articles[this.currentIndex].title}</Title>
                                     <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>

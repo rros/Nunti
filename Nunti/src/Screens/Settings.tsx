@@ -28,6 +28,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.toggleHapticFeedback = this.toggleHapticFeedback.bind(this);
         this.toggleNoImages = this.toggleNoImages.bind(this);
         this.toggleWifiOnly = this.toggleWifiOnly.bind(this);
+        this.toggleThemeBrowser = this.toggleThemeBrowser.bind(this);
 
         this.removeRss = this.removeRss.bind(this);
         this.addRss = this.addRss.bind(this);
@@ -49,6 +50,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
             noImagesSwitch: this.props.prefs.DisableImages,
             wifiOnlySwitch: this.props.prefs.WifiOnly,
+            themeBrowserSwitch: this.props.prefs.ThemeBrowser,
 
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
@@ -68,7 +70,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             languageDialogVisible: false,
             themeDialogVisible: false,
             accentDialogVisible: false,
-            rssDialogVisible: false,
+            rssAddDialogVisible: false,
+            rssStatusDialogVisible: false,
+            currentFeed: null,
             discoveryDialogVisible: false,
             changeCacheTimeDialogVisible: false,
             maxArtDialogVisible: false,
@@ -107,6 +111,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     private async toggleWifiOnly() {
         this.props.prefs.WifiOnly = !this.state.wifiOnlySwitch;
         this.setState({ wifiOnlySwitch: !this.state.wifiOnlySwitch});
+        await this.props.saveUserSettings(this.props.prefs);
+    }
+    
+    private async toggleThemeBrowser() {
+        this.props.prefs.ThemeBrowser = !this.state.themeBrowserSwitch;
+        this.setState({ themeBrowserSwitch: !this.state.themeBrowserSwitch});
         await this.props.saveUserSettings(this.props.prefs);
     }
 
@@ -220,7 +230,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     private async addRss(){
         try {
             // hide dialog early to show the user that the click registered
-            this.setState({rssDialogVisible: false, inputValue: "", rssAddDisabled: true});
+            this.setState({rssAddDialogVisible: false, inputValue: "", rssAddDisabled: true});
 
             let feed:Feed = Feed.New(this.state.inputValue);
 
@@ -238,18 +248,21 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await Backend.ResetCache();
     }
     
-    private async removeRss(rssName: string){
+    private async removeRss(){
         try {
+            // hide dialog early
+            this.setState({rssStatusDialogVisible: false});
+            
             let updatedFeeds = this.state.feeds;
             
-            let index = updatedFeeds.findIndex(item => item.name === rssName);
+            let index = updatedFeeds.findIndex(item => item.name === this.state.currentFeed.name);
             updatedFeeds.splice(index, 1);
 
             this.props.prefs.FeedList = updatedFeeds;
             await this.props.saveUserSettings(this.props.prefs);
             
             this.setState({feeds: updatedFeeds});
-            this.props.toggleSnack((this.props.lang.removed_feed).replace('%feed%',rssName), true);
+            this.props.toggleSnack((this.props.lang.removed_feed).replace('%feed%',this.state.currentFeed.name), true);
         } catch (err) {
             console.error("Can't remove RSS feed", err);
             this.props.toggleSnack(this.props.lang.remove_feed_fail, true);
@@ -286,6 +299,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
             noImagesSwitch: this.props.prefs.DisableImages,
             wifiOnly: this.props.prefs.WifiOnly,
+            themeBrowserSwitch: this.props.prefs.ThemeBrowser,
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
             feeds: this.props.prefs.FeedList,
@@ -330,6 +344,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         left={() => <List.Icon icon="palette" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => { this.setState({ accentDialogVisible: true })}}>{this.props.lang[this.state.accent]}</Button>} />
+                    <List.Item title={this.props.lang.theme_browser}
+                        left={() => <List.Icon icon="web" />}
+                        right={() => <Switch value={this.state.themeBrowserSwitch} onValueChange={this.toggleThemeBrowser} />} />
                 </List.Section>
 
                 <List.Section>
@@ -388,13 +405,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title={this.props.lang.add_feeds}
                         left={() => <List.Icon icon="plus" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ rssDialogVisible: true })}}>{this.props.lang.add_feed}</Button>} />
+                            onPress={() => {this.setState({ rssAddDialogVisible: true })}}>{this.props.lang.add_feed}</Button>} />
                     { this.state.feeds.map((element) => {
                         return (
                             <List.Item title={element.name}
                                 left={() => <List.Icon icon="rss" />}
                                 right={() => <Button style={Styles.settingsButton} 
-                                    onPress={() => { this.removeRss(element.name) }}>{this.props.lang.remove_feed}</Button>} />
+                                    onPress={() => { this.setState({ currentFeed: element, rssStatusDialogVisible: true })}}>{this.props.lang.feed_status}</Button>} />
                         );
                     })}
                 </List.Section>
@@ -445,16 +462,28 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.ScrollArea>
                     </Dialog>
 
-                    <Dialog visible={this.state.rssDialogVisible} onDismiss={() => { this.setState({ rssDialogVisible: false, inputValue: "" })}}>
+                    <Dialog visible={this.state.rssAddDialogVisible} onDismiss={() => { this.setState({ rssAddDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.add_feeds}</Dialog.Title>
                         <Dialog.Content>
                             <TextInput label={this.props.lang.url} autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ rssDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>
+                            <Button onPress={() => { this.setState({ rssAddDialogVisible: false, inputValue: "", dialogButtonDisabled: true }) }}>
                                 {this.props.lang.cancel}</Button>
                             <Button disabled={this.state.dialogButtonDisabled} onPress={this.addRss}>{this.props.lang.add_feed}</Button>
+                        </Dialog.Actions>
+                    </Dialog>
+
+                    <Dialog visible={this.state.rssStatusDialogVisible} onDismiss={() => { this.setState({ rssStatusDialogVisible: false })}}>
+                        <Dialog.Title>{this.state.currentFeed?.name}</Dialog.Title>
+                        <Dialog.Content>
+                            <Paragraph>{this.state.currentFeed?.url}</Paragraph>
+                        </Dialog.Content>
+                        <Dialog.Actions>
+                            <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }) }}>{this.props.lang.cancel}</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} 
+                                onPress={this.removeRss}>{this.props.lang.remove}</Button>
                         </Dialog.Actions>
                     </Dialog>
 

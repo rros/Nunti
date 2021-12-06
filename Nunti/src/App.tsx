@@ -12,10 +12,11 @@ import {
 // our files
 import Styles, { Dark, Light, Colors } from "./Styles";
 import { English, Czech } from "./Locale";
-import Wizard from "./Wizard";
-import Feed from "./Screens/Feed"
-import Bookmarks from "./Screens/Bookmarks"
-import Settings from "./Screens/Settings"
+import Wizard from "./Screens/Wizard";
+import Feed from "./Screens/Feed";
+import Bookmarks from "./Screens/Bookmarks";
+import Settings from "./Screens/Settings";
+import About from "./Screens/About";
 import Backend from "./Backend";
 import Locale from "./Locale";
 
@@ -148,17 +149,25 @@ export default class App extends Component {
                         drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} 
                         screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
                         <NavigationDrawer.Screen name="feed" options={{title: "omae"}}>
-                            {props => <Feed {...props} prefs={this.prefs} lang={this.state.language} toggleSnack={this.toggleSnack}/>}
+                            {props => <Feed {...props} prefs={this.prefs} 
+                                lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="bookmarks">
-                            {props => <Bookmarks {...props} prefs={this.prefs} lang={this.state.language} toggleSnack={this.toggleSnack}/>}
+                            {props => <Bookmarks {...props} prefs={this.prefs} 
+                                lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="settings">
-                            {props => <Settings {...props} prefs={this.prefs} loadPrefs={this.loadPrefs} saveUserSettings={this.saveUserSettings} lang={this.state.language}  
-                                updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} updateAccent={this.updateAccent} toggleSnack={this.toggleSnack} />}
+                            {props => <Settings {...props} prefs={this.prefs} loadPrefs={this.loadPrefs} 
+                                saveUserSettings={this.saveUserSettings} lang={this.state.language}  
+                                updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} 
+                                updateAccent={this.updateAccent} toggleSnack={this.toggleSnack} />}
+                        </NavigationDrawer.Screen>
+                        <NavigationDrawer.Screen name="about">
+                            {props => <About {...props} prefs={this.prefs} lang={this.state.language} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
-                            {props => <Wizard prefs={this.prefs} lang={this.state.language} saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} 
+                            {props => <Wizard prefs={this.prefs} lang={this.state.language} 
+                                saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} 
                                 updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
@@ -197,7 +206,8 @@ function CustomDrawer ({ state, navigation, theme, lang }) {
      });
 
     return (
-        <Drawer.Section title="Nunti" style={{backgroundColor: theme.colors.surface, height: "100%", paddingTop: "10%" /*not sure if this padding will work on all devices*/}}>
+        <Drawer.Section title="Nunti" 
+            style={{backgroundColor: theme.colors.surface, height: "100%", paddingTop: "10%"}}>
             <Drawer.Section>
                 <Drawer.Item
                     label={lang.feed}
@@ -225,6 +235,15 @@ function CustomDrawer ({ state, navigation, theme, lang }) {
                 onPress={() => {
                     setActive(state.routeNames[2]);
                     navigation.navigate(state.routes[2]);
+                }}
+            />
+            <Drawer.Item
+                label={lang.about}
+                icon="information"
+                active={active === state.routeNames[3]}
+                onPress={() => {
+                    setActive(state.routeNames[3]);
+                    navigation.navigate(state.routes[3]);
                 }}
             />
         </Drawer.Section>

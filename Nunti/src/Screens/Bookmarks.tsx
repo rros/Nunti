@@ -106,7 +106,11 @@ class Bookmarks extends PureComponent {
             url = this.state.articles.find(item => item.id === articleID).url;
         }
 
-        await InAppBrowser.open(url);
+        await InAppBrowser.open(url, {
+            forceCloseOnRedirection: false, showInRecents: true,
+            toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+            navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+        });
     }
 
     private async removeSavedArticle(articleID: number) {

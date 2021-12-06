@@ -52,6 +52,7 @@ class UserSettings {
     public HapticFeedback = true;
     public DisableImages = false;
     public WifiOnly = false;
+    public ThemeBrowser = true;
     public Language: string = "english";
 
     public Theme: string = "system";

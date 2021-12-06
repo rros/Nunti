@@ -17,8 +17,8 @@ import {
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import { Backend } from './Backend';
-import DefaultTopics from './DefaultTopics';
+import { Backend } from '../Backend';
+import DefaultTopics from '../DefaultTopics';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 const NavigationTabs = createMaterialTopTabNavigator();
@@ -31,7 +31,8 @@ class Wizard extends Component {
     render() {
         return(
             <NavigationTabs.Navigator tabBarPosition="bottom" 
-                screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background }, tabBarIndicatorStyle: { backgroundColor: "transparent"},
+                screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background },
+                    tabBarIndicatorStyle: { backgroundColor: "transparent"},
                     tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused, color }) => { 
                         if(focused)
                             return <Icon style={Styles.wizardNavigationIcon} name="circle" 
@@ -48,14 +49,17 @@ class Wizard extends Component {
                         saveUserSettings={this.props.saveUserSettings} updateLanguage={this.props.updateLanguage} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Theming">
-                    { props => <Step3Theme {...props} lang={this.props.lang} prefs={this.props.prefs} updateTheme={this.props.updateTheme} 
+                    { props => <Step3Theme {...props} lang={this.props.lang} 
+                        prefs={this.props.prefs} updateTheme={this.props.updateTheme} 
                         updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Topics">
-                    { props => <Step4Topics {...props} lang={this.props.lang} prefs={this.props.prefs} loadPrefs={this.props.loadPrefs}/>}
+                    { props => <Step4Topics {...props} lang={this.props.lang} 
+                        prefs={this.props.prefs} loadPrefs={this.props.loadPrefs}/>}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Learning">
-                    { props => <Step5Learning {...props} lang={this.props.lang} prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings}/>}
+                    { props => <Step5Learning {...props} lang={this.props.lang} 
+                        prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings}/>}
                 </NavigationTabs.Screen>
             </NavigationTabs.Navigator>
         );
@@ -70,7 +74,8 @@ class Step1Welcome extends Component {
     render() {
         return(
             <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
-                <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
+                <Image source={require("../../Resources/FullNunti.png")} 
+                    resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.centerText}>{this.props.lang.welcome}</Title>
                 <Paragraph style={Styles.centerText}>{this.props.lang.enjoy}</Paragraph>
             </ScrollView>
@@ -220,31 +225,40 @@ class Step4Topics extends Component {
                     <List.Subheader>{this.props.lang.topics}</List.Subheader>
                     <List.Item title={this.props.lang.politics}
                         left={() => <List.Icon icon="account-voice" />}
-                        right={() => <Switch value={this.state.worldPolitics} onValueChange={() => this.changeDefaultTopics("worldPolitics")} />} />
+                        right={() => <Switch value={this.state.worldPolitics} 
+                            onValueChange={() => this.changeDefaultTopics("worldPolitics")} />} />
                     <List.Item title={this.props.lang.czech_news}
                         left={() => <List.Icon icon="glass-mug-variant" />}
-                        right={() => <Switch value={this.state.czechNews} onValueChange={() => this.changeDefaultTopics("czechNews")} />} />
+                        right={() => <Switch value={this.state.czechNews} 
+                            onValueChange={() => this.changeDefaultTopics("czechNews")} />} />
                     <List.Item title={this.props.lang.sport}
                         left={() => <List.Icon icon="basketball" />}
-                        right={() => <Switch value={this.state.sport} onValueChange={() => this.changeDefaultTopics("sport")} />} />
+                        right={() => <Switch value={this.state.sport} 
+                            onValueChange={() => this.changeDefaultTopics("sport")} />} />
                     <List.Item title={this.props.lang.economy}
                         left={() => <List.Icon icon="currency-usd" />}
-                        right={() => <Switch value={this.state.economy} onValueChange={() => this.changeDefaultTopics("economy")} />} />
+                        right={() => <Switch value={this.state.economy} 
+                            onValueChange={() => this.changeDefaultTopics("economy")} />} />
                     <List.Item title={this.props.lang.technology}
                         left={() => <List.Icon icon="cog" />}
-                        right={() => <Switch value={this.state.technology} onValueChange={() => this.changeDefaultTopics("technology")} />} />
+                        right={() => <Switch value={this.state.technology} 
+                            onValueChange={() => this.changeDefaultTopics("technology")} />} />
                     <List.Item title={this.props.lang.science}
                         left={() => <List.Icon icon="beaker-question" />}
-                        right={() => <Switch value={this.state.science} onValueChange={() => this.changeDefaultTopics("science")} />} />
+                        right={() => <Switch value={this.state.science} 
+                            onValueChange={() => this.changeDefaultTopics("science")} />} />
                     <List.Item title={this.props.lang.environment}
                         left={() => <List.Icon icon="nature" />}
-                        right={() => <Switch value={this.state.environment} onValueChange={() => this.changeDefaultTopics("environment")} />} />
+                        right={() => <Switch value={this.state.environment} 
+                            onValueChange={() => this.changeDefaultTopics("environment")} />} />
                     <List.Item title={this.props.lang.travel}
                         left={() => <List.Icon icon="train-car" />}
-                        right={() => <Switch value={this.state.travel} onValueChange={() => this.changeDefaultTopics("travel")} />} />
+                        right={() => <Switch value={this.state.travel} 
+                            onValueChange={() => this.changeDefaultTopics("travel")} />} />
                     <List.Item title={this.props.lang.weather}
                         left={() => <List.Icon icon="weather-sunny" />}
-                        right={() => <Switch value={this.state.weather} onValueChange={() => this.changeDefaultTopics("weather")} />} />
+                        right={() => <Switch value={this.state.weather} 
+                            onValueChange={() => this.changeDefaultTopics("weather")} />} />
                 </List.Section>
             </ScrollView>
         );
@@ -268,10 +282,13 @@ class Step5Learning extends Component {
     render() {
         return(
             <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
-                <Image source={require("../Resources/FullNunti.png")} resizeMode="contain" style={Styles.fullscreenImage}></Image>
+                <Image source={require("../../Resources/FullNunti.png")} 
+                    resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.centerText}>{this.props.lang.adapt}</Title>
-                <Paragraph style={Styles.centerText}>{(this.props.lang.wizard_learning).replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
-                <Button style={{marginTop: "20%"}} icon="book" onPress={this.exitWizard}>{this.props.lang.start}</Button>
+                <Paragraph>
+                    {(this.props.lang.wizard_learning).replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
+                <Button style={{marginTop: "20%"}} icon="book" 
+                    onPress={this.exitWizard}>{this.props.lang.start}</Button>
             </ScrollView>
         );
     }
