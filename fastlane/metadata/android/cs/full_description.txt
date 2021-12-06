@@ -1,4 +1,4 @@
-<p>Nunti je ta RSS čtečka na kterou jste vždycky čekali!</p>
+<p>Nunti je ta RSS čtečka na kterou jste vždycky čekali.</p>
 
 <p>Nunti má vše co jste kdy chtěli:</p>
 <ul>

@@ -1,4 +1,4 @@
-<p>Nunti is the RSS feed app you have been waiting for!</p>
+<p>Nunti is the RSS feed app you have been waiting for.</p>
 
 <p>Nunti has everything you always wanted:</p>
 <ul>
