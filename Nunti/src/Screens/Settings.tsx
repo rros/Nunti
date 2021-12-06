@@ -354,7 +354,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         right={() => <Button style={Styles.settingsButton}>{this.state.learningStatus?.VoteRatio}</Button> } />
                     <List.Item title={this.props.lang.sorting_status}
                         left={() => <List.Icon icon="school" />}
-                        right={() => <Button style={Styles.settingsButton}>{this.state.learningStatus?.Enabled ? 
+                        right={() => <Button style={Styles.settingsButton}>{this.state.learningStatus?.SortingEnabled ? 
                             this.props.lang.learning_enabled : 
                             (this.props.lang.rate_more).replace('%articles%', this.state.learningStatus?.SortingEnabledIn)}</Button>}/>
                 </List.Section>

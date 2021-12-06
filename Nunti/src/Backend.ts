@@ -18,8 +18,7 @@ export class Feed {
     }
 
     public static New(url: string): Promise<Feed> {
-        let f = new Feed(url);
-        return f;
+        return new Feed(url);
     }
 }
 
@@ -382,7 +381,7 @@ export class Backend {
     public static async GetLearningStatus(): Promise<any> {
         let prefs = await this.GetUserSettings();
         let learning_db = await this.StorageGet('learning_db');
-        return {
+        let status = {
             TotalUpvotes: prefs.TotalUpvotes,
             TotalDownvotes: prefs.TotalDownvotes,
             VoteRatio: ((learning_db['upvotes'] + 1) / (learning_db['downvotes'] + 1)).toFixed(2),
@@ -391,6 +390,7 @@ export class Backend {
             LearningLifetime: (prefs.RotateDBAfter),
             LearningLifetimeRemaining: (prefs.RotateDBAfter - (learning_db['upvotes'] + learning_db['downvotes'])),
         }
+        return status;
     }
 
 
