@@ -381,6 +381,22 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                 </List.Section>
 
                 <List.Section>
+                    <List.Subheader>{this.props.lang.feeds}</List.Subheader>
+                    <List.Item title={this.props.lang.add_feeds}
+                        left={() => <List.Icon icon="plus" />}
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ rssAddDialogVisible: true })}}>{this.props.lang.add_feed}</Button>} />
+                    { this.state.feeds.map((element) => {
+                        return (
+                            <List.Item title={element.name}
+                                left={() => <List.Icon icon="rss" />}
+                                right={() => <Button style={Styles.settingsButton} 
+                                    onPress={() => { this.setState({ currentFeed: element, rssStatusDialogVisible: true })}}>{this.props.lang.feed_status}</Button>} />
+                        );
+                    })}
+                </List.Section>
+
+                <List.Section>
                     <List.Subheader>{this.props.lang.advanced}</List.Subheader>
                     <List.Item title={this.props.lang.discovery}
                         left={() => <List.Icon icon="book-search" />}
@@ -398,22 +414,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         left={() => <List.Icon icon="arrow-collapse-up" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => {this.setState({ maxArtFeedDialogVisible: true })}}>{this.state.maxArtFeed}</Button>} />
-                </List.Section>
-
-                <List.Section>
-                    <List.Subheader>{this.props.lang.feeds}</List.Subheader>
-                    <List.Item title={this.props.lang.add_feeds}
-                        left={() => <List.Icon icon="plus" />}
-                        right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ rssAddDialogVisible: true })}}>{this.props.lang.add_feed}</Button>} />
-                    { this.state.feeds.map((element) => {
-                        return (
-                            <List.Item title={element.name}
-                                left={() => <List.Icon icon="rss" />}
-                                right={() => <Button style={Styles.settingsButton} 
-                                    onPress={() => { this.setState({ currentFeed: element, rssStatusDialogVisible: true })}}>{this.props.lang.feed_status}</Button>} />
-                        );
-                    })}
                 </List.Section>
 
                 <List.Section>
