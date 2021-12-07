@@ -36,7 +36,7 @@ class About extends PureComponent {
         return (
             <ScrollView style={Styles.topView}>
                 <View style={[Styles.centerView, Styles.wizardStatusOffset]}>
-                    <Image source={require("../../Resources/FullNunti.png")} 
+                    <Image source={require("../../Resources/HeartNunti.png")} 
                         resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 </View>
 
