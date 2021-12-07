@@ -1,6 +1,6 @@
 # Nunti
 
-Finally a smart RSS reader which doesn't suck ass or your data!
+Finally a smart RSS reader which doesn't suck ass or your data.
 
 # Installation
 
@@ -17,28 +17,20 @@ Get it on f-droid soon!
 5. run `npx react-native start` in one terminal
 6. run `npx react-native run-android` in the second terminal to build
 
-### Note for developers
-
-When creating a new version of the app (update fdroid) you must do these things:
-
-1. change the version in `Nunti/package.json` (used to display the app version in the about page of the app)
-2. change the version code and name in `Nunti/android/app/src/main/AndroidManifest.xml`
-3. add the same version code tag to the commit
-
 # Features
 
-## Adaptive learning
+### Adaptive learning
 
 Nunti allows you to rate articles and then uses an advanced algorithm to sort new articles depending on which topics interest you the most.
 
-## Modern material design
+### Modern material design
 
 Nunti implements all the best practices of material design to finally create an open-source app that doesn't just feel right, but also looks right.
 
 <img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" alt="Nunti feed" width="20%" height="20%">
 <img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" alt="Nunti settings" width="20%" height="20%">
 
-## Theming options
+### Theming options
 
 Nunti allows you to customise the look of the app to make it unique to you. "Material You" is also planned once one of the developers gets android 12.
 
@@ -46,13 +38,22 @@ Nunti allows you to customise the look of the app to make it unique to you. "Mat
 <img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" alt="Nunti accent" width="20%" height="20%">
 <img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/10.jpg" alt="Nunti changed" width="20%" height="20%">
 
-## Import and export functions
+### Import and export functions
 
 Since Nunti nevers sends your data out of your device, you can easily export and then import your data including your rating preferences to your device.
 
-## Absolute privacy
+### Absolute privacy
 
 Nunti has been built with the idea that there is no reason to process or store any personal data in the cloud. As such Nunti never sends any of your data anywhere, and the only internet connections it makes are `GET` requests to your rss feeds. 
+
+# Development
+
+When creating a new version of the app (update fdroid) you must do these things:
+
+1. change the version in `Nunti/package.json` (used to display the app version in the about page of the app)
+2. change the version code and name in `Nunti/android/build.gradle`
+3. add changelogs into the fastline structure named `{version code}.txt`
+4. add the same version code tag to the commit
 
 # Licence, disclaimer or whatever
 

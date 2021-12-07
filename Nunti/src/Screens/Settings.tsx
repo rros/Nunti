@@ -81,11 +81,15 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             dataDialogVisible: false,
         }
 
-        this.getLearningStatus();
+        this.getLearningStatus(false);
     }
 
-    private async getLearningStatus(){
+    private async getLearningStatus(showSnack: boolean){
         this.setState({learningStatus: await Backend.GetLearningStatus()});
+
+        if(showSnack){
+            this.props.toggleSnack(this.props.lang.refreshed_data, true);
+        }
     }
 
     private async changeLanguage(newLanguage: string) {
@@ -311,7 +315,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             learningStatus: null,
         });
         
-        await this.getLearningStatus();
+        await this.getLearningStatus(false);
     }
 
     render() {
@@ -366,7 +370,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title={this.props.lang.refresh_learning}
                         left={() => <List.Icon icon="refresh" />}
                         right={() => <Button style={Styles.settingsButton}
-                            onPress={this.getLearningStatus}>{this.props.lang.refresh}</Button> } />
+                            onPress={() => { this.getLearningStatus(true) }}>{this.props.lang.refresh}</Button> } />
                     <List.Item title={this.props.lang.rated_articles}
                         left={() => <List.Icon icon="message-draw" />}
                         right={() => <Button style={Styles.settingsButton}>{this.state.learningStatus?.TotalUpvotes + this.state.learningStatus?.TotalDownvotes}</Button> } />
