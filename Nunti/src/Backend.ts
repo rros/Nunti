@@ -504,7 +504,7 @@ export class Backend {
         await this.ExtractKeywords(arts);
         return arts;
     }
-    /* Removes seen (already rated) articles from article list. */
+    /* Removes seen (already rated) articles and any duplicates from article list. */
     private static async CleanArticles(arts: Article[]): Promise<Article[]> {
         let seen = await this.StorageGet('seen');
         for(let i = 0; i < seen.length; i++) {
@@ -513,6 +513,12 @@ export class Backend {
                 arts.splice(index,1);
                 index = await this.FindArticleByUrl(seen[i].url,arts);
             }
+        }
+        
+        let newarts = []
+        for (let i = 0; i < arts.length; i++) {
+            if (await this.FindArticleByUrl(arts[i].url, newarts) < 0)
+                newarts.push(arts[i]);
         }
         return arts;
     }
