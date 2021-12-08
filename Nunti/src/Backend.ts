@@ -49,7 +49,6 @@ class Article {
 class UserSettings {
     public FeedList: Feed[] = [];
 
-    public HapticFeedback = true;
     public DisableImages = false;
     public WifiOnly = false;
     public ThemeBrowser = true;

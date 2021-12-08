@@ -25,7 +25,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         super(props);
 
         this.changeLanguage = this.changeLanguage.bind(this);
-        this.toggleHapticFeedback = this.toggleHapticFeedback.bind(this);
         this.toggleNoImages = this.toggleNoImages.bind(this);
         this.toggleWifiOnly = this.toggleWifiOnly.bind(this);
         this.toggleThemeBrowser = this.toggleThemeBrowser.bind(this);
@@ -47,7 +46,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         
         this.state = {
             language: this.props.prefs.Language,
-            hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
             noImagesSwitch: this.props.prefs.DisableImages,
             wifiOnlySwitch: this.props.prefs.WifiOnly,
             themeBrowserSwitch: this.props.prefs.ThemeBrowser,
@@ -98,12 +96,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await this.props.saveUserSettings(this.props.prefs);
 
         this.props.updateLanguage(newLanguage);
-    }
-
-    private async toggleHapticFeedback() {
-        this.props.prefs.HapticFeedback = !this.state.hapticFeedbackSwitch;
-        this.setState({ hapticFeedbackSwitch: !this.state.hapticFeedbackSwitch});
-        await this.props.saveUserSettings(this.props.prefs);
     }
 
     private async toggleNoImages() {
@@ -300,7 +292,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         
         this.setState({
             language: this.props.prefs.Language,
-            hapticFeedbackSwitch: this.props.prefs.HapticFeedback,
             noImagesSwitch: this.props.prefs.DisableImages,
             wifiOnly: this.props.prefs.WifiOnly,
             themeBrowserSwitch: this.props.prefs.ThemeBrowser,
@@ -327,9 +318,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         left={() => <List.Icon icon="translate" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => {this.setState({ languageDialogVisible: true })}}>{this.props.lang[this.state.language]}</Button>} />
-                    <List.Item title={this.props.lang.vibrate}
-                        left={() => <List.Icon icon="vibrate" />}
-                        right={() => <Switch value={this.state.hapticFeedbackSwitch} onValueChange={this.toggleHapticFeedback} />} />
                     <List.Item title={this.props.lang.compact}
                         left={() => <List.Icon icon="image-off" />}
                         right={() => <Switch value={this.state.noImagesSwitch} onValueChange={this.toggleNoImages} />} />

@@ -12,7 +12,7 @@ Get it on f-droid soon!
 
 1. clone the repository
 2. enter the `Nunti` directory
-3. run `npm install` to install dependencies
+3. run `npm install --no-optional` to install dependencies
 4. connect your phone and make sure adb can find your device
 5. run `npx react-native start` in one terminal
 6. run `npx react-native run-android` in the second terminal to build

@@ -19,7 +19,6 @@ import {
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
-import * as Haptics from 'expo-haptics';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 
 import Backend from '../Backend';
@@ -37,7 +36,7 @@ class Feed extends PureComponent {
         this.shareArticle = this.shareArticle.bind(this);
         this.saveArticle = this.saveArticle.bind(this);
         this.refresh = this.refresh.bind(this);
-        this.hapticFeedback = this.hapticFeedback.bind(this);
+        this.rateAnimation = this.rateAnimation.bind(this);
         this.endSwipe = this.endSwipe.bind(this);
 
         // states
@@ -54,6 +53,8 @@ class Feed extends PureComponent {
 
         // animation values
         this.rowTranslateValues = [];
+        this.hiddenRowHeightValue = new Animated.Value(0);
+        this.hiddenRowActive = false; // used to choose which anim to play
     }
 
     componentDidMount(){
@@ -107,8 +108,6 @@ class Feed extends PureComponent {
             url = this.state.articles.find(item => item.id === articleID).url;
         }
 
-        console.log(this.props.prefs.ThemeBrowser)
-
         await InAppBrowser.open(url, {
             forceCloseOnRedirection: false, showInRecents: true,
             toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
@@ -139,10 +138,14 @@ class Feed extends PureComponent {
     }
 
     // render functions
-    private async hapticFeedback(){
-        if(this.swiping == true && this.props.prefs.HapticFeedback){
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
+    private async rateAnimation(){
+        Animated.spring(this.hiddenRowHeightValue, {
+            toValue: this.hiddenRowActive ? 0 : 1,
+            useNativeDriver: false,
+            speed: 24
+        }).start();
+
+        this.hiddenRowActive = !this.hiddenRowActive;
     }
 
     public async endSwipe(rowKey: number, data: any) {
@@ -221,15 +224,19 @@ class Feed extends PureComponent {
                     renderHiddenItem={(rowData, rowMap) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
                             opacity: this.state.refreshing ? 0 : 
-                            this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.99, 1], outputRange: [0, 0, 1],}),
+                                this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.99, 1], outputRange: [0, 0, 1],}),
+                            marginTop: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: ["6%", "3%"]}),
+                            marginBottom: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: ["6%", "3%"]})
                         }]}>
-                            <Button 
+                            <Button
                                 color={this.props.theme.colors.error} dark={false} 
-                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent} 
+                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent}
+                                labelStyle={{fontSize: 20}}
                                 style={Styles.buttonRateLeft}></Button>
                             <Button 
                                 color={this.props.theme.colors.success} dark={false} 
                                 icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} 
+                                labelStyle={{fontSize: 20}}
                                 style={Styles.buttonRateRight}></Button>
                         </Animated.View>
                     )}
@@ -243,8 +250,8 @@ class Feed extends PureComponent {
                         </View>
                     )}
 
-                    onLeftActionStatusChange={this.hapticFeedback}
-                    onRightActionStatusChange={this.hapticFeedback}
+                    onLeftActionStatusChange={this.rateAnimation}
+                    onRightActionStatusChange={this.rateAnimation}
 
                     swipeGestureBegan={() => { this.swiping = true; }}
                     swipeGestureEnded={this.endSwipe}

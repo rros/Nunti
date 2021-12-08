@@ -147,8 +147,6 @@ export default Styles = StyleSheet.create ({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: "3%",
-        marginBottom: "3%",
     },
 
     centerView: {
@@ -161,7 +159,7 @@ export default Styles = StyleSheet.create ({
         width: '80%',
         height: undefined,
         aspectRatio: 1,
-        marginBottom: "20%"
+        marginBottom: "10%"
     },
 
     centerText: {

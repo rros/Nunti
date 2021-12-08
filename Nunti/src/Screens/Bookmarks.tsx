@@ -19,7 +19,6 @@ import {
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
-import * as Haptics from 'expo-haptics';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 
 import Backend from '../Backend';
@@ -35,7 +34,7 @@ class Bookmarks extends PureComponent {
         this.shareArticle = this.shareArticle.bind(this);
         this.removeSavedArticle = this.removeSavedArticle.bind(this);
         this.refresh = this.refresh.bind(this);
-        this.hapticFeedback = this.hapticFeedback.bind(this);
+        this.rateAnimation = this.rateAnimation.bind(this);
         this.endSwipe = this.endSwipe.bind(this);
 
         // states
@@ -52,6 +51,8 @@ class Bookmarks extends PureComponent {
 
         // animation values
         this.rowTranslateValues = [];
+        this.hiddenRowHeightValue = new Animated.Value(0);
+        this.hiddenRowActive = false; // used to choose which anim to play
     }
 
     componentDidMount(){
@@ -141,10 +142,14 @@ class Bookmarks extends PureComponent {
     }
 
     // render functions
-    private async hapticFeedback(){
-        if(this.swiping == true && this.props.prefs.HapticFeedback){
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
+    private async rateAnimation(){
+        Animated.spring(this.hiddenRowHeightValue, {
+            toValue: this.hiddenRowActive ? 0 : 1,
+            useNativeDriver: false,
+            speed: 24
+        }).start();
+
+        this.hiddenRowActive = !this.hiddenRowActive;
     }
 
     private async endSwipe(rowKey, data) {
@@ -208,13 +213,19 @@ class Bookmarks extends PureComponent {
                     renderHiddenItem={(rowData, rowMap) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
                             opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.99, 1], outputRange: [0, 0, 1],}),
+                            marginTop: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: ["6%", "3%"]}),
+                            marginBottom: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: ["6%", "3%"]})
                         }]}>
                             <Button 
                                 color={this.props.theme.colors.error} dark={false} 
-                                icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateLeft}></Button>
+                                icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} 
+                                labelStyle={{fontSize: 20}}
+                                style={Styles.buttonRateLeft}></Button>
                             <Button 
                                 color={this.props.theme.colors.error} dark={false} 
-                                icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} style={Styles.buttonRateRight}></Button>
+                                icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} 
+                                labelStyle={{fontSize: 20}}
+                                style={Styles.buttonRateRight}></Button>
                         </Animated.View>
                     )}
                     ListEmptyComponent={(
@@ -226,8 +237,8 @@ class Bookmarks extends PureComponent {
                         </View>
                     )}
 
-                    onLeftActionStatusChange={this.hapticFeedback}
-                    onRightActionStatusChange={this.hapticFeedback}
+                    onLeftActionStatusChange={this.rateAnimation}
+                    onRightActionStatusChange={this.rateAnimation}
 
                     swipeGestureBegan={() => { this.swiping = true; }}
                     swipeGestureEnded={this.endSwipe}
