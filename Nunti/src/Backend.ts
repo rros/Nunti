@@ -67,6 +67,7 @@ class UserSettings {
     public MaxArticlesPerChannel: number = 20;
     public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
     public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
+    public SeenHistoryLength = this.MaxArticles * 7; //to prevent flooding storage with seen articles history
 
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;
@@ -239,7 +240,7 @@ export class Backend {
 
         let seen = await this.StorageGet("seen");
         seen.push(art);
-        seen.splice(0, seen.length - (await this.GetUserSettings()).MaxArticles); //To prevent flooding storage with seen arts.
+        seen.splice(0, seen.length - (await this.GetUserSettings()).SeenHistoryLength); //To prevent flooding storage with seen arts.
         await this.StorageSave('seen', seen);
 
         /* if secondary DB is ready, replace the main and create new secondary. */
