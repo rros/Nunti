@@ -34,9 +34,10 @@ Nunti implements all the best practices of material design to finally create an 
 
 Nunti allows you to customise the look of the app to make it unique to you. "Material You" is also planned once one of the developers gets android 12.
 
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" alt="Nunti theme" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" alt="Nunti accent" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" alt="Nunti theme" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/9.jpg" alt="Nunti accent" width="20%" height="20%">
 <img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/10.jpg" alt="Nunti changed" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/11.jpg" alt="Nunti changed 2" width="20%" height="20%">
 
 ### Import and export functions
 

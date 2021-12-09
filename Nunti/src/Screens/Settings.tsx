@@ -27,7 +27,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.changeLanguage = this.changeLanguage.bind(this);
         this.toggleNoImages = this.toggleNoImages.bind(this);
         this.toggleWifiOnly = this.toggleWifiOnly.bind(this);
-        this.toggleThemeBrowser = this.toggleThemeBrowser.bind(this);
 
         this.removeRss = this.removeRss.bind(this);
         this.addRss = this.addRss.bind(this);
@@ -48,7 +47,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             language: this.props.prefs.Language,
             noImagesSwitch: this.props.prefs.DisableImages,
             wifiOnlySwitch: this.props.prefs.WifiOnly,
-            themeBrowserSwitch: this.props.prefs.ThemeBrowser,
 
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
@@ -110,12 +108,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await this.props.saveUserSettings(this.props.prefs);
     }
     
-    private async toggleThemeBrowser() {
-        this.props.prefs.ThemeBrowser = !this.state.themeBrowserSwitch;
-        this.setState({ themeBrowserSwitch: !this.state.themeBrowserSwitch});
-        await this.props.saveUserSettings(this.props.prefs);
-    }
-
     private async changeTheme(newTheme: string) {
         this.props.prefs.Theme = newTheme;
         this.setState({ theme: newTheme });
@@ -294,7 +286,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             language: this.props.prefs.Language,
             noImagesSwitch: this.props.prefs.DisableImages,
             wifiOnly: this.props.prefs.WifiOnly,
-            themeBrowserSwitch: this.props.prefs.ThemeBrowser,
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
             feeds: this.props.prefs.FeedList,
@@ -336,9 +327,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         left={() => <List.Icon icon="palette" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => { this.setState({ accentDialogVisible: true })}}>{this.props.lang[this.state.accent]}</Button>} />
-                    <List.Item title={this.props.lang.theme_browser}
-                        left={() => <List.Icon icon="web" />}
-                        right={() => <Switch value={this.state.themeBrowserSwitch} onValueChange={this.toggleThemeBrowser} />} />
                 </List.Section>
 
                 <List.Section>
