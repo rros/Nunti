@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StatusBar, Appearance, NativeModules } from 'react-native';
+import { StatusBar, Appearance, NativeModules, BackHandler } from 'react-native';
 
 import { 
     Provider as PaperProvider,
@@ -54,6 +54,12 @@ export default class App extends Component {
     async componentDidMount() {
         await Backend.Init();
         await this.loadPrefs();
+
+        this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+            if(this.prefs.FirstLaunch){
+                return true;
+            }
+        });
 
         // splash screen will hide when navigator has finished loading
     }
@@ -174,7 +180,7 @@ export default class App extends Component {
                             {props => <About {...props} prefs={this.prefs} lang={this.state.language} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
-                            {props => <Wizard prefs={this.prefs} lang={this.state.language} 
+                            {props => <Wizard {...props} prefs={this.prefs} lang={this.state.language} 
                                 saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} 
                                 updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>

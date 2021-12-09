@@ -273,9 +273,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await Backend.ResetAllData();
         await this.reloadPrefs();
 
-        // remove "cached" feed page // force it to reload next time 
-        // i have no idea why the route is bookmarks, but feed doesn't work as intended
-        await this.props.navigation.reset({index: 0, routes: [{ name: 'bookmarks' }]});        
+        await this.props.navigation.reset({index: 0, routes: [{ name: 'wizard' }]});        
         await this.props.navigation.navigate("wizard");
     }
 
