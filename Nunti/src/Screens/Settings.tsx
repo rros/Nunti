@@ -166,7 +166,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             return;      
         }
 
-        this.props.prefs.DiscoveryRatio = this.state.inputValue / 100;
+        this.props.prefs.DiscoverRatio = this.state.inputValue / 100;
         await this.props.saveUserSettings(this.props.prefs);
 
         this.props.toggleSnack(this.props.lang.change_discovery_success, true);      
