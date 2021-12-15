@@ -127,10 +127,11 @@ android {
 
     defaultConfig {
         applicationId "com.nunti"
+        versionCode 1
+        versionName "v1.0.0"
+
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
     }
     splits {
         abi {
