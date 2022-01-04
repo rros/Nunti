@@ -11,7 +11,7 @@ import {
 
 // our files
 import Styles, { Dark, Light, Colors } from "./Styles";
-import { English, Czech } from "./Locale";
+import { English, Czech, Japanese } from "./Locale";
 import Wizard from "./Screens/Wizard";
 import Feed from "./Screens/Feed";
 import Bookmarks from "./Screens/Bookmarks";
@@ -87,6 +87,8 @@ export default class App extends Component {
 
         if(locale.includes("cs")){
             this.setState({ language: Czech })
+        } else if(locale.includes("ja")){
+            this.setState({ language: Japanese })
         } else { // default
             this.setState({ language: English })
         }

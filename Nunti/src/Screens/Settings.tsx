@@ -383,7 +383,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title={this.props.lang.cache_time}
                         left={() => <List.Icon icon="clock-outline" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ cacheTimeDialogVisible: true })}}>{this.state.cacheTime} min.</Button>} />
+                            onPress={() => {this.setState({ cacheTimeDialogVisible: true })}}>{this.state.cacheTime + this.props.lang.minutes} </Button>} />
                     <List.Item title={this.props.lang.max_art}
                         left={() => <List.Icon icon="arrow-collapse-up" />}
                         right={() => <Button style={Styles.settingsButton} 
@@ -412,6 +412,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             <RadioButton.Item label={this.props.lang.system} value="system" />
                             <RadioButton.Item label={this.props.lang.en} value="en" />
                             <RadioButton.Item label={this.props.lang.cs} value="cs" />
+                            <RadioButton.Item label={this.props.lang.ja} value="ja" />
                         </RadioButton.Group>
                     </Dialog>
 

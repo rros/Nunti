@@ -211,7 +211,7 @@ class Feed extends PureComponent {
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
                                         <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
-                                        <Caption style={Styles.cardContentSource}>{this.props.lang.article_from + rowData.item.source}</Caption>
+                                        <Caption style={Styles.cardContentSource}>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
                                     </Card.Content>
                                     {this.state.showImages && rowData.item.cover !== undefined && 
                                     <View style={Styles.cardContentCoverContainer}>
@@ -265,7 +265,7 @@ class Feed extends PureComponent {
                                 <Card.Content>
                                     <Title>{this.state.articles[this.currentIndex].title}</Title>
                                     <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
-                                    <Caption>{this.props.lang.article_from + this.state.articles[this.currentIndex].source}</Caption>
+                                    <Caption>{(this.props.lang.article_from).replace('%source%', this.state.articles[this.currentIndex].source)}</Caption>
                                 </Card.Content>
                                 <Card.Actions>
                                     <Button icon="book" onPress={this.readMore}>{this.props.lang.read_more}</Button>
