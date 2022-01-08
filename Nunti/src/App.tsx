@@ -11,7 +11,7 @@ import {
 
 // our files
 import Styles, { Dark, Light, Colors } from "./Styles";
-import { English, Czech, Japanese, Italian } from "./Locale";
+import { English, Czech, Japanese, Italian, Polish } from "./Locale";
 import Wizard from "./Screens/Wizard";
 import Feed from "./Screens/Feed";
 import Bookmarks from "./Screens/Bookmarks";
@@ -91,6 +91,8 @@ export default class App extends Component {
             this.setState({ language: Japanese })
         } else if(locale.includes("it")) {
             this.setState({ language: Italian })
+        } else if(locale.includes("pl")) {
+            this.setState({ language: Polish })
         } else { // default
             this.setState({ language: English })
         }

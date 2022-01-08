@@ -1,0 +1,10 @@
+<p>Nunti to czytnik RSS, na który zawsze czekałeś.</p>
+
+<p>Nunti ma wszystko, czego pragniesz:</p>
+<ul>
+<li>adaptacyjne uczenie się preferencji</li>
+<li>nowoczesny material design</li>
+<li>opcje dostosowywania wyglądu</li>
+<li>funkcje importu i eksportu</li>
+<li>całkowita prywatność - Twoje dane nigdy nie opuszczają urządzenia</li>
+</ul>
