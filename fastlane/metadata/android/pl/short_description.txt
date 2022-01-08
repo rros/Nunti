@@ -1,0 +1,1 @@
+Wreszcie inteligentny czytnik RSS, który nie kradnie Twoich danych i nie wygląda jak z lat 90-tych.

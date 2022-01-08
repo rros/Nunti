@@ -414,6 +414,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             <RadioButton.Item label={this.props.lang.cs} value="cs" />
                             <RadioButton.Item label={this.props.lang.ja} value="ja" />
                             <RadioButton.Item label={this.props.lang.it} value="it" />
+                            <RadioButton.Item label={this.props.lang.pl} value="pl" />
                         </RadioButton.Group>
                     </Dialog>
 

@@ -51,12 +51,16 @@ Nunti has been built with the firm belief that there is no reason to process or 
 
 # Development
 
-When creating a new version of the app (update fdroid) you must do these things:
+(Maintainers only) When creating a new version of the app (update fdroid) you must do these things:
 
 1. change the version in `Nunti/package.json` (used to display the app version in the about page of the app)
 2. change the version code and name in `Nunti/android/app/build.gradle`
 3. add changelogs into the fastline structure named `{version code}.txt`
 4. add the same version code tag to the commit
+
+# Credits and contributors
+
+Štěpán Šebek - polish translation
 
 # Licence, disclaimer or whatever
 
