@@ -1,1 +1,1 @@
-Finally a smart RSS reader which doesn't suck ass or your data.
+Finalmente un lettore RSS intelligente che non fa schifo e rispetta la tua privacy.
