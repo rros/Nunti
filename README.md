@@ -2,11 +2,14 @@
 
 Finally a smart RSS reader which doesn't suck ass or your data.
 
+![F-Droid version](https://img.shields.io/f-droid/v/com.nunti.svg)
+![Gitlab release](https://img.shields.io/gitlab/v/release/24697319)
+
 # Installation
 
 ## For users
 
-Get it on f-droid soon! 
+<a href="https://f-droid.org/en/packages/com.nunti/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="75"></a>
 
 ## For developers
 
