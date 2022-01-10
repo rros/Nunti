@@ -185,7 +185,7 @@ export default class App extends Component {
                         <NavigationDrawer.Screen name="about">
                             {props => <About {...props} prefs={this.prefs} lang={this.state.language} />}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true, headerShown: false}}>
+                        <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true}}>
                             {props => <Wizard {...props} prefs={this.prefs} lang={this.state.language} 
                                 saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} 
                                 updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
@@ -209,7 +209,7 @@ export default class App extends Component {
 function CustomHeader ({ navigation, route, lang }) {
     return (
         <Appbar.Header style={{marginTop: StatusBar.currentHeight}}> 
-            <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} />
+            { route.name != "wizard" && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
             <Appbar.Content title={lang[route.name]} />
         </Appbar.Header>
       );

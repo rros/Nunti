@@ -232,8 +232,8 @@ class Bookmarks extends PureComponent {
                         <View style={Styles.centerView}>
                             <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")}
                                  resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                            <Title>{this.props.lang.no_bookmarks}</Title>
-                            <Paragraph style={Styles.centerText}>{this.props.lang.no_bookmarks_desc}</Paragraph>
+                            <Title style={Styles.largerText}>{this.props.lang.no_bookmarks}</Title>
+                            <Paragraph style={Styles.largerText}>{this.props.lang.no_bookmarks_desc}</Paragraph>
                         </View>
                     )}
 

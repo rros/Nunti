@@ -73,11 +73,11 @@ class Step1Welcome extends Component {
 
     render() {
         return(
-            <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
+            <ScrollView contentContainerStyle={Styles.centerView}>
                 <Image source={require("../../Resources/FullNunti.png")} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Title style={Styles.centerText}>{this.props.lang.welcome}</Title>
-                <Paragraph style={Styles.centerText}>{this.props.lang.enjoy}</Paragraph>
+                <Title style={Styles.largerText}>{this.props.lang.welcome}</Title>
+                <Paragraph style={Styles.largerText}>{this.props.lang.enjoy}</Paragraph>
             </ScrollView>
         );
     }
@@ -102,7 +102,7 @@ class Step2Language extends Component {
 
     render() {
         return(
-            <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
+            <ScrollView>
                 <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
                     <List.Section>
                         <List.Subheader>{this.props.lang.language}</List.Subheader>
@@ -153,7 +153,7 @@ class Step3Theme extends Component {
 
     render() {
         return(
-            <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
+            <ScrollView>
                 <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
                     <List.Section>
                         <List.Subheader>{this.props.lang.theme}</List.Subheader>
@@ -228,7 +228,7 @@ class Step4Topics extends Component {
     
     render() {
         return(
-            <ScrollView contentContainerStyle={Styles.wizardStatusOffset}>
+            <ScrollView>
                 <List.Section>
                     <List.Subheader>{this.props.lang.topics}</List.Subheader>
                     <List.Item title={this.props.lang.politics}
@@ -289,13 +289,13 @@ class Step5Learning extends Component {
 
     render() {
         return(
-            <ScrollView contentContainerStyle={[Styles.centerView, Styles.wizardStatusOffset]}>
+            <ScrollView contentContainerStyle={Styles.centerView}>
                 <Image source={require("../../Resources/FullNunti.png")} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Title style={Styles.centerText}>{this.props.lang.adapt}</Title>
-                <Paragraph>
+                <Title style={Styles.largerText}>{this.props.lang.adapt}</Title>
+                <Paragraph style={Styles.largerText}>
                     {(this.props.lang.wizard_learning).replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
-                <Button style={{marginTop: "20%"}} icon="book" 
+                <Button icon="book" style={Styles.startReadingButton}
                     onPress={this.exitWizard}>{this.props.lang.start}</Button>
             </ScrollView>
         );

@@ -245,8 +245,8 @@ class Feed extends PureComponent {
                             <Image source={this.props.theme.dark ? 
                                 require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")}
                                 resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                            <Title>{this.props.lang.empty_feed_title}</Title>
-                            <Paragraph style={Styles.centerText}>{this.props.lang.empty_feed_desc}</Paragraph>
+                            <Title style={Styles.largerText}>{this.props.lang.empty_feed_title}</Title>
+                            <Paragraph style={Styles.largerText}>{this.props.lang.empty_feed_desc}</Paragraph>
                         </View>
                     )}
 

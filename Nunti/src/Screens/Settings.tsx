@@ -408,22 +408,26 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
                 <Portal>
                     <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false })}}>
-                        <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
-                            <RadioButton.Item label={this.props.lang.system} value="system" />
-                            <RadioButton.Item label={this.props.lang.en} value="en" />
-                            <RadioButton.Item label={this.props.lang.cs} value="cs" />
-                            <RadioButton.Item label={this.props.lang.ja} value="ja" />
-                            <RadioButton.Item label={this.props.lang.it} value="it" />
-                            <RadioButton.Item label={this.props.lang.pl} value="pl" />
-                        </RadioButton.Group>
+                        <ScrollView>
+                            <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
+                                <RadioButton.Item label={this.props.lang.system} value="system" />
+                                <RadioButton.Item label={this.props.lang.en} value="en" />
+                                <RadioButton.Item label={this.props.lang.cs} value="cs" />
+                                <RadioButton.Item label={this.props.lang.ja} value="ja" />
+                                <RadioButton.Item label={this.props.lang.it} value="it" />
+                                <RadioButton.Item label={this.props.lang.pl} value="pl" />
+                            </RadioButton.Group>
+                        </ScrollView>
                     </Dialog>
 
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false })}}>
-                        <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
-                            <RadioButton.Item label={this.props.lang.system} value="system" />
-                            <RadioButton.Item label={this.props.lang.light} value="light" />
-                            <RadioButton.Item label={this.props.lang.dark} value="dark" />
-                        </RadioButton.Group>
+                        <ScrollView>
+                            <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
+                                <RadioButton.Item label={this.props.lang.system} value="system" />
+                                <RadioButton.Item label={this.props.lang.light} value="light" />
+                                <RadioButton.Item label={this.props.lang.dark} value="dark" />
+                            </RadioButton.Group>
+                        </ScrollView>
                     </Dialog>
 
                     <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false })}}>
