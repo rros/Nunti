@@ -431,8 +431,19 @@ export class Backend {
                         let art = new Article(Math.floor(Math.random() * 1e16));
                         art.source = feed.name;
                         art.title = item.getElementsByTagName("title")[0].childNodes[0].nodeValue.substr(0,256)
+                        // fallback for CDATA retards
+                        if (art.title.trim() === "") {
+                            art.title = serializer.serializeToString(item).match(/title\>.*CDATA\[(.*)\]\].*\/title/s)[1].trim()
+                            if (art.title.trim() == "")
+                                throw new Error(`Got empty title. ${item}`);
+                        }
                         try { art.description = item.getElementsByTagName("description")[0].childNodes[0].nodeValue; } catch { }
                         try { art.description = item.getElementsByTagName("content")[0].childNodes[0].nodeValue; } catch { }
+                        try {
+                            //fallback for CDATA retards
+                            if (art.description.trim() === "")
+                                art.description = serializer.serializeToString(item).match(/description\>.*CDATA\[(.*)\]\].*\<\/description/s)[1]
+                        } catch { }
                         const entities = [
                             ['amp', '&'],
                             ['apos', '\''],
