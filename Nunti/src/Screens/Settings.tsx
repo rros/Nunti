@@ -175,7 +175,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
     private async changeCacheTime(){
         if(this.state.inputValue < 0){
-            this.props.toggleSnack(this.props.lang.change_discovery_fail, true);
+            this.props.toggleSnack(this.props.lang.change_cache_time_fail, true);
             this.setState({cacheTimeDialogVisible: false, inputValue: "", dialogButtonDisabled: true});
             return;      
         }
@@ -189,7 +189,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
     private async changeMaxArt(){
         if(this.state.inputValue < 0){
-            this.props.toggleSnack(this.props.lang.change_discovery_fail, true);
+            this.props.toggleSnack(this.props.lang.change_max_art_fail, true);
             this.setState({maxArtDialogVisible: false, inputValue: "", dialogButtonDisabled: true});
             return;      
         }
@@ -203,7 +203,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
     private async changeMaxArtFeed(){
         if(this.state.inputValue < 0){
-            this.props.toggleSnack(this.props.lang.change_discovery_fail, true);
+            this.props.toggleSnack(this.props.lang.change_max_art_feed_fail, true);
             this.setState({maxArtFeedDialogVisible: false, inputValue: "", dialogButtonDisabled: true});
             return;      
         }
