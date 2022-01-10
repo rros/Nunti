@@ -1,10 +1,8 @@
-<p>Nunti je ta RSS čtečka na kterou jste vždycky čekali.</p>
+Nunti je ta RSS čtečka na kterou jste vždycky čekali.
 
-<p>Nunti má vše co jste kdy chtěli:</p>
-<ul>
-<li>adaptivní učení preferencí</li>
-<li>moderní material design</li>
-<li>možnosti přizpůsobení vzhledu</li>
-<li>import and export funkce</li>
-<li>absolutní soukromí - Vaše data nikdy neopustí Vaše zařízení</li>
-</ul>
+Nunti má vše co jste kdy chtěli:
+- adaptivní učení preferencí
+- moderní material design
+- možnosti přizpůsobení vzhledu
+- import and export funkce
+- absolutní soukromí - Vaše data nikdy neopustí Vaše zařízení

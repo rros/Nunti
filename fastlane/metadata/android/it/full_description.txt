@@ -1,10 +1,8 @@
-<p>Nunti è l'app di feed RSS che stavi aspettando.</p>
+Nunti è l'app di feed RSS che stavi aspettando.
 
-<p>Nunti ha tutto ciò che hai sempre desiderato:</p>
-<ul>
-<li>apprendimento adattivo delle preferenze</li>
-<li>design moderno dei materiali</li>
-<li>opzioni di tematica</li>
-<li>funzioni di importazione ed esportazione</li>
-<li>privacy assoluta: nessun dato lascia mai il tuo dispositivo</li>
-</ul>
+Nunti ha tutto ciò che hai sempre desiderato:
+- apprendimento adattivo delle preferenze
+- design moderno dei materiali
+- opzioni di tematica
+- funzioni di importazione ed esportazione
+- privacy assoluta: nessun dato lascia mai il tuo dispositivo
