@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splash_background">#f6f6f6</color>
+    <color name="bootsplash_background">#f6f6f6</color>
 </resources>
