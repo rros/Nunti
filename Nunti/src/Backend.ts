@@ -444,6 +444,7 @@ export class Backend {
                             if (art.description.trim() === "")
                                 art.description = serializer.serializeToString(item).match(/description\>.*CDATA\[(.*)\]\].*\<\/description/s)[1]
                         } catch { }
+                        art.description = art.description.trim()
                         const entities = [
                             ['amp', '&'],
                             ['apos', '\''],
