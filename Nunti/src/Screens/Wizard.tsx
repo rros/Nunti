@@ -118,6 +118,8 @@ class Step2Language extends Component {
                             right={() => <RadioButton.Item value="pl" />} />
                         <List.Item title={this.props.lang.it}
                             right={() => <RadioButton.Item value="it" />} />
+                        <List.Item title={this.props.lang.de}
+                            right={() => <RadioButton.Item value="de" />} />
                     </List.Section>
                 </RadioButton.Group>
             </ScrollView>
