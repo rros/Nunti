@@ -3,8 +3,9 @@ package com.nunti;
 import android.os.Bundle;
 import com.facebook.react.ReactActivity;
 import android.content.res.Configuration;
-// react-native-splash-screen >= 0.3.1
-import org.devio.rn.splashscreen.SplashScreen; // here
+
+import com.facebook.react.ReactActivityDelegate; // <- add this necessary import
+import com.zoontek.rnbootsplash.RNBootSplash; // <- add this necessary import
 
 public class MainActivity extends ReactActivity {
 
@@ -19,7 +20,6 @@ public class MainActivity extends ReactActivity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
-    SplashScreen.show(this);
     super.onCreate(savedInstanceState);
   }
 
@@ -27,5 +27,17 @@ public class MainActivity extends ReactActivity {
   public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
     getReactInstanceManager().onConfigurationChanged(this, newConfig);
+  }
+
+    @Override
+  protected ReactActivityDelegate createReactActivityDelegate() {
+    return new ReactActivityDelegate(this, getMainComponentName()) {
+
+      @Override
+      protected void loadApp(String appKey) {
+        RNBootSplash.init(MainActivity.this); // <- initialize the splash screen
+        super.loadApp(appKey);
+      }
+    };
   }
 }

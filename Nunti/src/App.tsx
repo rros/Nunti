@@ -24,7 +24,7 @@ import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
-import SplashScreen from 'react-native-splash-screen'
+import RNBootSplash from "react-native-bootsplash";
 
 const NavigationDrawer = createDrawerNavigator();
 
@@ -164,7 +164,7 @@ export default class App extends Component {
                 <StatusBar 
                     backgroundColor="rgba(0, 0, 0, 0.3)"
                     translucent={true}/>
-                <NavigationContainer theme={this.state.theme} onReady={SplashScreen.hide}>
+                <NavigationContainer theme={this.state.theme} onReady={() => RNBootSplash.hide({ fade: true })}>
                     <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? "wizard" : "feed"}
                         drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} 
                         screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
