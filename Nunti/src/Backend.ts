@@ -395,7 +395,7 @@ export class Backend {
 
 
     /* Private methods */
-    private static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, noimages: boolean): Promise<Article[]> {
+    private static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number): Promise<Article[]> {
         console.debug('Backend: Downloading from ' + feed.name);
         let arts: Article[] = [];
         const controller = new AbortController();
@@ -463,16 +463,14 @@ export class Backend {
                         try { art.description = art.description.substr(0,1024); } catch { }
                         try { art.description = art.description.replace(/[^\S ]/," ").replace(/[^\S]{3,}/g," "); } catch { }
 
-                        if (!noimages) {
-                            if (art.cover === undefined)
-                                try { art.cover = item.getElementsByTagName("enclosure")[0].getAttribute("url"); } catch { }
-                            if (art.cover === undefined)
-                                try { art.cover = item.getElementsByTagName("media:content")[0].getAttribute("url"); } catch { }
-                            if (art.cover === undefined)
-                                try { art.cover = item.getElementsByTagName("szn:url")[0].childNodes[0].nodeValue; } catch { }
-                            if (art.cover === undefined)
-                                try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(?:(?:jpe?g)|(?:png)))/)[0] } catch { }
-                        }
+                        if (art.cover === undefined)
+                            try { art.cover = item.getElementsByTagName("enclosure")[0].getAttribute("url"); } catch { }
+                        if (art.cover === undefined)
+                            try { art.cover = item.getElementsByTagName("media:content")[0].getAttribute("url"); } catch { }
+                        if (art.cover === undefined)
+                            try { art.cover = item.getElementsByTagName("szn:url")[0].childNodes[0].nodeValue; } catch { }
+                        if (art.cover === undefined)
+                            try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(?:(?:jpe?g)|(?:png)))/)[0] } catch { }
                         try {
                             art.url = item.getElementsByTagName("link")[0].childNodes[0].nodeValue;
                         } catch {
@@ -500,7 +498,7 @@ export class Backend {
         let arts: Article[] = [];
         let promises: Promise<Article[]>[] = [];
         for (let i = 0; i < feedList.length; i++) {
-            promises.push(this.DownloadArticlesOneChannel(feedList[i],prefs.MaxArticlesPerChannel, prefs.DisableImages))
+            promises.push(this.DownloadArticlesOneChannel(feedList[i],prefs.MaxArticlesPerChannel))
         }
         let results: Article[][] = await Promise.all(promises)
         for (let i = 0; i < results.length; i++) {
