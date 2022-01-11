@@ -97,8 +97,8 @@ export default Styles = StyleSheet.create ({
     },
 
     card: {
-        marginTop: "1%",
-        marginBottom: "1%",
+        marginTop: 3,
+        marginBottom: 3,
     },
 
     cardContentContainer: {
@@ -116,10 +116,6 @@ export default Styles = StyleSheet.create ({
 
     cardContentParagraph: {
         flex: 1,
-    },
-    
-    cardContentSource: {
-        marginBottom: "2%"
     },
 
     cardContentCoverContainer: {
@@ -152,23 +148,22 @@ export default Styles = StyleSheet.create ({
     centerView: {
         alignItems: "center",
         justifyContent: "center",
+        padding: 20
     },
     
     fullscreenImage: {
         height: 200,
         width: undefined,
         aspectRatio: 1,
-        margin: "5%"
+        marginBottom: 20
     },
 
     largerText: {
         textAlign: 'center',
-        marginLeft: "5%",
-        marginRight: "5%",
     },
 
     startReadingButton: {
-        marginTop: "5%"
+        marginTop: 20
     },
 
     settingsButton: {
@@ -180,6 +175,6 @@ export default Styles = StyleSheet.create ({
     },
 
     settingsDialogDesc: {
-        paddingBottom: "2%"
+        paddingBottom: 10
     }
 });

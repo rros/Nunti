@@ -200,7 +200,7 @@ class Bookmarks extends PureComponent {
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
                                         <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
-                                        <Caption style={Styles.cardContentSource}>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
+                                        <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
                                     </Card.Content>
                                     {this.state.showImages && rowData.item.cover !== undefined 
                                         && <View style={Styles.cardContentCoverContainer}>
@@ -213,8 +213,8 @@ class Bookmarks extends PureComponent {
                     renderHiddenItem={(rowData, rowMap) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
                             opacity: this.state.refreshing ? 0 : this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.99, 1], outputRange: [0, 0, 1],}),
-                            marginTop: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: ["6%", "3%"]}),
-                            marginBottom: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: ["6%", "3%"]})
+                            marginTop: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: [50, 10]}),
+                            marginBottom: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: [50, 10]})
                         }]}>
                             <Button 
                                 color={this.props.theme.colors.error} dark={false} 
