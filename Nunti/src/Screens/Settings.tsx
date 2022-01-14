@@ -452,7 +452,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <Dialog visible={this.state.rssAddDialogVisible} onDismiss={() => { this.setState({ rssAddDialogVisible: false, inputValue: "" })}}>
                         <Dialog.Title>{this.props.lang.add_feeds}</Dialog.Title>
                         <Dialog.Content>
-                            <TextInput label={this.props.lang.url} autoCapitalize="none" defaultValue={this.state.inputValue}
+                            <TextInput label="https://www.website.com/rss" autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>

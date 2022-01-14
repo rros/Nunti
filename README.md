@@ -46,7 +46,7 @@ Nunti allows you to customise the look of the app to make it unique to you. "Mat
 
 ### Import and export functions
 
-Since Nunti nevers sends your data out of your device, you can easily export and then import your data including your rating preferences to your device.
+Since Nunti never sends your data out of your device, you can easily export and then import your data including your rating preferences to your device.
 
 ### Absolute privacy
 

@@ -135,7 +135,7 @@ export default Styles = StyleSheet.create ({
     },
 
     buttonRateContent: {
-        height: "100%"
+        height: "100%",
     },
 
     swipeListHidden: {
@@ -143,6 +143,8 @@ export default Styles = StyleSheet.create ({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
+        marginTop: 5,
+        marginBottom: 5
     },
 
     centerView: {

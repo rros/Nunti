@@ -52,8 +52,8 @@ class Feed extends PureComponent {
         this.swiping = false;
 
         // animation values
-        this.rowTranslateValues = [];
-        this.hiddenRowHeightValue = new Animated.Value(0);
+        this.rowAnimatedValues = [];
+        this.hiddenRowAnimatedValue = new Animated.Value(0);
         this.hiddenRowActive = false; // used to choose which anim to play
     }
 
@@ -80,7 +80,7 @@ class Feed extends PureComponent {
         Array(arts.length)
             .fill('')
             .forEach((_, i) => {
-                this.rowTranslateValues[`${i}`] = new Animated.Value(1);
+                this.rowAnimatedValues[`${i}`] = new Animated.Value(0.5);
             });
         
         this.firstRefresh = false;
@@ -139,10 +139,9 @@ class Feed extends PureComponent {
 
     // render functions
     private async rateAnimation(){
-        Animated.spring(this.hiddenRowHeightValue, {
+        Animated.spring(this.hiddenRowAnimatedValue, {
             toValue: this.hiddenRowActive ? 0 : 1,
             useNativeDriver: false,
-            speed: 24
         }).start();
 
         this.hiddenRowActive = !this.hiddenRowActive;
@@ -163,9 +162,9 @@ class Feed extends PureComponent {
 
             updatedArticles.splice(removingIndex, 1);
             
-            this.rowTranslateValues[rowKey].setValue(1);
-            Animated.timing(this.rowTranslateValues[rowKey], {
-                toValue: 0,
+            this.rowAnimatedValues[rowKey].setValue(0.5);
+            Animated.timing(this.rowAnimatedValues[rowKey], {
+                toValue: data.translateX > 0 ? 1 : 0,
                 duration: 400,
                 useNativeDriver: false,
             }).start(() => {
@@ -202,8 +201,9 @@ class Feed extends PureComponent {
 
                     renderItem={ (rowData, rowMap) => (
                         <Animated.View style={{ 
-                            maxHeight: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 300],}), 
-                            opacity: this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 1], outputRange: [0, 1],}), 
+                            maxHeight: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 300, 0],}), 
+                            opacity: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 1, 0],}),
+                            translateX: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [-1000, 0, 1000],}), // random value, it disappears anyway
                         }}>
                             <Card style={Styles.card} 
                                 onPress={() => { this.readMore(rowData.item.id) }} onLongPress={() => { this.viewDetails(rowData.item.id) }}>
@@ -224,19 +224,19 @@ class Feed extends PureComponent {
                     renderHiddenItem={(rowData, rowMap) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
                             opacity: this.state.refreshing ? 0 : 
-                                this.rowTranslateValues[rowData.item.id].interpolate({inputRange: [0, 0.99, 1], outputRange: [0, 0, 1],}),
-                            marginTop: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: [50, 10]}),
-                            marginBottom: this.hiddenRowHeightValue.interpolate({inputRange: [0, 1], outputRange: [50, 10]})
+                                this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.49, 0.5, 0.51, 1], outputRange: [0, 0, 1, 0, 0],}),
                         }]}>
                             <Button
-                                color={this.props.theme.colors.error} dark={false} 
+                                color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
+                                    outputRange: ["grey", this.props.theme.colors.error]})}  
                                 icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent}
-                                labelStyle={{fontSize: 20}}
+                                labelStyle={{fontSize: 20}} dark={false} 
                                 style={Styles.buttonRateLeft}></Button>
                             <Button 
-                                color={this.props.theme.colors.success} dark={false} 
+                                color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
+                                    outputRange: ["grey", this.props.theme.colors.success]})}  
                                 icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} 
-                                labelStyle={{fontSize: 20}}
+                                labelStyle={{fontSize: 20}} dark={false}
                                 style={Styles.buttonRateRight}></Button>
                         </Animated.View>
                     )}
