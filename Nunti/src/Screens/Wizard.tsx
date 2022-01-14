@@ -20,6 +20,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Backend } from '../Backend';
 import DefaultTopics from '../DefaultTopics';
 
+import * as ScopedStorage from "react-native-scoped-storage";
+
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 const NavigationTabs = createMaterialTopTabNavigator();
 
@@ -42,7 +44,8 @@ class Wizard extends Component {
                                         size={15} color={this.props.theme.colors.disabled} />;}
             }}>
                 <NavigationTabs.Screen name="Welcome">
-                    { props => <Step1Welcome {...props} lang={this.props.lang} theme={this.props.theme} />}
+                    { props => <Step1Welcome {...props} lang={this.props.lang}
+                        toggleSnack={this.props.toggleSnack} loadPrefs={this.props.loadPrefs}/>}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Language">
                     { props => <Step2Language {...props} lang={this.props.lang} prefs={this.props.prefs} 
@@ -69,6 +72,24 @@ class Wizard extends Component {
 class Step1Welcome extends Component {
     constructor(props: any) {
         super(props);
+
+        this.import = this.import.bind(this);
+    }    
+
+    private async import() {
+        let file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, "utf8");
+        if(file.mime != "text/plain"){
+            this.props.toggleSnack(this.props.lang.import_fail_format, true);
+            return;
+        }
+
+        if(await Backend.TryLoadBackup(file.data)){
+            this.props.loadPrefs();
+            this.props.toggleSnack(this.props.lang.import_ok, true);
+            this.props.navigation.navigate("feed");
+        } else {
+            this.props.toggleSnack(this.props.lang.import_fail_invalid, true);
+        }
     }
 
     render() {
@@ -78,6 +99,8 @@ class Step1Welcome extends Component {
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.largerText}>{this.props.lang.welcome}</Title>
                 <Paragraph style={Styles.largerText}>{this.props.lang.enjoy}</Paragraph>
+                <Button icon="import" style={Styles.startReadingButton}
+                    onPress={this.import}>{this.props.lang.import}</Button>
             </ScrollView>
         );
     }

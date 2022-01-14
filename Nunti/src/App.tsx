@@ -188,8 +188,8 @@ export default class App extends Component {
                             {props => <About {...props} prefs={this.prefs} lang={this.state.language} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true}}>
-                            {props => <Wizard {...props} prefs={this.prefs} lang={this.state.language} 
-                                saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} 
+                            {props => <Wizard {...props} prefs={this.prefs} lang={this.state.language}
+                                saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack}
                                 updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
