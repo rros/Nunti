@@ -275,6 +275,11 @@ export class Backend {
         if (await AsyncStorage.getItem('user_settings') === null) {
             console.debug('Backend: CheckDB(): Init "user_settings" key in DB..');
             await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
+        } else {
+            let current = JSON.parse(await AsyncStorage.getItem('user_settings') ?? '{}');
+            let defaultPrefs = new UserSettings();
+            let merged = {...defaultPrefs, ...current};
+            await AsyncStorage.setItem('user_settings', JSON.stringify(merged));
         }
         if (await AsyncStorage.getItem('articles_cache') === null) {
             console.debug('Backend: CheckDB(): Init "articles_cache" key in DB..');
