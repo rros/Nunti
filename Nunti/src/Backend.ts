@@ -51,6 +51,7 @@ class UserSettings {
 
     public DisableImages = false;
     public WifiOnly = false;
+    public ExternalBrowser = false;
     public Language: string = "system";
 
     public Theme: string = "system";

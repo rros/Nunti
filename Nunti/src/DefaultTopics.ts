@@ -27,8 +27,7 @@ export default class DefaultTopics {
             new Feed("https://www.cnbc.com/id/10000739/device/rss/rss.html"),
         ],
         "sport": [
-            new Feed("https://www.reutersagency.com/feed/?best-topics=sports&post_type=best"),
-            new Feed("https://www.ceskatelevize.cz/sport/rss/hlavni-zpravy/"),
+            new Feed("http://feeds.bbci.co.uk/sport/rss.xml"),
         ],
         "environment": [
             new Feed("https://www.reutersagency.com/feed/?best-topics=environment&post_type=best"),

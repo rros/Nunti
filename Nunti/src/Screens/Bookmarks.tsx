@@ -4,7 +4,8 @@ import {
     Share,
     Animated,
     ScrollView,
-    Image
+    Image,
+    Linking
 } from 'react-native';
 
 import { 
@@ -105,12 +106,16 @@ class Bookmarks extends PureComponent {
         } else {
             url = this.state.articles.find(item => item.id === articleID).url;
         }
-
-        await InAppBrowser.open(url, {
-            forceCloseOnRedirection: false, showInRecents: true,
-            toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
-            navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
-        });
+        
+        if(!this.props.prefs.ExternalBrowser){
+            await InAppBrowser.open(url, {
+                forceCloseOnRedirection: false, showInRecents: true,
+                toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+                navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+            });
+        } else {
+            Linking.openURL(url);
+        }
     }
 
     private async removeSavedArticle(articleID: number) {

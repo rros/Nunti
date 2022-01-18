@@ -5,6 +5,7 @@ import {
     Animated,
     ScrollView,
     Image,
+    Linking
 } from 'react-native';
 
 import { 
@@ -108,11 +109,15 @@ class Feed extends PureComponent {
             url = this.state.articles.find(item => item.id === articleID).url;
         }
 
-        await InAppBrowser.open(url, {
-            forceCloseOnRedirection: false, showInRecents: true,
-            toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
-            navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
-        });
+        if(!this.props.prefs.ExternalBrowser){
+            await InAppBrowser.open(url, {
+                forceCloseOnRedirection: false, showInRecents: true,
+                toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+                navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+            });
+        } else {
+            Linking.openURL(url);
+        }
     }
 
     private async saveArticle() {
@@ -155,9 +160,9 @@ class Feed extends PureComponent {
             let removingIndex = updatedArticles.findIndex(item => item.id === rowKey);
             
             if(data.translateX > 0){
-                this.rate(updatedArticles[removingIndex], false);
-            } else {
                 this.rate(updatedArticles[removingIndex], true);
+            } else {
+                this.rate(updatedArticles[removingIndex], false);
             }
 
             updatedArticles.splice(removingIndex, 1);
@@ -226,17 +231,17 @@ class Feed extends PureComponent {
                             opacity: this.state.refreshing ? 0 : 
                                 this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.49, 0.5, 0.51, 1], outputRange: [0, 0, 1, 0, 0],}),
                         }]}>
-                            <Button
-                                color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
-                                    outputRange: ["grey", this.props.theme.colors.error]})}  
-                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent}
-                                labelStyle={{fontSize: 20}} dark={false} 
-                                style={Styles.buttonRateLeft}></Button>
                             <Button 
                                 color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
                                     outputRange: ["grey", this.props.theme.colors.success]})}  
                                 icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} 
                                 labelStyle={{fontSize: 20}} dark={false}
+                                style={Styles.buttonRateLeft}></Button>
+                            <Button
+                                color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
+                                    outputRange: ["grey", this.props.theme.colors.error]})}  
+                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent}
+                                labelStyle={{fontSize: 20}} dark={false} 
                                 style={Styles.buttonRateRight}></Button>
                         </Animated.View>
                     )}

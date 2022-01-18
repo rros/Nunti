@@ -27,6 +27,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.changeLanguage = this.changeLanguage.bind(this);
         this.toggleNoImages = this.toggleNoImages.bind(this);
         this.toggleWifiOnly = this.toggleWifiOnly.bind(this);
+        this.toggleExternalBrowser = this.toggleExternalBrowser.bind(this);
 
         this.removeRss = this.removeRss.bind(this);
         this.addRss = this.addRss.bind(this);
@@ -47,6 +48,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             language: this.props.prefs.Language,
             noImagesSwitch: this.props.prefs.DisableImages,
             wifiOnlySwitch: this.props.prefs.WifiOnly,
+            externalBrowserSwitch: this.props.prefs.ExternalBrowser,
 
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
@@ -108,6 +110,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await this.props.saveUserSettings(this.props.prefs);
     }
     
+    private async toggleExternalBrowser() {
+        this.props.prefs.ExternalBrowser = !this.state.externalBrowserSwitch;
+        this.setState({ externalBrowserSwitch: !this.state.externalBrowserSwitch});
+        console.log(this.props.prefs.ExternalBrowser)
+        await this.props.saveUserSettings(this.props.prefs);
+    }
+
     private async changeTheme(newTheme: string) {
         this.props.prefs.Theme = newTheme;
         this.setState({ theme: newTheme });
@@ -284,6 +293,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             language: this.props.prefs.Language,
             noImagesSwitch: this.props.prefs.DisableImages,
             wifiOnly: this.props.prefs.WifiOnly,
+            externalBrowserSwitch: this.props.prefs.ExternalBrowser,
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
             feeds: this.props.prefs.FeedList,
@@ -313,6 +323,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title={this.props.lang.wifi_only}
                         left={() => <List.Icon icon="wifi" />}
                         right={() => <Switch value={this.state.wifiOnlySwitch} onValueChange={this.toggleWifiOnly} />} />
+                    <List.Item title={this.props.lang.external_browser}
+                        left={() => <List.Icon icon="web" />}
+                        right={() => <Switch value={this.state.externalBrowserSwitch} onValueChange={this.toggleExternalBrowser} />} />
                 </List.Section>
 
                 <List.Section>

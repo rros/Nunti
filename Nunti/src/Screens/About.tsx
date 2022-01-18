@@ -3,6 +3,7 @@ import {
     View,
     ScrollView,
     Image,
+    Linking
 } from 'react-native';
 
 import { 
@@ -25,11 +26,15 @@ class About extends PureComponent {
     }
 
     private async openIssues() {
-        await InAppBrowser.open("https://gitlab.com/ondrejfoltyn/nunti/-/issues", {
-            forceCloseOnRedirection: false, showInRecents: true,
-            toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
-            navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
-        });
+        if(!this.props.prefs.ExternalBrowser){
+            await InAppBrowser.open(url, {
+                forceCloseOnRedirection: false, showInRecents: true,
+                toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+                navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+            });
+        } else {
+            Linking.openURL(url);
+        }
     }
 
     render() {
