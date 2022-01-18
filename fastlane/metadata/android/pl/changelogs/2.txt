@@ -1,0 +1,11 @@
+- Dodano włoską lokalizację
+- Dodano japońską lokalizację
+- Dodano polską lokalizację (Štěpán Šebek)
+- Dodano niemiecką lokalizację (Eliška Otčenášková)
+- Dodano możliwość korzystania z zewnętrznej przeglądarki
+- Dodano opcję importu kopii zapasowej w kreatorze
+- Poprawiona użyteczność i animacja gestów
+- Poprawione metadane F-Droid
+- Naprawiono błąd przy uruchamianiu w systemie Android 8
+- Naprawiony ekran powitalny w systemie Android 12
+- Naprawiono wyświetlanie krajobrazu i skalowanie do większych ekranów

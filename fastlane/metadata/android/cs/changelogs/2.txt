@@ -1,0 +1,11 @@
+- přidána italská lokalizace
+- přidána japonská lokalizace
+- přidána polská lokalizace (Štěpán Šebek)
+- přidána neměcká lokalizace (Eliška Otčenášková)
+- přidána možnost použít externí prohlížeč
+- přidána možnost importovat zálohu v průvodci
+- vylepšeny swipe animace a swipe použitelnost
+- vylepšeny F-Droid metadata
+- opraveno spadnutí při spuštění na androidu 8
+- opraven splash screen na androidu 12
+- opraveno zobrazení na šířku a škálování na větší displeje

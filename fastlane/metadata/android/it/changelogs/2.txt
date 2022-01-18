@@ -1,0 +1,11 @@
+- aggiunta la localizzazione italiana
+- aggiunta la localizzazione giapponese
+- aggiunta la localizzazione polacca (Štěpán Šebek)
+- aggiunta la localizzazione tedesca (Eliška Otčenášková)
+- aggiunta la possibilità di utilizzare un browser esterno
+- aggiunta opzione per importare il backup nella procedura guidata
+- animazione di scorrimento migliorata e usabilità di scorrimento
+- metadati F-Droid migliorati
+- risolto il crash durante l'esecuzione su Android 8
+- schermata iniziale fissa su Android 12
+- visualizzazione orizzontale fissa e ridimensionamento a schermi più grandi

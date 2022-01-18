@@ -1,0 +1,11 @@
+- Italienische Lokalisierung hinzugefügt 
+- Japanische Lokalisierung hinzugefügt 
+- Polnische Lokalisierung hinzugefügt (Štěpán Šebek) 
+- Deutsche Lokalisierung hinzugefügt (Eliška Otčenášková) 
+- Hinzufügen der Möglichkeit, eine externe Suchmaschine zu verwenden 
+- Hinzufügen der Möglichkeit, ein Backup in den Assistenten zu importieren 
+- verbesserte Wisch-Animationen und Wisch-Benutzerfreundlichkeit 
+- verbesserte F-Droid-Metadaten 
+- Absturz beim Starten von Android 8 behoben 
+- Begrüßungsbildschirm auf Android 12 behoben 
+- Fixierte Darstellung im Querformat und Skalierung auf größere Bildschirme

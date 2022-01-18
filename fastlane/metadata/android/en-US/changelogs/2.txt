@@ -1,0 +1,11 @@
+- added italian localisation
+- added japanese localisation
+- added polish localisation (Štěpán Šebek)
+- added german localisation (Eliška Otčenášková)
+- added the option to use an external browser
+- added the option to import a backup into the wizard
+- improved swipe animations and swipe usability
+- improved F-Droid metadata
+- fixed startup crash on android 8
+- fixed splash screen for android 12
+- fixed landscape mode and scaling for large displays
