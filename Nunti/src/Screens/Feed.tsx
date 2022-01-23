@@ -144,9 +144,10 @@ class Feed extends PureComponent {
 
     // render functions
     private async rateAnimation(){
-        Animated.spring(this.hiddenRowAnimatedValue, {
+        Animated.timing(this.hiddenRowAnimatedValue, {
             toValue: this.hiddenRowActive ? 0 : 1,
             useNativeDriver: false,
+            duration: 100
         }).start();
 
         this.hiddenRowActive = !this.hiddenRowActive;

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import {
     ScrollView,
-    Image
+    Image,
+    Platform
 } from "react-native";
 
 import { 
@@ -211,6 +212,8 @@ class Step3Theme extends Component {
                             right={() => <RadioButton.Item value="orchid" />} />
                         <List.Item title={this.props.lang.space}
                             right={() => <RadioButton.Item value="space" />} />
+                        <List.Item title={this.props.lang.material_you}
+                            right={() => <RadioButton.Item disabled={Platform.Version < 31} value="material_you" />} />
                     </List.Section>
                 </RadioButton.Group>
             </ScrollView>

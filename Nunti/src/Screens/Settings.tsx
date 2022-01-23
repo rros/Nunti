@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
     ScrollView,
+    Platform,
 } from 'react-native';
 
 import {
@@ -457,6 +458,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                     <RadioButton.Item label={this.props.lang.ocean} value="ocean" />
                                     <RadioButton.Item label={this.props.lang.orchid} value="orchid" />
                                     <RadioButton.Item label={this.props.lang.space} value="space" />
+                                    <RadioButton.Item disabled={Platform.Version < 31}
+                                        label={this.props.lang.material_you} value="material_you" />
                                 </RadioButton.Group>
                             </ScrollView>
                         </Dialog.ScrollArea>

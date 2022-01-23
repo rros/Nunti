@@ -24,7 +24,7 @@ export const English = {
     export_fail: "Failed to export backup",
     added_feed: "Added %feed% to feeds",
     add_feed_fail: "Cannot add feed",
-    removed_feed: "Remove %feed% from feeds",
+    removed_feed: "Removed %feed% from feeds",
     remove_feed_fail: "Failed to remove RSS feed",
     reset_art_cache: "Article cache reset",
     wiped_data: "Restored all data",
