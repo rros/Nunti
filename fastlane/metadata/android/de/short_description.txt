@@ -1,1 +1,1 @@
-Endlich ein intelligenter RSS-Reader, der Ihre Daten nicht stiehlt und nicht aussieht, als stamme er aus den 90ern.
+Ein intelligenter RSS-Reader, der Ihre Daten nicht stiehlt und gut aussieht.
