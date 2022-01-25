@@ -26,6 +26,7 @@ class About extends PureComponent {
     }
 
     private async openIssues() {
+        const url = "https://gitlab.com/ondrejfoltyn/nunti/-/issues";
         if(!this.props.prefs.ExternalBrowser){
             await InAppBrowser.open(url, {
                 forceCloseOnRedirection: false, showInRecents: true,
