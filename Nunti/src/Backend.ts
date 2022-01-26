@@ -68,6 +68,7 @@ class UserSettings {
     public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
     public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
     public SeenHistoryLength = this.MaxArticles * 7; //to prevent flooding storage with seen articles history
+    public FeedPageSize = 20;
 
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;
@@ -101,6 +102,21 @@ export class Backend {
         console.info('Backend init.');
         await this.CheckDB();
     }
+    /* Wrapper around GetArticles(), returns articles in pages. */
+    public static async GetArticlesPaginated(): Promise<Article[][]> {
+        // TODO: optimalization
+        let timeBegin = Date.now()
+        let arts = await this.GetArticles();
+        let newarts: Article[][] = [];
+        let prefs = await this.GetUserSettings();
+        while (arts.length > 0) {
+            newarts.push(arts.splice(0, prefs.FeedPageSize));
+        }
+        let timeEnd = Date.now()
+        console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms.`);
+        return newarts;
+    }
+
     /* Retrieves sorted articles to show in feed. */
     public static async GetArticles(): Promise<Article[]> {
         console.log("Backend: Loading new articles..");
@@ -133,7 +149,7 @@ export class Backend {
         }
 
         let timeEnd = Date.now()
-        console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds.`);
+        console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
         return arts;
     }
     /* Tries to save an article, true on success, false on fail. */

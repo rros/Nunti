@@ -74,7 +74,7 @@ class Feed extends PureComponent {
     private async refresh(){
         this.setState({ refreshing: true });
 
-        let arts = await Backend.GetArticles();
+        let arts = await Backend.GetArticlesPaginated();
 
         // create one animation value for each article (row)
         this.rowTranslateValues = [];
