@@ -52,6 +52,9 @@ class Feed extends PureComponent {
         this.currentIndex = 0;
         this.swiping = false;
 
+        this.currentPageIndex = 0;
+        this.allArticles = [];
+
         // animation values
         this.rowAnimatedValues = [];
         this.hiddenRowAnimatedValue = new Animated.Value(0);
@@ -75,17 +78,20 @@ class Feed extends PureComponent {
         this.setState({ refreshing: true });
 
         let arts = await Backend.GetArticlesPaginated();
+        this.allArticles = arts;
+
+        console.log(arts);
 
         // create one animation value for each article (row)
         this.rowTranslateValues = [];
-        Array(arts.length)
+        Array(1000)//this.props.prefs.FeedPageSize)
             .fill('')
             .forEach((_, i) => {
                 this.rowAnimatedValues[`${i}`] = new Animated.Value(0.5);
             });
         
         this.firstRefresh = false;
-        this.setState({articles: arts, refreshing: false});
+        this.setState({articles: arts[this.currentPageIndex], refreshing: false});
     }
 
     // modal functions
@@ -153,7 +159,7 @@ class Feed extends PureComponent {
         this.hiddenRowActive = !this.hiddenRowActive;
     }
 
-    public async endSwipe(rowKey: number, data: any) {
+    private async endSwipe(rowKey: number, data: any) {
         this.swiping = false;
 
         if(data.translateX > 100 || data.translateX < -100){
@@ -183,15 +189,24 @@ class Feed extends PureComponent {
         }
     }
 
+    private async changePage(newPageIndex: number){
+        this.currentPageIndex = newPageIndex;
+        this.setState({articles: this.allArticles[newPageIndex]});
+
+        this.flatListRef.scrollToOffset({ animated: true, offset: 0 });
+    }
+
     // NOTE: rowKey and item.id is the same. They don't change like the index, and the list uses them internally.
     // use id instead of index, as the state.articles changes often and a delay may mean opening the wrong article
     render() {
         return (
             <View style={Styles.topView}>
                 <SwipeListView
+                    listViewRef={(list) => this.flatListRef = list}
+
                     data={this.state.articles}
                     recalculateHiddenLayout={true}
-                    removeClippedSubviews={true}
+                    removeClippedSubviews={false}
                     
                     keyExtractor={item => item.id}
                     refreshing={this.state.refreshing}
@@ -253,6 +268,13 @@ class Feed extends PureComponent {
                                 resizeMode="contain" style={Styles.fullscreenImage}></Image>
                             <Title style={Styles.largerText}>{this.props.lang.empty_feed_title}</Title>
                             <Paragraph style={Styles.largerText}>{this.props.lang.empty_feed_desc}</Paragraph>
+                        </View>
+                    )}
+                    ListFooterComponent={(
+                        <View>
+                            <Button onPress={() => {this.changePage(this.currentPageIndex-1)}}>back</Button>
+                            <Button onPress={() => {this.changePage(this.currentPageIndex+1)}}>forward</Button>
+                            <Button>{this.currentPageIndex}</Button>
                         </View>
                     )}
 
