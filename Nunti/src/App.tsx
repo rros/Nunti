@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StatusBar, Appearance, NativeModules, BackHandler } from 'react-native';
+import { StatusBar, Appearance, NativeModules, BackHandler, Platform } from 'react-native';
 
 import { 
     Provider as PaperProvider,
@@ -139,6 +139,11 @@ export default class App extends Component {
 
     public async updateAccent(accentName: string){
         let theme = this.state.theme;
+
+        // fallback when a backup with material you is imported into android below 12
+        if(accentName == "material_you" && Platform.Version < 31){
+            accentName = "default";
+        }
 
         if(accentName == "material_you"){
             let pallete = await getPalette();
