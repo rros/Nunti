@@ -23,7 +23,7 @@ export class Feed {
     }
 }
 
-class Article {
+export class Article {
     public id: number = 0;
     public title: string = "";
     public description: string = "";

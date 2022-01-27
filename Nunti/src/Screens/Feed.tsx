@@ -22,11 +22,9 @@ import {
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 
-import Backend from '../Backend';
+import { Backend, Article } from '../Backend';
 
 class Feed extends PureComponent {
-    private firstRefresh = true;
-
     constructor(props:any){
         super(props);
 
@@ -44,16 +42,14 @@ class Feed extends PureComponent {
         this.state = {
             detailsVisible: false,
             refreshing: false,
-            articles: [],
+            currentArticles: [],
             showImages: !this.props.prefs.DisableImages
         }
         
         // variables
-        this.currentIndex = 0;
-        this.swiping = false;
-
+        this.currentArticle = undefined// details modal
         this.currentPageIndex = 0;
-        this.allArticles = [];
+        this.articlePages = [];
 
         // animation values
         this.rowAnimatedValues = [];
@@ -73,48 +69,36 @@ class Feed extends PureComponent {
         this._unsubscribe();
     }
 
-    // loading and refreshing
     private async refresh(){
         this.setState({ refreshing: true });
 
         let arts = await Backend.GetArticlesPaginated();
-        this.allArticles = arts;
-
-        console.log(arts);
-
+        this.articlePages = arts;
+        
         // create one animation value for each article (row)
         this.rowTranslateValues = [];
-        Array(1000)//this.props.prefs.FeedPageSize)
+        Array(this.props.prefs.FeedPageSize)
             .fill('')
             .forEach((_, i) => {
                 this.rowAnimatedValues[`${i}`] = new Animated.Value(0.5);
             });
         
-        this.firstRefresh = false;
-        this.setState({articles: arts[this.currentPageIndex], refreshing: false});
+        this.currentPageIndex = 0;
+        this.setState({currentArticles: this.articlePages[this.currentPageIndex], refreshing: false});
     }
 
     // modal functions
-    private async viewDetails(articleID: number){
-        this.currentIndex = this.state.articles.findIndex(item => item.id === articleID);
+    private async viewDetails(article: Article){
+        this.currentArticle = article;
         this.setState({ detailsVisible: true });
     }
     
     private async hideDetails(){
-        this.currentIndex = 0; // resets current index, otherwise causes bugs when removing articles (out of range etc)
         this.setState({ detailsVisible: false });
     }
     
     // article functions
-    private async readMore(articleID: number) {
-        let url = "";
-        if(typeof(articleID) !== typeof(0)) { 
-            // if readmore is called without articleIndex(details modal), get it from this.state
-            url = this.state.articles[this.currentIndex].url;
-        } else  {
-            url = this.state.articles.find(item => item.id === articleID).url;
-        }
-
+    private async readMore(url: string) {
         if(!this.props.prefs.ExternalBrowser){
             await InAppBrowser.open(url, {
                 forceCloseOnRedirection: false, showInRecents: true,
@@ -126,26 +110,18 @@ class Feed extends PureComponent {
         }
     }
 
-    private async saveArticle() {
-        if(await Backend.TrySaveArticle(this.state.articles[this.currentIndex])) {
+    private async saveArticle(article: Article) {
+        if(await Backend.TrySaveArticle(article)) {
             this.props.toggleSnack(this.props.lang.article_saved, true);
         } else {
             this.props.toggleSnack(this.props.lang.article_already_saved, true);
         }
     }
 
-    private async shareArticle() {
+    private async shareArticle(url: string) {
         await Share.share({
-            message: this.state.articles[this.currentIndex].url
+            message: url
         });
-    }
-
-    private async rate(article: any, isGood: boolean) {
-        if(isGood){
-            Backend.RateArticle(article, 1);
-        } else {
-            Backend.RateArticle(article, -1);
-        }
     }
 
     // render functions
@@ -160,51 +136,60 @@ class Feed extends PureComponent {
     }
 
     private async endSwipe(rowKey: number, data: any) {
-        this.swiping = false;
-
         if(data.translateX > 100 || data.translateX < -100){
-            let updatedArticles = this.state.articles;
-            let removingIndex = updatedArticles.findIndex(item => item.id === rowKey);
-            
+            let ratedGood: number = -1;
             if(data.translateX > 0){
-                this.rate(updatedArticles[removingIndex], true);
+                ratedGood = 1
             } else {
-                this.rate(updatedArticles[removingIndex], false);
+                ratedGood = -1
             }
 
-            updatedArticles.splice(removingIndex, 1);
-            
             this.rowAnimatedValues[rowKey].setValue(0.5);
             Animated.timing(this.rowAnimatedValues[rowKey], {
                 toValue: data.translateX > 0 ? 1 : 0,
                 duration: 400,
                 useNativeDriver: false,
             }).start(() => {
-                this.setState({ articles: updatedArticles }, () => {
-                    if(this.state.articles.length == 0){
-                        this.forceUpdate(); // when articles rerender empty, the empty list component appears only on next rerender
-                    }
-                });
+                this.rateArticle(rowKey, ratedGood);
             });
         }
     }
 
-    private async changePage(newPageIndex: number){
-        this.currentPageIndex = newPageIndex;
-        this.setState({articles: this.allArticles[newPageIndex]});
+    private async rateArticle(rowKey: number, ratedGood: number){
+        let ratedArticle = this.state.currentArticles.find(item => item.id === rowKey)
+        this.articlePages = await Backend.RateArticle(ratedArticle, ratedGood, this.articlePages);
 
-        this.flatListRef.scrollToOffset({ animated: true, offset: 0 });
+        // if the last page got completely emptied and user is on it, go back to the new last page
+        if(this.currentPageIndex == this.articlePages.length){
+            this.currentPageIndex = this.currentPageIndex - 1;
+        }
+
+        this.setState({ currentArticles: this.articlePages[this.currentPageIndex] }, () => {
+            if(this.state.currentArticles.length == 0){
+                this.forceUpdate(); // when articles rerender empty, the empty list component appears only on next rerender
+            }
+        });
     }
 
-    // NOTE: rowKey and item.id is the same. They don't change like the index, and the list uses them internally.
-    // use id instead of index, as the state.articles changes often and a delay may mean opening the wrong article
+    private async changePage(newPageIndex: number){
+        this.currentPageIndex = newPageIndex;
+        this.flatListRef.scrollToOffset({ animated: true, offset: 0 });
+        this.setState({ refreshing: true });
+
+        // wait until scroll has finished to launch article update
+        // if we don't wait, the scroll will "lag" until the articles have been updated
+        await new Promise(r => setTimeout(r, 200)); 
+        this.setState({ currentArticles: this.articlePages[newPageIndex], refreshing: false });
+    }
+
+    // NOTE: rowKey = item.id; use instead of index
     render() {
         return (
             <View style={Styles.topView}>
                 <SwipeListView
                     listViewRef={(list) => this.flatListRef = list}
 
-                    data={this.state.articles}
+                    data={this.state.currentArticles}
                     recalculateHiddenLayout={true}
                     removeClippedSubviews={false}
                     
@@ -227,7 +212,7 @@ class Feed extends PureComponent {
                             translateX: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [-1000, 0, 1000],}), // random value, it disappears anyway
                         }}>
                             <Card style={Styles.card} 
-                                onPress={() => { this.readMore(rowData.item.id) }} onLongPress={() => { this.viewDetails(rowData.item.id) }}>
+                                onPress={() => { this.readMore(rowData.item.url) }} onLongPress={() => { this.viewDetails(rowData.item) }}>
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
@@ -272,33 +257,36 @@ class Feed extends PureComponent {
                     )}
                     ListFooterComponent={(
                         <View>
-                            <Button onPress={() => {this.changePage(this.currentPageIndex-1)}}>back</Button>
-                            <Button onPress={() => {this.changePage(this.currentPageIndex+1)}}>forward</Button>
-                            <Button>{this.currentPageIndex}</Button>
+                            <Button onPress={() => { this.changePage(this.currentPageIndex-1); }}>back</Button>
+                            <Button onPress={() => { this.changePage(this.currentPageIndex+1); }}>forward</Button>
+                            <Button>{this.currentPageIndex+1}</Button>
+                            <Button onPress={() => { this.flatListRef.scrollToOffset({ animated: true, offset: 0 }); }}>back to top</Button>
                         </View>
                     )}
 
                     onLeftActionStatusChange={this.rateAnimation}
                     onRightActionStatusChange={this.rateAnimation}
 
-                    swipeGestureBegan={() => { this.swiping = true; }}
                     swipeGestureEnded={this.endSwipe}
                 ></SwipeListView>
                 <Portal>
-                    {this.state.articles.length > 0 && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} style={Styles.modal}>
+                    {this.currentArticle !== undefined && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} style={Styles.modal}>
                         <ScrollView>
                             <Card>
-                                {this.state.showImages && this.state.articles[this.currentIndex].cover !== undefined && 
-                                <Card.Cover source={{ uri: this.state.articles[this.currentIndex].cover }} />}
+                                {this.state.showImages && this.currentArticle.cover !== undefined && 
+                                <Card.Cover source={{ uri: this.currentArticle.cover }} />}
                                 <Card.Content>
-                                    <Title>{this.state.articles[this.currentIndex].title}</Title>
-                                    <Paragraph>{this.state.articles[this.currentIndex].description}</Paragraph>
-                                    <Caption>{(this.props.lang.article_from).replace('%source%', this.state.articles[this.currentIndex].source)}</Caption>
+                                    <Title>{this.currentArticle.title}</Title>
+                                    <Paragraph>{this.currentArticle.description}</Paragraph>
+                                    <Caption>{(this.props.lang.article_from).replace('%source%', this.currentArticle.source)}</Caption>
                                 </Card.Content>
                                 <Card.Actions>
-                                    <Button icon="book" onPress={this.readMore}>{this.props.lang.read_more}</Button>
-                                    <Button icon="bookmark" onPress={this.saveArticle}>{this.props.lang.save}</Button>
-                                    <Button icon="share" onPress={this.shareArticle} style={Styles.cardButtonLeft}>{this.props.lang.share}</Button>
+                                    <Button icon="book" onPress={() => { this.readMore(this.currentArticle.url); }}>
+                                        {this.props.lang.read_more}</Button>
+                                    <Button icon="bookmark" onPress={() => { this.saveArticle(this.currentArticle) }}>
+                                        {this.props.lang.save}</Button>
+                                    <Button icon="share" onPress={() => { this.shareArticle(this.currentArticle.url) }} 
+                                        style={Styles.cardButtonLeft}> {this.props.lang.share}</Button>
                                 </Card.Actions>
                             </Card>
                         </ScrollView>
