@@ -77,7 +77,7 @@ class Feed extends PureComponent {
         
         // create one animation value for each article (row)
         this.rowTranslateValues = [];
-        Array(this.props.prefs.FeedPageSize)
+        Array(1000)//this.props.prefs.FeedPageSize) //TODO: total number of articles in all pages OR number of articles on one page
             .fill('')
             .forEach((_, i) => {
                 this.rowAnimatedValues[`${i}`] = new Animated.Value(0.5);
@@ -85,6 +85,15 @@ class Feed extends PureComponent {
         
         this.currentPageIndex = 0;
         this.setState({currentArticles: this.articlePages[this.currentPageIndex], refreshing: false});
+        
+        // TODO: REMOVE IN PRODUCTION
+        console.log("all articles");
+        arts.forEach((page) => {
+            page.forEach((item) => {
+                console.log(item.id + " ### " + item.title)
+            });
+        });
+        // TODO: REMOVE IN PRODUCTION
     }
 
     // modal functions
@@ -180,6 +189,13 @@ class Feed extends PureComponent {
         // if we don't wait, the scroll will "lag" until the articles have been updated
         await new Promise(r => setTimeout(r, 200)); 
         this.setState({ currentArticles: this.articlePages[newPageIndex], refreshing: false });
+
+        // TODO: REMOVE IN PRODUCTION
+        console.log("articles on this page: " + this.articlePages[newPageIndex].length);
+        this.state.currentArticles.forEach((item) => {
+            console.log(item.id + " ### " + item.title)
+        });
+        // TODO: REMOVE IN PRODUCTION
     }
 
     // NOTE: rowKey = item.id; use instead of index
@@ -255,12 +271,19 @@ class Feed extends PureComponent {
                             <Paragraph style={Styles.largerText}>{this.props.lang.empty_feed_desc}</Paragraph>
                         </View>
                     )}
-                    ListFooterComponent={(
-                        <View>
-                            <Button onPress={() => { this.changePage(this.currentPageIndex-1); }}>back</Button>
-                            <Button onPress={() => { this.changePage(this.currentPageIndex+1); }}>forward</Button>
-                            <Button>{this.currentPageIndex+1}</Button>
-                            <Button onPress={() => { this.flatListRef.scrollToOffset({ animated: true, offset: 0 }); }}>back to top</Button>
+                    ListFooterComponent={() => this.state.currentArticles.length != 0 && (
+                        <View style={Styles.listFooterView}>
+                            <Button onPress={() => { this.changePage(this.currentPageIndex-1); }}
+                                icon="chevron-left"
+                                contentStyle={Styles.footerButton}
+                                disabled={this.currentPageIndex == 0}>Back</Button>
+                            <Button onPress={() => { this.flatListRef.scrollToOffset({ animated: true, offset: 0 }); }}
+                                contentStyle={Styles.footerButton}>
+                                {this.currentPageIndex+1}</Button>
+                            <Button onPress={() => { this.changePage(this.currentPageIndex+1); }}
+                                icon="chevron-right"
+                                contentStyle={[Styles.footerButton, {flexDirection: 'row-reverse'}]}
+                                disabled={this.currentPageIndex+1 == this.articlePages?.length}>Next</Button>
                         </View>
                     )}
 

@@ -152,6 +152,15 @@ export default Styles = StyleSheet.create ({
         justifyContent: "center",
         padding: 20
     },
+
+    listFooterView: {
+        flexDirection: 'row',
+        justifyContent: "space-between",
+    },
+
+    footerButton: {
+        padding: 10,
+    },
     
     fullscreenImage: {
         height: 200,
