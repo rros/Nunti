@@ -129,9 +129,9 @@ class Bookmarks extends PureComponent {
         } else {
             index = this.state.articles.findIndex(item => item.id === articleID);
         }
-
-        let updatedArticles = this.state.articles;
-        await Backend.TryRemoveSavedArticle(updatedArticles.splice(index, 1)[0]);
+        
+        //TODO: frontend, review this
+        let updatedArticles = (await Backend.TryRemoveSavedArticle(updatedArticles[index], this.state.articles))[1];
 
         this.setState({ articles: updatedArticles }, () => {
             if(this.state.articles.length == 0){

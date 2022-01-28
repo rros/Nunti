@@ -103,16 +103,9 @@ export class Backend {
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(): Promise<Article[][]> {
-        // TODO: optimalization
         let timeBegin = Date.now()
-        let arts = await this.GetArticles();
-        let pages: Article[][] = [];
         let prefs = await this.GetUserSettings();
-        while (arts.length > 0) {
-            pages.push(arts.splice(0, prefs.FeedPageSize));
-        }
-        if (pages.length == 0)
-            pages = [[]];
+        let pages = this.PaginateArticles(await this.GetArticles(), prefs.FeedPageSize);
         let timeEnd = Date.now()
         console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms.`);
         return pages;
@@ -172,19 +165,22 @@ export class Backend {
         }
     }
     /* Tries to remove an article from saved, true on success, false on fail. */
-    public static async TryRemoveSavedArticle(article: Article): Promise<boolean> {
+    public static async TryRemoveSavedArticle(article: Article, pages: Article[][] = []): Promise<[boolean,Article[][]]> {
         try {
             let saved = await this.StorageGet('saved');
             let index = await this.FindArticleByUrl(article.url, saved);
             if (index >= 0) {
                 saved.splice(index,1);
                 await this.StorageSave('saved',saved);
-                return true;
+                if (pages == [])
+                    return [true, pages];
+                else
+                    return [true, this.PagesRemoveArticle(article, pages)];
             } else
                 throw new Error('not found in saved');
         } catch(err) {
             console.error('Backend: Cannot remove saved article.',err);
-            return false;
+            return [false, pages];
         }
     }
     /* Returns list of saved articles. */
@@ -274,21 +270,9 @@ export class Backend {
         if (pages.length == 0)
             return [];
         else {
-            let page_i = -1;
-            for(let i = 0; i < pages.length; i++) {
-                if (pages[i].indexOf(art) >= 0) {
-                    page_i = i;
-                    pages[i].splice(pages[i].indexOf(art), 1);
-                }
-                if (page_i >= 0) {
-                    if (i + 1 < pages.length)
-                        pages[i].push(pages[i+1].splice(0,1)[0])
-                    if (pages[i].length == 0 && i != 0)
-                        pages.splice(i, 1);
-                }
-            }
+            pages = this.PagesRemoveArticle(art, pages);
+            return pages;
         }
-        return pages;
     }
     /* Save data to storage. */
     public static async StorageSave(key: string, value: any) {
@@ -764,6 +748,7 @@ export class Backend {
         let timeEnd = Date.now()
         console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
     }
+    //TODO: clean async from stuff that doesnt need it
     private static async FindArticleByUrl(url: string, haystack: Article[]): Promise<number> {
         for(let i = 0; i < haystack.length; i++) {
             if (haystack[i].url === url)
@@ -777,6 +762,32 @@ export class Backend {
                 return i;
         }
         return -1;
+    }
+    private static PaginateArticles(arts: Article[], pageSize: number, keepFirstEmptyPage = true): Article[][] {
+        // TODO: optimalization
+        let pages: Article[][] = [];
+        while (arts.length > 0) {
+            pages.push(arts.splice(0, pageSize));
+        }
+        if (pages.length == 0 && keepFirstEmptyPage)
+            pages = [[]];
+        return pages;
+    }
+    private static PagesRemoveArticle(art: Article, pages: Article[][] = []): Article[][] {
+        let page_i = -1;
+        for(let i = 0; i < pages.length; i++) {
+            if (pages[i].indexOf(art) >= 0) {
+                page_i = i;
+                pages[i].splice(pages[i].indexOf(art), 1);
+            }
+            if (page_i >= 0) {
+                if (i + 1 < pages.length)
+                    pages[i].push(pages[i+1].splice(0,1)[0])
+                if (pages[i].length == 0 && i != 0)
+                    pages.splice(i, 1);
+            }
+        }
+        return pages;
     }
 }
 export default Backend;
