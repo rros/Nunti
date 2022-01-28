@@ -72,12 +72,18 @@ class Feed extends PureComponent {
     private async refresh(){
         this.setState({ refreshing: true });
 
-        let arts = await Backend.GetArticlesPaginated();
-        this.articlePages = arts;
+        this.articlePages = await Backend.GetArticlesPaginated();
         
         // create one animation value for each article (row)
+        let numberOfArticles = 0;
+        this.articlePages.forEach((page) => {
+            page.forEach((item) => {
+                numberOfArticles = numberOfArticles + 1;
+            });
+        });
+
         this.rowTranslateValues = [];
-        Array(1000)//this.props.prefs.FeedPageSize) //TODO: total number of articles in all pages OR number of articles on one page
+        Array(numberOfArticles)
             .fill('')
             .forEach((_, i) => {
                 this.rowAnimatedValues[`${i}`] = new Animated.Value(0.5);
@@ -158,18 +164,15 @@ class Feed extends PureComponent {
     private async rateArticle(rowKey: number, ratedGood: number){
         let ratedArticle = this.state.currentArticles.find(item => item.id === rowKey)
         this.articlePages = await Backend.RateArticle(ratedArticle, ratedGood, this.articlePages);
-        // TODO: frontend, pages are fixed, but you need to reload the articles in current page (just React things)
 
         // if the last page got completely emptied and user is on it, go back to the new last page
         if(this.currentPageIndex == this.articlePages.length){
             this.currentPageIndex = this.currentPageIndex - 1;
         }
 
-        this.setState({ currentArticles: this.articlePages[this.currentPageIndex] }, () => {
-            if(this.state.currentArticles.length == 0){
-                this.forceUpdate(); // when articles rerender empty, the empty list component appears only on next rerender
-            }
-        });
+        // reference value won't rerender the page anyway, so save time by not using setState
+        this.state.currentArticles = this.articlePages[this.currentPageIndex];
+        this.forceUpdate();
     }
 
     private async changePage(newPageIndex: number){
@@ -179,7 +182,9 @@ class Feed extends PureComponent {
 
         // wait until scroll has finished to launch article update
         // if we don't wait, the scroll will "lag" until the articles have been updated
-        await new Promise(r => setTimeout(r, 200)); 
+        //await new Promise(r => setTimeout(r, 200));
+        // reference value won't rerender the page anyway, so save time by not using setState
+        this.state.currentArticles = this.articlePages[newPageIndex];
         this.setState({ currentArticles: this.articlePages[newPageIndex], refreshing: false });
     }
 
