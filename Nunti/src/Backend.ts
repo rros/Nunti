@@ -277,7 +277,7 @@ export class Backend {
             for(let i = 0; i < pages.length; i++) {
                 if (pages[i].indexOf(art) >= 0) {
                     page_i = i;
-                    pages[i].splice(page_i, 1);
+                    pages[i].splice(pages[i].indexOf(art), 1);
                 }
                 if (page_i >= 0) {
                     if (i + 1 < pages.length)
