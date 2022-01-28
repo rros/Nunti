@@ -216,7 +216,7 @@ export class Backend {
         await this.StorageSave("user_settings",us);
     }
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
-    public static async RateArticle(art: Article, rating: number) {
+    public static async RateArticle(art: Article, rating: number, pages: Article[][] = []): Promise<Article[][]> {
         let learning_db = await this.StorageGet('learning_db');
         let learning_db_secondary = await this.StorageGet('learning_db_secondary');
 
@@ -236,8 +236,7 @@ export class Backend {
             rating = rating * Math.abs(learning_db["upvotes"] + 1 / learning_db["downvotes"] + 1);
             learning_db["downvotes"] += 1;
             learning_db_secondary["downvotes"] += 1;
-        } else
-            return;
+        }
 
         for(let keyword in art.keywords) {
             let wordRating = rating * art.keywords[keyword];
@@ -270,6 +269,25 @@ export class Backend {
         await this.StorageSave('learning_db_secondary', learning_db);
         console.info(`Backend: Saved rating for article '${art.title}'`);
         await this.CheckDB();
+
+        if (pages.length == 0)
+            return [];
+        else {
+            let page_i = -1;
+            for(let i = 0; i < pages.length; i++) {
+                if (pages[i].indexOf(art) >= 0) {
+                    page_i = i;
+                    pages[i].splice(page_i, 1);
+                }
+                if (page_i >= 0) {
+                    if (i + 1 < pages.length)
+                        pages[i].push(pages[i+1].splice(0,1)[0])
+                    if (pages[i].length == 0 && i != 0)
+                        pages.splice(i, 1);
+                }
+            }
+        }
+        return pages;
     }
     /* Save data to storage. */
     public static async StorageSave(key: string, value: any) {

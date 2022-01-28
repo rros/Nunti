@@ -167,6 +167,7 @@ class Feed extends PureComponent {
     private async rateArticle(rowKey: number, ratedGood: number){
         let ratedArticle = this.state.currentArticles.find(item => item.id === rowKey)
         this.articlePages = await Backend.RateArticle(ratedArticle, ratedGood, this.articlePages);
+        // TODO: frontend, pages are fixed, but you need to reload the articles in current page (just React things)
 
         // if the last page got completely emptied and user is on it, go back to the new last page
         if(this.currentPageIndex == this.articlePages.length){
