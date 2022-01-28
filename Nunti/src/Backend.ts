@@ -140,8 +140,8 @@ export class Backend {
             arts = cache.articles;
         }
 
-        arts = await this.CleanArticles(arts);
         arts = await this.SortArticles(arts);
+        arts = await this.CleanArticles(arts);
 
         // repair article ids, frontend will crash if index doesnt match up with id.
         for (let i = 0; i < arts.length; i++) {
@@ -570,13 +570,13 @@ export class Backend {
                 index = await this.FindArticleByUrl(seen[i].url,arts);
             }
         }
-        
-        let newarts = []
+
+        let newarts: Article[] = []
         for (let i = 0; i < arts.length; i++) {
             if (await this.FindArticleByUrl(arts[i].url, newarts) < 0)
                 newarts.push(arts[i]);
         }
-        return arts;
+        return newarts;
     }
     private static async SortArticles(articles: Article[]): Promise<Article[]> {
         function shuffle(a: any) {
@@ -625,8 +625,6 @@ export class Backend {
                 arts.push(art);
             } else {
                 let art = scores[i][0];
-                if (typeof(art) === "number")
-                    throw new Error('Something is really wrong in Backend.SortArticles method.');
                 arts.push(art);
             }
         }
