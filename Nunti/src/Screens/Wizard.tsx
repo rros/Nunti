@@ -79,12 +79,13 @@ class Step1Welcome extends Component {
 
     private async import() {
         let file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, "utf8");
-        if(file.mime != "text/plain"){
+        const allowed_mime = ["text/plain", "application/octet-stream", "application/json"]
+        if(allowed_mime.indexOf(file.mime) < 0) {
             this.props.toggleSnack(this.props.lang.import_fail_format, true);
             return;
         }
 
-        if(await Backend.TryLoadBackup(file.data)){
+        if(await Backend.TryLoadBackup(file.data)) {
             this.props.loadPrefs();
             this.props.toggleSnack(this.props.lang.import_ok, true);
             this.props.navigation.navigate("feed");
