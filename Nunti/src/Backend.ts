@@ -95,6 +95,7 @@ class Backup {
 
 export class Backend {
     public static DB_VERSION = '3.1';
+    public static CurrentFeed: Article[][] = [[]];
     
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
@@ -108,6 +109,7 @@ export class Backend {
         const pages = this.PaginateArticles(await this.GetArticles(), prefs.FeedPageSize);
         const timeEnd = Date.now();
         console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms.`);
+        this.CurrentFeed = pages;
         return pages;
     }
 
@@ -213,7 +215,7 @@ export class Backend {
         await this.StorageSave('user_settings',us);
     }
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
-    public static async RateArticle(art: Article, rating: number, pages: Article[][] = []): Promise<Article[][]> {
+    public static async RateArticle(art: Article, rating: number): Promise<void> {
         let learning_db = await this.StorageGet('learning_db');
         let learning_db_secondary = await this.StorageGet('learning_db_secondary');
 
@@ -266,13 +268,7 @@ export class Backend {
         await this.StorageSave('learning_db_secondary', learning_db);
         console.info(`Backend: Saved rating for article '${art.title}'`);
         await this.CheckDB();
-
-        if (pages.length == 0)
-            return [];
-        else {
-            pages = this.PagesRemoveArticle(art, pages);
-            return pages;
-        }
+        this.CurrentFeed = this.PagesRemoveArticle(art, this.CurrentFeed);
     }
     /* Save data to storage. */
     public static async StorageSave(key: string, value: any): Promise<void> { //eslint-disable-line
