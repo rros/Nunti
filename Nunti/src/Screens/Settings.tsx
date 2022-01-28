@@ -136,7 +136,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
     private async import() {
         let file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, "utf8");
-        if(file.mime != "text/plain"){
+        const allowed_mime = ["text/plain", "application/octet-stream", "application/json"]
+        if(allowed_mime.indexOf(file.mime) < 0) {
             this.props.toggleSnack(this.props.lang.import_fail_format, true);
             return;
         }
@@ -153,7 +154,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         let backup: string = await Backend.CreateBackup();
 
         try {
-            await ScopedStorage.createDocument("NuntiBackup.txt", "text/plain", backup, "utf8");
+            await ScopedStorage.createDocument("NuntiBackup.json", "application/json", backup, "utf8");
             this.props.toggleSnack(this.props.lang.export_ok, true);
         } catch (err) {
             this.props.toggleSnack(this.props.lang.export_ok, true);

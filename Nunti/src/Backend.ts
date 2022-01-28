@@ -17,8 +17,9 @@ export class Feed {
             throw new Error('invalid url');
     }
 
-    public static New(url: string): Promise<Feed> {
-        return new Feed(url);
+    public static New(url: string): Feed {
+        let feed = new Feed(url);
+        return feed;
     }
 }
 
@@ -374,8 +375,33 @@ export class Backend {
             console.info('Backend: Backup loaded.');
             return true;
         } catch (err) {
-            console.error('Backend: Failed to load backup.',err);
-            return false;
+            console.warn('Backend: Failed to load backup, will try OPML format parsing.',err);
+            try {
+                let parser = new DOMParser({
+                    locator:{},
+                    errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e }}
+                });
+                let doc = parser.parseFromString(backupStr);
+                let feeds: Feed[] = [];
+                let elems = doc.getElementsByTagName('outline')
+                for (let i = 0; i < elems.length; i++) {
+                    try {
+                        feeds.push(new Feed(elems[i].getAttribute('xmlUrl')));
+                    } catch { }
+                }
+                console.info(`Backend: Importing OPML, imported ${feeds.length} feed(s).`);
+
+                await this.ResetAllData();
+                let prefs = await this.GetUserSettings();
+                prefs.FeedList = feeds;
+                await this.SaveUserSettings(prefs);
+
+                console.info('Backend: Backup/Import (OPML) loaded.');
+                return true;
+            } catch (err) {
+                console.error('Backend: Failed to load backup both as JSON and OMPL.', err);
+                return false;
+            }
         }
     }
     /* returns true if user is on cellular data and wifionly mode is enabled */
