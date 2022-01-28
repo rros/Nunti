@@ -10,27 +10,26 @@ import {
 } from 'react-native-paper';
 
 // our files
-import Styles, { Dark, Light, Colors } from "./Styles";
-import { English, Czech, Japanese, Italian, Polish, German } from "./Locale";
-import Wizard from "./Screens/Wizard";
-import Feed from "./Screens/Feed";
-import Bookmarks from "./Screens/Bookmarks";
-import Settings from "./Screens/Settings";
-import About from "./Screens/About";
-import Backend from "./Backend";
-import Locale from "./Locale";
+import { Dark, Light, Colors } from './Styles';
+import { English, Czech, Japanese, Italian, Polish, German } from './Locale';
+import Wizard from './Screens/Wizard';
+import Feed from './Screens/Feed';
+import Bookmarks from './Screens/Bookmarks';
+import Settings from './Screens/Settings';
+import About from './Screens/About';
+import Backend from './Backend';
 
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
-import RNBootSplash from "react-native-bootsplash";
+import RNBootSplash from 'react-native-bootsplash';
 import { getPalette } from '@assembless/react-native-material-you';
 
 const NavigationDrawer = createDrawerNavigator();
 
 export default class App extends Component {
-    constructor(props: any) {
+    constructor(props:any) {
         super(props);
 
         // function bindings
@@ -46,17 +45,17 @@ export default class App extends Component {
             language: English, // temporary until language loads
             
             snackVisible: false,
-            snackMessage: "",
+            snackMessage: '',
 
             prefsLoaded: false,
-        }
+        };
     }
 
-    async componentDidMount() {
+    async componentDidMount(): void {
         await Backend.Init();
         await this.loadPrefs();
 
-        this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+        this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if(this.prefs.FirstLaunch){
                 return true;
             }
@@ -65,7 +64,7 @@ export default class App extends Component {
         // splash screen will hide when navigator has finished loading
     }
 
-    public async loadPrefs() {
+    public async loadPrefs(): void {
         this.prefs = await Backend.GetUserSettings();
         await this.updateLanguage(this.prefs.Language);
         this.updateTheme(this.prefs.Theme);
@@ -73,45 +72,45 @@ export default class App extends Component {
         this.setState({prefsLoaded: true});
     }
 
-    public async saveUserSettings(prefs: []){
+    public async saveUserSettings(prefs: []): void{
         await Backend.SaveUserSettings(prefs);
     }
 
-    public async updateLanguage(savedLanguage: string){
+    public async updateLanguage(savedLanguage: string): void{
         let locale: string;
 
-        if(savedLanguage == "system"){
-            locale = NativeModules.I18nManager.localeIdentifier
+        if(savedLanguage == 'system'){
+            locale = NativeModules.I18nManager.localeIdentifier;
         } else {
             locale = savedLanguage;
         }
 
-        if(locale.includes("cs")){
-            this.setState({ language: Czech })
-        } else if(locale.includes("ja")){
-            this.setState({ language: Japanese })
-        } else if(locale.includes("it")) {
-            this.setState({ language: Italian })
-        } else if(locale.includes("pl")) {
-            this.setState({ language: Polish })
-        } else if(locale.includes("de")) {
-            this.setState({ language: German })
+        if(locale.includes('cs')){
+            this.setState({ language: Czech });
+        } else if(locale.includes('ja')){
+            this.setState({ language: Japanese });
+        } else if(locale.includes('it')) {
+            this.setState({ language: Italian });
+        } else if(locale.includes('pl')) {
+            this.setState({ language: Polish });
+        } else if(locale.includes('de')) {
+            this.setState({ language: German });
         } else { // default
-            this.setState({ language: English })
+            this.setState({ language: English });
         }
     }
 
-    public async updateTheme(themeName: string){
+    public async updateTheme(themeName: string): void{
         let theme;
-        if(themeName == "dark"){
+        if(themeName == 'dark'){
             theme = Dark;
             this.appearanceSubscription?.remove();
-        } else if (themeName == "light"){
+        } else if (themeName == 'light'){
             theme = Light;
             this.appearanceSubscription?.remove();
         } else {
-            let scheme = Appearance.getColorScheme();
-            if(scheme == "dark") {
+            const scheme = Appearance.getColorScheme();
+            if(scheme == 'dark') {
                 theme = Dark;
             } else {
                 theme = Light;
@@ -119,8 +118,8 @@ export default class App extends Component {
 
             // live update
             this.appearanceSubscription = Appearance.addChangeListener(() => {
-                let scheme = Appearance.getColorScheme();
-                if(scheme == "dark") {
+                const scheme = Appearance.getColorScheme();
+                if(scheme == 'dark') {
                     theme = Dark;
                 } else {
                     theme = Light;
@@ -137,16 +136,16 @@ export default class App extends Component {
         this.updateAccent(this.prefs.Accent);
     }
 
-    public async updateAccent(accentName: string){
-        let theme = this.state.theme;
+    public async updateAccent(accentName: string): void{
+        const theme = this.state.theme;
 
         // fallback when a backup with material you is imported into android below 12
-        if(accentName == "material_you" && Platform.Version < 31){
-            accentName = "default";
+        if(accentName == 'material_you' && Platform.Version < 31){
+            accentName = 'default';
         }
 
-        if(accentName == "material_you"){
-            let pallete = await getPalette();
+        if(accentName == 'material_you'){
+            const pallete = await getPalette();
             if(theme.dark){
                 theme.colors.accent = pallete.system_accent1[5];
                 theme.colors.primary = pallete.system_accent1[5];
@@ -169,11 +168,11 @@ export default class App extends Component {
         this.setState({theme: theme});
     }
 
-    public async toggleSnack(message: string, visible: bool){
+    public async toggleSnack(message: string, visible: bool):void{
         this.setState({ snackVisible: visible, snackMessage: message });
     }
 
-    render() {
+    render():void {
         if(this.state.prefsLoaded == false){
             return null;
         } // else
@@ -184,10 +183,10 @@ export default class App extends Component {
                     backgroundColor="rgba(0, 0, 0, 0.3)"
                     translucent={true}/>
                 <NavigationContainer theme={this.state.theme} onReady={() => RNBootSplash.hide({ fade: true })}>
-                    <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? "wizard" : "feed"}
+                    <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? 'wizard' : 'feed'}
                         drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} 
                         screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
-                        <NavigationDrawer.Screen name="feed" options={{title: "omae"}}>
+                        <NavigationDrawer.Screen name="feed" options={{title: 'omae'}}>
                             {props => <Feed {...props} prefs={this.prefs} 
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
@@ -215,8 +214,8 @@ export default class App extends Component {
                     <Snackbar
                         visible={this.state.snackVisible}
                         duration={4000}
-                        action={{ label: this.state.language.dismiss, onPress: () => {this.setState({ snackVisible: false })} }}
-                        onDismiss={() => { this.setState({ snackVisible: false }) }}
+                        action={{ label: this.state.language.dismiss, onPress: () => {this.setState({ snackVisible: false });} }}
+                        onDismiss={() => { this.setState({ snackVisible: false }); }}
                         theme={{ colors: { accent: this.state.theme.colors.accentReverse }}}
                     >{this.state.snackMessage}</Snackbar>
                 </Portal>
@@ -228,10 +227,10 @@ export default class App extends Component {
 function CustomHeader ({ navigation, route, lang }) {
     return (
         <Appbar.Header style={{marginTop: StatusBar.currentHeight}}> 
-            { route.name != "wizard" && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
+            { route.name != 'wizard' && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
             <Appbar.Content title={lang[route.name]} />
         </Appbar.Header>
-      );
+    );
 }
 
 function CustomDrawer ({ state, navigation, theme, lang }) {
@@ -242,11 +241,11 @@ function CustomDrawer ({ state, navigation, theme, lang }) {
         if(active != state.routes[state.index].name) {
             setActive(state.routes[state.index].name);
         }
-     });
+    });
 
     return (
         <Drawer.Section title="Nunti" 
-            style={{backgroundColor: theme.colors.surface, height: "100%", paddingTop: "10%"}}>
+            style={{backgroundColor: theme.colors.surface, height: '100%', paddingTop: '10%'}}>
             <Drawer.Section>
                 <Drawer.Item
                     label={lang.feed}

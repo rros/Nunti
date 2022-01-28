@@ -20,7 +20,7 @@ import {
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { InAppBrowser } from 'react-native-inappbrowser-reborn'
+import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 
 import { Backend, Article } from '../Backend';
 
@@ -44,10 +44,10 @@ class Feed extends PureComponent {
             refreshing: false,
             currentArticles: [],
             showImages: !this.props.prefs.DisableImages
-        }
+        };
         
         // variables
-        this.currentArticle = undefined// details modal
+        this.currentArticle = undefined;// details modal
         this.currentPageIndex = 0;
         this.articlePages = [];
 
@@ -61,7 +61,7 @@ class Feed extends PureComponent {
         this.refresh();
         
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
-            this.setState({showImages: !this.props.prefs.DisableImages})
+            this.setState({showImages: !this.props.prefs.DisableImages});
         });
     }
 
@@ -77,7 +77,7 @@ class Feed extends PureComponent {
         // create one animation value for each article (row)
         let numberOfArticles = 0;
         this.articlePages.forEach((page) => {
-            page.forEach((item) => {
+            page.forEach(() => {
                 numberOfArticles = numberOfArticles + 1;
             });
         });
@@ -143,11 +143,11 @@ class Feed extends PureComponent {
 
     private async endSwipe(rowKey: number, data: any) {
         if(data.translateX > 100 || data.translateX < -100){
-            let ratedGood: number = -1;
+            let ratedGood = -1;
             if(data.translateX > 0){
-                ratedGood = 1
+                ratedGood = 1;
             } else {
-                ratedGood = -1
+                ratedGood = -1;
             }
 
             this.rowAnimatedValues[rowKey].setValue(0.5);
@@ -162,7 +162,7 @@ class Feed extends PureComponent {
     }
 
     private async rateArticle(rowKey: number, ratedGood: number){
-        let ratedArticle = this.state.currentArticles.find(item => item.id === rowKey)
+        const ratedArticle = this.state.currentArticles.find(item => item.id === rowKey);
         this.articlePages = await Backend.RateArticle(ratedArticle, ratedGood, this.articlePages);
 
         // if the last page got completely emptied and user is on it, go back to the new last page
@@ -209,14 +209,14 @@ class Feed extends PureComponent {
                     leftActivationValue={100}
                     rightActivationValue={-100}
 
-                    renderItem={ (rowData, rowMap) => (
+                    renderItem={ (rowData) => (
                         <Animated.View style={{ 
                             maxHeight: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 300, 0],}), 
                             opacity: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 1, 0],}),
                             translateX: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [-1000, 0, 1000],}), // random value, it disappears anyway
                         }}>
                             <Card style={Styles.card} 
-                                onPress={() => { this.readMore(rowData.item.url) }} onLongPress={() => { this.viewDetails(rowData.item) }}>
+                                onPress={() => { this.readMore(rowData.item.url); }} onLongPress={() => { this.viewDetails(rowData.item); }}>
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
@@ -231,20 +231,20 @@ class Feed extends PureComponent {
                             </Card>
                         </Animated.View>
                     )}
-                    renderHiddenItem={(rowData, rowMap) => (
+                    renderHiddenItem={(rowData) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
                             opacity: this.state.refreshing ? 0 : 
                                 this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.49, 0.5, 0.51, 1], outputRange: [0, 0, 1, 0, 0],}),
                         }]}>
                             <Button 
                                 color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
-                                    outputRange: ["grey", this.props.theme.colors.success]})}  
+                                    outputRange: ['grey', this.props.theme.colors.success]})}  
                                 icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} 
                                 labelStyle={{fontSize: 20}} dark={false}
                                 style={Styles.buttonRateLeft}></Button>
                             <Button
                                 color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
-                                    outputRange: ["grey", this.props.theme.colors.error]})}  
+                                    outputRange: ['grey', this.props.theme.colors.error]})}  
                                 icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent}
                                 labelStyle={{fontSize: 20}} dark={false} 
                                 style={Styles.buttonRateRight}></Button>
@@ -253,8 +253,8 @@ class Feed extends PureComponent {
                     ListEmptyComponent={(
                         <View style={Styles.centerView}>
                             <Image source={this.props.theme.dark ? 
-                                require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")}
-                                resizeMode="contain" style={Styles.fullscreenImage}></Image>
+                                require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
+                            resizeMode="contain" style={Styles.fullscreenImage}></Image>
                             <Title style={Styles.largerText}>{this.props.lang.empty_feed_title}</Title>
                             <Paragraph style={Styles.largerText}>{this.props.lang.empty_feed_desc}</Paragraph>
                         </View>
@@ -300,9 +300,9 @@ class Feed extends PureComponent {
                                 <Card.Actions>
                                     <Button icon="book" onPress={() => { this.readMore(this.currentArticle.url); }}>
                                         {this.props.lang.read_more}</Button>
-                                    <Button icon="bookmark" onPress={() => { this.saveArticle(this.currentArticle) }}>
+                                    <Button icon="bookmark" onPress={() => { this.saveArticle(this.currentArticle); }}>
                                         {this.props.lang.save}</Button>
-                                    <Button icon="share" onPress={() => { this.shareArticle(this.currentArticle.url) }} 
+                                    <Button icon="share" onPress={() => { this.shareArticle(this.currentArticle.url); }} 
                                         style={Styles.cardButtonLeft}> {this.props.lang.share}</Button>
                                 </Card.Actions>
                             </Card>

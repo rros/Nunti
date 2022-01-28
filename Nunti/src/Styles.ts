@@ -1,73 +1,73 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 import { DarkTheme, DefaultTheme } from 'react-native-paper';
 
 export const Colors = {
     error: {
-        key: "error",
-        light: "#ff4444",
-        dark: "#cc0000"
+        key: 'error',
+        light: '#ff4444',
+        dark: '#cc0000'
     },
     success: {
-        key: "success",
-        light: "#00c851",
-        dark: "#007e33"
+        key: 'success',
+        light: '#00c851',
+        dark: '#007e33'
     },
     default: {
-        key: "default",
-        light: "#1eba81",
-        dark: "#1eba81"
+        key: 'default',
+        light: '#1eba81',
+        dark: '#1eba81'
     },
     amethyst: {
-        key: "amethyst",
-        light: "#725aff",
-        dark: "#b5a9fc"
+        key: 'amethyst',
+        light: '#725aff',
+        dark: '#b5a9fc'
     },
     aqua: {
-        key: "aqua",
-        light: "#4586e2",
-        dark: "#72b4f5"
+        key: 'aqua',
+        light: '#4586e2',
+        dark: '#72b4f5'
     },
     black: {
-        key: "black",
-        light: "#202020",
-        dark: "#d7dee6"
+        key: 'black',
+        light: '#202020',
+        dark: '#d7dee6'
     },
     cinnamon: {
-        key: "cinnamon",
-        light: "#af6050",
-        dark: "#c3a6a2"
+        key: 'cinnamon',
+        light: '#af6050',
+        dark: '#c3a6a2'
     },
     forest: {
-        key: "forest",
-        light: "#1b873b",
-        dark: "#84c188"
+        key: 'forest',
+        light: '#1b873b',
+        dark: '#84c188'
     },
     ocean: {
-        key: "ocean",
-        light: "#0c80a7",
-        dark: "#28bdd7"
+        key: 'ocean',
+        light: '#0c80a7',
+        dark: '#28bdd7'
     },
     orchid: {
-        key: "orchid",
-        light: "#c42cc9",
-        dark: "#e68aed"
+        key: 'orchid',
+        light: '#c42cc9',
+        dark: '#e68aed'
     },
     space: {
-        key: "space",
-        light: "#47618a",
-        dark: "#99accc"
+        key: 'space',
+        light: '#47618a',
+        dark: '#99accc'
     },
-}
+};
 
 // customise default dark and white themes from paper
 export const Dark = {
     ...DarkTheme,
     colors: {
         ...DarkTheme.colors,
-        accentName: "default",
-        primary: "#1eba81",
+        accentName: 'default',
+        primary: '#1eba81',
         accent: '#1eba81',
-        accentReverse: "#1eba81",
+        accentReverse: '#1eba81',
         error: Colors.error.dark,
         success: Colors.success.dark
     }
@@ -77,10 +77,10 @@ export const Light = {
     ...DefaultTheme,
     colors: {
         ...DefaultTheme.colors,
-        accentName: "default",
-        primary: "#1eba81",
+        accentName: 'default',
+        primary: '#1eba81',
         accent: '#1eba81',
-        accentReverse: "#1eba81",
+        accentReverse: '#1eba81',
         error: Colors.error.light,
         success: Colors.success.light
     }
@@ -103,7 +103,7 @@ export default Styles = StyleSheet.create ({
 
     cardContentContainer: {
         flex: 0,
-        flexDirection: "row",
+        flexDirection: 'row',
     },
 
     cardContentTextContainer: {
@@ -123,19 +123,19 @@ export default Styles = StyleSheet.create ({
     },
 
     cardButtonLeft: {
-        marginLeft: "auto"
+        marginLeft: 'auto'
     },
 
     buttonRateLeft: {
-        paddingRight: "30%",
+        paddingRight: '30%',
     },
     
     buttonRateRight: {
-        paddingLeft: "30%",
+        paddingLeft: '30%',
     },
 
     buttonRateContent: {
-        height: "100%",
+        height: '100%',
     },
 
     swipeListHidden: {
@@ -148,8 +148,8 @@ export default Styles = StyleSheet.create ({
     },
 
     centerView: {
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: 'center',
+        justifyContent: 'center',
         padding: 20
     },
 
@@ -183,11 +183,11 @@ export default Styles = StyleSheet.create ({
     },
 
     settingsButton: {
-        justifyContent: "center"
+        justifyContent: 'center'
     },
 
     wizardNavigationIcon: {
-        alignSelf: "center"
+        alignSelf: 'center'
     },
 
     settingsDialogDesc: {

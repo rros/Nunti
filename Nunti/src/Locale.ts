@@ -132,7 +132,7 @@ export const English = {
     report: 'Report',
     next: 'Next',
     back: 'Back',
-}
+};
 
 export const Czech = {
     article_saved: 'Článek uložen',
@@ -266,7 +266,7 @@ export const Czech = {
     report: 'Nahlásit',
     next: 'Další',
     back: 'Zpět',
-}
+};
 
 export const Japanese = {
     article_saved: '記事をセーブした',
@@ -400,7 +400,7 @@ export const Japanese = {
     report: '報告',
     next: '次',
     back: '最終',
-}
+};
 
 export const Italian = {
     article_saved: 'Articolo salvato',
@@ -534,7 +534,7 @@ export const Italian = {
     report: 'Rapporto',
     next: 'Prossimo',
     back: 'Indietro',
-}
+};
 
 export const Polish = {
     article_saved: 'Artykuł zapisany',
@@ -668,7 +668,7 @@ export const Polish = {
     report: 'Zgłosić',
     next: 'Następny',
     back: 'Poprzedni',
-}
+};
 
 export const German = {
     article_saved: 'Der Artikel wurde gespeichert',
@@ -802,4 +802,4 @@ export const German = {
     report: 'Melden',
     next: 'Weiter',
     back: 'Zurück',
-}
+};

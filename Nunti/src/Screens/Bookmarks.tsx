@@ -20,7 +20,7 @@ import {
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { InAppBrowser } from 'react-native-inappbrowser-reborn'
+import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 
 import Backend from '../Backend';
 
@@ -44,7 +44,7 @@ class Bookmarks extends PureComponent {
             refreshing: false,
             articles: [],
             showImages: !this.props.prefs.DisableImages
-        }
+        };
         
         // variables
         this.currentIndex = 0;
@@ -62,7 +62,7 @@ class Bookmarks extends PureComponent {
         // reload bookmarks on each access
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
             this.refresh();
-            this.setState({showImages: !this.props.prefs.DisableImages})
+            this.setState({showImages: !this.props.prefs.DisableImages});
         });
     }
 
@@ -74,7 +74,7 @@ class Bookmarks extends PureComponent {
     private async refresh(){
         this.setState({ refreshing: true });
         
-        let arts = await Backend.GetSavedArticles();
+        const arts = await Backend.GetSavedArticles();
         
         this.rowAnimatedValues = [];
         Array(arts.length)
@@ -99,7 +99,7 @@ class Bookmarks extends PureComponent {
     
     // article functions
     private async readMore(articleID: number) {
-        let url = "";
+        let url = '';
         if(typeof(articleID) !== typeof(0)) {
             // if readmore is called without articleIndex(details modal), get it from this.state
             url = this.state.articles[this.currentIndex].url;
@@ -119,7 +119,7 @@ class Bookmarks extends PureComponent {
     }
 
     private async removeSavedArticle(articleID: number) {
-        let index = 0
+        let index = 0;
 
         if(typeof(articleID) !== typeof(0)) { // this happens in article details
             this.props.toggleSnack(this.props.lang.removed_saved, true);
@@ -131,7 +131,7 @@ class Bookmarks extends PureComponent {
         }
         
         //TODO: frontend, review this
-        let updatedArticles = (await Backend.TryRemoveSavedArticle(updatedArticles[index], this.state.articles))[1];
+        const updatedArticles = (await Backend.TryRemoveSavedArticle(updatedArticles[index], this.state.articles))[1];
 
         this.setState({ articles: updatedArticles }, () => {
             if(this.state.articles.length == 0){
@@ -194,14 +194,14 @@ class Bookmarks extends PureComponent {
                     leftActivationValue={100}
                     rightActivationValue={-100}
 
-                    renderItem={ (rowData, rowMap) => (
+                    renderItem={ (rowData) => (
                         <Animated.View style={{ 
                             maxHeight: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 300, 0],}), 
                             opacity: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 1, 0],}),
                             translateX: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [-1000, 0, 1000],}), // random value, it disappears anyway
                         }}>
                             <Card style={Styles.card} 
-                                onPress={() => { this.readMore(rowData.item.id) }} onLongPress={() => { this.viewDetails(rowData.item.id) }}>
+                                onPress={() => { this.readMore(rowData.item.id); }} onLongPress={() => { this.viewDetails(rowData.item.id); }}>
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
@@ -210,26 +210,26 @@ class Bookmarks extends PureComponent {
                                     </Card.Content>
                                     {this.state.showImages && rowData.item.cover !== undefined 
                                         && <View style={Styles.cardContentCoverContainer}>
-                                        <Card.Cover source={{ uri: rowData.item.cover }}/>
-                                    </View> }
+                                            <Card.Cover source={{ uri: rowData.item.cover }}/>
+                                        </View> }
                                 </View>
                             </Card>
                         </Animated.View>
                     )}
-                    renderHiddenItem={(rowData, rowMap) => (
+                    renderHiddenItem={(rowData) => (
                         <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
                             opacity: this.state.refreshing ? 0 : 
                                 this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.49, 0.5, 0.51, 1], outputRange: [0, 0, 1, 0, 0],}),
                         }]}>
                             <Button 
                                 color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
-                                    outputRange: ["grey", this.props.theme.colors.error]})}  
+                                    outputRange: ['grey', this.props.theme.colors.error]})}  
                                 icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} 
                                 labelStyle={{fontSize: 20}} dark={false}
                                 style={Styles.buttonRateLeft}></Button>
                             <Button 
                                 color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
-                                    outputRange: ["grey", this.props.theme.colors.error]})}  
+                                    outputRange: ['grey', this.props.theme.colors.error]})}  
                                 icon="delete" mode="contained" contentStyle={Styles.buttonRateContent} 
                                 labelStyle={{fontSize: 20}} dark={false}
                                 style={Styles.buttonRateRight}></Button>
@@ -237,8 +237,8 @@ class Bookmarks extends PureComponent {
                     )}
                     ListEmptyComponent={(
                         <View style={Styles.centerView}>
-                            <Image source={this.props.theme.dark ? require("../../Resources/ConfusedNunti.png") : require("../../Resources/ConfusedNuntiLight.png")}
-                                 resizeMode="contain" style={Styles.fullscreenImage}></Image>
+                            <Image source={this.props.theme.dark ? require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
+                                resizeMode="contain" style={Styles.fullscreenImage}></Image>
                             <Title style={Styles.largerText}>{this.props.lang.no_bookmarks}</Title>
                             <Paragraph style={Styles.largerText}>{this.props.lang.no_bookmarks_desc}</Paragraph>
                         </View>
