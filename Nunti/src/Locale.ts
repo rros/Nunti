@@ -130,6 +130,8 @@ export const English = {
     report_at: "Report bugs at:",
     issue_tracker: "Issue tracker",
     report: "Report",
+    next: "Next",
+    back: "Back",
 }
 
 export const Czech = {
@@ -262,6 +264,8 @@ export const Czech = {
     report_at: "Nahlaste chyby zde:",
     issue_tracker: "Přehled chyb",
     report: "Nahlásit",
+    next: "Další",
+    back: "Zpět",
 }
 
 export const Japanese = {
@@ -394,6 +398,8 @@ export const Japanese = {
     report_at: "問題を報告:",
     issue_tracker: "問題のページ",
     report: "報告",
+    next: "次",
+    back: "最終",
 }
 
 export const Italian = {
@@ -526,6 +532,8 @@ export const Italian = {
     report_at: "Segnala bug a:",
     issue_tracker: "Localizzatore di problemi:",
     report: "Rapporto",
+    next: "Prossimo",
+    back: "Indietro",
 }
 
 export const Polish = {
@@ -658,6 +666,8 @@ export const Polish = {
     report_at: "Zgłoś błędy tutaj:",
     issue_tracker: "Przegląd błędów",
     report: "Zgłosić",
+    next: "Następny",
+    back: "Poprzedni",
 }
 
 export const German = {
@@ -790,4 +800,6 @@ export const German = {
     report_at: "Fehler melden:",
     issue_tracker: "Fehlerberichte",
     report: "Melden",
+    next: "Weiter",
+    back: "Zurück",
 }
