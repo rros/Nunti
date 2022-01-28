@@ -182,9 +182,7 @@ class Feed extends PureComponent {
 
         // wait until scroll has finished to launch article update
         // if we don't wait, the scroll will "lag" until the articles have been updated
-        //await new Promise(r => setTimeout(r, 200));
-        // reference value won't rerender the page anyway, so save time by not using setState
-        this.state.currentArticles = this.articlePages[newPageIndex];
+        await new Promise(r => setTimeout(r, 200));
         this.setState({ currentArticles: this.articlePages[newPageIndex], refreshing: false });
     }
 

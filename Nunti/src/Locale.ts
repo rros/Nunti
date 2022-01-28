@@ -70,11 +70,11 @@ export const English = {
     change_cache_time_success: 'Cache lifetime changed',
     change_cache_time_fail: 'Failed to change cache lifetime',
     minutes: ' min',
-    max_art: 'Total article limit',
-    max_art_dialog: 'How many articles in total may appear in your feed',
-    change_max_art: 'Change total limit',
-    change_max_art_success: 'Total article limit changed',
-    change_max_art_fail: 'Failed to change total article limit',
+    page_size: 'Articles per page',
+    page_size_dialog: 'How many articles appear per page',
+    change_page_size: 'Change articles per page',
+    change_page_size_success: 'Number of articles per page changed',
+    change_page_size_fail: 'Failed to change number of articles per page',
     max_art_feed: 'Feed article limit',
     max_art_feed_dialog: 'How many articles may appear from each given feed',
     change_max_art_feed: 'Change feed limit',
@@ -132,7 +132,7 @@ export const English = {
     report: 'Report',
     next: 'Next',
     back: 'Back',
-};
+}
 
 export const Czech = {
     article_saved: 'Článek uložen',
@@ -204,14 +204,14 @@ export const Czech = {
     change_cache_time_success: 'Životnost mezipaměti změněna',
     change_cache_time_fail: 'Nezdařilo se změnit životnost mezipaměti',
     minutes: ' min',
-    max_art: 'Celkový limit článků',
-    change_max_art: 'Změnit celkový limit',
-    max_art_dialog: 'Kolik článků se může objevit celkově',
-    change_max_art_success: 'Celkový limit článků změněn',
-    change_max_art_fail: 'Nezdařilo se změnit celkový limit článků',
-    max_art_feed: 'Článků z jednoho zdroje',
+    page_size: 'Počet článků na jedné stránce',
+    page_size_dialog: 'Kolik článků je na jedné stránce',
+    change_page_size: 'Změnit počet článků na jedné stránce',
+    change_page_size_success: 'Počet článků na jedné stránce změněn',
+    change_page_size_fail: 'Nezdařilo se změnit počet článků na jedné stránce',
+    max_art_feed: 'Počet článků z jednoho zdroje',
     max_art_feed_dialog: 'Kolik článků se může objevit z jednoho daného zdroje',
-    change_max_art_feed: 'Změnit limit z jednoho zdroje',
+    change_max_art_feed: 'Změnit limit článků z jednoho zdroje',
     change_max_art_feed_success: 'Limit článků z jednoho zdroje změněn',
     change_max_art_feed_fail: 'Nezdařilo se změnit limit článků z jednoho zdroje',
     danger: 'Kritická zóna',
@@ -266,7 +266,7 @@ export const Czech = {
     report: 'Nahlásit',
     next: 'Další',
     back: 'Zpět',
-};
+}
 
 export const Japanese = {
     article_saved: '記事をセーブした',
@@ -338,11 +338,11 @@ export const Japanese = {
     change_cache_time_success: 'キャッシュの時間を変わった',
     change_cache_time_fail: 'キャッシュの時間を変わることは失敗した',
     minutes: '分',
-    max_art: '記事の量',
-    max_art_dialog: 'フィードで記事の量',
-    change_max_art: '記事の量を変わる',
-    change_max_art_success: '記事の量を変わった',
-    change_max_art_fail: '記事の量を変わることは失敗した',
+    page_size: 'ページの記事',
+    page_size_dialog: 'ページの記事の量',
+    change_page_size: 'ページの記事の量を変わる',
+    change_page_size_success: 'ページの記事の量を変わった',
+    change_page_size_fail: 'ページの記事の量を変わることは失敗した',
     max_art_feed: '各フィードから記事の量',
     max_art_feed_dialog: 'フィードで各フィードから記事の量',
     change_max_art_feed: '各フィードから記事の量を変わる',
@@ -400,7 +400,7 @@ export const Japanese = {
     report: '報告',
     next: '次',
     back: '最終',
-};
+}
 
 export const Italian = {
     article_saved: 'Articolo salvato',
@@ -472,11 +472,11 @@ export const Italian = {
     change_cache_time_success: 'La durata modificato',
     change_cache_time_fail: 'Impossibile modificare la durata della cache',
     minutes: ' min',
-    max_art: 'Limite totale degli articoli',
-    max_art_dialog: 'Quanti articoli in totale possono essere visualizzati nel tuo feed',
-    change_max_art: 'Modifica il limite totale',
-    change_max_art_success: 'Limite totale articoli modificato',
-    change_max_art_fail: 'Impossibile modificare il limite totale degli articoli',
+    page_size: 'Numero di articoli per pagina',
+    page_size_dialog: 'Quanti articoli per pagina',
+    change_page_size: 'Modificare il numero di articoli per pagina',
+    change_page_size_success: 'Numero di articoli per pagina cambiato',
+    change_page_size_fail: 'Non è riuscito a modificare il numero di articoli nella pagina',
     max_art_feed: 'Limite di articoli di una fonte',
     max_art_feed_dialog: 'Quanti articoli possono apparire da ogni dato feed',
     change_max_art_feed: 'Modificare',
@@ -534,7 +534,7 @@ export const Italian = {
     report: 'Rapporto',
     next: 'Prossimo',
     back: 'Indietro',
-};
+}
 
 export const Polish = {
     article_saved: 'Artykuł zapisany',
@@ -606,11 +606,11 @@ export const Polish = {
     change_cache_time_success: 'Czas życia pamięci podręcznej zmieniony',
     change_cache_time_fail: 'Nie udało się zmienić czasu życia pamięci podręcznej',
     minutes: ' min',
-    max_art: 'Łączny limit artykułów',
-    change_max_art: 'Zmień łączny limit',
-    max_art_dialog: 'Ile artykułów może się pojawić w sumie',
-    change_max_art_success: 'Łączny limit artykułów zmieniony',
-    change_max_art_fail: 'Nie udało się zmienić całkowitego limitu artykułów',
+    page_size: 'Počet článků na jedné stránce', //TODO: complete polish translation
+    page_size_dialog: 'Kolik článků je na jedné stránce',
+    change_page_size: 'Změnit počet článků na jedné stránce',
+    change_page_size_success: 'Počet článků na jedné stránce změněn',
+    change_page_size_fail: 'Nezdařilo se změnit počet článků na jedné stránce',
     max_art_feed: 'Artykuły z jednego źródła',
     max_art_feed_dialog: 'Ile artykułów może pojawić się z jednego źródła',
     change_max_art_feed: 'Zmień limit z jednego źródła',
@@ -668,7 +668,7 @@ export const Polish = {
     report: 'Zgłosić',
     next: 'Następny',
     back: 'Poprzedni',
-};
+}
 
 export const German = {
     article_saved: 'Der Artikel wurde gespeichert',
@@ -740,11 +740,11 @@ export const German = {
     change_cache_time_success: 'Zwischenspeicher wurde geändert',
     change_cache_time_fail: 'Zwischenspeicher konnte nicht geändert werden',
     minutes: ' Min.',
-    max_art: 'Insgesamte Anzahl der Artikel',
-    change_max_art: 'Gesamtzahl ändern',
-    max_art_dialog: 'Wie viele Artikel sollen insgesamt angezeigt werden?',
-    change_max_art_success: 'Gesamtzahl der Artikel geändert',
-    change_max_art_fail: 'Gesamtzahl der Artikel konnte nicht geändert werden',
+    page_size: 'Artikel auf eine Seite',
+    page_size_dialog: 'Wie viele Artikel sollen ingesamt aus einer Seite',
+    change_page_size: 'Artikelanzahl pro Seite ändern',
+    change_page_size_success: 'Artikelanzahl pro Seite geändert',
+    change_page_size_fail: 'Artikelanzahl pro Seite konnte nicht geändert werden',
     max_art_feed: 'Artikel aus einem Feed',
     max_art_feed_dialog: 'Wie viele Artikel sollen insgesamt aus einem Feed angezeigt werden?',
     change_max_art_feed: 'Artikelanzahl pro Feed ändern',
@@ -802,4 +802,4 @@ export const German = {
     report: 'Melden',
     next: 'Weiter',
     back: 'Zurück',
-};
+}
