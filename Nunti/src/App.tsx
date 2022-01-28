@@ -51,7 +51,7 @@ export default class App extends Component {
         };
     }
 
-    async componentDidMount(): void {
+    async componentDidMount() {
         await Backend.Init();
         await this.loadPrefs();
 
@@ -64,7 +64,7 @@ export default class App extends Component {
         // splash screen will hide when navigator has finished loading
     }
 
-    public async loadPrefs(): void {
+    public async loadPrefs() {
         this.prefs = await Backend.GetUserSettings();
         await this.updateLanguage(this.prefs.Language);
         this.updateTheme(this.prefs.Theme);
@@ -72,11 +72,11 @@ export default class App extends Component {
         this.setState({prefsLoaded: true});
     }
 
-    public async saveUserSettings(prefs: []): void{
+    public async saveUserSettings(prefs: []) {
         await Backend.SaveUserSettings(prefs);
     }
 
-    public async updateLanguage(savedLanguage: string): void{
+    public async updateLanguage(savedLanguage: string) {
         let locale: string;
 
         if(savedLanguage == 'system'){
@@ -100,7 +100,7 @@ export default class App extends Component {
         }
     }
 
-    public async updateTheme(themeName: string): void{
+    public async updateTheme(themeName: string) {
         let theme;
         if(themeName == 'dark'){
             theme = Dark;
@@ -136,7 +136,7 @@ export default class App extends Component {
         this.updateAccent(this.prefs.Accent);
     }
 
-    public async updateAccent(accentName: string): void{
+    public async updateAccent(accentName: string) {
         const theme = this.state.theme;
 
         // fallback when a backup with material you is imported into android below 12
@@ -168,11 +168,11 @@ export default class App extends Component {
         this.setState({theme: theme});
     }
 
-    public async toggleSnack(message: string, visible: bool):void{
+    public async toggleSnack(message: string, visible: bool) {
         this.setState({ snackVisible: visible, snackMessage: message });
     }
 
-    render():void {
+    render() {
         if(this.state.prefsLoaded == false){
             return null;
         } // else

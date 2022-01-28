@@ -44,8 +44,9 @@ class Wizard extends Component {
                                 size={15} color={this.props.theme.colors.disabled} />;}
                 }}>
                 <NavigationTabs.Screen name="Welcome">
-                    { props => <Step1Welcome {...props} lang={this.props.lang}
-                        toggleSnack={this.props.toggleSnack} loadPrefs={this.props.loadPrefs}/>}
+                    { props => <Step1Welcome {...props} lang={this.props.lang} prefs={this.props.prefs} 
+                        toggleSnack={this.props.toggleSnack} loadPrefs={this.props.loadPrefs}
+                        saveUserSettings={this.props.saveUserSettings} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Language">
                     { props => <Step2Language {...props} lang={this.props.lang} prefs={this.props.prefs} 
@@ -85,7 +86,12 @@ class Step1Welcome extends Component {
         }
 
         if(await Backend.TryLoadBackup(file.data)) {
-            this.props.loadPrefs();
+            await this.props.loadPrefs();
+
+            // when importing OPML files from other apps, we need to set first launch to false to leave the wizard
+            this.props.prefs.FirstLaunch = false;
+            await this.props.saveUserSettings(this.props.prefs);
+
             this.props.toggleSnack(this.props.lang.import_ok, true);
             this.props.navigation.navigate('feed');
         } else {

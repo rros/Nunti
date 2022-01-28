@@ -42,7 +42,7 @@ class Feed extends PureComponent {
         this.state = {
             detailsVisible: false,
             refreshing: false,
-            currentArticles: [],
+            articlePage: [],
             showImages: !this.props.prefs.DisableImages
         };
         
@@ -90,7 +90,7 @@ class Feed extends PureComponent {
             });
         
         this.currentPageIndex = 0;
-        this.setState({currentArticles: Backend.CurrentFeed[this.currentPageIndex], refreshing: false});
+        this.setState({articlePage: Backend.CurrentFeed[this.currentPageIndex], refreshing: false});
     }
 
     // modal functions
@@ -161,8 +161,8 @@ class Feed extends PureComponent {
         }
     }
 
-    private async rateArticle(rowKey: number, ratedGood: number){
-        const ratedArticle = this.state.currentArticles.find(item => item.id === rowKey);
+    private async rateArticle(articleID: number, ratedGood: number){
+        const ratedArticle = this.state.articlePage.find(item => item.id === articleID);
         await Backend.RateArticle(ratedArticle, ratedGood);
 
         // if the last page got completely emptied and user is on it, go back to the new last page
@@ -171,7 +171,7 @@ class Feed extends PureComponent {
         }
 
         // reference value won't rerender the page anyway, so save time by not using setState
-        this.state.currentArticles = Backend.CurrentFeed[this.currentPageIndex];
+        this.state.articlePage = Backend.CurrentFeed[this.currentPageIndex];
         this.forceUpdate();
     }
 
@@ -183,7 +183,7 @@ class Feed extends PureComponent {
         // wait until scroll has finished to launch article update
         // if we don't wait, the scroll will "lag" until the articles have been updated
         await new Promise(r => setTimeout(r, 200));
-        this.setState({ currentArticles: Backend.CurrentFeed[newPageIndex], refreshing: false });
+        this.setState({ articlePage: Backend.CurrentFeed[newPageIndex], refreshing: false });
     }
 
     // NOTE: rowKey = item.id; use instead of index
@@ -193,7 +193,7 @@ class Feed extends PureComponent {
                 <SwipeListView
                     listViewRef={(list) => this.flatListRef = list}
 
-                    data={this.state.currentArticles}
+                    data={this.state.articlePage}
                     recalculateHiddenLayout={true}
                     removeClippedSubviews={false}
                     
@@ -208,6 +208,11 @@ class Feed extends PureComponent {
 
                     leftActivationValue={100}
                     rightActivationValue={-100}
+
+                    onLeftActionStatusChange={this.rateAnimation}
+                    onRightActionStatusChange={this.rateAnimation}
+
+                    swipeGestureEnded={this.endSwipe}
 
                     renderItem={ (rowData) => (
                         <Animated.View style={{ 
@@ -254,12 +259,12 @@ class Feed extends PureComponent {
                         <View style={Styles.centerView}>
                             <Image source={this.props.theme.dark ? 
                                 require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
-                            resizeMode="contain" style={Styles.fullscreenImage}></Image>
+                                resizeMode="contain" style={Styles.fullscreenImage}></Image>
                             <Title style={Styles.largerText}>{this.props.lang.empty_feed_title}</Title>
                             <Paragraph style={Styles.largerText}>{this.props.lang.empty_feed_desc}</Paragraph>
                         </View>
                     )}
-                    ListFooterComponent={() => this.state.currentArticles.length != 0 && (
+                    ListFooterComponent={() => this.state.articlePage.length != 0 && (
                         <View style={Styles.listFooterView}>
                             <View style={Styles.footerButtonView}>
                                 <Button onPress={() => { this.changePage(this.currentPageIndex-1); }}
@@ -280,18 +285,13 @@ class Feed extends PureComponent {
                             </View>
                         </View>
                     )}
-
-                    onLeftActionStatusChange={this.rateAnimation}
-                    onRightActionStatusChange={this.rateAnimation}
-
-                    swipeGestureEnded={this.endSwipe}
                 ></SwipeListView>
                 <Portal>
                     {this.currentArticle !== undefined && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} style={Styles.modal}>
                         <ScrollView>
                             <Card>
                                 {this.state.showImages && this.currentArticle.cover !== undefined && 
-                                <Card.Cover source={{ uri: this.currentArticle.cover }} />}
+                                    <Card.Cover source={{ uri: this.currentArticle.cover }} />}
                                 <Card.Content>
                                     <Title>{this.currentArticle.title}</Title>
                                     <Paragraph>{this.currentArticle.description}</Paragraph>
