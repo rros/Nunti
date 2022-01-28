@@ -96,6 +96,7 @@ class Backup {
 export class Backend {
     public static DB_VERSION = '3.1';
     public static CurrentFeed: Article[][] = [[]];
+    public static CurrentBookmarks: Article[][] = [[]];
     
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
@@ -167,22 +168,20 @@ export class Backend {
         }
     }
     /* Tries to remove an article from saved, true on success, false on fail. */
-    public static async TryRemoveSavedArticle(article: Article, pages: Article[][] = []): Promise<[boolean,Article[][]]> {
+    public static async TryRemoveSavedArticle(article: Article): Promise<boolean> {
         try {
             const saved = await this.StorageGet('saved');
             const index = await this.FindArticleByUrl(article.url, saved);
             if (index >= 0) {
                 saved.splice(index,1);
                 await this.StorageSave('saved',saved);
-                if (pages == [])
-                    return [true, pages];
-                else
-                    return [true, this.PagesRemoveArticle(article, pages)];
+                this.CurrentBookmarks = this.PagesRemoveArticle(article, this.CurrentBookmarks);
+                return true;
             } else
                 throw new Error('not found in saved');
         } catch(err) {
             console.error('Backend: Cannot remove saved article.',err);
-            return [false, pages];
+            return false;
         }
     }
     /* Returns list of saved articles. */
@@ -191,6 +190,7 @@ export class Backend {
         for (let i = 0; i < arts.length; i++) {
             arts[i].id = i;
         }
+        this.CurrentBookmarks = this.PaginateArticles(arts, (await this.GetUserSettings()).FeedPageSize);
         return arts;
     }
     /* Resets cache */
