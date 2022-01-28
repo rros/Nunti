@@ -107,14 +107,16 @@ export class Backend {
         // TODO: optimalization
         let timeBegin = Date.now()
         let arts = await this.GetArticles();
-        let newarts: Article[][] = [];
+        let pages: Article[][] = [];
         let prefs = await this.GetUserSettings();
         while (arts.length > 0) {
-            newarts.push(arts.splice(0, prefs.FeedPageSize));
+            pages.push(arts.splice(0, prefs.FeedPageSize));
         }
+        if (pages.length == 0)
+            pages = [[]];
         let timeEnd = Date.now()
         console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms.`);
-        return newarts;
+        return pages;
     }
 
     /* Retrieves sorted articles to show in feed. */
