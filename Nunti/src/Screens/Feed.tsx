@@ -49,7 +49,6 @@ class Feed extends PureComponent {
         // variables
         this.currentArticle = undefined;// details modal
         this.currentPageIndex = 0;
-        this.articlePages = [];
 
         // animation values
         this.rowAnimatedValues = [];
@@ -72,11 +71,12 @@ class Feed extends PureComponent {
     private async refresh(){
         this.setState({ refreshing: true });
 
-        this.articlePages = await Backend.GetArticlesPaginated();
+        // makes backend load and store articles
+        await Backend.GetArticlesPaginated();
         
         // create one animation value for each article (row)
         let numberOfArticles = 0;
-        this.articlePages.forEach((page) => {
+        Backend.CurrentFeed.forEach((page) => {
             page.forEach(() => {
                 numberOfArticles = numberOfArticles + 1;
             });
@@ -90,7 +90,7 @@ class Feed extends PureComponent {
             });
         
         this.currentPageIndex = 0;
-        this.setState({currentArticles: this.articlePages[this.currentPageIndex], refreshing: false});
+        this.setState({currentArticles: Backend.CurrentFeed[this.currentPageIndex], refreshing: false});
     }
 
     // modal functions
@@ -163,15 +163,15 @@ class Feed extends PureComponent {
 
     private async rateArticle(rowKey: number, ratedGood: number){
         const ratedArticle = this.state.currentArticles.find(item => item.id === rowKey);
-        this.articlePages = await Backend.RateArticle(ratedArticle, ratedGood, this.articlePages);
+        await Backend.RateArticle(ratedArticle, ratedGood);
 
         // if the last page got completely emptied and user is on it, go back to the new last page
-        if(this.currentPageIndex == this.articlePages.length){
+        if(this.currentPageIndex == Backend.CurrentFeed.length){
             this.currentPageIndex = this.currentPageIndex - 1;
         }
 
         // reference value won't rerender the page anyway, so save time by not using setState
-        this.state.currentArticles = this.articlePages[this.currentPageIndex];
+        this.state.currentArticles = Backend.CurrentFeed[this.currentPageIndex];
         this.forceUpdate();
     }
 
@@ -183,7 +183,7 @@ class Feed extends PureComponent {
         // wait until scroll has finished to launch article update
         // if we don't wait, the scroll will "lag" until the articles have been updated
         await new Promise(r => setTimeout(r, 200));
-        this.setState({ currentArticles: this.articlePages[newPageIndex], refreshing: false });
+        this.setState({ currentArticles: Backend.CurrentFeed[newPageIndex], refreshing: false });
     }
 
     // NOTE: rowKey = item.id; use instead of index
@@ -276,7 +276,7 @@ class Feed extends PureComponent {
                                 <Button onPress={() => { this.changePage(this.currentPageIndex+1); }}
                                     icon="chevron-right"
                                     contentStyle={[Styles.footerButton, {flexDirection: 'row-reverse'}]}
-                                    disabled={this.currentPageIndex+1 == this.articlePages?.length}>{this.props.lang.next}</Button>
+                                    disabled={this.currentPageIndex+1 == Backend.CurrentFeed?.length}>{this.props.lang.next}</Button>
                             </View>
                         </View>
                     )}
