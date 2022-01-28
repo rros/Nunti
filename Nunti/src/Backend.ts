@@ -63,12 +63,11 @@ class UserSettings {
     /* Advanced */
     public DiscoverRatio: number = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)
     public ArticleCacheTime: number = 3*60; //minutes
-    public MaxArticles: number = 70; //total in feed
     public MaxArticlesPerChannel: number = 20;
     public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
     public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
-    public SeenHistoryLength = this.MaxArticles * 7; //to prevent flooding storage with seen articles history
-    public FeedPageSize = 20;
+    public SeenHistoryLength = 700; //to prevent flooding storage with seen articles history
+    public FeedPageSize = 20; //articles per page
 
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;
@@ -619,7 +618,7 @@ export class Backend {
         let prefs = await this.GetUserSettings();
         if (learning_db["upvotes"] + learning_db["downvotes"] <= prefs.NoSortUntil) {
             console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db["upvotes"] + learning_db["downvotes"])} out of ${prefs.NoSortUntil} required)`);
-            return articles.slice(0, prefs.MaxArticles);
+            return articles;
         }
 
         let scores: [Article,number][] = [];
@@ -629,7 +628,6 @@ export class Backend {
         scores.sort(function(first:any, second:any) {
             return second[1] - first[1];
         });
-        scores = scores.slice(0, prefs.MaxArticles);
 
         let arts: Article[] = [];
         console.debug(`discover feature set to: ${prefs.DiscoverRatio*100} %`)
