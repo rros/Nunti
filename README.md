@@ -63,7 +63,7 @@ Nunti has been built with the firm belief that there is no reason to process or 
 
 # Credits and contributors
 
-- Štěpán Šebek - polish translation
+- @stepano_ - polish translation
 - Eliška Otčenášková, @ngnee - german translation
 
 # Licence, disclaimer or whatever
