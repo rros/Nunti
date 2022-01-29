@@ -12,11 +12,10 @@ import {
     withTheme
 } from 'react-native-paper';
 
-import { InAppBrowser } from 'react-native-inappbrowser-reborn'
+import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 import { version } from '../../package.json';
 
-import Backend from '../Backend';
-import Styles from "../Styles";
+import Styles from '../Styles';
 
 class About extends PureComponent {
     constructor(props:any){
@@ -26,7 +25,7 @@ class About extends PureComponent {
     }
 
     private async openIssues() {
-        const url = "https://gitlab.com/ondrejfoltyn/nunti/-/issues";
+        const url = 'https://gitlab.com/ondrejfoltyn/nunti/-/issues';
         if(!this.props.prefs.ExternalBrowser){
             await InAppBrowser.open(url, {
                 forceCloseOnRedirection: false, showInRecents: true,
@@ -42,7 +41,7 @@ class About extends PureComponent {
         return (
             <ScrollView style={Styles.topView}>
                 <View style={[Styles.centerView, Styles.wizardStatusOffset]}>
-                    <Image source={require("../../Resources/HeartNunti.png")} 
+                    <Image source={require('../../Resources/HeartNunti.png')} 
                         resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 </View>
 

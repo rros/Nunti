@@ -3,11 +3,10 @@ import {
     ScrollView,
     Image,
     Platform
-} from "react-native";
+} from 'react-native';
 
 import { 
     Title,
-    Subheading,
     Paragraph,
     RadioButton,
     Button,
@@ -21,7 +20,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Backend } from '../Backend';
 import DefaultTopics from '../DefaultTopics';
 
-import * as ScopedStorage from "react-native-scoped-storage";
+import * as ScopedStorage from 'react-native-scoped-storage';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 const NavigationTabs = createMaterialTopTabNavigator();
@@ -35,18 +34,19 @@ class Wizard extends Component {
         return(
             <NavigationTabs.Navigator tabBarPosition="bottom" 
                 screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background },
-                    tabBarIndicatorStyle: { backgroundColor: "transparent"},
-                    tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused, color }) => { 
+                    tabBarIndicatorStyle: { backgroundColor: 'transparent'},
+                    tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => { 
                         if(focused)
                             return <Icon style={Styles.wizardNavigationIcon} name="circle" 
-                                        size={15} color={this.props.theme.colors.accent} />;
+                                size={15} color={this.props.theme.colors.accent} />;
                         else
                             return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off"
-                                        size={15} color={this.props.theme.colors.disabled} />;}
-            }}>
+                                size={15} color={this.props.theme.colors.disabled} />;}
+                }}>
                 <NavigationTabs.Screen name="Welcome">
-                    { props => <Step1Welcome {...props} lang={this.props.lang}
-                        toggleSnack={this.props.toggleSnack} loadPrefs={this.props.loadPrefs}/>}
+                    { props => <Step1Welcome {...props} lang={this.props.lang} prefs={this.props.prefs} 
+                        toggleSnack={this.props.toggleSnack} loadPrefs={this.props.loadPrefs}
+                        saveUserSettings={this.props.saveUserSettings} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Language">
                     { props => <Step2Language {...props} lang={this.props.lang} prefs={this.props.prefs} 
@@ -78,17 +78,22 @@ class Step1Welcome extends Component {
     }    
 
     private async import() {
-        let file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, "utf8");
-        const allowed_mime = ["text/plain", "application/octet-stream", "application/json"]
+        const file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, 'utf8');
+        const allowed_mime = ['text/plain', 'application/octet-stream', 'application/json'];
         if(allowed_mime.indexOf(file.mime) < 0) {
             this.props.toggleSnack(this.props.lang.import_fail_format, true);
             return;
         }
 
         if(await Backend.TryLoadBackup(file.data)) {
-            this.props.loadPrefs();
+            await this.props.loadPrefs();
+
+            // when importing OPML files from other apps, we need to set first launch to false to leave the wizard
+            this.props.prefs.FirstLaunch = false;
+            await this.props.saveUserSettings(this.props.prefs);
+
             this.props.toggleSnack(this.props.lang.import_ok, true);
-            this.props.navigation.navigate("feed");
+            this.props.navigation.navigate('feed');
         } else {
             this.props.toggleSnack(this.props.lang.import_fail_invalid, true);
         }
@@ -97,7 +102,7 @@ class Step1Welcome extends Component {
     render() {
         return(
             <ScrollView contentContainerStyle={Styles.centerView}>
-                <Image source={require("../../Resources/FullNunti.png")} 
+                <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.largerText}>{this.props.lang.welcome}</Title>
                 <Paragraph style={Styles.largerText}>{this.props.lang.enjoy}</Paragraph>
@@ -114,7 +119,7 @@ class Step2Language extends Component {
         
         this.state = {
             language: this.props.prefs.Language,
-        }
+        };
     }
     
     private async changeLanguage(newLanguage: string) {
@@ -159,7 +164,7 @@ class Step3Theme extends Component {
         this.state = {
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
-        }
+        };
     }
     
     private async changeTheme(newTheme: string) {
@@ -236,13 +241,13 @@ class Step4Topics extends Component {
             travel: false,
             environment: false,
             science: false,
-        }
+        };
         
         this.isTopicEnabled();
     }
 
     private async isTopicEnabled(){
-        for (let topicName in DefaultTopics.Topics) {
+        for (const topicName in DefaultTopics.Topics) {
             this.state[topicName] = (await Backend.IsTopicEnabled(topicName));
         }
     }
@@ -263,39 +268,39 @@ class Step4Topics extends Component {
                     <List.Item title={this.props.lang.politics}
                         left={() => <List.Icon icon="account-voice" />}
                         right={() => <Switch value={this.state.worldPolitics} 
-                            onValueChange={() => this.changeDefaultTopics("worldPolitics")} />} />
+                            onValueChange={() => this.changeDefaultTopics('worldPolitics')} />} />
                     <List.Item title={this.props.lang.czech_news}
                         left={() => <List.Icon icon="glass-mug-variant" />}
                         right={() => <Switch value={this.state.czechNews} 
-                            onValueChange={() => this.changeDefaultTopics("czechNews")} />} />
+                            onValueChange={() => this.changeDefaultTopics('czechNews')} />} />
                     <List.Item title={this.props.lang.sport}
                         left={() => <List.Icon icon="basketball" />}
                         right={() => <Switch value={this.state.sport} 
-                            onValueChange={() => this.changeDefaultTopics("sport")} />} />
+                            onValueChange={() => this.changeDefaultTopics('sport')} />} />
                     <List.Item title={this.props.lang.economy}
                         left={() => <List.Icon icon="currency-usd" />}
                         right={() => <Switch value={this.state.economy} 
-                            onValueChange={() => this.changeDefaultTopics("economy")} />} />
+                            onValueChange={() => this.changeDefaultTopics('economy')} />} />
                     <List.Item title={this.props.lang.technology}
                         left={() => <List.Icon icon="cog" />}
                         right={() => <Switch value={this.state.technology} 
-                            onValueChange={() => this.changeDefaultTopics("technology")} />} />
+                            onValueChange={() => this.changeDefaultTopics('technology')} />} />
                     <List.Item title={this.props.lang.science}
                         left={() => <List.Icon icon="beaker-question" />}
                         right={() => <Switch value={this.state.science} 
-                            onValueChange={() => this.changeDefaultTopics("science")} />} />
+                            onValueChange={() => this.changeDefaultTopics('science')} />} />
                     <List.Item title={this.props.lang.environment}
                         left={() => <List.Icon icon="nature" />}
                         right={() => <Switch value={this.state.environment} 
-                            onValueChange={() => this.changeDefaultTopics("environment")} />} />
+                            onValueChange={() => this.changeDefaultTopics('environment')} />} />
                     <List.Item title={this.props.lang.travel}
                         left={() => <List.Icon icon="train-car" />}
                         right={() => <Switch value={this.state.travel} 
-                            onValueChange={() => this.changeDefaultTopics("travel")} />} />
+                            onValueChange={() => this.changeDefaultTopics('travel')} />} />
                     <List.Item title={this.props.lang.weather}
                         left={() => <List.Icon icon="weather-sunny" />}
                         right={() => <Switch value={this.state.weather} 
-                            onValueChange={() => this.changeDefaultTopics("weather")} />} />
+                            onValueChange={() => this.changeDefaultTopics('weather')} />} />
                 </List.Section>
             </ScrollView>
         );
@@ -313,13 +318,13 @@ class Step5Learning extends Component {
         this.props.prefs.FirstLaunch = false;
         await this.props.saveUserSettings(this.props.prefs);
 
-        this.props.navigation.navigate("feed");
+        this.props.navigation.navigate('feed');
     }
 
     render() {
         return(
             <ScrollView contentContainerStyle={Styles.centerView}>
-                <Image source={require("../../Resources/FullNunti.png")} 
+                <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.largerText}>{this.props.lang.adapt}</Title>
                 <Paragraph style={Styles.largerText}>
