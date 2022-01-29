@@ -186,7 +186,7 @@ export class Backend {
     }
     /* Returns list of saved articles. */
     public static async GetSavedArticles(): Promise<Article[]> {
-        const arts = await this.SortArticles(await this.StorageGet('saved'));
+        const arts = await this.StorageGet('saved');
         for (let i = 0; i < arts.length; i++) {
             arts[i].id = i;
         }
