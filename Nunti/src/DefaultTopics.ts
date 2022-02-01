@@ -35,6 +35,9 @@ export default class DefaultTopics {
             new Feed('https://www.irozhlas.cz/rss/irozhlas'),
             new Feed('https://ct24.ceskatelevize.cz/rss'),
         ],
+        'frenchNews': [
+            new Feed('https://www.lemonde.fr/rss/plus-lus.xml'),
+        ],
         'germanNews': [
             new Feed('https://rss.sueddeutsche.de/rss/Topthemen')
         ],

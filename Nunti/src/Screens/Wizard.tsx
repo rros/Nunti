@@ -144,6 +144,8 @@ class Step2Language extends Component {
                             right={() => <RadioButton.Item value="de" />} />
                         <List.Item title={this.props.lang.en}
                             right={() => <RadioButton.Item value="en" />} />
+                        <List.Item title={this.props.lang.fr}
+                            right={() => <RadioButton.Item value="fr" />} />
                         <List.Item title={this.props.lang.it}
                             right={() => <RadioButton.Item value="it" />} />
                         <List.Item title={this.props.lang.pl}
@@ -241,6 +243,7 @@ class Step4Topics extends Component {
             environment: false,
             science: false,
             czechNews: false,
+            frenchNews: false,
             germanNews: false,
             italianNews: false,
             polishNews: false,
@@ -307,6 +310,10 @@ class Step4Topics extends Component {
                         left={() => <List.Icon icon="earth" />}
                         right={() => <Switch value={this.state.czechNews} 
                             onValueChange={() => this.changeDefaultTopics('czechNews')} />} />
+                    <List.Item title={this.props.lang.french_news}
+                        left={() => <List.Icon icon="earth" />}
+                        right={() => <Switch value={this.state.frenchNews} 
+                            onValueChange={() => this.changeDefaultTopics('frenchNews')} />} />
                     <List.Item title={this.props.lang.german_news}
                         left={() => <List.Icon icon="earth" />}
                         right={() => <Switch value={this.state.germanNews} 

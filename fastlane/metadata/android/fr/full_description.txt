@@ -1,0 +1,10 @@
+<p>Nunti est l’application de lecteur RSS que vous attendiez.</p>
+
+<p>Nunti possède tout ce que vous aviez toujours voulu :</p>
+<ul>
+<li>apprentissage adaptatif de vos préférences</li>
+<li>material design moderne</li>
+<li>options d’apparence</li>
+<li>fonctions d’importation et exportation</li>
+<li>respect complet de la vie privée, aucune donnée ne quitte votre appareil</li>
+</ul>

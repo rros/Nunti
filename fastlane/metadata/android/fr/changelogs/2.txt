@@ -1,0 +1,11 @@
+- ajout de la traduction italienne
+- ajout de la traduction japonaise
+- ajout de la traduction polonaise (Štěpán Šebek)
+- ajout de la traduction allemande (Eliška Otčenášková)
+- ajout d'une option pour utiliser le navigateur externe
+- ajout d'une option pour importer une sauvegarde depuis l'assistant 
+- amélioration des animations de défilement et autres usages de défilement
+- amélioration des métadonnées F-Droid
+- correction d'un plantage au démarrage sur android 8
+- correction de la fenêtre d'attente sur android 12
+- correction du mode paysage et de l'échelle pour les écrans larges
