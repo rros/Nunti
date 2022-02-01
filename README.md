@@ -11,7 +11,7 @@ Finally a smart RSS reader which doesn't suck ass or your data.
 
 <a href="https://f-droid.org/en/packages/com.nunti/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="75"></a>
 
-Or, alternatively: [Direct link to our lastest APK build](https://gitlab.com/ondrejfoltyn/nunti-releases/-/raw/main/nunti-v1.1.0.apk).
+Or alternatively you can download the apk for any version over at our [releases page](https://gitlab.com/ondrejfoltyn/nunti-releases/-/raw/main/nunti-v1.1.0.apk).
 
 ## For developers
 

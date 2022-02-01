@@ -2,10 +2,6 @@ import { Feed } from './Backend';
 
 export default class DefaultTopics {
     public static Topics: {[name: string]: Feed[]} = {
-        'czechNews': [
-            new Feed('https://www.irozhlas.cz/rss/irozhlas'),
-            new Feed('https://ct24.ceskatelevize.cz/rss'),
-        ],
         'technology': [
             new Feed('https://www.reutersagency.com/feed/?best-topics=tech&post_type=best'),
             new Feed('https://www.cnbc.com/id/19854910/device/rss/rss.html'),
@@ -26,7 +22,7 @@ export default class DefaultTopics {
             new Feed('https://www.cnbc.com/id/10000739/device/rss/rss.html'),
         ],
         'sport': [
-            new Feed('http://feeds.bbci.co.uk/sport/rss.xml'),
+            new Feed('https://feeds.bbci.co.uk/sport/rss.xml'),
         ],
         'environment': [
             new Feed('https://www.reutersagency.com/feed/?best-topics=environment&post_type=best'),
@@ -34,6 +30,23 @@ export default class DefaultTopics {
         ],
         'science': [
             new Feed('https://www.sciencedaily.com/rss/top/science.xml'),
+        ],
+        'czechNews': [
+            new Feed('https://www.irozhlas.cz/rss/irozhlas'),
+            new Feed('https://ct24.ceskatelevize.cz/rss'),
+        ],
+        'germanNews': [
+            new Feed('https://rss.sueddeutsche.de/rss/Topthemen')
+        ],
+        'italianNews': [
+            new Feed('https://www.repubblica.it/rss/homepage/rss2.0.xml'),
+            new Feed('https://xml2.corriereobjects.it/rss/homepage.xml')
+        ],
+        'polishNews': [
+            new Feed('https://tvn24.pl/najnowsze.xml')
+        ],
+        'japaneseNews': [
+            new Feed('https://www.nhk.or.jp/rss/news/cat0.xml'),
         ],
     }
 }

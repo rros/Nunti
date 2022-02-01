@@ -138,18 +138,18 @@ class Step2Language extends Component {
                         <List.Subheader>{this.props.lang.language}</List.Subheader>
                         <List.Item title={this.props.lang.system}
                             right={() => <RadioButton.Item value="system" />} />
-                        <List.Item title={this.props.lang.en}
-                            right={() => <RadioButton.Item value="en" />} />
                         <List.Item title={this.props.lang.cs}
                             right={() => <RadioButton.Item value="cs" />} />
-                        <List.Item title={this.props.lang.ja}
-                            right={() => <RadioButton.Item value="ja" />} />
-                        <List.Item title={this.props.lang.pl}
-                            right={() => <RadioButton.Item value="pl" />} />
-                        <List.Item title={this.props.lang.it}
-                            right={() => <RadioButton.Item value="it" />} />
                         <List.Item title={this.props.lang.de}
                             right={() => <RadioButton.Item value="de" />} />
+                        <List.Item title={this.props.lang.en}
+                            right={() => <RadioButton.Item value="en" />} />
+                        <List.Item title={this.props.lang.it}
+                            right={() => <RadioButton.Item value="it" />} />
+                        <List.Item title={this.props.lang.pl}
+                            right={() => <RadioButton.Item value="pl" />} />
+                        <List.Item title={this.props.lang.ja}
+                            right={() => <RadioButton.Item value="ja" />} />
                     </List.Section>
                 </RadioButton.Group>
             </ScrollView>
@@ -235,12 +235,16 @@ class Step4Topics extends Component {
             technology: false,
             worldPolitics: false,
             sport: false,
-            czechNews: false,
             economy: false,
             weather: false,
             travel: false,
             environment: false,
             science: false,
+            czechNews: false,
+            germanNews: false,
+            italianNews: false,
+            polishNews: false,
+            japaneseNews: false,
         };
         
         this.isTopicEnabled();
@@ -265,34 +269,26 @@ class Step4Topics extends Component {
             <ScrollView>
                 <List.Section>
                     <List.Subheader>{this.props.lang.topics}</List.Subheader>
-                    <List.Item title={this.props.lang.politics}
-                        left={() => <List.Icon icon="account-voice" />}
-                        right={() => <Switch value={this.state.worldPolitics} 
-                            onValueChange={() => this.changeDefaultTopics('worldPolitics')} />} />
-                    <List.Item title={this.props.lang.czech_news}
-                        left={() => <List.Icon icon="glass-mug-variant" />}
-                        right={() => <Switch value={this.state.czechNews} 
-                            onValueChange={() => this.changeDefaultTopics('czechNews')} />} />
-                    <List.Item title={this.props.lang.sport}
-                        left={() => <List.Icon icon="basketball" />}
-                        right={() => <Switch value={this.state.sport} 
-                            onValueChange={() => this.changeDefaultTopics('sport')} />} />
                     <List.Item title={this.props.lang.economy}
                         left={() => <List.Icon icon="currency-usd" />}
                         right={() => <Switch value={this.state.economy} 
                             onValueChange={() => this.changeDefaultTopics('economy')} />} />
-                    <List.Item title={this.props.lang.technology}
-                        left={() => <List.Icon icon="cog" />}
-                        right={() => <Switch value={this.state.technology} 
-                            onValueChange={() => this.changeDefaultTopics('technology')} />} />
-                    <List.Item title={this.props.lang.science}
-                        left={() => <List.Icon icon="beaker-question" />}
-                        right={() => <Switch value={this.state.science} 
-                            onValueChange={() => this.changeDefaultTopics('science')} />} />
                     <List.Item title={this.props.lang.environment}
                         left={() => <List.Icon icon="nature" />}
                         right={() => <Switch value={this.state.environment} 
                             onValueChange={() => this.changeDefaultTopics('environment')} />} />
+                    <List.Item title={this.props.lang.science}
+                        left={() => <List.Icon icon="beaker-question" />}
+                        right={() => <Switch value={this.state.science} 
+                            onValueChange={() => this.changeDefaultTopics('science')} />} />
+                    <List.Item title={this.props.lang.sport}
+                        left={() => <List.Icon icon="basketball" />}
+                        right={() => <Switch value={this.state.sport} 
+                            onValueChange={() => this.changeDefaultTopics('sport')} />} />
+                    <List.Item title={this.props.lang.technology}
+                        left={() => <List.Icon icon="cog" />}
+                        right={() => <Switch value={this.state.technology} 
+                            onValueChange={() => this.changeDefaultTopics('technology')} />} />
                     <List.Item title={this.props.lang.travel}
                         left={() => <List.Icon icon="train-car" />}
                         right={() => <Switch value={this.state.travel} 
@@ -301,6 +297,33 @@ class Step4Topics extends Component {
                         left={() => <List.Icon icon="weather-sunny" />}
                         right={() => <Switch value={this.state.weather} 
                             onValueChange={() => this.changeDefaultTopics('weather')} />} />
+                    <List.Item title={this.props.lang.politics}
+                        left={() => <List.Icon icon="account-voice" />}
+                        right={() => <Switch value={this.state.worldPolitics} 
+                            onValueChange={() => this.changeDefaultTopics('worldPolitics')} />} />
+                </List.Section>
+                    <List.Subheader>{this.props.lang.diff_language_news}</List.Subheader>
+                    <List.Item title={this.props.lang.czech_news}
+                        left={() => <List.Icon icon="earth" />}
+                        right={() => <Switch value={this.state.czechNews} 
+                            onValueChange={() => this.changeDefaultTopics('czechNews')} />} />
+                    <List.Item title={this.props.lang.german_news}
+                        left={() => <List.Icon icon="earth" />}
+                        right={() => <Switch value={this.state.germanNews} 
+                            onValueChange={() => this.changeDefaultTopics('germanNews')} />} />
+                    <List.Item title={this.props.lang.italian_news}
+                        left={() => <List.Icon icon="earth" />}
+                        right={() => <Switch value={this.state.italianNews} 
+                            onValueChange={() => this.changeDefaultTopics('italianNews')} />} />
+                    <List.Item title={this.props.lang.polish_news}
+                        left={() => <List.Icon icon="earth" />}
+                        right={() => <Switch value={this.state.polishNews} 
+                            onValueChange={() => this.changeDefaultTopics('polishNews')} />} />
+                    <List.Item title={this.props.lang.japanese_news}
+                        left={() => <List.Icon icon="earth" />}
+                        right={() => <Switch value={this.state.japaneseNews} 
+                            onValueChange={() => this.changeDefaultTopics('japaneseNews')} />} />
+                <List.Section>
                 </List.Section>
             </ScrollView>
         );
