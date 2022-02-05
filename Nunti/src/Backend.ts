@@ -513,7 +513,9 @@ export class Backend {
                             ['lt', '<'],
                             ['gt', '>'],
                             ['nbsp', ' '],
-                            ['quot', '"']
+                            ['quot', '"'],
+                            ['yuml', 'ÿ'],['uuml', 'ü'],['ouml', 'ö'],['iuml', 'ï'],['euml', 'ë'],['auml', 'ä'],
+                            ['Yuml', 'Ÿ'],['Uuml', 'Ü'],['Ouml', 'Ö'],['Iuml', 'Ï'],['Euml', 'Ë'],['Auml', 'Ä'],
                         ];
                         for (let i = 0, max = entities.length; i < max; ++i) {
                             try { art.description = art.description.replace(new RegExp('&'+entities[i][0]+';', 'g'), entities[i][1]); }  catch { /* dontcare */ }
