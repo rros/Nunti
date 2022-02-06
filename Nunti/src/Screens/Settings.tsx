@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
     ScrollView,
+    View,
     Platform,
 } from 'react-native';
 
@@ -31,6 +32,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         this.removeRss = this.removeRss.bind(this);
         this.addRss = this.addRss.bind(this);
+        this.changeRssName = this.changeRssName.bind(this);
         this.resetArtsCache = this.resetArtsCache.bind(this);
         this.resetAllData = this.resetAllData.bind(this);
 
@@ -70,7 +72,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             accentDialogVisible: false,
             rssAddDialogVisible: false,
             rssStatusDialogVisible: false,
-            currentFeed: null,
             discoveryDialogVisible: false,
             changeCacheTimeDialogVisible: false,
             pageSizeDialogVisible: false,
@@ -79,6 +80,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             dataDialogVisible: false,
         };
 
+        this.currentFeed = undefined;
         this.getLearningStatus(false);
     }
 
@@ -228,21 +230,21 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     private async addRss(){
         try {
             // hide dialog early to show the user that the click registered
-            this.setState({rssAddDialogVisible: false, inputValue: '', rssAddDisabled: true});
-
+            // TODO: replace with loading visualisation
+            this.setState({rssAddDialogVisible: false, dialogButtonDisabled: true});
+            
             const feed:Feed = Feed.New(this.state.inputValue);
-
+            
             this.props.prefs.FeedList.push(feed);
-            await this.props.saveUserSettings(this.props.prefs);
+            this.setState({feeds: this.props.prefs.FeedList, inputValue: ''});
 
+            await this.props.saveUserSettings(this.props.prefs);
             this.props.toggleSnack((this.props.lang.added_feed).replace('%feed%',feed.name), true);
         } catch(err) {
             console.error('Can\'t add RSS feed',err);
             this.props.toggleSnack(this.props.lang.add_feed_fail, true);
         }
 
-        this.setState({feeds: this.state.feeds});
-        
         await Backend.ResetCache();
     }
     
@@ -253,19 +255,29 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             
             const updatedFeeds = this.state.feeds;
             
-            const index = updatedFeeds.findIndex(item => item.name === this.state.currentFeed.name);
+            const index = updatedFeeds.findIndex(item => item.name === this.currentFeed.name);
             updatedFeeds.splice(index, 1);
-
-            this.props.prefs.FeedList = updatedFeeds;
-            await this.props.saveUserSettings(this.props.prefs);
             
+            this.props.prefs.FeedList = updatedFeeds;
             this.setState({feeds: updatedFeeds});
-            this.props.toggleSnack((this.props.lang.removed_feed).replace('%feed%',this.state.currentFeed.name), true);
+
+            await this.props.saveUserSettings(this.props.prefs);            
+            this.props.toggleSnack((this.props.lang.removed_feed).replace('%feed%',this.currentFeed.name), true);
         } catch (err) {
             console.error('Can\'t remove RSS feed', err);
             this.props.toggleSnack(this.props.lang.remove_feed_fail, true);
         }
         
+        await Backend.ResetCache();
+    }
+
+    private async changeRssName(){
+        const changedFeedIndex = this.state.feeds.findIndex(item => item.name === this.currentFeed.name);
+        this.props.prefs.FeedList[changedFeedIndex].name = this.state.inputValue;
+
+        this.setState({feeds: this.state.feeds, inputValue: ''});
+        
+        await this.props.saveUserSettings(this.props.prefs);
         await Backend.ResetCache();
     }
 
@@ -383,7 +395,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             <List.Item title={element.name}
                                 left={() => <List.Icon icon="rss" />}
                                 right={() => <Button style={Styles.settingsButton} 
-                                    onPress={() => { this.setState({ currentFeed: element, rssStatusDialogVisible: true });}}>{this.props.lang.feed_status}</Button>} />
+                                    onPress={() => { this.setState({ rssStatusDialogVisible: true }); this.currentFeed = element}}
+                                    >{this.props.lang.feed_status}</Button>} />
                         );
                     })}
                 </List.Section>
@@ -466,7 +479,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.ScrollArea>
                     </Dialog>
 
-                    <Dialog visible={this.state.rssAddDialogVisible} onDismiss={() => { this.setState({ rssAddDialogVisible: false, inputValue: '' });}}>
+                    <Dialog visible={this.state.rssAddDialogVisible} 
+                        onDismiss={() => { this.setState({ rssAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}>
                         <Dialog.Title>{this.props.lang.add_feeds}</Dialog.Title>
                         <Dialog.Content>
                             <TextInput label="https://www.website.com/rss" autoCapitalize="none" defaultValue={this.state.inputValue}
@@ -479,10 +493,19 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.Actions>
                     </Dialog>
 
-                    <Dialog visible={this.state.rssStatusDialogVisible} onDismiss={() => { this.setState({ rssStatusDialogVisible: false });}}>
-                        <Dialog.Title>{this.state.currentFeed?.name}</Dialog.Title>
+                    <Dialog visible={this.state.rssStatusDialogVisible} 
+                        onDismiss={() => { this.setState({ rssStatusDialogVisible: false, inputValue: ''});}}>
+                        <Dialog.Title>{this.props.lang.feed_status}</Dialog.Title>
                         <Dialog.Content>
-                            <Paragraph>{this.state.currentFeed?.url}</Paragraph>
+                            <Paragraph style={Styles.settingsDialogDesc}>{this.currentFeed?.url}</Paragraph>
+                            <View style={Styles.settingsDetailsView}>
+                                <TextInput label={this.currentFeed?.name} autoCapitalize="none" defaultValue={this.currentFeed?.name}
+                                    style={Styles.settingsDetailsTextInput}
+                                    onChangeText={text => this.inputChange(text)}/>
+                                <Button onPress={this.changeRssName}
+                                    style={Styles.settingsDetailsButton}
+                                    >{this.props.lang.change}</Button>
+                            </View>
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
