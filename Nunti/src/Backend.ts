@@ -3,6 +3,7 @@ const DOMParser = require('xmldom').DOMParser; //eslint-disable-line
 const XMLSerializer = require('xmldom').XMLSerializer; //eslint-disable-line
 import NetInfo from '@react-native-community/netinfo';
 import DefaultTopics from './DefaultTopics';
+import { decode } from 'html-entities';
 
 export class Feed {
     public name: string;
@@ -489,6 +490,8 @@ export class Backend {
                         const art = new Article(Math.floor(Math.random() * 1e16));
                         art.source = feed.name;
                         art.title = item.getElementsByTagName('title')[0].childNodes[0].nodeValue.substr(0,256);
+                        art.title = decode(art.title, {scope: 'strict'});
+
                         // fallback for CDATA retards
                         if (art.title.trim() === '') {
                             art.title = serializer.serializeToString(item).match(/title>.*CDATA\[(.*)\]\].*\/title/s)[1].trim();
@@ -502,24 +505,10 @@ export class Backend {
                             if (art.description.trim() === '')
                                 art.description = serializer.serializeToString(item).match(/description>.*CDATA\[(.*)\]\].*<\/description/s)[1];
                         } catch { /* doncare */ }
+
                         art.description = art.description.trim();
-                        const entities = [
-                            ['amp', '&'],
-                            ['apos', '\''],
-                            ['#x27', '\''],
-                            ['#x2F', '/'],
-                            ['#39', '\''],
-                            ['#47', '/'],
-                            ['lt', '<'],
-                            ['gt', '>'],
-                            ['nbsp', ' '],
-                            ['quot', '"'],
-                            ['yuml', 'ÿ'],['uuml', 'ü'],['ouml', 'ö'],['iuml', 'ï'],['euml', 'ë'],['auml', 'ä'],
-                            ['Yuml', 'Ÿ'],['Uuml', 'Ü'],['Ouml', 'Ö'],['Iuml', 'Ï'],['Euml', 'Ë'],['Auml', 'Ä'],
-                        ];
-                        for (let i = 0, max = entities.length; i < max; ++i) {
-                            try { art.description = art.description.replace(new RegExp('&'+entities[i][0]+';', 'g'), entities[i][1]); }  catch { /* dontcare */ }
-                        }
+                        art.description = decode(art.description, {scope: 'strict'});
+
                         try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); }  catch { /* dontcare */ }
                         try { art.description = art.description.substr(0,1024); }  catch { /* dontcare */ }
                         try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); }  catch { /* dontcare */ }

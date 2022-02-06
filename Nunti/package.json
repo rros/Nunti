@@ -16,6 +16,7 @@
     "@react-navigation/drawer": "^6.1.4",
     "@react-navigation/material-top-tabs": "^6.0.6",
     "@react-navigation/native": "^6.0.2",
+    "html-entities": "^2.3.2",
     "react": "17.0.2",
     "react-native": "0.66.4",
     "react-native-async-storage": "^0.0.1",
