@@ -192,5 +192,17 @@ export default Styles = StyleSheet.create ({
 
     settingsDialogDesc: {
         paddingBottom: 10
-    }
+    },
+
+    settingsDetailsView: {
+        flexDirection: 'row'
+    }, 
+    
+    settingsDetailsTextInput: {
+        flex: 1
+    }, 
+    
+    settingsDetailsButton: {
+        alignSelf: 'center'
+    }, 
 });
