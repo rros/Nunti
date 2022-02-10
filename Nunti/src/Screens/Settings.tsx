@@ -233,7 +233,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             // TODO: replace with loading visualisation
             this.setState({rssAddDialogVisible: false, dialogButtonDisabled: true});
             
-            const feed:Feed = Feed.New(this.state.inputValue);
+            const feed:Feed = await Feed.New(this.state.inputValue);
             
             this.props.prefs.FeedList.push(feed);
             this.setState({feeds: this.props.prefs.FeedList, inputValue: ''});

@@ -18,8 +18,11 @@ export class Feed {
             throw new Error('invalid url');
     }
 
-    public static New(url: string): Feed {
+    public static async New(url: string): Promise<Feed> {
         const feed = new Feed(url);
+
+        await Backend.DownloadArticlesOneChannel(feed, 5, true);
+
         return feed;
     }
 }
@@ -448,10 +451,7 @@ export class Backend {
         };
         return status;
     }
-
-
-    /* Private methods */
-    private static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number): Promise<Article[]> {
+    public static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, throwError = false): Promise<Article[]> {
         console.debug('Backend: Downloading from ' + feed.name);
         const arts: Article[] = [];
         const controller = new AbortController();
@@ -466,6 +466,8 @@ export class Backend {
                 console.error('Cannot read RSS (probably timeout)' + feed.name, err);
             else
                 console.error('Cannot read RSS ' + feed.name, err);
+            if (throwError)
+                throw new Error('Cannot read RSS ' + err);
             return [];
         }
         if (r.ok) {
@@ -534,11 +536,21 @@ export class Backend {
                 console.debug(`Finished download from ${feed.name}, got ${arts.length} articles.`);
             } catch(err) {
                 console.error(`Channel ${feed.name} faulty.`,err);
+                if (throwError)
+                    throw new Error('RSS channel faulty ' + err);
             }
-        } else
+        } else {
             console.error('Cannot read RSS ' + feed.name);
+            if (throwError)
+                throw new Error('Cannot read RSS, no ok response.');
+        }
+        if (arts.length == 0 && throwError)
+            throw new Error('Got 0 articles from this feed.');
         return arts;
     }
+
+
+    /* Private methods */
     private static async DownloadArticles(): Promise<Article[]> {
         console.info('Backend: Downloading articles..');
         const timeBegin = Date.now();
