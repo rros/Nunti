@@ -66,6 +66,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
             inputValue: '',
             dialogButtonDisabled: true, // when input empty
+            dialogButtonLoading: false,
             
             languageDialogVisible: false,
             themeDialogVisible: false,
@@ -229,14 +230,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     
     private async addRss(){
         try {
-            // hide dialog early to show the user that the click registered
-            // TODO: replace with loading visualisation
-            this.setState({rssAddDialogVisible: false, dialogButtonDisabled: true});
+            // start loading animation
+            this.setState({dialogButtonLoading: true, dialogButtonDisabled: true});
             
             const feed:Feed = await Feed.New(this.state.inputValue);
             
             this.props.prefs.FeedList.push(feed);
-            this.setState({feeds: this.props.prefs.FeedList, inputValue: ''});
+            this.setState({feeds: this.props.prefs.FeedList});
 
             await this.props.saveUserSettings(this.props.prefs);
             this.props.toggleSnack((this.props.lang.added_feed).replace('%feed%',feed.name), true);
@@ -246,6 +246,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         }
 
         await Backend.ResetCache();
+        this.setState({rssAddDialogVisible: false, inputValue: '',
+            dialogButtonLoading: false, dialogButtonDisabled: true});
     }
     
     private async removeRss(){
@@ -255,7 +257,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             
             const updatedFeeds = this.state.feeds;
             
-            const index = updatedFeeds.findIndex(item => item.name === this.currentFeed.name);
+            const index = updatedFeeds.findIndex(item => item.url === this.currentFeed.url);
             updatedFeeds.splice(index, 1);
             
             this.props.prefs.FeedList = updatedFeeds;
@@ -272,7 +274,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
 
     private async changeRssName(){
-        const changedFeedIndex = this.state.feeds.findIndex(item => item.name === this.currentFeed.name);
+        const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
         this.props.prefs.FeedList[changedFeedIndex].name = this.state.inputValue;
 
         this.setState({feeds: this.state.feeds, inputValue: ''});
@@ -489,7 +491,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ rssAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
                                 {this.props.lang.cancel}</Button>
-                            <Button disabled={this.state.dialogButtonDisabled} onPress={this.addRss}>{this.props.lang.add_feed}</Button>
+                            <Button disabled={this.state.dialogButtonDisabled} loading={this.state.dialogButtonLoading}
+                                onPress={this.addRss}>{this.props.lang.add_feed}</Button>
                         </Dialog.Actions>
                     </Dialog>
 
