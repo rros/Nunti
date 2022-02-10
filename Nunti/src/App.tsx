@@ -24,7 +24,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import RNBootSplash from 'react-native-bootsplash';
-import { getPalette } from '@assembless/react-native-material-you';
 
 const NavigationDrawer = createDrawerNavigator();
 
@@ -140,24 +139,8 @@ export default class App extends Component {
 
     public async updateAccent(accentName: string) {
         const theme = this.state.theme;
-
-        // fallback when a backup with material you is imported into android below 12
-        if(accentName == 'material_you' && Platform.Version < 31){
-            accentName = 'default';
-        }
-
-        if(accentName == 'material_you'){
-            const pallete = await getPalette();
-            if(theme.dark){
-                theme.colors.accent = pallete.system_accent1[5];
-                theme.colors.primary = pallete.system_accent1[5];
-                theme.colors.accentReverse = pallete.system_accent1[8];
-            } else {
-                theme.colors.accent = pallete.system_accent1[8];
-                theme.colors.primary = pallete.system_accent1[8];
-                theme.colors.accentReverse = pallete.system_accent1[5];
-            }
-        } else if(theme.dark){
+        
+        if(theme.dark){
             theme.colors.accent = Colors[accentName].dark;
             theme.colors.primary = Colors[accentName].dark;
             theme.colors.accentReverse = Colors[accentName].light;
