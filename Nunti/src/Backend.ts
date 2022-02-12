@@ -8,6 +8,8 @@ import { decode } from 'html-entities';
 export class Feed {
     public name: string;
     public url: string;
+    public enabled = true;
+    public noImages = false;
 
     constructor(url: string) {
         this.url = url;
@@ -16,6 +18,8 @@ export class Feed {
             this.name = r[1];
         else
             throw new Error('invalid url');
+        if (this.url.indexOf('http') != 0)
+            this.url = 'http://' + this.url;
     }
 
     public static async New(url: string): Promise<Feed> {
@@ -388,8 +392,7 @@ export class Backend {
                 throw Error('Cannot determine backup version.');
             if (parseInt(backup.Version.split('.')[0]) != parseInt(this.DB_VERSION.split('.')[0]))
                 throw Error(`Version mismatch! Backup: ${backup.Version}, current: ${this.DB_VERSION}`);
-
-            await this.ResetAllData();
+            
             if (backup.UserSettings !== undefined)
                 await this.SaveUserSettings({...(await this.GetUserSettings()), ...backup.UserSettings});
             if (backup.LearningDB !== undefined)
@@ -414,10 +417,11 @@ export class Backend {
                     }  catch { /* dontcare */ }
                 }
                 console.info(`Backend: Importing OPML, imported ${feeds.length} feed(s).`);
-
-                await this.ResetAllData();
+                
                 const prefs = await this.GetUserSettings();
-                prefs.FeedList = feeds;
+                feeds.forEach(feed => {
+                    prefs.FeedList.push(feed);
+                });
                 await this.SaveUserSettings(prefs);
 
                 console.info('Backend: Backup/Import (OPML) loaded.');
@@ -457,6 +461,10 @@ export class Backend {
         return status;
     }
     public static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, throwError = false): Promise<Article[]> {
+        if (!feed.enabled) {
+            console.debug('Backend: Downloading from ' + feed.name + ' (skipped, feed disabled)');
+            return [];
+        }
         console.debug('Backend: Downloading from ' + feed.name);
         const arts: Article[] = [];
         const controller = new AbortController();
@@ -519,15 +527,19 @@ export class Backend {
                         try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); }  catch { /* dontcare */ }
                         try { art.description = art.description.substr(0,1024); }  catch { /* dontcare */ }
                         try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); }  catch { /* dontcare */ }
+                        
+                        if (!feed.noImages) {
+                            if (art.cover === undefined)
+                                try { art.cover = item.getElementsByTagName('enclosure')[0].getAttribute('url'); }  catch { /* dontcare */ }
+                            if (art.cover === undefined)
+                                try { art.cover = item.getElementsByTagName('media:content')[0].getAttribute('url'); }  catch { /* dontcare */ }
+                            if (art.cover === undefined)
+                                try { art.cover = item.getElementsByTagName('szn:url')[0].childNodes[0].nodeValue; }  catch { /* dontcare */ }
+                            if (art.cover === undefined)
+                                try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(?:(?:jpe?g)|(?:png)))/)[0]; }  catch { /* dontcare */ }
+                        } else
+                            art.cover = undefined;
 
-                        if (art.cover === undefined)
-                            try { art.cover = item.getElementsByTagName('enclosure')[0].getAttribute('url'); }  catch { /* dontcare */ }
-                        if (art.cover === undefined)
-                            try { art.cover = item.getElementsByTagName('media:content')[0].getAttribute('url'); }  catch { /* dontcare */ }
-                        if (art.cover === undefined)
-                            try { art.cover = item.getElementsByTagName('szn:url')[0].childNodes[0].nodeValue; }  catch { /* dontcare */ }
-                        if (art.cover === undefined)
-                            try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(?:(?:jpe?g)|(?:png)))/)[0]; }  catch { /* dontcare */ }
                         try {
                             art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue;
                         } catch {
