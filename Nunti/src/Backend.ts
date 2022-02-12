@@ -59,6 +59,7 @@ class UserSettings {
     public FeedList: Feed[] = [];
 
     public DisableImages = false;
+    public LargeImages = false;
     public WifiOnly = false;
     public ExternalBrowser = false;
     public Language = 'system';

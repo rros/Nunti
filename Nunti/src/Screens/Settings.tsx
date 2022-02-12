@@ -27,6 +27,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         this.changeLanguage = this.changeLanguage.bind(this);
         this.toggleNoImages = this.toggleNoImages.bind(this);
+        this.toggleLargeImages = this.toggleLargeImages.bind(this);
         this.toggleWifiOnly = this.toggleWifiOnly.bind(this);
         this.toggleExternalBrowser = this.toggleExternalBrowser.bind(this);
 
@@ -49,6 +50,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.state = {
             language: this.props.prefs.Language,
             noImagesSwitch: this.props.prefs.DisableImages,
+            largeImagesSwitch: this.props.prefs.LargeImages,
             wifiOnlySwitch: this.props.prefs.WifiOnly,
             externalBrowserSwitch: this.props.prefs.ExternalBrowser,
 
@@ -104,6 +106,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     private async toggleNoImages() {
         this.props.prefs.DisableImages = !this.state.noImagesSwitch;
         this.setState({ noImagesSwitch: !this.state.noImagesSwitch});
+        await this.props.saveUserSettings(this.props.prefs);
+    }
+    
+    private async toggleLargeImages() {
+        this.props.prefs.LargeImages = !this.state.largeImagesSwitch;
+        this.setState({ largeImagesSwitch: !this.state.largeImagesSwitch});
         await this.props.saveUserSettings(this.props.prefs);
     }
     
@@ -332,15 +340,20 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         left={() => <List.Icon icon="translate" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => {this.setState({ languageDialogVisible: true });}}>{this.props.lang[this.state.language]}</Button>} />
-                    <List.Item title={this.props.lang.compact}
-                        left={() => <List.Icon icon="image-off" />}
-                        right={() => <Switch value={this.state.noImagesSwitch} onValueChange={this.toggleNoImages} />} />
                     <List.Item title={this.props.lang.wifi_only}
                         left={() => <List.Icon icon="wifi" />}
                         right={() => <Switch value={this.state.wifiOnlySwitch} onValueChange={this.toggleWifiOnly} />} />
                     <List.Item title={this.props.lang.external_browser}
                         left={() => <List.Icon icon="web" />}
                         right={() => <Switch value={this.state.externalBrowserSwitch} onValueChange={this.toggleExternalBrowser} />} />
+                    <List.Item title={this.props.lang.no_images}
+                        left={() => <List.Icon icon="image-off" />}
+                        right={() => <Switch value={this.state.noImagesSwitch} 
+                            disabled={this.state.largeImagesSwitch} onValueChange={this.toggleNoImages} />} />
+                    <List.Item title={this.props.lang.large_images}
+                        left={() => <List.Icon icon="image" />}
+                        right={() => <Switch value={this.state.largeImagesSwitch} 
+                            disabled={this.state.noImagesSwitch} onValueChange={this.toggleLargeImages} />} />
                 </List.Section>
 
                 <List.Section>

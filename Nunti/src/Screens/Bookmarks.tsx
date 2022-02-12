@@ -43,7 +43,8 @@ class Bookmarks extends PureComponent {
             detailsVisible: false,
             refreshing: false,
             articlePage: [],
-            showImages: !this.props.prefs.DisableImages
+            showImages: !this.props.prefs.DisableImages,
+            largeImages: this.props.prefs.LargeImages,
         };
         
         // variables
@@ -62,7 +63,8 @@ class Bookmarks extends PureComponent {
         // reload bookmarks on each access
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
             this.refresh();
-            this.setState({showImages: !this.props.prefs.DisableImages});
+            this.setState({showImages: !this.props.prefs.DisableImages, 
+                largeImages: this.props.prefs.LargeImages});
         });
     }
 
@@ -208,24 +210,40 @@ class Bookmarks extends PureComponent {
 
                     renderItem={ (rowData) => (
                         <Animated.View style={{ 
-                            maxHeight: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 300, 0],}), 
+                            maxHeight: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 1000, 0],}), 
                             opacity: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 1, 0],}),
                             translateX: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [-1000, 0, 1000],}), // random value, it disappears anyway
                         }}>
-                            <Card style={Styles.card} 
-                                onPress={() => { this.readMore(rowData.item.url); }} onLongPress={() => { this.viewDetails(rowData.item); }}>
+                            { !this.state.largeImages && <Card style={Styles.card} 
+                                onPress={() => { this.readMore(rowData.item.url); }} 
+                                onLongPress={() => { this.viewDetails(rowData.item); }}>
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
-                                        <Paragraph style={Styles.cardContentParagraph}>{rowData.item.description}</Paragraph>
+                                        { rowData.item.description.length > 0 && 
+                                            <Paragraph style={this.state.showImages ? Styles.cardContentParagraph : undefined}>
+                                            {rowData.item.description}</Paragraph>
+                                        }
                                         <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
                                     </Card.Content>
-                                    {this.state.showImages && rowData.item.cover !== undefined 
-                                        && <View style={Styles.cardContentCoverContainer}>
+                                    {this.state.showImages && rowData.item.cover !== undefined && 
+                                        <View style={Styles.cardContentCoverContainer}>
                                             <Card.Cover source={{ uri: rowData.item.cover }}/>
-                                        </View> }
+                                        </View> 
+                                    }
                                 </View>
-                            </Card>
+                            </Card> }
+                            { this.state.largeImages && <Card style={Styles.card} 
+                                onPress={() => { this.readMore(rowData.item.url); }} 
+                                onLongPress={() => { this.viewDetails(rowData.item); }}>
+                                {rowData.item.cover !== undefined && <Card.Cover source={{ uri: rowData.item.cover }}/> }
+                                <View style={Styles.cardContentContainer}>
+                                    <Card.Content>
+                                        <Title>{rowData.item.title}</Title>
+                                        <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
+                                    </Card.Content>
+                                </View>
+                            </Card> }
                         </Animated.View>
                     )}
                     renderHiddenItem={(rowData) => (
