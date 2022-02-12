@@ -11,7 +11,7 @@ export class Feed {
 
     constructor(url: string) {
         this.url = url;
-        const r = url.match(/(?:(?:https?:\/\/)|(?:www\.))(?:www\.)?(?:rss\.)?([^/]+)(?:\/|$)/);
+        const r = url.match(/^(?:https?:\/\/)?(?:www\.)?(?:rss\.)?([^/]+\.[^/]+)(?:\/|$)/i);
         if (r && r.length > 1)
             this.name = r[1];
         else
@@ -20,6 +20,10 @@ export class Feed {
 
     public static async New(url: string): Promise<Feed> {
         const feed = new Feed(url);
+        
+        const prefs = await Backend.GetUserSettings();
+        if (Backend.FindFeedByUrl(feed.url, prefs.FeedList) >= 0 )
+            throw new Error('Feed already in feedlist.');
 
         await Backend.DownloadArticlesOneChannel(feed, 5, true);
 
@@ -548,6 +552,20 @@ export class Backend {
             throw new Error('Got 0 articles from this feed.');
         return arts;
     }
+    public static FindArticleByUrl(url: string, haystack: Article[]): number {
+        for(let i = 0; i < haystack.length; i++) {
+            if (haystack[i].url === url)
+                return i;
+        }
+        return -1;
+    }
+    public static FindFeedByUrl(url: string, haystack: Feed[]): number {
+        for(let i = 0; i < haystack.length; i++) {
+            if (haystack[i].url === url)
+                return i;
+        }
+        return -1;
+    }
 
 
     /* Private methods */
@@ -757,20 +775,6 @@ export class Backend {
         console.info('Backend: Extracting keywords (pass 2 finished)');
         const timeEnd = Date.now();
         console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
-    }
-    private static FindArticleByUrl(url: string, haystack: Article[]): number {
-        for(let i = 0; i < haystack.length; i++) {
-            if (haystack[i].url === url)
-                return i;
-        }
-        return -1;
-    }
-    private static FindFeedByUrl(url: string, haystack: Feed[]): number {
-        for(let i = 0; i < haystack.length; i++) {
-            if (haystack[i].url === url)
-                return i;
-        }
-        return -1;
     }
     private static PaginateArticles(arts: Article[], pageSize: number, keepFirstEmptyPage = true): Article[][] {
         // TODO: optimalization
