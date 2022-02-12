@@ -26,14 +26,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         super(props);
 
         this.changeLanguage = this.changeLanguage.bind(this);
-        this.toggleNoImages = this.toggleNoImages.bind(this);
-        this.toggleLargeImages = this.toggleLargeImages.bind(this);
-        this.toggleWifiOnly = this.toggleWifiOnly.bind(this);
-        this.toggleExternalBrowser = this.toggleExternalBrowser.bind(this);
+        this.toggleSetting = this.toggleSetting.bind(this);
 
         this.removeRss = this.removeRss.bind(this);
         this.addRss = this.addRss.bind(this);
-        this.changeRssName = this.changeRssName.bind(this);
+        this.changeRssFeedName = this.changeRssFeedName.bind(this);
+        this.changeRssFeedOptions = this.changeRssFeedOptions.bind(this);
         this.resetArtsCache = this.resetArtsCache.bind(this);
         this.resetAllData = this.resetAllData.bind(this);
 
@@ -103,39 +101,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.updateLanguage(newLanguage);
     }
 
-    private async toggleNoImages() {
-        this.props.prefs.DisableImages = !this.state.noImagesSwitch;
-        this.setState({ noImagesSwitch: !this.state.noImagesSwitch});
-        await this.props.saveUserSettings(this.props.prefs);
-    }
-    
-    private async toggleLargeImages() {
-        this.props.prefs.LargeImages = !this.state.largeImagesSwitch;
-        this.setState({ largeImagesSwitch: !this.state.largeImagesSwitch});
-        await this.props.saveUserSettings(this.props.prefs);
-    }
-    
-    private async toggleWifiOnly() {
-        this.props.prefs.WifiOnly = !this.state.wifiOnlySwitch;
-        this.setState({ wifiOnlySwitch: !this.state.wifiOnlySwitch});
-        await this.props.saveUserSettings(this.props.prefs);
-    }
-    
-    private async toggleExternalBrowser() {
-        this.props.prefs.ExternalBrowser = !this.state.externalBrowserSwitch;
-        this.setState({ externalBrowserSwitch: !this.state.externalBrowserSwitch});
-        console.log(this.props.prefs.ExternalBrowser);
+    private async toggleSetting(prefName: string, stateName: string) {
+        this.props.prefs[prefName] = !this.state[stateName];
+        this.setState({ [stateName]: !this.state[stateName]});
         await this.props.saveUserSettings(this.props.prefs);
     }
 
-    private async changeTheme(newTheme: string) {
-        this.props.prefs.Theme = newTheme;
-        this.setState({ theme: newTheme });
-        await this.props.saveUserSettings(this.props.prefs);
- 
-        this.props.updateTheme(newTheme);
-    }
-    
     private async changeAccent(newAccent: string) {
         this.props.prefs.Accent = newAccent;
         this.setState({ accent: newAccent });
@@ -164,10 +135,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         const backup: string = await Backend.CreateBackup();
 
         try {
-            await ScopedStorage.createDocument('NuntiBackup.json', 'application/json', backup, 'utf8');
+            if(await ScopedStorage.createDocument('NuntiBackup.json', 'application/json', backup, 'utf8') == null){
+                throw "cancelled by user";
+            }
+
             this.props.toggleSnack(this.props.lang.export_ok, true);
         } catch (err) {
-            this.props.toggleSnack(this.props.lang.export_ok, true);
+            this.props.toggleSnack(this.props.lang.export_fail, true);
             console.log('Failed to export backup. ' + err);
         }
     }
@@ -281,12 +255,22 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await Backend.ResetCache();
     }
 
-    private async changeRssName(){
+    private async changeRssFeedName(){
         const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
         this.props.prefs.FeedList[changedFeedIndex].name = this.state.inputValue;
 
-        this.setState({feeds: this.state.feeds, inputValue: ''});
+        this.setState({feeds: this.state.feeds});
         
+        await this.props.saveUserSettings(this.props.prefs);
+        await Backend.ResetCache();
+    }
+    
+    private async changeRssFeedOptions(optionName: string){
+        const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
+        this.props.prefs.FeedList[changedFeedIndex][optionName] = !this.props.prefs.FeedList[changedFeedIndex][optionName];
+
+        this.setState({feeds: this.state.feeds});
+
         await this.props.saveUserSettings(this.props.prefs);
         await Backend.ResetCache();
     }
@@ -315,6 +299,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.setState({
             language: this.props.prefs.Language,
             noImagesSwitch: this.props.prefs.DisableImages,
+            largeImagesSwitch: this.props.prefs.LargeImages,
             wifiOnly: this.props.prefs.WifiOnly,
             externalBrowserSwitch: this.props.prefs.ExternalBrowser,
             theme: this.props.prefs.Theme,
@@ -329,6 +314,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         });
         
         await this.getLearningStatus(false);
+        await Backend.ResetCache();
     }
 
     render() {
@@ -342,18 +328,20 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             onPress={() => {this.setState({ languageDialogVisible: true });}}>{this.props.lang[this.state.language]}</Button>} />
                     <List.Item title={this.props.lang.wifi_only}
                         left={() => <List.Icon icon="wifi" />}
-                        right={() => <Switch value={this.state.wifiOnlySwitch} onValueChange={this.toggleWifiOnly} />} />
+                        right={() => <Switch value={this.state.wifiOnlySwitch} 
+                            onValueChange={() => { this.toggleSetting("WifiOnly", "wifiOnlySwitch") }} />} />
                     <List.Item title={this.props.lang.external_browser}
                         left={() => <List.Icon icon="web" />}
-                        right={() => <Switch value={this.state.externalBrowserSwitch} onValueChange={this.toggleExternalBrowser} />} />
+                        right={() => <Switch value={this.state.externalBrowserSwitch} 
+                            onValueChange={() => { this.toggleSetting("ExternalBrowser", "externalBrowserSwitch") }} />} />
                     <List.Item title={this.props.lang.no_images}
                         left={() => <List.Icon icon="image-off" />}
                         right={() => <Switch value={this.state.noImagesSwitch} 
-                            disabled={this.state.largeImagesSwitch} onValueChange={this.toggleNoImages} />} />
+                            onValueChange={() => { this.toggleSetting("DisableImages", "noImagesSwitch") }} />} />
                     <List.Item title={this.props.lang.large_images}
                         left={() => <List.Icon icon="image" />}
                         right={() => <Switch value={this.state.largeImagesSwitch} 
-                            disabled={this.state.noImagesSwitch} onValueChange={this.toggleLargeImages} />} />
+                            onValueChange={() => { this.toggleSetting("LargeImages", "largeImagesSwitch") }} />} />
                 </List.Section>
 
                 <List.Section>
@@ -513,13 +501,23 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         <Dialog.Content>
                             <Paragraph style={Styles.settingsDialogDesc}>{this.currentFeed?.url}</Paragraph>
                             <View style={Styles.settingsDetailsView}>
-                                <TextInput label={this.currentFeed?.name} autoCapitalize="none" defaultValue={this.currentFeed?.name}
+                                <TextInput label={this.currentFeed?.name} autoCapitalize="none" 
                                     style={Styles.settingsDetailsTextInput}
                                     onChangeText={text => this.inputChange(text)}/>
-                                <Button onPress={this.changeRssName}
+                                <Button onPress={this.changeRssFeedName}
                                     style={Styles.settingsDetailsButton}
                                     >{this.props.lang.change}</Button>
                             </View>
+                            <List.Section>
+                                <List.Item title={this.props.lang.no_images}
+                                    left={() => <List.Icon icon="image-off" />}
+                                    right={() => <Switch value={this.currentFeed?.noImages} 
+                                        onValueChange={() => { this.changeRssFeedOptions("noImages") }} /> } />
+                                <List.Item title={this.props.lang.hide_feed}
+                                    left={() => <List.Icon icon="eye-off" />}
+                                    right={() => <Switch value={!this.currentFeed?.enabled} 
+                                        onValueChange={() => { this.changeRssFeedOptions("enabled") }} /> } />
+                            </List.Section>
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.cancel}</Button>

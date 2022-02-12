@@ -220,10 +220,8 @@ class Bookmarks extends PureComponent {
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
-                                        { rowData.item.description.length > 0 && 
-                                            <Paragraph style={this.state.showImages ? Styles.cardContentParagraph : undefined}>
+                                        <Paragraph style={this.state.showImages && rowData.item.cover !== undefined ? Styles.cardContentParagraph : undefined}>
                                             {rowData.item.description}</Paragraph>
-                                        }
                                         <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
                                     </Card.Content>
                                     {this.state.showImages && rowData.item.cover !== undefined && 
@@ -236,10 +234,13 @@ class Bookmarks extends PureComponent {
                             { this.state.largeImages && <Card style={Styles.card} 
                                 onPress={() => { this.readMore(rowData.item.url); }} 
                                 onLongPress={() => { this.viewDetails(rowData.item); }}>
-                                {rowData.item.cover !== undefined && <Card.Cover source={{ uri: rowData.item.cover }}/> }
+                                {this.state.showImages && rowData.item.cover !== undefined && <Card.Cover source={{ uri: rowData.item.cover }}/> }
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content>
                                         <Title>{rowData.item.title}</Title>
+                                        { (rowData.item.cover === undefined || !this.state.showImages) && 
+                                            <Paragraph>{rowData.item.description}</Paragraph>
+                                        }
                                         <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
                                     </Card.Content>
                                 </View>
