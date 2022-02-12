@@ -228,8 +228,10 @@ class Feed extends PureComponent {
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
-                                        <Paragraph style={this.state.showImages && rowData.item.cover !== undefined ? Styles.cardContentParagraph : undefined}>
-                                            {rowData.item.description}</Paragraph>
+                                        { rowData.item.description.length > 0 &&
+                                            <Paragraph style={this.state.showImages && rowData.item.cover !== undefined ? Styles.cardContentParagraph : undefined}>
+                                                {rowData.item.description}</Paragraph>
+                                        }
                                         <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
                                     </Card.Content>
                                     {this.state.showImages && rowData.item.cover !== undefined && 
@@ -246,7 +248,7 @@ class Feed extends PureComponent {
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content>
                                         <Title>{rowData.item.title}</Title>
-                                        { (rowData.item.cover === undefined || !this.state.showImages) && 
+                                        { (rowData.item.cover === undefined || !this.state.showImages) && rowData.item.description.length > 0 &&
                                             <Paragraph>{rowData.item.description}</Paragraph>
                                         }
                                         <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>

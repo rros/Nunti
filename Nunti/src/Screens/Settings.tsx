@@ -107,6 +107,14 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await this.props.saveUserSettings(this.props.prefs);
     }
 
+    private async changeTheme(newTheme: string) {
+        this.props.prefs.Theme = newTheme;
+        this.setState({ theme: newTheme });
+        await this.props.saveUserSettings(this.props.prefs);
+ 
+        this.props.updateTheme(newTheme);
+    }
+
     private async changeAccent(newAccent: string) {
         this.props.prefs.Accent = newAccent;
         this.setState({ accent: newAccent });
