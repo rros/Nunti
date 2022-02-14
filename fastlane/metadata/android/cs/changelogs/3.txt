@@ -1,0 +1,12 @@
+- přidána francouzská lokalizace (@AntoninCurtit)
+- přidána podpora pro importování seznamu RSS kanálů přes OPML formát
+- přidána možnost přejmenovat kanál
+- přidána možnost schovat obrázky pro každý kanál zvlášť
+- přidána možnost vypnout kanál bez nutnosti ho smazat
+- přidán režim zvětšených obrázků
+- vylepšena německá lokalizace (@ngnee)
+- vylepšeny F-Droid metadata
+- vylepšena kontrola funkčnosti RSS kanálu při přidávání
+- vylepšena výchozí témata v průvodci
+- opraveno škálování splash screen loga
+- opraven záhadný bug způsobující duplikaci článků

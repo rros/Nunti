@@ -1,0 +1,12 @@
+- aggiunta la localizzazione francese (@AntoninCurtit)
+- aggiunto il supporto per importare un elenco di feed RSS tramite il formato opml
+- aggiunta opzione per rinominare il canale
+- aggiunta l'opzione di nascondere le immagini per ogni canale separatamente
+- aggiunta la possibilità di spegnere un canale senza cancellarlo
+- aggiunta la modalità di zoom delle immagini
+- localizzazione tedesca migliorata (@ngnee)
+- vylepšeny F-Droid metadata
+- migliorato il controllo della funzionalità RSS quando si aggiunge un feed RSS
+- migliorati i temi predefiniti nella procedura guidata
+- corretto il ridimensionamento del logo dello splash screen
+- risolto un misterioso bug che causava la duplicazione degli articoli

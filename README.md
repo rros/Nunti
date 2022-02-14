@@ -32,19 +32,19 @@ Nunti allows you to rate articles and then uses an advanced algorithm to sort ne
 
 Nunti implements all the best practices of material design to finally create an open-source app that doesn't just feel right, but also looks right.
 
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/03.jpg" alt="Nunti feed" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/04.jpg" alt="Nunti rate" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/06.jpg" alt="Nunti settings" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/13.jpg" alt="Nunti web" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/04.jpg" alt="Nunti feed" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/07.jpg" alt="Nunti rate" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/13.jpg" alt="Nunti settings" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/06.jpg" alt="Nunti web" width="20%" height="20%">
 
 ### Theming options
 
-Nunti allows you to customise the look of the app to make it unique to you. Nunti also supports the new dynamic theme system "Material You" to get just the right accent colour from your wallpaper.
+Nunti allows you to customise the look of the app to make it unique to you.
 
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/09.jpg" alt="Nunti theme" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/10.jpg" alt="Nunti accent" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/11.jpg" alt="Nunti changed" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/12.jpg" alt="Nunti changed 2" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" alt="Nunti theme" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" alt="Nunti accent" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" alt="Nunti changed" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" alt="Nunti changed 2" width="20%" height="20%">
 
 ### Import and export functions
 

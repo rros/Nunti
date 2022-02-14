@@ -1,0 +1,12 @@
+- Französische Lokalisierung hinzugefügt (@AntoninCurtit)
+- Unterstützung für den Import einer Liste von RSS-Feeds im opml-Format hinzugefügt
+- die Möglichkeit hinzugefügt, einen Feed umzubenennen
+- Option zum Ausblenden von Bildern für jeden Kanal separat hinzugefügt
+- Möglichkeit hinzugefügt, einen Kanal zu deaktivieren, ohne ihn zu löschen
+- Modus für vergrößerte Bilder hinzugefügt
+- verbesserte deutsche Lokalisierung (@ngnee)
+- verbesserte F-Droid-Metadaten
+- verbesserte Überprüfung der RSS-Feed-Funktionalität beim Hinzufügen eines Feeds
+- verbesserte Standardthemen im Leitfaden
+- Skalierung des Logos auf dem Startbildschirm korrigiert
+- einen mysteriösen Fehler behoben, der zur Duplizierung von Artikeln führte

@@ -1,0 +1,13 @@
+- added french localisation (@AntoninCurtit)
+- added support for importing an OPML list of RSS feeds
+- added the ability to rename feeds
+- added the ability to hide images for each feed separately
+- added the ability to disable a feed without deleting it
+- added a full image mode
+- added a full rework of the way articles are displayed to hugely improve performance
+- improved german localisation (@ngnee)
+- improved F-Droid metadata
+- improved the RSS feed validity check when adding feeds
+- improved default topics in wizard
+- fixed bootsplash logo scaling
+- fixed a mysterious bug causing the duplication of articles

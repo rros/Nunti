@@ -1,0 +1,12 @@
+- Dodano francuską lokalizację (@AntoninCurtit)
+- Dodano wsparcie dla importu listy kanałów RSS poprzez format OPML
+- Dodano możliwość zmiany nazwy kanału
+- Dodano możliwość ukrywania obrazów dla każdego kanału osobno
+- Dodano możliwość wyłączenia kanału bez jego usuwania
+- Dodano tryb powiększonych obrazów
+- Poprawiona lokalizacja w języku niemieckim (@ngnee)
+- Poprawione metadane F-Droid
+- Poprawione sprawdzanie funkcjonalności kanału RSS podczas dodawania kanału
+- Poprawione domyślne motywy w przewodniku
+- Naprawiono skalowanie logo splash screen
+- Naprawiono tajemniczy błąd powodujący duplikację artykułów

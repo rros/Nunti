@@ -1,0 +1,13 @@
+- ajout de la traduction française
+- ajout d'un support pour l'importation d'une liste OPML de flux RSS
+- ajout de la possibilité de renommer les flux
+- ajout de la possibilité de masquer les images pour chaque flux séparément
+- ajout de la possibilité de désactiver un flux sans le supprimer
+- ajout d'un mode image complète
+- une refonte complète de l'affichage des articles a été effectuée afin d'améliorer considérablement les performances
+- amélioration de la localisation en allemand (@ngnee)
+- amélioration des métadonnées F-Droid
+- amélioration de la vérification de la validité des flux RSS lors de l'ajout de flux
+- amélioration des rubriques par défaut dans l'assistant
+- correction de la mise à l'échelle du logo de la fenêtre d'attente
+- correction d'un mystérieux bug provoquant la duplication d'articles
