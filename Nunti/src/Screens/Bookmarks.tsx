@@ -220,8 +220,9 @@ class Bookmarks extends PureComponent {
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
-                                        { rowData.item.description.length > 0 &&
-                                            <Paragraph style={this.state.showImages && rowData.item.cover !== undefined ? Styles.cardContentParagraph : undefined}>
+                                        { (rowData.item.description.length > 0 || (rowData.item.cover !== undefined && this.state.showImages)) &&
+                                            <Paragraph style={this.state.showImages && rowData.item.cover !== undefined ? Styles.cardContentParagraph : undefined}
+                                                numberOfLines={(rowData.item.cover === undefined || !this.state.showImages) ? 5 : undefined}>
                                                 {rowData.item.description}</Paragraph>
                                         }
                                         <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
@@ -241,7 +242,8 @@ class Bookmarks extends PureComponent {
                                     <Card.Content>
                                         <Title>{rowData.item.title}</Title>
                                         { (rowData.item.cover === undefined || !this.state.showImages) && rowData.item.description.length > 0 &&
-                                            <Paragraph>{rowData.item.description}</Paragraph>
+                                            <Paragraph numberOfLines={(rowData.item.cover === undefined || !this.state.showImages) ? 5 : undefined}>
+                                                {rowData.item.description}</Paragraph>
                                         }
                                         <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
                                     </Card.Content>
@@ -306,7 +308,7 @@ class Bookmarks extends PureComponent {
                                     <Card.Cover source={{ uri: this.currentArticle.cover }} />}
                                 <Card.Content>
                                     <Title>{this.currentArticle.title}</Title>
-                                    <Paragraph>{this.currentArticle.description}</Paragraph>
+                                    { this.currentArticle.description.length > 0 && <Paragraph>{this.currentArticle.description}</Paragraph> }
                                     <Caption>{(this.props.lang.article_from).replace('%source%', this.currentArticle.source)}</Caption>
                                 </Card.Content>
                                 <Card.Actions>
