@@ -624,7 +624,12 @@ export class Backend {
         const newarts: Article[] = [];
         for (let i = 0; i < arts.length; i++) {
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
-                if (arts[i].date === undefined || Date.now() - arts[i].date.getTime() < prefs.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
+                if (arts[i].date !== undefined) {
+                    if (typeof(arts[i].date) === 'string')
+                        arts[i].date = new Date(arts[i].date?.toString() ?? Date.now());
+                    if (Date.now() - arts[i].date.getTime() < prefs.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
+                        newarts.push(arts[i]);
+                } else
                     newarts.push(arts[i]);
             }
         }
