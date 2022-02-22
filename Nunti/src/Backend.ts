@@ -67,7 +67,7 @@ class UserSettings {
     public LargeImages = false;
     public WifiOnly = false;
     public ExternalBrowser = false;
-    public MaxArticleAgeDays = 28;
+    public MaxArticleAgeDays = 7;
 
     public Language = 'system';
     public Theme = 'system';

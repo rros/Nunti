@@ -35,6 +35,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.resetArtsCache = this.resetArtsCache.bind(this);
         this.resetAllData = this.resetAllData.bind(this);
 
+        this.changeMaxArtAge = this.changeMaxArtAge.bind(this);
         this.changeDiscovery = this.changeDiscovery.bind(this);
         this.changeCacheTime = this.changeCacheTime.bind(this);
         this.changePageSize = this.changePageSize.bind(this);
@@ -59,6 +60,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             
             learningStatus: null,
 
+            maxArtAge: this.props.prefs.MaxArticleAgeDays,
             discovery: this.props.prefs.DiscoverRatio * 100,
             cacheTime: this.props.prefs.ArticleCacheTime,
             pageSize: this.props.prefs.FeedPageSize,
@@ -73,6 +75,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             accentDialogVisible: false,
             rssAddDialogVisible: false,
             rssStatusDialogVisible: false,
+            maxArtAgeDialogVisible: false,
             discoveryDialogVisible: false,
             changeCacheTimeDialogVisible: false,
             pageSizeDialogVisible: false,
@@ -93,18 +96,18 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         }
     }
 
+    private async toggleSetting(prefName: string, stateName: string) {
+        this.props.prefs[prefName] = !this.state[stateName];
+        this.setState({ [stateName]: !this.state[stateName]});
+        await this.props.saveUserSettings(this.props.prefs);
+    }
+
     private async changeLanguage(newLanguage: string) {
         this.props.prefs.Language = newLanguage;
         this.setState({ language: newLanguage });
         await this.props.saveUserSettings(this.props.prefs);
 
         this.props.updateLanguage(newLanguage);
-    }
-
-    private async toggleSetting(prefName: string, stateName: string) {
-        this.props.prefs[prefName] = !this.state[stateName];
-        this.setState({ [stateName]: !this.state[stateName]});
-        await this.props.saveUserSettings(this.props.prefs);
     }
 
     private async changeTheme(newTheme: string) {
@@ -217,6 +220,22 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.toggleSnack(this.props.lang.change_max_art_feed_success, true);
         this.setState({maxArtFeed: this.state.inputValue, maxArtFeedDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
     }
+
+    private async changeMaxArtAge(){
+        if(this.state.inputValue < 1){
+            this.props.toggleSnack(this.props.lang.change_max_art_age_fail, true);
+            this.setState({maxArtAgeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
+            return;      
+        }
+
+        this.props.prefs.MaxArticleAgeDays = this.state.inputValue;
+        await this.props.saveUserSettings(this.props.prefs);
+
+        this.props.toggleSnack(this.props.lang.change_max_art_age_success, true);
+        this.setState({maxArtAge: this.state.inputValue, maxArtAgeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
+        
+        await Backend.ResetCache();
+    }
     
     private async addRss(){
         try {
@@ -313,6 +332,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
             feeds: this.props.prefs.FeedList,
+            maxArtAge: this.props.prefs.MaxArticleAgeDays,
             discovery: this.props.prefs.DiscoverRatio * 100,
             cacheTime: this.props.prefs.ArticleCacheTime,
             pageSize: this.props.prefs.FeedPageSize,
@@ -414,12 +434,16 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
                 <List.Section>
                     <List.Subheader>{this.props.lang.advanced}</List.Subheader>
+                    <List.Item title={this.props.lang.max_art_age}
+                        left={() => <List.Icon icon="clock-outline" />}
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ maxArtAgeDialogVisible: true });}}>{this.state.maxArtAge + this.props.lang.days}</Button>} />
                     <List.Item title={this.props.lang.discovery}
                         left={() => <List.Icon icon="book-search" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => {this.setState({ discoveryDialogVisible: true });}}>{this.state.discovery}%</Button>} />
                     <List.Item title={this.props.lang.cache_time}
-                        left={() => <List.Icon icon="clock-outline" />}
+                        left={() => <List.Icon icon="timer-off-outline" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => {this.setState({ cacheTimeDialogVisible: true });}}>{this.state.cacheTime + this.props.lang.minutes} </Button>} />
                     <List.Item title={this.props.lang.page_size}
@@ -531,6 +555,20 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
                             <Button mode="contained" color={this.props.theme.colors.error} 
                                 onPress={this.removeRss}>{this.props.lang.remove}</Button>
+                        </Dialog.Actions>
+                    </Dialog>
+
+                    <Dialog visible={this.state.maxArtAgeDialogVisible} onDismiss={() => { this.setState({ maxArtAgeDialogVisible: false, inputValue: '' });}}>
+                        <Dialog.Title>{this.props.lang.change_max_art_age}</Dialog.Title>
+                        <Dialog.Content>
+                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.max_art_age_dialog}</Paragraph>
+                            <TextInput label={this.props.lang.max_art_age} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
+                                onChangeText={text => this.inputChange(text)}/>
+                        </Dialog.Content>
+                        <Dialog.Actions>
+                            <Button onPress={() => { this.setState({ maxArtAgeDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
+                                {this.props.lang.cancel}</Button>
+                            <Button disabled={this.state.dialogButtonDisabled} onPress={this.changeMaxArtAge}>{this.props.lang.change}</Button>
                         </Dialog.Actions>
                     </Dialog>
 
