@@ -58,6 +58,12 @@ export class Article {
         }
         return this.keywordBase;
     }
+    
+    /* When deserializing cached/saved articles, date gets deserialized as a string, so it needs to be converted back to Date object. */
+    public static Fix(art: Article): void {
+        if (typeof(art.date) === 'string')
+            art.date = new Date(art.date?.toString() ?? Date.now());
+    }
 }
 
 class UserSettings {
@@ -136,6 +142,7 @@ export class Backend {
         await this.CheckDB();
 
         const cache = await this.StorageGet('articles_cache');
+        cache.articles.forEach((art: Article) => { Article.Fix(art); });
         let arts: Article[];
 
         const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp)) / 60000;
@@ -204,6 +211,7 @@ export class Backend {
         const arts = await this.StorageGet('saved');
         for (let i = 0; i < arts.length; i++) {
             arts[i].id = i;
+            Article.Fix(arts[i]);
         }
         this.CurrentBookmarks = this.PaginateArticles(arts, (await this.GetUserSettings()).FeedPageSize);
         return arts;
@@ -625,8 +633,6 @@ export class Backend {
         for (let i = 0; i < arts.length; i++) {
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
                 if (arts[i].date !== undefined) {
-                    if (typeof(arts[i].date) === 'string')
-                        arts[i].date = new Date(arts[i].date?.toString() ?? Date.now());
                     if (Date.now() - arts[i].date.getTime() < prefs.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
                         newarts.push(arts[i]);
                 } else
