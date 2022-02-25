@@ -531,7 +531,7 @@ export class Backend {
                         
                         if (!feed.noImages) {
                             if (art.cover === undefined)
-                                try { art.cover = serializer.serializeToString(item).match(/(https?:\/\/[^<>"]+?\.(?:(?:jpe?g)|(?:png)).*?)[\n"<]/)[0]; }  catch { /* dontcare */ }
+                                try { art.cover = serializer.serializeToString(item).match(/(https?:\/\/[^<>"]+?\.(?:(?:jpe?g)|(?:png)).*?)[\n"<]/)[1]; }  catch { /* dontcare */ }
                         } else
                             art.cover = undefined;
 
