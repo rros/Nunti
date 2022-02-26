@@ -479,6 +479,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 <RadioButton.Item label={this.props.lang.fr} value="fr" />
                                 <RadioButton.Item label={this.props.lang.it} value="it" />
                                 <RadioButton.Item label={this.props.lang.pl} value="pl" />
+                                <RadioButton.Item label={this.props.lang.pt-BR} value="pt-BR" />
                                 <RadioButton.Item label={this.props.lang.ja} value="ja" />
                             </RadioButton.Group>
                         </ScrollView>

@@ -96,7 +96,7 @@ export default class App extends Component {
             this.setState({ language: Polish });
         } else if(locale.includes('de')) {
             this.setState({ language: German });
-        } else if(locale.includes('pt')) {
+        } else if(locale.includes('pt-BR')) {
             this.setState({ language: BrazilianPortuguese });
         } else { // default
             this.setState({ language: English });
