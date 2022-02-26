@@ -2,7 +2,7 @@ Nunti è l'app di feed RSS che stavi aspettando.
 
 Nunti ha tutto ciò che hai sempre desiderato:
 - apprendimento adattivo delle preferenze
-- design moderno dei materiali
-- opzioni di tematica
+- interfaccia moderna in material design
+- personalizzazione del tema
 - funzioni di importazione ed esportazione
 - privacy assoluta: nessun dato lascia mai il tuo dispositivo

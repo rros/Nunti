@@ -126,9 +126,10 @@ export class Backend {
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(): Promise<Article[][]> {
-        const timeBegin = Date.now();
         const prefs = await this.GetUserSettings();
-        const pages = this.PaginateArticles(await this.GetArticles(), prefs.FeedPageSize);
+        const arts = await this.GetArticles();
+        const timeBegin = Date.now();
+        const pages = this.PaginateArticles(arts, prefs.FeedPageSize);
         const timeEnd = Date.now();
         console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms.`);
         this.CurrentFeed = pages;
@@ -540,13 +541,7 @@ export class Backend {
                         
                         if (!feed.noImages) {
                             if (art.cover === undefined)
-                                try { art.cover = item.getElementsByTagName('enclosure')[0].getAttribute('url'); }  catch { /* dontcare */ }
-                            if (art.cover === undefined)
-                                try { art.cover = item.getElementsByTagName('media:content')[0].getAttribute('url'); }  catch { /* dontcare */ }
-                            if (art.cover === undefined)
-                                try { art.cover = item.getElementsByTagName('szn:url')[0].childNodes[0].nodeValue; }  catch { /* dontcare */ }
-                            if (art.cover === undefined)
-                                try { art.cover = serializer.serializeToString(item).match(/(https:\/\/.*\.(?:(?:jpe?g)|(?:png)))/)[0]; }  catch { /* dontcare */ }
+                                try { art.cover = serializer.serializeToString(item).match(/(https?:\/\/[^<>"]+?\.(?:(?:jpe?g)|(?:png)).*?)[\n"<]/)[1]; }  catch { /* dontcare */ }
                         } else
                             art.cover = undefined;
 
@@ -809,7 +804,6 @@ export class Backend {
         console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
     }
     private static PaginateArticles(arts: Article[], pageSize: number, keepFirstEmptyPage = true): Article[][] {
-        // TODO: optimalization
         let pages: Article[][] = [];
         while (arts.length > 0) {
             pages.push(arts.splice(0, pageSize));
