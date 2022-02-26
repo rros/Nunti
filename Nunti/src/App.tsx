@@ -11,7 +11,7 @@ import {
 
 // our files
 import { Dark, Light, Colors } from './Styles';
-import { English, Czech, Japanese, Italian, Polish, German, French } from './Locale';
+import { English, Czech, Japanese, Italian, Polish, German, French, BrazilianPortuguese } from './Locale';
 import Wizard from './Screens/Wizard';
 import Feed from './Screens/Feed';
 import Bookmarks from './Screens/Bookmarks';
@@ -96,6 +96,8 @@ export default class App extends Component {
             this.setState({ language: Polish });
         } else if(locale.includes('de')) {
             this.setState({ language: German });
+        } else if(locale.includes('pt')) {
+            this.setState({ language: BrazilianPortuguese });
         } else { // default
             this.setState({ language: English });
         }
