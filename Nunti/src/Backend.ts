@@ -42,6 +42,7 @@ export class Article {
     public cover: string | undefined = undefined;
     public url = 'about:blank';
     public source = 'unknown';
+    public date: Date | undefined = undefined;
 
     public score = 0;
     public keywords: {[id:string]: number} = {};
@@ -57,6 +58,12 @@ export class Article {
         }
         return this.keywordBase;
     }
+    
+    /* When deserializing cached/saved articles, date gets deserialized as a string, so it needs to be converted back to Date object. */
+    public static Fix(art: Article): void {
+        if (typeof(art.date) === 'string')
+            art.date = new Date(art.date?.toString() ?? Date.now());
+    }
 }
 
 class UserSettings {
@@ -66,8 +73,9 @@ class UserSettings {
     public LargeImages = false;
     public WifiOnly = false;
     public ExternalBrowser = false;
-    public Language = 'system';
+    public MaxArticleAgeDays = 7;
 
+    public Language = 'system';
     public Theme = 'system';
     public Accent = 'default';
 
@@ -135,6 +143,7 @@ export class Backend {
         await this.CheckDB();
 
         const cache = await this.StorageGet('articles_cache');
+        cache.articles.forEach((art: Article) => { Article.Fix(art); });
         let arts: Article[];
 
         const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp)) / 60000;
@@ -203,6 +212,7 @@ export class Backend {
         const arts = await this.StorageGet('saved');
         for (let i = 0; i < arts.length; i++) {
             arts[i].id = i;
+            Article.Fix(arts[i]);
         }
         this.CurrentBookmarks = this.PaginateArticles(arts, (await this.GetUserSettings()).FeedPageSize);
         return arts;
@@ -522,8 +532,8 @@ export class Backend {
                                 art.description = serializer.serializeToString(item).match(/description>.*CDATA\[(.*)\]\].*<\/description/s)[1];
                         } catch { /* doncare */ }
 
-                        art.description = art.description.trim();
                         art.description = decode(art.description, {scope: 'strict'});
+                        art.description = art.description.trim();
 
                         try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); }  catch { /* dontcare */ }
                         try { art.description = art.description.substr(0,1024); }  catch { /* dontcare */ }
@@ -540,6 +550,9 @@ export class Backend {
                         } catch {
                             art.url = item.getElementsByTagName('link')[0].getAttribute('href');
                         }
+
+                        try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+
                         arts.push(art);
                     } catch(err) {
                         console.error(`Cannot process article, channel: ${feed.url}, err: ${err}`);
@@ -601,6 +614,7 @@ export class Backend {
     }
     /* Removes seen (already rated) articles and any duplicates from article list. */
     private static async CleanArticles(arts: Article[]): Promise<Article[]> {
+        const prefs = await this.GetUserSettings();
         const seen = await this.StorageGet('seen');
         for(let i = 0; i < seen.length; i++) {
             let index = this.FindArticleByUrl(seen[i].url,arts);
@@ -612,8 +626,13 @@ export class Backend {
 
         const newarts: Article[] = [];
         for (let i = 0; i < arts.length; i++) {
-            if (this.FindArticleByUrl(arts[i].url, newarts) < 0)
-                newarts.push(arts[i]);
+            if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
+                if (arts[i].date !== undefined) {
+                    if (Date.now() - arts[i].date.getTime() < prefs.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
+                        newarts.push(arts[i]);
+                } else
+                    newarts.push(arts[i]);
+            }
         }
         return newarts;
     }

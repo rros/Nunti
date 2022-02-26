@@ -126,6 +126,11 @@ export default Styles = StyleSheet.create ({
         marginLeft: 'auto'
     },
 
+    captionContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+
     buttonRateLeft: {
         paddingRight: '30%',
     },
@@ -204,5 +209,5 @@ export default Styles = StyleSheet.create ({
     
     settingsDetailsButton: {
         alignSelf: 'center'
-    }, 
+    },
 });

@@ -222,9 +222,10 @@ class Feed extends PureComponent {
                             opacity: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 1, 0],}),
                             translateX: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [-1000, 0, 1000],}), // random value, it disappears anyway
                         }}>
-                            { !this.state.largeImages && <Card style={Styles.card} 
+                            <Card style={Styles.card} 
                                 onPress={() => { this.readMore(rowData.item.url); }} 
                                 onLongPress={() => { this.viewDetails(rowData.item); }}>
+                                {this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined && <Card.Cover source={{ uri: rowData.item.cover }}/> /* large image */}
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
@@ -233,30 +234,19 @@ class Feed extends PureComponent {
                                                 numberOfLines={(rowData.item.cover === undefined || !this.state.showImages) ? 5 : undefined}>
                                                 {rowData.item.description}</Paragraph>
                                         }
-                                        <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
+                                        <View style={Styles.captionContainer}>
+                                            { rowData.item.date !== undefined && <DateCaption date={rowData.item.date} lang={this.props.lang}/>}
+                                            <Caption>{(this.state.largeImages || !this.state.showImages || rowData.item.cover === undefined || rowData.item.date === undefined) ? 
+                                                (this.props.lang.article_from).replace('%source%', rowData.item.source) : rowData.item.source}</Caption>
+                                        </View>
                                     </Card.Content>
-                                    {this.state.showImages && rowData.item.cover !== undefined && 
+                                    {!this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined && /* small image */
                                         <View style={Styles.cardContentCoverContainer}>
                                             <Card.Cover source={{ uri: rowData.item.cover }}/>
                                         </View> 
                                     }
                                 </View>
-                            </Card> }
-                            { this.state.largeImages && <Card style={Styles.card} 
-                                onPress={() => { this.readMore(rowData.item.url); }} 
-                                onLongPress={() => { this.viewDetails(rowData.item); }}>
-                                {this.state.showImages && rowData.item.cover !== undefined && <Card.Cover source={{ uri: rowData.item.cover }}/> }
-                                <View style={Styles.cardContentContainer}>
-                                    <Card.Content>
-                                        <Title>{rowData.item.title}</Title>
-                                        { (rowData.item.cover === undefined || !this.state.showImages) && rowData.item.description.length > 0 &&
-                                            <Paragraph numberOfLines={(rowData.item.cover === undefined || !this.state.showImages) ? 5 : undefined}>
-                                                {rowData.item.description}</Paragraph>
-                                        }
-                                        <Caption>{(this.props.lang.article_from).replace('%source%', rowData.item.source)}</Caption>
-                                    </Card.Content>
-                                </View>
-                            </Card> }
+                            </Card>
                         </Animated.View>
                     )}
                     renderHiddenItem={(rowData) => (
@@ -318,7 +308,10 @@ class Feed extends PureComponent {
                                 <Card.Content>
                                     <Title>{this.currentArticle.title}</Title>
                                     { this.currentArticle.description.length > 0 && <Paragraph>{this.currentArticle.description}</Paragraph> }
-                                    <Caption>{(this.props.lang.article_from).replace('%source%', this.currentArticle.source)}</Caption>
+                                    <View style={Styles.captionContainer}>
+                                        { this.currentArticle.date !== undefined && <DateCaption date={this.currentArticle.date} lang={this.props.lang}/>}
+                                        <Caption>{(this.props.lang.article_from).replace('%source%', this.currentArticle.source)}</Caption>
+                                    </View>
                                 </Card.Content>
                                 <Card.Actions>
                                     <Button icon="book" onPress={() => { this.readMore(this.currentArticle.url); }}>
@@ -335,6 +328,26 @@ class Feed extends PureComponent {
             </View>
         );
     }
+}
+
+function DateCaption ({ date, lang }) {
+    const difference = ((Date.now() - date) / (24*60*60*1000));
+    let caption = '';
+
+    if(difference <= 1) { // hours
+        const hours = Math.round(difference * 24);
+        if(hours == 0){
+            caption = lang.just_now;
+        } else {
+            caption = lang.hours_ago.replace('%time%', hours);
+        }
+    } else { // days
+        caption = lang.days_ago.replace('%time%', Math.round(difference));
+    }
+
+    return(
+        <Caption>{caption}</Caption>
+    );
 }
 
 export default withTheme(Feed);
