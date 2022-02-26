@@ -1,0 +1,11 @@
+- tradução para o italiano
+- tradução para o japonês
+- tradução para o polonês (Štěpán Šebek)
+- tradução para o alemão (Eliška Otčenášková)
+- opção para usar um navegador externo
+- opção para importar um backup no assistente
+- melhoria nas animações de deslizar e na usabilidade do deslize
+- melhoria nos metadados do F-Droid
+- correção de uma falha no android 8
+- correção da tela de início para o android 12
+- correção do modo paisagem e da resolução para dispositivos com telas largas

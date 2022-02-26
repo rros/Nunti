@@ -1,0 +1,13 @@
+- tradução para o francês (@AntoninCurtit)
+- suporte à importação de listas OPML de feeds RSS
+- possibilidade de renomear feeds
+- possibilidade de esconder imagens para cada feed separadamente
+- possibilidade de desabilitar um feed sem excluí-lo
+- modo de imagens completas
+- reformulação da maneira em que os artigos são mostrados para melhorar extremamente a performance
+- melhoria na tradução para o alemão (@ngnee)
+- melhoria nos metadados do F-Droid
+- melhoria na validação de feeds RSS ao adicionar feeds
+- melhoria nos tópicos padrões no assistente
+- correção resolução do logo da tela de início
+- correção de bug misterioso que causa a duplicação de artigos
