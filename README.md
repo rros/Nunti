@@ -65,10 +65,11 @@ Nunti has been built with the firm belief that there is no reason to process or 
 
 # Credits and contributors
 
-- @stepano_ - polish translation
-- Eliška Otčenášková, @ngnee - german translation
-- @AntoninCurtit - french translation
-- @marcomarcobello - help with italian translation
+- @stepano_ - Polish translation
+- Eliška Otčenášková, @ngnee - German translation
+- @AntoninCurtit - French translation
+- @marcomarcobello - help with Italian translation
+- @vitorhcl - Brazilian Portugese translation
 
 # Licence, disclaimer or whatever
 
