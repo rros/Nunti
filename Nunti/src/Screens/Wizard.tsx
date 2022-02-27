@@ -150,8 +150,8 @@ class Step2Language extends Component {
                             right={() => <RadioButton.Item value="it" />} />
                         <List.Item title={this.props.lang.pl}
                             right={() => <RadioButton.Item value="pl" />} />
-                        <List.Item title={this.props.lang.pt-BR}
-                            right={() => <RadioButton.Item value="pt-BR" />} />
+                        <List.Item title={this.props.lang.pt_BR}
+                            right={() => <RadioButton.Item value="pt_BR" />} />
                         <List.Item title={this.props.lang.ja}
                             right={() => <RadioButton.Item value="ja" />} />
                     </List.Section>
