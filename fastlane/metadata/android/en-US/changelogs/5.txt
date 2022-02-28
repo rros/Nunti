@@ -1,0 +1,4 @@
+- added the option to hide articles older than x days
+- added Brazilian Portuguese (@vitorhcl)
+- improved Italian translation (@marcomarcobello)
+- fixed some visual bugs in feed
