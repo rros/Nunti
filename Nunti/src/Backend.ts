@@ -484,7 +484,15 @@ export class Backend {
 
         let r: Response;
         try {
-            r = await fetch(feed.url, { signal: controller.signal });
+            r = await fetch(
+                feed.url,
+                {
+                    signal: controller.signal,
+                    headers: new Headers({
+                        'Cache-Control': 'no-cache, no-store, must-revalidate'
+                    })
+                }
+            );
         } catch(err) {
             if (isTimeouted)
                 console.error('Cannot read RSS (probably timeout)' + feed.name, err);
