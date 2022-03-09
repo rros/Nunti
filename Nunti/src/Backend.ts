@@ -4,6 +4,8 @@ const XMLSerializer = require('xmldom').XMLSerializer; //eslint-disable-line
 import NetInfo from '@react-native-community/netinfo';
 import DefaultTopics from './DefaultTopics';
 import { decode } from 'html-entities';
+import Store from 'react-native-fs-store';
+const FSStore = new Store('store1');
 
 export class Feed {
     public name: string;
@@ -142,7 +144,14 @@ export class Backend {
         const timeBegin: number = Date.now();
         await this.CheckDB();
 
-        const cache = await this.StorageGet('articles_cache');
+        let cache = await FSStore.getItem('cache');
+        if (cache == null) {
+            console.debug('Cache is null, initializing it.');
+            await FSStore.setItem('cache',JSON.stringify({'timestamp':0,'articles':[]}));
+            cache = {'timestamp': 0, 'articles': []};
+        } else
+            cache = JSON.parse(cache);
+
         cache.articles.forEach((art: Article) => { Article.Fix(art); });
         let arts: Article[];
 
@@ -154,7 +163,7 @@ export class Backend {
         } else if (cacheAgeMinutes >= (await this.GetUserSettings()).ArticleCacheTime) {
             arts = await this.DownloadArticles();
             if (arts.length > 0)
-                await this.StorageSave('articles_cache', {'timestamp': Date.now(), 'articles': arts});
+                await FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
         } else {
             console.log(`Backend: Using cached articles. (${cacheAgeMinutes} minutes old)`);
             arts = cache.articles;
@@ -220,13 +229,13 @@ export class Backend {
     /* Resets cache */
     public static async ResetCache(): Promise<void> {
         console.info('Backend: Resetting cache..');
-        await this.CheckDB();
-        await this.StorageSave('articles_cache',{'timestamp':0, 'articles':[]});
+        await FSStore.setItem('cache', JSON.stringify({'timestamp': 0, 'articles': []}));
     }
     /* Resets all data in the app storage. */
     public static async ResetAllData(): Promise<void> {
         console.warn('Backend: Resetting all data.');
         await AsyncStorage.clear();
+        await this.ResetCache();
         await this.CheckDB();
     }
     /* Gets UserSettings object from storage to nicely use in frontend. */
@@ -320,10 +329,6 @@ export class Backend {
             const defaultPrefs = new UserSettings();
             const merged = {...defaultPrefs, ...current};
             await AsyncStorage.setItem('user_settings', JSON.stringify(merged));
-        }
-        if (await AsyncStorage.getItem('articles_cache') === null) {
-            console.debug('Backend: CheckDB(): Init "articles_cache" key in DB..');
-            await AsyncStorage.setItem('articles_cache',JSON.stringify({'timestamp':0,'articles':[]}));
         }
         if (await AsyncStorage.getItem('seen') === null) {
             console.debug('Backend: CheckDB(): Init "seen" key in DB..');
