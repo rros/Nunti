@@ -599,22 +599,29 @@ export class Backend {
 
     /* Private methods */
     private static async DownloadArticles(): Promise<Article[]> {
+        const THREADS = 6;
+
         console.info('Backend: Downloading articles..');
         const timeBegin = Date.now();
         const prefs = await this.GetUserSettings();
         const feedList = prefs.FeedList;
 
         const arts: Article[] = [];
-        const promises: Promise<Article[]>[] = [];
-        for (let i = 0; i < feedList.length; i++) {
-            promises.push(this.DownloadArticlesOneChannel(feedList[i],prefs.MaxArticlesPerChannel));
-        }
-        const results: Article[][] = await Promise.all(promises);
-        for (let i = 0; i < results.length; i++) {
-            for(let y = 0; y < results[i].length; y++) {
-                arts.push(results[i][y]);
+
+        while (feedList.length > 0) {
+            const promises: Promise<Article[]>[] = [];
+            for (let i = 0; i < THREADS; i++) {
+                if (feedList.length > 0)
+                    promises.push(this.DownloadArticlesOneChannel(feedList.splice(0,1)[0],prefs.MaxArticlesPerChannel));
+            }
+            const results: Article[][] = await Promise.all(promises);
+            for (let i = 0; i < results.length; i++) {
+                for(let y = 0; y < results[i].length; y++) {
+                    arts.push(results[i][y]);
+                }
             }
         }
+
         const timeEnd = Date.now();
         console.info(`Backend: Download finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
         await this.ExtractKeywords(arts);
