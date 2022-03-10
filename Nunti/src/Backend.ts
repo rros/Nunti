@@ -74,7 +74,7 @@ class UserSettings {
     public DisableImages = false;
     public LargeImages = false;
     public WifiOnly = false;
-    public ExternalBrowser = false;
+    public BrowserMode = 'webview';
     public MaxArticleAgeDays = 7;
 
     public Language = 'system';

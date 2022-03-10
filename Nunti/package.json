@@ -33,6 +33,7 @@
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-tab-view": "^3.1.1",
     "react-native-vector-icons": "^8.1.0",
+    "react-native-webview": "^11.17.2",
     "xmldom": "^0.6.0"
   },
   "devDependencies": {

@@ -109,13 +109,16 @@ class Bookmarks extends PureComponent {
     
     // article functions
     private async readMore(url: string) {
-        if(!this.props.prefs.ExternalBrowser){
+        if(this.props.prefs.BrowserMode == 'webview'){
             await InAppBrowser.open(url, {
                 forceCloseOnRedirection: false, showInRecents: true,
                 toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
                 navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
             });
-        } else {
+        } else if(this.props.prefs.BrowserMode == 'legacy_webview') {
+            this.hideDetails();
+            this.props.navigation.navigate('legacyWebview', { uri: url });
+        } else { // == 'external_browser'
             Linking.openURL(url);
         }
     }
