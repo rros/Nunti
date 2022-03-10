@@ -48,10 +48,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         
         this.state = {
             language: this.props.prefs.Language,
+            browserMode: this.props.prefs.BrowserMode,
             noImagesSwitch: this.props.prefs.DisableImages,
             largeImagesSwitch: this.props.prefs.LargeImages,
             wifiOnlySwitch: this.props.prefs.WifiOnly,
-            externalBrowserSwitch: this.props.prefs.ExternalBrowser,
 
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
@@ -71,6 +71,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             dialogButtonLoading: false,
             
             languageDialogVisible: false,
+            browserModeDialogVisible: false,
             themeDialogVisible: false,
             accentDialogVisible: false,
             rssAddDialogVisible: false,
@@ -108,6 +109,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await this.props.saveUserSettings(this.props.prefs);
 
         this.props.updateLanguage(newLanguage);
+    }
+    
+    private async changeBrowserMode(newBrowserMode: string) {
+        this.props.prefs.BrowserMode = newBrowserMode;
+        this.setState({ browserMode: newBrowserMode });
+        await this.props.saveUserSettings(this.props.prefs);
     }
 
     private async changeTheme(newTheme: string) {
@@ -325,10 +332,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         
         this.setState({
             language: this.props.prefs.Language,
+            browserMode: this.props.prefs.BrowserMode,
             noImagesSwitch: this.props.prefs.DisableImages,
             largeImagesSwitch: this.props.prefs.LargeImages,
             wifiOnly: this.props.prefs.WifiOnly,
-            externalBrowserSwitch: this.props.prefs.ExternalBrowser,
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
             feeds: this.props.prefs.FeedList,
@@ -354,14 +361,14 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         left={() => <List.Icon icon="translate" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => {this.setState({ languageDialogVisible: true });}}>{this.props.lang[this.state.language]}</Button>} />
+                    <List.Item title={this.props.lang.browser_mode}
+                        left={() => <List.Icon icon="web" />}
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ browserModeDialogVisible: true });}}>{this.props.lang[this.state.browserMode]}</Button>} />
                     <List.Item title={this.props.lang.wifi_only}
                         left={() => <List.Icon icon="wifi" />}
                         right={() => <Switch value={this.state.wifiOnlySwitch} 
                             onValueChange={() => { this.toggleSetting("WifiOnly", "wifiOnlySwitch") }} />} />
-                    <List.Item title={this.props.lang.external_browser}
-                        left={() => <List.Icon icon="web" />}
-                        right={() => <Switch value={this.state.externalBrowserSwitch} 
-                            onValueChange={() => { this.toggleSetting("ExternalBrowser", "externalBrowserSwitch") }} />} />
                     <List.Item title={this.props.lang.no_images}
                         left={() => <List.Icon icon="image-off" />}
                         right={() => <Switch value={this.state.noImagesSwitch} 
@@ -481,6 +488,16 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 <RadioButton.Item label={this.props.lang.pl} value="pl" />
                                 <RadioButton.Item label={this.props.lang.pt_BR} value="pt_BR" />
                                 <RadioButton.Item label={this.props.lang.ja} value="ja" />
+                            </RadioButton.Group>
+                        </ScrollView>
+                    </Dialog>
+                    
+                    <Dialog visible={this.state.browserModeDialogVisible} onDismiss={() => { this.setState({ browserModeDialogVisible: false });}}>
+                        <ScrollView>
+                            <RadioButton.Group onValueChange={newValue => this.changeBrowserMode(newValue)} value={this.state.browserMode}>
+                                <RadioButton.Item label={this.props.lang.legacy_webview} value="legacy_webview" />
+                                <RadioButton.Item label={this.props.lang.webview} value="webview" />
+                                <RadioButton.Item label={this.props.lang.external_browser} value="external_browser" />
                             </RadioButton.Group>
                         </ScrollView>
                     </Dialog>

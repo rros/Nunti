@@ -17,6 +17,7 @@ import Feed from './Screens/Feed';
 import Bookmarks from './Screens/Bookmarks';
 import Settings from './Screens/Settings';
 import About from './Screens/About';
+import LegacyWebview from './Screens/LegacyWebview';
 import Backend from './Backend';
 
 import 'react-native-gesture-handler';
@@ -173,7 +174,7 @@ export default class App extends Component {
                     <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? 'wizard' : 'feed'}
                         drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} 
                         screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
-                        <NavigationDrawer.Screen name="feed" options={{title: 'omae'}}>
+                        <NavigationDrawer.Screen name="feed">
                             {props => <Feed {...props} prefs={this.prefs} 
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
@@ -195,6 +196,9 @@ export default class App extends Component {
                                 saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack}
                                 updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
+                        <NavigationDrawer.Screen name="legacyWebview" options={{swipeEnabled: false, unmountOnBlur: true}}>
+                            {props => <LegacyWebview {...props}/>}
+                        </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
                 </NavigationContainer> 
                 <Portal>
@@ -214,9 +218,11 @@ export default class App extends Component {
 function CustomHeader ({ navigation, route, lang }) {
     return (
         <Appbar.Header style={{marginTop: StatusBar.currentHeight}}> 
-            { route.name != 'wizard' && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
+            { route.name != 'wizard' && route.name != 'legacyWebview' 
+                && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
+            { route.name == 'legacyWebview' && <Appbar.Action icon="close" onPress={ () => { navigation.goBack(); }}/>}
             <Appbar.Content title={lang[route.name]} />
-        </Appbar.Header>
+        </Appbar.Header> 
     );
 }
 
