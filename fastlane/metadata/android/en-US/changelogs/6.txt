@@ -1,0 +1,5 @@
+- added the option to use an "in app" webview mode to open articles
+- added a donation link (buy us a beer ;D)
+- fixed a bug which caused network timeouts when loading from a lot of feeds
+- fixed a bug which broke the article cache when loading a large amount of articles
+- fixed a bug which stopped the loading of all feeds after a bad response from a single one
