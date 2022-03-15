@@ -220,7 +220,6 @@ function CustomHeader ({ navigation, route, lang }) {
         <Appbar.Header style={{marginTop: StatusBar.currentHeight}}> 
             { route.name != 'wizard' && route.name != 'legacyWebview' 
                 && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
-            { route.name == 'legacyWebview' && <Appbar.Action icon="close" onPress={ () => { navigation.goBack(); }}/>}
             <Appbar.Content title={lang[route.name]} />
         </Appbar.Header> 
     );

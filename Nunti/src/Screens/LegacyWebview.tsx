@@ -1,14 +1,9 @@
 import React, { PureComponent } from 'react';
 import {
-    View,
-    ScrollView,
-    Image,
-    Linking
+    BackHandler
 } from 'react-native';
 
 import { 
-    List,
-    Button,
     withTheme
 } from 'react-native-paper';
 
@@ -20,6 +15,18 @@ class LegacyWebview extends PureComponent {
     constructor(props:any){
         super(props);
     }
+
+    componentDidMount() {
+        this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+            this.props.navigation.navigate(this.props.route.params.source);
+            return true;
+        });
+    }
+
+    componentWillUnmount() {
+        this.backHandler.remove();
+    }
+
 
     render() {
         return (

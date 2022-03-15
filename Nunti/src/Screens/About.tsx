@@ -33,7 +33,7 @@ class About extends PureComponent {
                 navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
             });
         } else if(this.props.prefs.BrowserMode == 'legacy_webview') {
-            this.props.navigation.navigate('legacyWebview', { uri: url });
+            this.props.navigation.navigate('legacyWebview', { uri: url, source: 'about' });
         } else { // == 'external_browser'
             Linking.openURL(url);
         }
