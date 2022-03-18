@@ -217,7 +217,7 @@ export default class App extends Component {
 
 function CustomHeader ({ navigation, route, lang }) {
     return (
-        <Appbar.Header style={{marginTop: StatusBar.currentHeight}}> 
+        <Appbar.Header style={{marginTop: StatusBar.currentHeight, height: route.name == 'legacyWebview' ? 0 : undefined}}> 
             { route.name != 'wizard' && route.name != 'legacyWebview' 
                 && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
             <Appbar.Content title={lang[route.name]} />
