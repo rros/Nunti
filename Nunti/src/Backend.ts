@@ -326,9 +326,8 @@ export class Backend {
             await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
         } else {
             const current = JSON.parse(await AsyncStorage.getItem('user_settings') ?? '{}');
-            const defaultPrefs = new UserSettings();
-            const merged = {...defaultPrefs, ...current};
-            await AsyncStorage.setItem('user_settings', JSON.stringify(merged));
+            await AsyncStorage.setItem('user_settings', JSON.stringify(new UserSettings()));
+            await AsyncStorage.setItem('user_settings', JSON.stringify(await this.MergeUserSettings(current)));
         }
         if (await AsyncStorage.getItem('seen') === null) {
             console.debug('Backend: CheckDB(): Init "seen" key in DB..');
@@ -409,8 +408,9 @@ export class Backend {
             if (parseInt(backup.Version.split('.')[0]) != parseInt(this.DB_VERSION.split('.')[0]))
                 throw Error(`Version mismatch! Backup: ${backup.Version}, current: ${this.DB_VERSION}`);
             
-            if (backup.UserSettings !== undefined)
-                await this.SaveUserSettings({...(await this.GetUserSettings()), ...backup.UserSettings});
+            if (backup.UserSettings !== undefined) {
+                await this.SaveUserSettings(await this.MergeUserSettings(backup.UserSettings));
+            }
             if (backup.LearningDB !== undefined)
                 await this.StorageSave('learning_db', {... (await this.StorageGet('learning_db')), ...backup.LearningDB});
             if (backup.Saved !== undefined)
@@ -822,6 +822,18 @@ export class Backend {
         console.info('Backend: Extracting keywords (pass 2 finished)');
         const timeEnd = Date.now();
         console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
+    }
+    private static async MergeUserSettings(old: UserSettings): Promise<UserSettings> {
+        const prefs = { ...(await this.GetUserSettings()), ...old };
+        // cycle through Feeds and merge them, otherwise new properties will be undefined in next update
+        for (let i = 0; i < prefs.FeedList.length; i++) {
+            try {
+                prefs.FeedList[i] = { ...(new Feed(prefs.FeedList[i].url)), ...prefs.FeedList[i] };
+            } catch {
+                console.warn(`backup restore: failed to merge feed ${prefs.FeedList[i].url}`);
+            }
+        }
+        return prefs;
     }
     private static PaginateArticles(arts: Article[], pageSize: number, keepFirstEmptyPage = true): Article[][] {
         let pages: Article[][] = [];
