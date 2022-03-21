@@ -646,6 +646,10 @@ export class Backend {
 
         const newarts: Article[] = [];
         for (let i = 0; i < arts.length; i++) {
+            if (arts[i] == undefined) {
+                console.warn('Backend, cleanarticles: expected article, got undefined.');
+                continue;
+            }
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
                 if (arts[i].date !== undefined) {
                     if (Date.now() - arts[i].date.getTime() < prefs.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
