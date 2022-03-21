@@ -9,14 +9,14 @@ import {name as appName} from './app.json';
 
 if (!__DEV__) {
         global.console = {
-            info: () => {},
-            log: () => {},
-            assert: () => {},
-            warn: () => {},
+//          info: () => {},
+//          log: () => {},
+//          assert: () => {},
+//          warn: () => {},
             debug: () => {},
-            error: () => {},
-            time: () => {},
-            timeEnd: () => {},
+//          error: () => {},
+//          time: () => {},
+//          timeEnd: () => {},
         };
     }
 
