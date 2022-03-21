@@ -824,7 +824,7 @@ export class Backend {
         console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
     }
     private static async MergeUserSettings(old: UserSettings): Promise<UserSettings> {
-        const prefs = { ...(await this.GetUserSettings()), ...old };
+        const prefs = { ...(await this.StorageGet('user_settings')), ...old };
         // cycle through Feeds and merge them, otherwise new properties will be undefined in next update
         for (let i = 0; i < prefs.FeedList.length; i++) {
             try {
