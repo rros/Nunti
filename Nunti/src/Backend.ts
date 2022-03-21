@@ -298,7 +298,7 @@ export class Backend {
         }
 
         await this.StorageSave('learning_db', learning_db);
-        await this.StorageSave('learning_db_secondary', learning_db);
+        await this.StorageSave('learning_db_secondary', learning_db_secondary);
         console.info(`Backend: Saved rating for article '${art.title}'`);
         await this.CheckDB();
         this.CurrentFeed = this.PagesRemoveArticle(art, this.CurrentFeed);

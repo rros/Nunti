@@ -8,15 +8,16 @@ import App from './src/App';
 import {name as appName} from './app.json';
 
 if (!__DEV__) {
-        global.console = {
-//          info: () => {},
-//          log: () => {},
-//          assert: () => {},
-//          warn: () => {},
-            debug: () => {},
-//          error: () => {},
-//          time: () => {},
-//          timeEnd: () => {},
+        global.console = { ...global.console, ...{
+    //          info: () => {},
+    //          log: () => {},
+    //          assert: () => {},
+    //          warn: () => {},
+                debug: () => {},
+    //          error: () => {},
+    //          time: () => {},
+    //          timeEnd: () => {},
+            }
         };
     }
 
