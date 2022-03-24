@@ -681,6 +681,12 @@ export class Backend {
         const prefs = await this.GetUserSettings();
         if (learning_db['upvotes'] + learning_db['downvotes'] <= prefs.NoSortUntil) {
             console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${prefs.NoSortUntil} required)`);
+            articles.sort((a, b) => {
+                if (a.date !== undefined && b.date !== undefined)
+                    return b.date.getTime() - a.date.getTime();
+                else
+                    return -1;
+            });
             return articles;
         }
 
