@@ -554,7 +554,44 @@ export class Backend {
                         
                         if (!feed.noImages) {
                             if (art.cover === undefined)
-                                try { art.cover = serializer.serializeToString(item).match(/(https?:\/\/[^<>"]+?\.(?:(?:jpe?g)|(?:png)).*?)[\n"<]/)[1]; }  catch { /* dontcare */ }
+                                try {
+                                    const imagecontent =
+                                        item.getElementsByTagName('enclosure')[0] ||
+                                        item.getElementsByTagName('media:content')[0] ||
+                                        item.getElementsByTagName('media:thumbnail')[0];
+                                    if (
+                                        imagecontent &&
+                                        ((imagecontent.hasAttribute('type') && imagecontent.getAttribute('type').includes('image')) ||
+                                        (imagecontent.hasAttribute('medium') && imagecontent.getAttribute('medium') === 'image') ||
+                                        imagecontent.getAttribute('url').match(/\.(?:(?:jpe?g)|(?:png))/i))
+                                    ) {
+                                        art.cover = imagecontent.getAttribute('url');
+                                    }
+                                    // If this first approach did not find an image, try to check the whole 'content:encoded' or if it does not exist the whole 'item'.
+                                    // Checking 'content:encoded' first is necessary, because there are feeds that contain advertisement images outside of 'content:encoded' which would be detected if only the 'item' was checked.
+                                    if (art.cover === undefined) {
+                                        const content = item.getElementsByTagName('content:encoded')[0]
+                                            ? serializer.serializeToString(item.getElementsByTagName('content:encoded')[0])
+                                            : serializer.serializeToString(item);
+                                        // Try to match an <img...> tag or &lt;img...&gt; tag. For some reason even with &lt; in the content string, a &gt; is converted to >,
+                                        // perhaps because of the serializer?
+                                        // It needs to be done this way, otherwise feeds with mixed tags and entities cannot be matched properly.
+                                        // And it's also not possible to decode the content already here, because of feeds with mixed tags and entities (they exist...).
+                                        art.cover = content.match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)
+                                            ? content
+                                                .match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)[0]
+                                                .match(/(src=[\w\W]+?)[/]?(?:>|&gt;)/i)[1]
+                                                .match(/(https?:\/\/[^<>"']+?)[\n"'<]/i)[1]
+                                            : serializer
+                                                .serializeToString(item)
+                                                .match(/(https?:\/\/[^<>"'/]+\/+[^<>"':]+?\.(?:(?:jpe?g)|(?:png)).*?)[\n"'<]/i)[1];
+                                    }
+                                    if (art.cover !== undefined) {
+                                        art.cover = decode(art.cover, { scope: 'strict' }).replace('http://', 'https://');
+                                    }
+                                } catch {
+                                /* dontcare */
+                                }
                         } else
                             art.cover = undefined;
 
