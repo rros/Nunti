@@ -1,0 +1,5 @@
+- added a sort by date functionality before the learning sorting becomes enabled
+- improved the in app browser, it now appears without a header
+- improved image extraction
+- fixed a bug causing the in app browser to always return to the feed page
+- fixed a bug which caused feeds to disappear after an update
