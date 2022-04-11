@@ -65,6 +65,8 @@ export class Article {
     public static Fix(art: Article): void {
         if (typeof(art.date) === 'string')
             art.date = new Date(art.date?.toString() ?? Date.now());
+        if (art.date == null)
+            art.date = undefined;
     }
 }
 
@@ -688,7 +690,7 @@ export class Backend {
                 continue;
             }
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
-                if (arts[i].date !== undefined) {
+                if ((arts[i].date ?? undefined) !== undefined) {
                     if (Date.now() - arts[i].date.getTime() < prefs.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
                         newarts.push(arts[i]);
                 } else
@@ -719,7 +721,7 @@ export class Backend {
         if (learning_db['upvotes'] + learning_db['downvotes'] <= prefs.NoSortUntil) {
             console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${prefs.NoSortUntil} required)`);
             articles.sort((a, b) => {
-                if (a.date !== undefined && b.date !== undefined)
+                if ((a.date ?? undefined) !== undefined && (b.date ?? undefined) !== undefined)
                     return b.date.getTime() - a.date.getTime();
                 else
                     return -1;
