@@ -303,7 +303,7 @@ export const Czech = {
     learning_enabled: 'Aktivní',
     rate_more: 'Zbývá %articles%',
     refresh_learning: 'Aktualizovat data',
-    refreshed_data: 'Data aktualizovány',
+    refreshed_data: 'Data aktualizována',
     refresh: 'Aktualizovat',
     app_info: 'Verze aplikace:',
     made_by: 'Nunti byl stvořen s láskou:',
