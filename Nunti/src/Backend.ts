@@ -28,12 +28,34 @@ export class Feed {
         const feed = new Feed(url);
         
         const prefs = await Backend.GetUserSettings();
-        if (Backend.FindFeedByUrl(feed.url, prefs.FeedList) >= 0 )
+        if (Backend.FindFeedByUrl(feed.url, prefs.FeedList) >= 0)
             throw new Error('Feed already in feedlist.');
 
         await Backend.DownloadArticlesOneChannel(feed, 5, true);
 
         return feed;
+    }
+
+    public static async GuessRSSLink(url: string): Promise<string|null> {
+        // confirm that feed is working
+        const isWorking = async (link: string): Promise<boolean> => {
+            try {
+                await Backend.DownloadArticlesOneChannel(new Feed(link), 5, true);
+                return true;
+            } catch {
+                return false;
+            }
+        };
+
+        if(url.indexOf('https://') == -1 && url.indexOf('http://') == -1)
+            url = 'https://' + url;
+        if (await isWorking(url))
+            return url;
+        if (await isWorking(url + '/rss'))
+            return url + '/rss';
+        if (await isWorking(url + '/feed'))
+            return url + '/feed';
+        return null;
     }
 }
 

@@ -249,7 +249,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             // start loading animation
             this.setState({dialogButtonLoading: true, dialogButtonDisabled: true});
             
-            const feed:Feed = await Feed.New(this.state.inputValue);
+            const feed:Feed = await Feed.New(await Feed.GuessRSSLink(this.state.inputValue));
             
             this.props.prefs.FeedList.push(feed);
             this.setState({feeds: this.props.prefs.FeedList});
