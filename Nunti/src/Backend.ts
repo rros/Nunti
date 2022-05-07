@@ -539,12 +539,14 @@ export class Backend {
             const serializer = new XMLSerializer();
             try {
                 const xml = parser.parseFromString(await r.text());
-                let items: any; //eslint-disable-line
-                try {
-                    items = xml.getElementsByTagName('channel')[0].getElementsByTagName('item');
-                } catch {
-                    items = xml.getElementsByTagName('feed')[0].getElementsByTagName('entry');
-                }
+                let items: any = null; //eslint-disable-line
+                try { if (items === null || items.length == 0) items = xml.getElementsByTagName('channel')[0].getElementsByTagName('item'); } catch { /* dontcare */ } //traditional RSS
+                try { if (items === null || items.length == 0) items = xml.getElementsByTagName('feed')[0].getElementsByTagName('entry'); } catch { /* dontcare */ } //atom feeds
+                try { if (items === null || items.length == 0) items = xml.getElementsByTagName('item'); } catch { /* dontcare */ } //RDF feeds (https://validator.w3.org/feed/docs/rss1.html)
+                
+                if (items === null)
+                    throw new Error('Cannot parse feed, don\'t know where to find articles. (unsupported feed format?)');
+
                 for (let y = 0; y < items.length; y++) {
                     if (y >= maxperchannel)
                         break;
@@ -567,7 +569,7 @@ export class Backend {
                             //fallback for CDATA retards
                             if (art.description.trim() === '')
                                 art.description = serializer.serializeToString(item).match(/description>.*CDATA\[(.*)\]\].*<\/description/s)[1];
-                        } catch { /* doncare */ }
+                        } catch { /* dontcare */ }
 
                         art.description = decode(art.description, {scope: 'strict'});
                         art.description = art.description.trim();
@@ -625,6 +627,7 @@ export class Backend {
                             art.url = item.getElementsByTagName('link')[0].getAttribute('href');
                         }
 
+                        try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
                         try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
 
                         arts.push(art);
