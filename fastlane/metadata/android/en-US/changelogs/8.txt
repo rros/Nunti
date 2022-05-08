@@ -1,0 +1,5 @@
+- added RDF feed support
+- improved the adding of RSS feeds, the app will now try some predefined rss locations
+- fixed a bug which caused feeds to not work if it did not provide article dates
+- fixed a typo in cz locale
+- fixed a bug stopping the accessing of http pages with the in-app reader
