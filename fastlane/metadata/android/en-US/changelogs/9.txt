@@ -1,0 +1,1 @@
+- fix a fatal bug present in the f-droid build that caused version 1.6.0 to crash at startup
