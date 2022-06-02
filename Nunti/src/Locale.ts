@@ -1,6 +1,7 @@
 // NOTE: do not translate language names
 
 export const English = {
+    code: 'en',
     article_saved: 'Article saved',
     article_already_saved: 'Article already saved',
     wizard: 'Wizard',
@@ -158,6 +159,7 @@ export const English = {
 };
 
 export const Czech = {
+    code: 'cs',
     article_saved: 'Článek uložen',
     article_already_saved: 'Článek už je uložen',
     wizard: 'Průvodce',
@@ -315,6 +317,7 @@ export const Czech = {
 };
 
 export const Japanese = {
+    code: 'ja',
     article_saved: '記事が保存されました',
     article_already_saved: '記事はすでに保存されています',
     wizard: 'ウィザード',
@@ -472,6 +475,7 @@ export const Japanese = {
 };
 
 export const Italian = {
+    code: 'it',
     article_saved: 'Articolo salvato',
     article_already_saved: 'Articolo già salvato',
     wizard: 'Procedura guidata',
@@ -629,6 +633,7 @@ export const Italian = {
 };
 
 export const Polish = {
+    code: 'pl',
     article_saved: 'Artykuł zapisany',
     article_already_saved: 'Artykuł jest już zapisany',
     wizard: 'Kreator',
@@ -786,6 +791,7 @@ export const Polish = {
 };
 
 export const German = {
+    code: 'de',
     article_saved: 'Der Artikel wurde gespeichert',
     article_already_saved: 'Der Artikel wurde bereits gespeichert',
     wizard: 'Assistent',
@@ -943,6 +949,7 @@ export const German = {
 };
 
 export const French = {
+    code: 'fr',
     article_saved: 'Article enregistré',
     article_already_saved: 'Article déjà enregistré',
     wizard: 'Assistant',
@@ -1100,6 +1107,7 @@ export const French = {
 };
 
 export const BrazilianPortuguese = {
+    code: 'pt_BR',
     article_saved: 'Artigo salvo',
     article_already_saved: 'Artigo já salvo',
     wizard: 'Assistente',

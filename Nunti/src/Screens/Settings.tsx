@@ -154,10 +154,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         try {
             if(await ScopedStorage.createDocument('NuntiBackup.json', 'application/json', backup, 'utf8') == null){
-                throw "cancelled by user";
+                return;
+            } else{
+                this.props.toggleSnack(this.props.lang.export_ok, true);
             }
-
-            this.props.toggleSnack(this.props.lang.export_ok, true);
         } catch (err) {
             this.props.toggleSnack(this.props.lang.export_fail, true);
             console.log('Failed to export backup. ' + err);
@@ -480,14 +480,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         <ScrollView>
                             <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
                                 <RadioButton.Item label={this.props.lang.system} value="system" />
-                                <RadioButton.Item label={this.props.lang.cs} value="cs" />
-                                <RadioButton.Item label={this.props.lang.de} value="de" />
-                                <RadioButton.Item label={this.props.lang.en} value="en" />
-                                <RadioButton.Item label={this.props.lang.fr} value="fr" />
-                                <RadioButton.Item label={this.props.lang.it} value="it" />
-                                <RadioButton.Item label={this.props.lang.pl} value="pl" />
-                                <RadioButton.Item label={this.props.lang.pt_BR} value="pt_BR" />
-                                <RadioButton.Item label={this.props.lang.ja} value="ja" />
+                                { Object.keys(this.props.Languages).map((language) => {
+                                    return(
+                                        <RadioButton.Item label={this.props.Languages[language].this_language} value={this.props.Languages[language].code} />
+                                    );
+                                })}
                             </RadioButton.Group>
                         </ScrollView>
                     </Dialog>

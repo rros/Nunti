@@ -49,7 +49,7 @@ class Wizard extends Component {
                         saveUserSettings={this.props.saveUserSettings} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Language">
-                    { props => <Step2Language {...props} lang={this.props.lang} prefs={this.props.prefs} 
+                    { props => <Step2Language {...props} lang={this.props.lang} prefs={this.props.prefs} Languages={this.props.Languages}
                         saveUserSettings={this.props.saveUserSettings} updateLanguage={this.props.updateLanguage} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Theming">
@@ -138,22 +138,12 @@ class Step2Language extends Component {
                         <List.Subheader>{this.props.lang.language}</List.Subheader>
                         <List.Item title={this.props.lang.system}
                             right={() => <RadioButton.Item value="system" />} />
-                        <List.Item title={this.props.lang.cs}
-                            right={() => <RadioButton.Item value="cs" />} />
-                        <List.Item title={this.props.lang.de}
-                            right={() => <RadioButton.Item value="de" />} />
-                        <List.Item title={this.props.lang.en}
-                            right={() => <RadioButton.Item value="en" />} />
-                        <List.Item title={this.props.lang.fr}
-                            right={() => <RadioButton.Item value="fr" />} />
-                        <List.Item title={this.props.lang.it}
-                            right={() => <RadioButton.Item value="it" />} />
-                        <List.Item title={this.props.lang.pl}
-                            right={() => <RadioButton.Item value="pl" />} />
-                        <List.Item title={this.props.lang.pt_BR}
-                            right={() => <RadioButton.Item value="pt_BR" />} />
-                        <List.Item title={this.props.lang.ja}
-                            right={() => <RadioButton.Item value="ja" />} />
+                        { Object.keys(this.props.Languages).map((language) => {
+                            return(
+                                <List.Item title={this.props.Languages[language].this_language}
+                                    right={() => <RadioButton.Item value={this.props.Languages[language].code} />} />
+                            );
+                        })}
                     </List.Section>
                 </RadioButton.Group>
             </ScrollView>

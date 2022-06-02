@@ -11,7 +11,7 @@ import {
 
 // our files
 import { Dark, Light, Colors } from './Styles';
-import { English, Czech, Japanese, Italian, Polish, German, French, BrazilianPortuguese } from './Locale';
+import * as Languages from './Locale';
 import Wizard from './Screens/Wizard';
 import Feed from './Screens/Feed';
 import Bookmarks from './Screens/Bookmarks';
@@ -42,7 +42,7 @@ export default class App extends Component {
         
         this.state = {
             theme: Dark, // temporary until theme loads
-            language: English, // temporary until language loads
+            language: Languages.English, // temporary until language loads
             
             snackVisible: false,
             snackMessage: '',
@@ -85,22 +85,10 @@ export default class App extends Component {
             locale = savedLanguage;
         }
 
-        if(locale.includes('cs')){
-            this.setState({ language: Czech });
-        } else if(locale.includes('fr')){
-            this.setState({ language: French });
-        } else if(locale.includes('ja')){
-            this.setState({ language: Japanese });
-        } else if(locale.includes('it')) {
-            this.setState({ language: Italian });
-        } else if(locale.includes('pl')) {
-            this.setState({ language: Polish });
-        } else if(locale.includes('de')) {
-            this.setState({ language: German });
-        } else if(locale.includes('pt_BR')) {
-            this.setState({ language: BrazilianPortuguese });
-        } else { // default
-            this.setState({ language: English });
+        for(let language in Languages){
+            if(locale.includes(Languages[language].code)){
+                this.setState({ language: Languages[language] })
+            }
         }
     }
 
@@ -184,7 +172,8 @@ export default class App extends Component {
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="settings">
                             {props => <Settings {...props} prefs={this.prefs} loadPrefs={this.loadPrefs} 
-                                saveUserSettings={this.saveUserSettings} lang={this.state.language}  
+                                saveUserSettings={this.saveUserSettings} lang={this.state.language}
+                                Languages={Languages}
                                 updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} 
                                 updateAccent={this.updateAccent} toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
@@ -192,7 +181,7 @@ export default class App extends Component {
                             {props => <About {...props} prefs={this.prefs} lang={this.state.language} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true}}>
-                            {props => <Wizard {...props} prefs={this.prefs} lang={this.state.language}
+                            {props => <Wizard {...props} prefs={this.prefs} lang={this.state.language} Languages={Languages}
                                 saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack}
                                 updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
