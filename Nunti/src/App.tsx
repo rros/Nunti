@@ -13,8 +13,7 @@ import {
 import { Dark, Light, Colors } from './Styles';
 import * as Languages from './Locale';
 import Wizard from './Screens/Wizard';
-import Feed from './Screens/Feed';
-import Bookmarks from './Screens/Bookmarks';
+import ArticlesPage from './Screens/Articles';
 import Settings from './Screens/Settings';
 import About from './Screens/About';
 import LegacyWebview from './Screens/LegacyWebview';
@@ -76,7 +75,7 @@ export default class App extends Component {
         await Backend.SaveUserSettings(prefs);
     }
 
-    public async updateLanguage(savedLanguage: string) {
+    public updateLanguage(savedLanguage: string) {
         let locale: string;
 
         if(savedLanguage == 'system'){
@@ -92,7 +91,7 @@ export default class App extends Component {
         }
     }
 
-    public async updateTheme(themeName: string) {
+    public updateTheme(themeName: string) {
         let theme;
         if(themeName == 'dark'){
             theme = Dark;
@@ -128,7 +127,7 @@ export default class App extends Component {
         this.updateAccent(this.prefs.Accent);
     }
 
-    public async updateAccent(accentName: string) {
+    public updateAccent(accentName: string) {
         const theme = this.state.theme;
         
         if(theme.dark){
@@ -163,11 +162,18 @@ export default class App extends Component {
                         drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} 
                         screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
                         <NavigationDrawer.Screen name="feed">
-                            {props => <Feed {...props} prefs={this.prefs} 
+                            {props => <ArticlesPage {...props} prefs={this.prefs} 
+                                source="rss" buttonType="rate"
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="bookmarks">
-                            {props => <Bookmarks {...props} prefs={this.prefs} 
+                            {props => <ArticlesPage {...props} prefs={this.prefs} 
+                                source="bookmarks" buttonType="delete"
+                                lang={this.state.language} toggleSnack={this.toggleSnack}/>}
+                        </NavigationDrawer.Screen>
+                        <NavigationDrawer.Screen name="history">
+                            {props => <ArticlesPage {...props} prefs={this.prefs} 
+                                source="history" buttonType="delete"
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="settings">
@@ -235,8 +241,7 @@ function CustomDrawer ({ state, navigation, theme, lang }) {
                     onPress={() => {
                         setActive(state.routeNames[0]);
                         navigation.navigate(state.routes[0]);
-                    }}
-                />
+                    }}/>
                 <Drawer.Item
                     label={lang.bookmarks}
                     icon="bookmark"
@@ -244,27 +249,32 @@ function CustomDrawer ({ state, navigation, theme, lang }) {
                     onPress={() => {
                         setActive(state.routeNames[1]);
                         navigation.navigate(state.routes[1]);
-                    }}
-                />
+                    }}/>
+                <Drawer.Item
+                    label={lang.history}
+                    icon="history"
+                    active={active === state.routeNames[2]}
+                    onPress={() => {
+                        setActive(state.routeNames[2]);
+                        navigation.navigate(state.routes[2]);
+                    }}/>
             </Drawer.Section>
             <Drawer.Item
                 label={lang.settings}
                 icon="cog"
-                active={active === state.routeNames[2]}
-                onPress={() => {
-                    setActive(state.routeNames[2]);
-                    navigation.navigate(state.routes[2]);
-                }}
-            />
-            <Drawer.Item
-                label={lang.about}
-                icon="information"
                 active={active === state.routeNames[3]}
                 onPress={() => {
                     setActive(state.routeNames[3]);
                     navigation.navigate(state.routes[3]);
-                }}
-            />
+                }}/>
+            <Drawer.Item
+                label={lang.about}
+                icon="information"
+                active={active === state.routeNames[4]}
+                onPress={() => {
+                    setActive(state.routeNames[4]);
+                    navigation.navigate(state.routes[4]);
+                }}/>
         </Drawer.Section>
     );
 }
