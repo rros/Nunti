@@ -115,7 +115,7 @@ class UserSettings {
     public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
     public SeenHistoryLength = 700; //to prevent flooding storage with seen articles history
     public FeedPageSize = 20; //articles per page
-    public RatedArticlesHistory = 40;
+    public ArticleHistory = 40;
 
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;

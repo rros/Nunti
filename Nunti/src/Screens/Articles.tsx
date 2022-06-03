@@ -26,10 +26,6 @@ import { WebView } from 'react-native-webview';
 import { Backend, Article } from '../Backend';
 import DateCaption from '../Components/DateCaption';
 
-// TODO: translate history page, history page empty
-// TODO: add settings option to change history amount
-// TODO: refactor some parts of the page into components
-
 class ArticlesPage extends PureComponent {
     constructor(props:any){
         super(props);
@@ -314,31 +310,7 @@ class ArticlesPage extends PureComponent {
                                 style={Styles.buttonRateRight}></Button>
                         </Animated.View>
                     )}
-                    ListEmptyComponent={(
-                        <View style={Styles.centerView}>
-                            <Image source={this.props.theme.dark ? 
-                                require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
-                                resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                            { this.props.route.name == 'feed' && 
-                                <View>
-                                    <Title style={Styles.largerText}>{this.props.lang.empty_feed_title}</Title>
-                                    <Paragraph style={Styles.largerText}>{this.props.lang.empty_feed_desc}</Paragraph>
-                                </View>
-                            }
-                            { this.props.route.name == 'bookmarks' && 
-                                <View>
-                                    <Title style={Styles.largerText}>{this.props.lang.no_bookmarks}</Title>
-                                    <Paragraph style={Styles.largerText}>{this.props.lang.no_bookmarks_desc}</Paragraph>
-                                </View>
-                            }
-                            { this.props.route.name == 'history' && 
-                                <View>
-                                    <Title style={Styles.largerText}>{'yeet'}</Title>
-                                    <Paragraph style={Styles.largerText}>{'yeet description'}</Paragraph>
-                                </View>
-                            }
-                        </View>
-                    )}
+                    ListEmptyComponent={(props) => <ListEmptyComponent theme={this.props.theme} lang={this.props.lang} route={this.props.route} />}
                     ListFooterComponent={() => this.state.articlePage.length != 0 && (
                         <View style={Styles.listFooterView}>
                             <View style={Styles.footerButtonView}>
@@ -392,6 +364,34 @@ class ArticlesPage extends PureComponent {
             </View>
         );
     }
+}
+
+function ListEmptyComponent ({ theme, route, lang }) {
+    return(
+        <View style={Styles.centerView}>
+            <Image source={theme.dark ? 
+                require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
+                resizeMode="contain" style={Styles.fullscreenImage}></Image>
+            { route.name == 'feed' && 
+                <View>
+                    <Title style={Styles.largerText}>{lang.empty_feed_title}</Title>
+                    <Paragraph style={Styles.largerText}>{lang.empty_feed_desc}</Paragraph>
+                </View>
+            }
+            { route.name == 'bookmarks' && 
+                <View>
+                    <Title style={Styles.largerText}>{lang.no_bookmarks}</Title>
+                    <Paragraph style={Styles.largerText}>{lang.no_bookmarks_desc}</Paragraph>
+                </View>
+            }
+            { route.name == 'history' && 
+                <View>
+                    <Title style={Styles.largerText}>{lang.no_history}</Title>
+                    <Paragraph style={Styles.largerText}>{lang.no_history_desc}</Paragraph>
+                </View>
+            }
+        </View>
+    );
 }
 
 export default withTheme(ArticlesPage);

@@ -35,11 +35,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.resetArtsCache = this.resetArtsCache.bind(this);
         this.resetAllData = this.resetAllData.bind(this);
 
-        this.changeMaxArtAge = this.changeMaxArtAge.bind(this);
-        this.changeDiscovery = this.changeDiscovery.bind(this);
-        this.changeCacheTime = this.changeCacheTime.bind(this);
-        this.changePageSize = this.changePageSize.bind(this);
-        this.changeMaxArtFeed = this.changeMaxArtFeed.bind(this);
+        this.changeDialog = this.changeDialog.bind(this);
         
         this.import = this.import.bind(this);
         this.export = this.export.bind(this);
@@ -60,15 +56,19 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             
             learningStatus: null,
 
-            maxArtAge: this.props.prefs.MaxArticleAgeDays,
+            max_art_age: this.props.prefs.MaxArticleAgeDays,
             discovery: this.props.prefs.DiscoverRatio * 100,
-            cacheTime: this.props.prefs.ArticleCacheTime,
-            pageSize: this.props.prefs.FeedPageSize,
-            maxArtFeed: this.props.prefs.MaxArticlesPerChannel,
+            cache_time: this.props.prefs.ArticleCacheTime,
+            page_size: this.props.prefs.FeedPageSize,
+            max_art_feed: this.props.prefs.MaxArticlesPerChannel,
+            art_history: this.props.prefs.ArticleHistory,
 
             inputValue: '',
             dialogButtonDisabled: true, // when input empty
             dialogButtonLoading: false,
+
+            changeDialogVisible: false,
+            changeDialogType: '',
             
             languageDialogVisible: false,
             browserModeDialogVisible: false,
@@ -76,11 +76,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             accentDialogVisible: false,
             rssAddDialogVisible: false,
             rssStatusDialogVisible: false,
-            maxArtAgeDialogVisible: false,
-            discoveryDialogVisible: false,
-            changeCacheTimeDialogVisible: false,
-            pageSizeDialogVisible: false,
-            maxArtFeedDialogVisible: false,
             cacheDialogVisible: false,
             dataDialogVisible: false,
         };
@@ -172,74 +167,41 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         }
     }
 
-    private async changeDiscovery(){
-        if(this.state.inputValue < 0 || this.state.inputValue > 100){
-            this.props.toggleSnack(this.props.lang.change_discovery_fail, true);
-            this.setState({discoveryDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
+    private async changeDialog(type: string) {
+        if(this.state.inputValue < (type != 'max_art_age' ? 0 : 1)){
+            this.props.toggleSnack(this.props.lang['change_' + type + '_fail'], true);
+            this.setState({changeDialog: false, inputValue: '', dialogButtonDisabled: true});
             return;      
         }
 
-        this.props.prefs.DiscoverRatio = this.state.inputValue / 100;
-        await this.props.saveUserSettings(this.props.prefs);
-
-        this.props.toggleSnack(this.props.lang.change_discovery_success, true);      
-        this.setState({discovery: this.state.inputValue, discoveryDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
-    }
-
-    private async changeCacheTime(){
-        if(this.state.inputValue < 0){
-            this.props.toggleSnack(this.props.lang.change_cache_time_fail, true);
-            this.setState({cacheTimeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
-            return;      
+        switch ( type ) {
+            case 'max_art_age':
+                this.props.prefs.MaxArticleAgeDays = this.state.inputValue;
+                break;
+            case 'discovery':
+                this.props.prefs.DiscoverRatio = this.state.inputValue / 100;
+                break;
+            case 'cache_time':
+                this.props.prefs.ArticleCacheTime = this.state.inputValue;
+                break;
+            case 'art_history':
+                this.props.prefs.ArticleHistory = this.state.inputValue;
+                break;
+            case 'page_size':
+                this.props.prefs.FeedPageSize = this.state.inputValue;
+                break;
+            case 'max_art_feed':
+                this.props.prefs.MaxArticlesPerChannel = this.state.inputValue;
+                break;
+            default: 
+                console.error('Advanced settings change was not applied');
+                break;
         }
 
-        this.props.prefs.ArticleCacheTime = this.state.inputValue;
         await this.props.saveUserSettings(this.props.prefs);
 
-        this.props.toggleSnack(this.props.lang.change_cache_time_success, true);
-        this.setState({cacheTime: this.state.inputValue, cacheTimeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
-    }
-
-    private async changePageSize(){
-        if(this.state.inputValue < 0){
-            this.props.toggleSnack(this.props.lang.change_page_size_fail, true);
-            this.setState({pageSizeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
-            return;      
-        }
-
-        this.props.prefs.FeedPageSize = this.state.inputValue;
-        await this.props.saveUserSettings(this.props.prefs);
-
-        this.props.toggleSnack(this.props.lang.change_page_size_success, true);
-        this.setState({pageSize: this.state.inputValue, pageSizeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
-    }
-
-    private async changeMaxArtFeed(){
-        if(this.state.inputValue < 0){
-            this.props.toggleSnack(this.props.lang.change_max_art_feed_fail, true);
-            this.setState({maxArtFeedDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
-            return;      
-        }
-
-        this.props.prefs.MaxArticlesPerChannel = this.state.inputValue;
-        await this.props.saveUserSettings(this.props.prefs);
-
-        this.props.toggleSnack(this.props.lang.change_max_art_feed_success, true);
-        this.setState({maxArtFeed: this.state.inputValue, maxArtFeedDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
-    }
-
-    private async changeMaxArtAge(){
-        if(this.state.inputValue < 1){
-            this.props.toggleSnack(this.props.lang.change_max_art_age_fail, true);
-            this.setState({maxArtAgeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
-            return;      
-        }
-
-        this.props.prefs.MaxArticleAgeDays = this.state.inputValue;
-        await this.props.saveUserSettings(this.props.prefs);
-
-        this.props.toggleSnack(this.props.lang.change_max_art_age_success, true);
-        this.setState({maxArtAge: this.state.inputValue, maxArtAgeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
+        this.props.toggleSnack(this.props.lang['change_' + type + '_success'], true);
+        this.setState({ [type]: this.state.inputValue, changeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
         
         await Backend.ResetCache();
     }
@@ -339,11 +301,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             theme: this.props.prefs.Theme,
             accent: this.props.prefs.Accent,
             feeds: this.props.prefs.FeedList,
-            maxArtAge: this.props.prefs.MaxArticleAgeDays,
+            max_art_age: this.props.prefs.MaxArticleAgeDays,
             discovery: this.props.prefs.DiscoverRatio * 100,
-            cacheTime: this.props.prefs.ArticleCacheTime,
-            pageSize: this.props.prefs.FeedPageSize,
-            maxArtFeed: this.props.prefs.MaxArticlesPerChannel,
+            cache_time: this.props.prefs.ArticleCacheTime,
+            page_size: this.props.prefs.FeedPageSize,
+            max_art_feed: this.props.prefs.MaxArticlesPerChannel,
+            art_history: this.props.prefs.ArticleHistory,
             
             learningStatus: null,
         });
@@ -368,15 +331,15 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title={this.props.lang.wifi_only}
                         left={() => <List.Icon icon="wifi" />}
                         right={() => <Switch value={this.state.wifiOnlySwitch} 
-                            onValueChange={() => { this.toggleSetting("WifiOnly", "wifiOnlySwitch") }} />} />
+                            onValueChange={() => { this.toggleSetting('WifiOnly', 'wifiOnlySwitch') }} />} />
                     <List.Item title={this.props.lang.no_images}
                         left={() => <List.Icon icon="image-off" />}
                         right={() => <Switch value={this.state.noImagesSwitch} 
-                            onValueChange={() => { this.toggleSetting("DisableImages", "noImagesSwitch") }} />} />
+                            onValueChange={() => { this.toggleSetting('DisableImages', 'noImagesSwitch') }} />} />
                     <List.Item title={this.props.lang.large_images}
                         left={() => <List.Icon icon="image" />}
                         right={() => <Switch value={this.state.largeImagesSwitch} 
-                            onValueChange={() => { this.toggleSetting("LargeImages", "largeImagesSwitch") }} />} />
+                            onValueChange={() => { this.toggleSetting('LargeImages', 'largeImagesSwitch') }} />} />
                 </List.Section>
 
                 <List.Section>
@@ -444,23 +407,33 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title={this.props.lang.max_art_age}
                         left={() => <List.Icon icon="clock-outline" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ maxArtAgeDialogVisible: true });}}>{this.state.maxArtAge + this.props.lang.days}</Button>} />
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'max_art_age' });}}>
+                            {this.state.max_art_age + this.props.lang.days}</Button>} />
+                    <List.Item title={this.props.lang.art_history}
+                        left={() => <List.Icon icon="history" />}
+                        right={() => <Button style={Styles.settingsButton} 
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'art_history' });}}>
+                            {this.state.art_history}</Button>} />
                     <List.Item title={this.props.lang.discovery}
                         left={() => <List.Icon icon="book-search" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ discoveryDialogVisible: true });}}>{this.state.discovery}%</Button>} />
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'discovery' });}}>
+                            {this.state.discovery}%</Button>} />
                     <List.Item title={this.props.lang.cache_time}
                         left={() => <List.Icon icon="timer-off-outline" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ cacheTimeDialogVisible: true });}}>{this.state.cacheTime + this.props.lang.minutes} </Button>} />
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'cache_time' });}}>
+                            {this.state.cache_time + this.props.lang.minutes} </Button>} />
                     <List.Item title={this.props.lang.page_size}
                         left={() => <List.Icon icon="arrow-collapse-up" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ pageSizeDialogVisible: true });}}>{this.state.pageSize}</Button>} />
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'page_size' });}}>
+                            {this.state.page_size}</Button>} />
                     <List.Item title={this.props.lang.max_art_feed}
                         left={() => <List.Icon icon="arrow-collapse-up" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ maxArtFeedDialogVisible: true });}}>{this.state.maxArtFeed}</Button>} />
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'max_art_feed' });}}>
+                            {this.state.max_art_feed}</Button>} />
                 </List.Section>
 
                 <List.Section>
@@ -559,11 +532,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 <List.Item title={this.props.lang.no_images}
                                     left={() => <List.Icon icon="image-off" />}
                                     right={() => <Switch value={this.currentFeed?.noImages} 
-                                        onValueChange={() => { this.changeRssFeedOptions("noImages") }} /> } />
+                                        onValueChange={() => { this.changeRssFeedOptions('noImages') }} /> } />
                                 <List.Item title={this.props.lang.hide_feed}
                                     left={() => <List.Icon icon="eye-off" />}
                                     right={() => <Switch value={!this.currentFeed?.enabled} 
-                                        onValueChange={() => { this.changeRssFeedOptions("enabled") }} /> } />
+                                        onValueChange={() => { this.changeRssFeedOptions('enabled') }} /> } />
                             </List.Section>
                         </Dialog.Content>
                         <Dialog.Actions>
@@ -573,73 +546,17 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.Actions>
                     </Dialog>
 
-                    <Dialog visible={this.state.maxArtAgeDialogVisible} onDismiss={() => { this.setState({ maxArtAgeDialogVisible: false, inputValue: '' });}}>
-                        <Dialog.Title>{this.props.lang.change_max_art_age}</Dialog.Title>
+                    <Dialog visible={this.state.changeDialogVisible} onDismiss={() => { this.setState({ changeDialogVisible: false, inputValue: '' });}}>
+                        <Dialog.Title>{this.props.lang['change_' + this.state.changeDialogType]}</Dialog.Title>
                         <Dialog.Content>
-                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.max_art_age_dialog}</Paragraph>
-                            <TextInput label={this.props.lang.max_art_age} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
+                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang[this.state.changeDialogType + '_dialog']}</Paragraph>
+                            <TextInput label={this.props.lang[this.state.changeDialogType]} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ maxArtAgeDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
+                            <Button onPress={() => { this.setState({ changeDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
                                 {this.props.lang.cancel}</Button>
-                            <Button disabled={this.state.dialogButtonDisabled} onPress={this.changeMaxArtAge}>{this.props.lang.change}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-
-                    <Dialog visible={this.state.discoveryDialogVisible} onDismiss={() => { this.setState({ discoveryDialogVisible: false, inputValue: '' });}}>
-                        <Dialog.Title>{this.props.lang.change_discovery}</Dialog.Title>
-                        <Dialog.Content>
-                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.discovery_dialog}</Paragraph>
-                            <TextInput label={this.props.lang.discovery} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
-                                onChangeText={text => this.inputChange(text)}/>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ discoveryDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
-                                {this.props.lang.cancel}</Button>
-                            <Button disabled={this.state.dialogButtonDisabled} onPress={this.changeDiscovery}>{this.props.lang.change}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-
-                    <Dialog visible={this.state.cacheTimeDialogVisible} onDismiss={() => { this.setState({ cacheTimeDialogVisible: false, inputValue: '' });}}>
-                        <Dialog.Title>{this.props.lang.change_cache_time}</Dialog.Title>
-                        <Dialog.Content>
-                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.cache_time_dialog}</Paragraph>
-                            <TextInput label={this.props.lang.cache_time} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
-                                onChangeText={text => this.inputChange(text)}/>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ cacheTimeDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
-                                {this.props.lang.cancel}</Button>
-                            <Button disabled={this.state.dialogButtonDisabled} onPress={this.changeCacheTime}>{this.props.lang.change}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-
-                    <Dialog visible={this.state.pageSizeDialogVisible} onDismiss={() => { this.setState({ pageSizeDialogVisible: false, inputValue: '' });}}>
-                        <Dialog.Title>{this.props.lang.change_page_size}</Dialog.Title>
-                        <Dialog.Content>
-                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.page_size_dialog}</Paragraph>
-                            <TextInput label={this.props.lang.page_size} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
-                                onChangeText={text => this.inputChange(text)}/>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ pageSizeDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
-                                {this.props.lang.cancel}</Button>
-                            <Button disabled={this.state.dialogButtonDisabled} onPress={this.changePageSize}>{this.props.lang.change}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-
-                    <Dialog visible={this.state.maxArtFeedDialogVisible} onDismiss={() => { this.setState({ maxArtFeedDialogVisible: false, inputValue: '' });}}>
-                        <Dialog.Title>{this.props.lang.change_max_art_feed}</Dialog.Title>
-                        <Dialog.Content>
-                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang.max_art_feed_dialog}</Paragraph>
-                            <TextInput label={this.props.lang.max_art_feed} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
-                                onChangeText={text => this.inputChange(text)}/>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ maxArtFeedDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
-                                {this.props.lang.cancel}</Button>
-                            <Button disabled={this.state.dialogButtonDisabled} onPress={this.changeMaxArtFeed}>{this.props.lang.change}</Button>
+                            <Button disabled={this.state.dialogButtonDisabled} onPress={() => this.changeDialog(this.state.changeDialogType)}>{this.props.lang.change}</Button>
                         </Dialog.Actions>
                     </Dialog>
 
