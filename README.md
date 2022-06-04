@@ -2,7 +2,7 @@
 
 Finally a smart RSS reader which doesn't suck ass or your data.
 
-![F-Droid version](https://img.shields.io/f-droid/v/com.nunti.svg)
+![F-Droid version](https://img.shields.io/f-droid/v/com.nunti)
 ![Gitlab release](https://img.shields.io/gitlab/v/release/24697319)
 
 <a href="https://www.patreon.com/nunti"><img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" height="40"></a>
