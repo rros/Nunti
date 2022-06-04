@@ -195,10 +195,12 @@ export class Backend {
         default:
             throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
         }
+        articles.forEach((art: Article) => { Article.Fix(art); });
 
         // repair article ids, frontend will crash if index doesnt match up with id.
         for (let i = 0; i < articles.length; i++)
             articles[i].id = i;
+    
         return articles;
     }
     /* Retrieves sorted articles to show in feed. */
