@@ -173,7 +173,7 @@ export default class App extends Component {
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="history">
                             {props => <ArticlesPage {...props} prefs={this.prefs} 
-                                source="history" buttonType="delete"
+                                source="history" buttonType="none"
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="settings">

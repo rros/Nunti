@@ -272,28 +272,34 @@ class ArticlesPage extends PureComponent {
                             </Card>
                         </Animated.View>
                     )}
-                    renderHiddenItem={(rowData) => (
-                        <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
-                            opacity: this.state.refreshing ? 0 : 
-                                this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.49, 0.5, 0.51, 1],
-                                outputRange: [0, 0, 1, 0, 0],}),
-                        }]}>
-                            <Button 
-                                color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
-                                outputRange: ['grey', this.props.buttonType == 'delete' ? this.props.theme.colors.error : this.props.theme.colors.success ]})}  
-                                icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-up' } 
-                                mode="contained" contentStyle={Styles.buttonRateContent} 
-                                labelStyle={{fontSize: 20}} dark={false}
-                                style={Styles.buttonRateLeft}></Button>
-                            <Button
-                                color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
-                                    outputRange: ['grey', this.props.theme.colors.error]})}  
-                                icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-down' } 
-                                mode="contained" contentStyle={Styles.buttonRateContent}
-                                labelStyle={{fontSize: 20}} dark={false} 
-                                style={Styles.buttonRateRight}></Button>
-                        </Animated.View>
-                    )}
+                    renderHiddenItem={(rowData) => {
+                        if(this.props.buttonType == 'none'){
+                            return null;
+                        }
+
+                        return(
+                            <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
+                                opacity: this.state.refreshing ? 0 : 
+                                    this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.49, 0.5, 0.51, 1],
+                                    outputRange: [0, 0, 1, 0, 0],}),
+                            }]}>
+                                <Button 
+                                    color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
+                                    outputRange: ['grey', this.props.buttonType == 'delete' ? this.props.theme.colors.error : this.props.theme.colors.success ]})}  
+                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-up' } 
+                                    mode="contained" contentStyle={Styles.buttonRateContent} 
+                                    labelStyle={{fontSize: 20}} dark={false}
+                                    style={Styles.buttonRateLeft}></Button>
+                                <Button
+                                    color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
+                                        outputRange: ['grey', this.props.theme.colors.error]})}  
+                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-down' } 
+                                    mode="contained" contentStyle={Styles.buttonRateContent}
+                                    labelStyle={{fontSize: 20}} dark={false} 
+                                    style={Styles.buttonRateRight}></Button>
+                            </Animated.View>
+                        );
+                    }}
                     ListEmptyComponent={(props) => <ListEmptyComponent theme={this.props.theme} lang={this.props.lang} route={this.props.route} />}
                     ListFooterComponent={() => this.state.articlePage.length != 0 && (
                         <View style={Styles.listFooterView}>
@@ -334,9 +340,9 @@ class ArticlesPage extends PureComponent {
                                 <Card.Actions>
                                     <Button icon="book" onPress={() => { this.readMore(this.currentArticle.url); }}>
                                         {this.props.lang.read_more}</Button>
-                                    { this.props.buttonType == "rate" && <Button icon="bookmark" onPress={() => { this.saveArticle(this.currentArticle); }}>
+                                    { this.props.buttonType != 'delete' && <Button icon="bookmark" onPress={() => { this.saveArticle(this.currentArticle); }}>
                                         {this.props.lang.save}</Button> }
-                                    { this.props.buttonType == "delete" && <Button icon="bookmark-remove" onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>
+                                    { this.props.buttonType == 'delete' && <Button icon="bookmark-remove" onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>
                                         {this.props.lang.remove}</Button> }
                                     <Button icon="share" onPress={() => { this.shareArticle(this.currentArticle.url); }} 
                                         style={Styles.cardButtonLeft}> {this.props.lang.share}</Button>
