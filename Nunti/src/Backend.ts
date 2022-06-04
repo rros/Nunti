@@ -187,7 +187,7 @@ export class Backend {
             articles = await this.GetFeedArticles();
             break;
         case 'bookmarks':
-            articles = await this.GetSavedArticles();
+            articles = (await this.GetSavedArticles()).reverse();
             break;
         case 'history':
             articles = (await this.StorageGet('seen')).reverse().slice(0,50);
