@@ -179,17 +179,27 @@ export class Backend {
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
     public static async GetArticles(articleSource: string): Promise<Article[]> {
         console.info(`Backend: GetArticles('${articleSource}') called.`);
+
+        let articles: Article[];
         switch (articleSource) {
         case 'rss':
         case 'feed':
-            return await this.GetFeedArticles();
+            articles = await this.GetFeedArticles();
+            break;
         case 'bookmarks':
-            return await this.GetSavedArticles();
+            articles = await this.GetSavedArticles();
+            break;
         case 'history':
-            return (await this.StorageGet('seen')).reverse().slice(0,50);
+            articles = (await this.StorageGet('seen')).reverse().slice(0,50);
+            break;
         default:
             throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
         }
+
+        // repair article ids, frontend will crash if index doesnt match up with id.
+        for (let i = 0; i < articles.length; i++)
+            articles[i].id = i;
+        return articles;
     }
     /* Retrieves sorted articles to show in feed. */
     public static async GetFeedArticles(): Promise<Article[]> {
@@ -224,11 +234,6 @@ export class Backend {
 
         arts = await this.SortArticles(arts);
         arts = await this.CleanArticles(arts);
-
-        // repair article ids, frontend will crash if index doesnt match up with id.
-        for (let i = 0; i < arts.length; i++) {
-            arts[i].id = i;
-        }
 
         const timeEnd = Date.now();
         console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
