@@ -82,24 +82,8 @@ class ArticlesPage extends PureComponent {
         this.currentPageIndex = 0;
         this.setState({ refreshing: true });
 
-        // TODO backend:
-        // create a single "refresh" method taking a string parameter: Backend.GetArticles("bookmarks")
-        // return value would be the list so I can put it into a variable straight away
-        if(this.props.source == 'rss'){
-            await Backend.GetArticlesPaginated(); // TODO: call with string parameters specifying tags
-            this.articlesFromBackend = Backend.CurrentFeed;
-        } else if(this.props.source == 'bookmarks'){
-            await Backend.GetSavedArticles();
-            this.articlesFromBackend = Backend.CurrentBookmarks;
-        } else if(this.props.source == 'history'){
-            // temp
-            await Backend.GetSavedArticles();
-            this.articlesFromBackend = Backend.CurrentBookmarks;
-            // temp
-
-            // await Backend.GetHistory();
-            // this.articlesFromBackend = Backend.CurrentHistory;
-        }
+        // TODO: call with string parameters specifying tags (will implement later)
+        this.articlesFromBackend = await Backend.GetArticlesPaginated(this.props.source);
 
         // create one animation value for each article (row)
         let numberOfArticles = 0;

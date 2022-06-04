@@ -143,8 +143,20 @@ class Backup {
 
 export class Backend {
     public static DB_VERSION = '3.1';
-    public static CurrentFeed: Article[][] = [[]];
-    public static CurrentBookmarks: Article[][] = [[]];
+    public static CurrentArticles: {[source: string]: Article[][]} = {
+        'feed': [[]],
+        'bookmarks': [[]],
+        'history': [[]]
+    };
+    public static get CurrentFeed(): Article[][] {
+        return this.CurrentArticles['feed'];
+    }
+    public static get CurrentBookmarks(): Article[][] {
+        return this.CurrentArticles['bookmarks'];
+    }
+    public static get CurrentHistory(): Article[][] {
+        return this.CurrentArticles['history'];
+    }
     
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
@@ -152,19 +164,35 @@ export class Backend {
         await this.CheckDB();
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(): Promise<Article[][]> {
+    public static async GetArticlesPaginated(articleSource: string): Promise<Article[][]> {
         const prefs = await this.GetUserSettings();
-        const arts = await this.GetArticles();
+        const arts = await this.GetArticles(articleSource);
         const timeBegin = Date.now();
+
         const pages = this.PaginateArticles(arts, prefs.FeedPageSize);
+        this.CurrentArticles[articleSource] = pages;
+
         const timeEnd = Date.now();
-        console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms.`);
-        this.CurrentFeed = pages;
+        console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms`);
         return pages;
     }
-
+    /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
+    public static async GetArticles(articleSource: string): Promise<Article[]> {
+        console.info(`Backend: GetArticles('${articleSource}') called.`);
+        switch (articleSource) {
+        case 'rss':
+        case 'feed':
+            return await this.GetFeedArticles();
+        case 'bookmarks':
+            return await this.GetSavedArticles();
+        case 'history':
+            return (await this.StorageGet('seen')).reverse().slice(0,50);
+        default:
+            throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
+        }
+    }
     /* Retrieves sorted articles to show in feed. */
-    public static async GetArticles(): Promise<Article[]> {
+    public static async GetFeedArticles(): Promise<Article[]> {
         console.log('Backend: Loading new articles..');
         const timeBegin: number = Date.now();
         await this.CheckDB();
@@ -248,7 +276,6 @@ export class Backend {
             arts[i].id = i;
             Article.Fix(arts[i]);
         }
-        this.CurrentBookmarks = this.PaginateArticles(arts, (await this.GetUserSettings()).FeedPageSize);
         return arts;
     }
     /* Resets cache */
