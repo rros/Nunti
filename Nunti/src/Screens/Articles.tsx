@@ -26,11 +26,12 @@ import { WebView } from 'react-native-webview';
 import { Backend, Article } from '../Backend';
 import DateCaption from '../Components/DateCaption';
 
-class Feed extends PureComponent {
+class ArticlesPage extends PureComponent {
     constructor(props:any){
         super(props);
 
         // function bindings
+        this.initialiseAnimationValues = this.initialiseAnimationValues.bind(this);
         this.readMore = this.readMore.bind(this);
         this.viewDetails = this.viewDetails.bind(this);
         this.hideDetails = this.hideDetails.bind(this);
@@ -50,6 +51,7 @@ class Feed extends PureComponent {
         };
         
         // variables
+        this.articlesFromBackend = []; // CurrentFeed or CurrentBookmarks
         this.currentArticle = undefined;// details modal
         this.currentPageIndex = 0;
 
@@ -63,6 +65,10 @@ class Feed extends PureComponent {
         this.refresh();
         
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
+            if(this.props.route.name != 'feed') { 
+                this.refresh(); // reload bookmarks/history on each access
+            }
+
             this.setState({showImages: !this.props.prefs.DisableImages, 
                 largeImages: this.props.prefs.LargeImages});
         });
@@ -73,37 +79,40 @@ class Feed extends PureComponent {
     }
 
     private async refresh(){
+        this.currentPageIndex = 0;
         this.setState({ refreshing: true });
 
-        // makes backend load and store articles
-        await Backend.GetArticlesPaginated();
-        
+        // TODO: call with string parameters specifying tags (will implement later)
+        this.articlesFromBackend = await Backend.GetArticlesPaginated(this.props.source);
+
         // create one animation value for each article (row)
         let numberOfArticles = 0;
-        Backend.CurrentFeed.forEach((page) => {
+        this.articlesFromBackend.forEach((page) => {
             page.forEach(() => {
                 numberOfArticles = numberOfArticles + 1;
             });
         });
+    
+        this.initialiseAnimationValues(numberOfArticles);           
+        this.setState({articlePage: this.articlesFromBackend[this.currentPageIndex], refreshing: false});
+    }
 
+    public initialiseAnimationValues(articleNumber: number){
         this.rowTranslateValues = [];
-        Array(numberOfArticles)
+        Array(articleNumber)
             .fill('')
             .forEach((_, i) => {
                 this.rowAnimatedValues[`${i}`] = new Animated.Value(0.5);
             });
-        
-        this.currentPageIndex = 0;
-        this.setState({articlePage: Backend.CurrentFeed[this.currentPageIndex], refreshing: false});
     }
 
     // modal functions
-    private async viewDetails(article: Article){
+    private viewDetails(article: Article){
         this.currentArticle = article;
         this.setState({ detailsVisible: true });
     }
     
-    private async hideDetails(){
+    private hideDetails(){
         this.setState({ detailsVisible: false });
     }
     
@@ -138,7 +147,7 @@ class Feed extends PureComponent {
     }
 
     // render functions
-    private async rateAnimation(){
+    private rateAnimation(){
         Animated.timing(this.hiddenRowAnimatedValue, {
             toValue: this.hiddenRowActive ? 0 : 1,
             useNativeDriver: false,
@@ -148,7 +157,7 @@ class Feed extends PureComponent {
         this.hiddenRowActive = !this.hiddenRowActive;
     }
 
-    private async endSwipe(rowKey: number, data: any) {
+    private endSwipe(rowKey: number, data: any) {
         if(data.translateX > 100 || data.translateX < -100){
             let ratedGood = -1;
             if(data.translateX > 0){
@@ -163,22 +172,31 @@ class Feed extends PureComponent {
                 duration: 400,
                 useNativeDriver: false,
             }).start(() => {
-                this.rateArticle(rowKey, ratedGood);
+                const article = this.state.articlePage.find(item => item.id === rowKey);
+                this.modifyArticle(article, ratedGood);
             });
         }
     }
 
-    private async rateArticle(articleID: number, ratedGood: number){
-        const ratedArticle = this.state.articlePage.find(item => item.id === articleID);
-        await Backend.RateArticle(ratedArticle, ratedGood);
+    private async modifyArticle(article: Article, rating: number){
+        if(this.props.buttonType == 'delete'){
+            if(this.state.detailsVisible == true){
+                this.props.toggleSnack(this.props.lang.removed_saved, true);
+                this.hideDetails();
+            }
 
+            await Backend.TryRemoveSavedArticle(article);
+        } else {
+            await Backend.RateArticle(article, rating);
+        }
+        
         // if the last page got completely emptied and user is on it, go back to the new last page
-        if(this.currentPageIndex == Backend.CurrentFeed.length){
+        if(this.currentPageIndex == this.articlesFromBackend.length){
             this.currentPageIndex = this.currentPageIndex - 1;
         }
 
         // reference value won't rerender the page anyway, so save time by not using setState
-        this.state.articlePage = Backend.CurrentFeed[this.currentPageIndex];
+        this.state.articlePage = this.articlesFromBackend[this.currentPageIndex];
         this.forceUpdate();
     }
 
@@ -190,7 +208,7 @@ class Feed extends PureComponent {
         // wait until scroll has finished to launch article update
         // if we don't wait, the scroll will "lag" until the articles have been updated
         await new Promise(r => setTimeout(r, 200));
-        this.setState({ articlePage: Backend.CurrentFeed[newPageIndex], refreshing: false });
+        this.setState({ articlePage: this.articlesFromBackend[newPageIndex], refreshing: false });
     }
 
     // NOTE: rowKey = item.id; use instead of index
@@ -254,34 +272,35 @@ class Feed extends PureComponent {
                             </Card>
                         </Animated.View>
                     )}
-                    renderHiddenItem={(rowData) => (
-                        <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
-                            opacity: this.state.refreshing ? 0 : 
-                                this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.49, 0.5, 0.51, 1], outputRange: [0, 0, 1, 0, 0],}),
-                        }]}>
-                            <Button 
-                                color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
-                                    outputRange: ['grey', this.props.theme.colors.success]})}  
-                                icon="thumb-up" mode="contained" contentStyle={Styles.buttonRateContent} 
-                                labelStyle={{fontSize: 20}} dark={false}
-                                style={Styles.buttonRateLeft}></Button>
-                            <Button
-                                color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
-                                    outputRange: ['grey', this.props.theme.colors.error]})}  
-                                icon="thumb-down" mode="contained" contentStyle={Styles.buttonRateContent}
-                                labelStyle={{fontSize: 20}} dark={false} 
-                                style={Styles.buttonRateRight}></Button>
-                        </Animated.View>
-                    )}
-                    ListEmptyComponent={(
-                        <View style={Styles.centerView}>
-                            <Image source={this.props.theme.dark ? 
-                                require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
-                                resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                            <Title style={Styles.largerText}>{this.props.lang.empty_feed_title}</Title>
-                            <Paragraph style={Styles.largerText}>{this.props.lang.empty_feed_desc}</Paragraph>
-                        </View>
-                    )}
+                    renderHiddenItem={(rowData) => {
+                        if(this.props.buttonType == 'none'){
+                            return null;
+                        }
+
+                        return(
+                            <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
+                                opacity: this.state.refreshing ? 0 : 
+                                    this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.49, 0.5, 0.51, 1],
+                                    outputRange: [0, 0, 1, 0, 0],}),
+                            }]}>
+                                <Button 
+                                    color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
+                                    outputRange: ['grey', this.props.buttonType == 'delete' ? this.props.theme.colors.error : this.props.theme.colors.success ]})}  
+                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-up' } 
+                                    mode="contained" contentStyle={Styles.buttonRateContent} 
+                                    labelStyle={{fontSize: 20}} dark={false}
+                                    style={Styles.buttonRateLeft}></Button>
+                                <Button
+                                    color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
+                                        outputRange: ['grey', this.props.theme.colors.error]})}  
+                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-down' } 
+                                    mode="contained" contentStyle={Styles.buttonRateContent}
+                                    labelStyle={{fontSize: 20}} dark={false} 
+                                    style={Styles.buttonRateRight}></Button>
+                            </Animated.View>
+                        );
+                    }}
+                    ListEmptyComponent={(props) => <ListEmptyComponent theme={this.props.theme} lang={this.props.lang} route={this.props.route} />}
                     ListFooterComponent={() => this.state.articlePage.length != 0 && (
                         <View style={Styles.listFooterView}>
                             <View style={Styles.footerButtonView}>
@@ -299,7 +318,7 @@ class Feed extends PureComponent {
                                 <Button onPress={() => { this.changePage(this.currentPageIndex+1); }}
                                     icon="chevron-right"
                                     contentStyle={[Styles.footerButton, {flexDirection: 'row-reverse'}]}
-                                    disabled={this.currentPageIndex+1 == Backend.CurrentFeed?.length}>{this.props.lang.next}</Button>
+                                    disabled={this.currentPageIndex+1 == this.articlesFromBackend?.length}>{this.props.lang.next}</Button>
                             </View>
                         </View>
                     )}
@@ -321,8 +340,10 @@ class Feed extends PureComponent {
                                 <Card.Actions>
                                     <Button icon="book" onPress={() => { this.readMore(this.currentArticle.url); }}>
                                         {this.props.lang.read_more}</Button>
-                                    <Button icon="bookmark" onPress={() => { this.saveArticle(this.currentArticle); }}>
-                                        {this.props.lang.save}</Button>
+                                    { this.props.buttonType != 'delete' && <Button icon="bookmark" onPress={() => { this.saveArticle(this.currentArticle); }}>
+                                        {this.props.lang.save}</Button> }
+                                    { this.props.buttonType == 'delete' && <Button icon="bookmark-remove" onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>
+                                        {this.props.lang.remove}</Button> }
                                     <Button icon="share" onPress={() => { this.shareArticle(this.currentArticle.url); }} 
                                         style={Styles.cardButtonLeft}> {this.props.lang.share}</Button>
                                 </Card.Actions>
@@ -335,4 +356,32 @@ class Feed extends PureComponent {
     }
 }
 
-export default withTheme(Feed);
+function ListEmptyComponent ({ theme, route, lang }) {
+    return(
+        <View style={Styles.centerView}>
+            <Image source={theme.dark ? 
+                require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
+                resizeMode="contain" style={Styles.fullscreenImage}></Image>
+            { route.name == 'feed' && 
+                <View>
+                    <Title style={Styles.largerText}>{lang.empty_feed_title}</Title>
+                    <Paragraph style={Styles.largerText}>{lang.empty_feed_desc}</Paragraph>
+                </View>
+            }
+            { route.name == 'bookmarks' && 
+                <View>
+                    <Title style={Styles.largerText}>{lang.no_bookmarks}</Title>
+                    <Paragraph style={Styles.largerText}>{lang.no_bookmarks_desc}</Paragraph>
+                </View>
+            }
+            { route.name == 'history' && 
+                <View>
+                    <Title style={Styles.largerText}>{lang.no_history}</Title>
+                    <Paragraph style={Styles.largerText}>{lang.no_history_desc}</Paragraph>
+                </View>
+            }
+        </View>
+    );
+}
+
+export default withTheme(ArticlesPage);

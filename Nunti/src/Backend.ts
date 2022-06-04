@@ -115,6 +115,7 @@ class UserSettings {
     public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
     public SeenHistoryLength = 700; //to prevent flooding storage with seen articles history
     public FeedPageSize = 20; //articles per page
+    public ArticleHistory = 40;
 
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;
@@ -142,8 +143,20 @@ class Backup {
 
 export class Backend {
     public static DB_VERSION = '3.1';
-    public static CurrentFeed: Article[][] = [[]];
-    public static CurrentBookmarks: Article[][] = [[]];
+    public static CurrentArticles: {[source: string]: Article[][]} = {
+        'feed': [[]],
+        'bookmarks': [[]],
+        'history': [[]]
+    };
+    public static get CurrentFeed(): Article[][] {
+        return this.CurrentArticles['feed'];
+    }
+    public static get CurrentBookmarks(): Article[][] {
+        return this.CurrentArticles['bookmarks'];
+    }
+    public static get CurrentHistory(): Article[][] {
+        return this.CurrentArticles['history'];
+    }
     
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
@@ -151,19 +164,47 @@ export class Backend {
         await this.CheckDB();
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(): Promise<Article[][]> {
+    public static async GetArticlesPaginated(articleSource: string): Promise<Article[][]> {
         const prefs = await this.GetUserSettings();
-        const arts = await this.GetArticles();
+        const arts = await this.GetArticles(articleSource);
         const timeBegin = Date.now();
+
         const pages = this.PaginateArticles(arts, prefs.FeedPageSize);
+        this.CurrentArticles[articleSource] = pages;
+
         const timeEnd = Date.now();
-        console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms.`);
-        this.CurrentFeed = pages;
+        console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms`);
         return pages;
     }
+    /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
+    public static async GetArticles(articleSource: string): Promise<Article[]> {
+        console.info(`Backend: GetArticles('${articleSource}') called.`);
 
+        let articles: Article[];
+        switch (articleSource) {
+        case 'rss':
+        case 'feed':
+            articles = await this.GetFeedArticles();
+            break;
+        case 'bookmarks':
+            articles = await this.GetSavedArticles();
+            break;
+        case 'history':
+            articles = (await this.StorageGet('seen')).reverse().slice(0,50);
+            break;
+        default:
+            throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
+        }
+        articles.forEach((art: Article) => { Article.Fix(art); });
+
+        // repair article ids, frontend will crash if index doesnt match up with id.
+        for (let i = 0; i < articles.length; i++)
+            articles[i].id = i;
+    
+        return articles;
+    }
     /* Retrieves sorted articles to show in feed. */
-    public static async GetArticles(): Promise<Article[]> {
+    public static async GetFeedArticles(): Promise<Article[]> {
         console.log('Backend: Loading new articles..');
         const timeBegin: number = Date.now();
         await this.CheckDB();
@@ -195,11 +236,6 @@ export class Backend {
 
         arts = await this.SortArticles(arts);
         arts = await this.CleanArticles(arts);
-
-        // repair article ids, frontend will crash if index doesnt match up with id.
-        for (let i = 0; i < arts.length; i++) {
-            arts[i].id = i;
-        }
 
         const timeEnd = Date.now();
         console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
@@ -247,7 +283,6 @@ export class Backend {
             arts[i].id = i;
             Article.Fix(arts[i]);
         }
-        this.CurrentBookmarks = this.PaginateArticles(arts, (await this.GetUserSettings()).FeedPageSize);
         return arts;
     }
     /* Resets cache */
