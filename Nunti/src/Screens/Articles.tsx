@@ -14,6 +14,8 @@ import {
     Paragraph,
     Portal,
     Modal,
+    Dialog,
+    RadioButton,
     Button,
     Caption,
     withTheme
@@ -24,7 +26,6 @@ import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 import { WebView } from 'react-native-webview';
 
 import { Backend, Article } from '../Backend';
-import DateCaption from '../Components/DateCaption';
 
 class ArticlesPage extends PureComponent {
     constructor(props:any){
@@ -110,6 +111,8 @@ class ArticlesPage extends PureComponent {
     private viewDetails(article: Article){
         this.currentArticle = article;
         this.setState({ detailsVisible: true });
+
+        console.log(this.props.route.params)
     }
     
     private hideDetails(){
@@ -350,6 +353,28 @@ class ArticlesPage extends PureComponent {
                             </Card>
                         </ScrollView>
                     </Modal>}
+
+                    <Dialog visible={route.params?.filterDialogVisible} onDismiss={() => navigation.setParams({filterDialogVisible: false})} style={Styles.modal}>
+                        <Dialog.Title>{lang.filter}</Dialog.Title> {/* TODO: search functionality? */}
+                        <Dialog.Content>
+                            <Dialog.ScrollArea>
+                                <ScrollView>
+                                    <RadioButton.Group onValueChange={console.log("TODO: change rss source")} value={lang.no_filter}>
+                                        <RadioButton.Item label={lang.no_filter} value="no_filter" />
+                                        { tagList.map((tag) => {
+                                            return(
+                                                <RadioButton.Item label={tag.name} 
+                                                    value={false} />
+                                            );
+                                        })}
+                                    </RadioButton.Group>
+                                </ScrollView>
+                            </Dialog.ScrollArea>
+                        </Dialog.Content>
+                        <Dialog.Actions>
+                            <Button onPress={() => navigation.setParams({filterDialogVisible: false})}>{lang.dismiss}</Button>
+                        </Dialog.Actions>
+                    </Dialog>
                 </Portal>
             </View>
         );
@@ -381,6 +406,26 @@ function ListEmptyComponent ({ theme, route, lang }) {
                 </View>
             }
         </View>
+    );
+}
+
+function DateCaption ({ date, lang }) {
+    const difference = ((Date.now() - date) / (24*60*60*1000));
+    let caption = '';
+
+    if(difference <= 1) { // hours
+        const hours = Math.round(difference * 24);
+        if(hours == 0){
+            caption = lang.just_now;
+        } else {
+            caption = lang.hours_ago.replace('%time%', hours);
+        }
+    } else { // days
+        caption = lang.days_ago.replace('%time%', Math.round(difference));
+    }
+
+    return(
+        <Caption>{caption}</Caption>
     );
 }
 

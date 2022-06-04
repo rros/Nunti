@@ -92,8 +92,24 @@ export class Article {
     }
 }
 
+// TODO: temp for testing
+export class Tag {
+    public name: string;
+    
+    constructor(name: string) {
+        this.name = name;
+    }
+    
+    public static async New(name: string): Promise<Tag> {
+        const tag = new Tag(name);
+        // TODO: check if tag already exists
+        return tag;
+    }
+}
+
 class UserSettings {
     public FeedList: Feed[] = [];
+    public TagList: Tag[] = [];
 
     public DisableImages = false;
     public LargeImages = false;
@@ -409,7 +425,7 @@ export class Backend {
             }));
         }
     }
-    /* Change RSS topics */
+    /* Change RSS topics */ //TODO: create a tag for each topic (maybe in currently selected language? localised string could be sent from frontend)
     public static async ChangeDefaultTopics(topicName: string, enable: boolean): Promise<void> {
         const prefs = await this.GetUserSettings();
         console.info(`Backend: Changing default topics, ${topicName} - ${enable ? 'add' : 'remove'}`);

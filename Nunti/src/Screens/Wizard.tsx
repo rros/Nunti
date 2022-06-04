@@ -249,6 +249,7 @@ class Step4Topics extends Component {
         }
     }
 
+    // TODO: if backend decides to create localised tag, send the localised string from here
     private async changeDefaultTopics(topic: string) {
         this.setState({[topic]: !this.state[topic]});
         await Backend.ChangeDefaultTopics(topic, !this.state[topic]);

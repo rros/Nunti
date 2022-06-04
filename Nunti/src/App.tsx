@@ -71,8 +71,8 @@ export default class App extends Component {
         this.setState({prefsLoaded: true});
     }
 
-    public async saveUserSettings(prefs: []) {
-        await Backend.SaveUserSettings(prefs);
+    public async saveUserSettings() {
+        await Backend.SaveUserSettings(this.prefs);
     }
 
     public updateLanguage(savedLanguage: string) {
@@ -216,6 +216,8 @@ function CustomHeader ({ navigation, route, lang }) {
             { route.name != 'wizard' && route.name != 'legacyWebview' 
                 && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
             <Appbar.Content title={lang[route.name]} />
+            { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') && 
+                <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({filterDialogVisible: true})} /> }
         </Appbar.Header> 
     );
 }
