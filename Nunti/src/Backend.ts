@@ -151,6 +151,28 @@ export class Tag {
         } else
             return found;
     }
+
+    public async Remove(): Promise<void> {
+        let i = -1;
+        for (let y = 0; y < Backend.UserSettings.Tags.length; y++) {
+            if (Backend.UserSettings.Tags[i].name == this.name)
+                i = y;
+        }
+        if (i <= 0)
+            console.error(`Cannot remove tag ${this.name} from UserSettings.`);
+        else
+            Backend.UserSettings.Tags.splice(i, 1);
+        Backend.UserSettings.FeedList.forEach((feed: Feed) => {
+            let feed_tag_index = -1;
+            for (let y = 0; y < feed.tags.length; y++) {
+                if (feed.tags[i].name == this.name)
+                    feed_tag_index = y;
+            }
+            if (feed_tag_index >= 0)
+                feed.tags.splice(feed_tag_index, 1);
+        });
+        Backend.UserSettings.Save();
+    }
 }
 
 class UserSettings {

@@ -264,17 +264,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             dialogButtonLoading: false, dialogButtonDisabled: true});
     }
     
-    // TODO: backend add a method to remove tag (remove the set tag in all feeds)
     private async removeTag(tag: Tag) {
-        const updatedTags = this.state.tags;
-        
-        const index = updatedTags.findIndex(item => item.name === tag.name);
-        updatedTags.splice(index, 1);
-        
-        this.props.prefs.Tags = updatedTags;
+        await tag.Remove();
+        this.props.prefs.Tags = Backend.UserSettings.Tags;
         this.setState({tags: updatedTags});
 
-        await this.props.saveUserSettings();            
         this.props.toggleSnack((this.props.lang.removed_tag).replace('%tag%', tag.name), true);
     }
     
@@ -297,31 +291,32 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await Backend.ResetCache();
     }
 
-    // TODO: backend add method to change name
     private async changeRssFeedName(){
         const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
         this.props.prefs.FeedList[changedFeedIndex].name = this.state.inputValue;
+        this.props.prefs.FeedList[changedFeedIndex].Save();
 
         this.setState({feeds: this.state.feeds});
         
-        await this.props.saveUserSettings();
         await Backend.ResetCache();
     }
     
-    // TODO: backend add method to change the options
     private async changeRssFeedOptions(optionName: string){
         const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
         this.props.prefs.FeedList[changedFeedIndex][optionName] = !this.props.prefs.FeedList[changedFeedIndex][optionName];
+        this.props.prefs.FeedList[changedFeedIndex].Save();
 
         this.setState({feeds: this.state.feeds});
 
-        await this.props.saveUserSettings();
         await Backend.ResetCache();
     }
 
-    // TODO: backend add method (taking name and bool)
+    // TODO: frontend
     private async changeTagFeed() {
-        
+        /*
+         * this.props.prefs.FeedList[index].Tags.....
+         * this.props.prefs.FeedList[index].Save();
+         */
     }
 
     private async resetArtsCache() {
