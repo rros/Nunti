@@ -40,13 +40,13 @@ export class Feed {
         return feed;
     }
 
-    public async Save(): Promise<void> {
+    public static async Save(feed: Feed): Promise<void> {
         const prefs = Backend.UserSettings;
-        const i = Backend.FindFeedByUrl(this.url, prefs.FeedList);
+        const i = Backend.FindFeedByUrl(feed.url, prefs.FeedList);
         if (i >= 0)
-            prefs.FeedList[i] = this;
+            prefs.FeedList[i] = feed;
         else
-            prefs.FeedList.push(this);
+            prefs.FeedList.push(feed);
         await prefs.Save();
     }
 
@@ -134,6 +134,9 @@ export class Tag {
         if (!contains) {
             const tag = new Tag(name);
             Backend.UserSettings.Tags.push(tag);
+            console.info(Backend);
+            console.info(Backend.UserSettings);
+            console.info(Backend.UserSettings.Save);
             await Backend.UserSettings.Save();
             return tag;
         } else
@@ -152,20 +155,20 @@ export class Tag {
             return found;
     }
 
-    public async Remove(): Promise<void> {
+    public static async Remove(tag: Tag): Promise<void> {
         let i = -1;
         for (let y = 0; y < Backend.UserSettings.Tags.length; y++) {
-            if (Backend.UserSettings.Tags[i].name == this.name)
+            if (Backend.UserSettings.Tags[i].name == tag.name)
                 i = y;
         }
         if (i <= 0)
-            console.error(`Cannot remove tag ${this.name} from UserSettings.`);
+            console.error(`Cannot remove tag ${tag.name} from UserSettings.`);
         else
             Backend.UserSettings.Tags.splice(i, 1);
         Backend.UserSettings.FeedList.forEach((feed: Feed) => {
             let feed_tag_index = -1;
             for (let y = 0; y < feed.tags.length; y++) {
-                if (feed.tags[i].name == this.name)
+                if (feed.tags[i].name == tag.name)
                     feed_tag_index = y;
             }
             if (feed_tag_index >= 0)
@@ -267,8 +270,7 @@ export class Backend {
     }
     public static async RefreshUserSettings(): Promise<void> {
         await this.CheckDB();
-        const plain = new UserSettings();
-        this.UserSettings = {...plain, ...(await this.StorageGet('user_settings'))};
+        this.UserSettings = Object.assign(new UserSettings(), await this.StorageGet('user_settings'));
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(articleSource: string): Promise<Article[][]> {
@@ -1027,11 +1029,11 @@ export class Backend {
         console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
     }
     private static async MergeUserSettings(old: UserSettings): Promise<UserSettings> {
-        const prefs = { ...(await this.StorageGet('user_settings')), ...old };
+        const prefs = Object.assign(await this.StorageGet('user_settings'), old);
         // cycle through Feeds and merge them, otherwise new properties will be undefined in next update
         for (let i = 0; i < prefs.FeedList.length; i++) {
             try {
-                prefs.FeedList[i] = { ...(new Feed(prefs.FeedList[i].url)), ...prefs.FeedList[i] };
+                prefs.FeedList[i] = Object.assign(new Feed(prefs.FeedList[i].url), prefs.FeedList[i]);
             } catch {
                 console.warn(`backup restore: failed to merge feed ${prefs.FeedList[i].url}`);
             }
