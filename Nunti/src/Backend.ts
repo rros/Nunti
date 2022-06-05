@@ -267,7 +267,8 @@ export class Backend {
     }
     public static async RefreshUserSettings(): Promise<void> {
         await this.CheckDB();
-        this.UserSettings = await this.StorageGet('user_settings');
+        const plain = new UserSettings();
+        this.UserSettings = {...plain, ...(await this.StorageGet('user_settings'))};
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(articleSource: string): Promise<Article[][]> {
