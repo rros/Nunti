@@ -17,11 +17,10 @@ import {
     withTheme
 } from 'react-native-paper';
 
-// TODO: fix remove tag button alignment
-
 import * as ScopedStorage from 'react-native-scoped-storage';
 
 import { Backend, Feed, Tag } from '../Backend';
+import { Accents } from '../Styles';
 
 class Settings extends Component { // not using purecomponent as it doesn't rerender array map
     constructor(props: any){
@@ -418,7 +417,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         return (
                             <List.Item title={tag.name}
                                 left={() => <List.Icon icon="tag-outline" />}
-                                right={() => <Button color={this.props.theme.colors.error} 
+                                right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
                                     onPress={() => this.removeTag(tag)}>{this.props.lang.remove}</Button>} />
                         );
                     })}
@@ -540,15 +539,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             <Dialog.Title>{this.props.lang.accent}</Dialog.Title>
                             <Dialog.Content>
                                 <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
-                                    <RadioButton.Item label={this.props.lang.default} value="default" />
-                                    <RadioButton.Item label={this.props.lang.amethyst} value="amethyst" />
-                                    <RadioButton.Item label={this.props.lang.aqua} value="aqua" />
-                                    <RadioButton.Item label={this.props.lang.black} value="black" />
-                                    <RadioButton.Item label={this.props.lang.cinnamon} value="cinnamon" />
-                                    <RadioButton.Item label={this.props.lang.forest} value="forest" />
-                                    <RadioButton.Item label={this.props.lang.ocean} value="ocean" />
-                                    <RadioButton.Item label={this.props.lang.orchid} value="orchid" />
-                                    <RadioButton.Item label={this.props.lang.space} value="space" />
+                                    { Object.keys(Accents).map((accentName) => {
+                                        return (
+                                            <RadioButton.Item label={this.props.lang[accentName]} value={accentName} />
+                                        );
+                                    })}
                                 </RadioButton.Group>
                             </Dialog.Content>
                             <Dialog.Actions>

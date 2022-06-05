@@ -10,7 +10,7 @@ import {
 } from 'react-native-paper';
 
 // our files
-import { Dark, Light, Colors } from './Styles';
+import { Dark, Light, Accents } from './Styles';
 import * as Languages from './Locale';
 import Wizard from './Screens/Wizard';
 import ArticlesPage from './Screens/Articles';
@@ -126,13 +126,13 @@ export default class App extends Component {
         const theme = this.state.theme;
         
         if(theme.dark){
-            theme.colors.accent = Colors[accentName].dark;
-            theme.colors.primary = Colors[accentName].dark;
-            theme.colors.accentReverse = Colors[accentName].light;
+            theme.colors.accent = Accents[accentName].dark;
+            theme.colors.primary = Accents[accentName].dark;
+            theme.colors.accentReverse = Accents[accentName].light;
         } else {
-            theme.colors.accent = Colors[accentName].light;
-            theme.colors.primary = Colors[accentName].light;
-            theme.colors.accentReverse = Colors[accentName].dark;
+            theme.colors.accent = Accents[accentName].light;
+            theme.colors.primary = Accents[accentName].light;
+            theme.colors.accentReverse = Accents[accentName].dark;
         }
 
         this.setState({theme: theme});

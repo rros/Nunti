@@ -571,8 +571,8 @@ export class Backend {
         console.info(`Backend: Changing default topics, ${topicName} - ${enable ? 'add' : 'remove'}`);
 
         if (DefaultTopics.Topics[topicName] !== undefined) {
-            for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
-                const topicFeed = DefaultTopics.Topics[topicName][i];
+            for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
+                const topicFeed = DefaultTopics.Topics[topicName].sources[i];
                 if (enable) {
                     if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
                         console.debug(`add feed ${topicFeed.name} to feedlist`);
@@ -590,15 +590,15 @@ export class Backend {
         }
     }
     /* Checks wheter use has at least X percent of the topic enabled. */
-    public static async IsTopicEnabled(topicName: string, threshold = 0.5): Promise<boolean> {
+    public static IsTopicEnabled(topicName: string, threshold = 0.5): Promise<boolean> {
         if (DefaultTopics.Topics[topicName] !== undefined) {
             let enabledFeedsCount = 0;
-            for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
-                const topicFeed = DefaultTopics.Topics[topicName][i];
+            for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
+                const topicFeed = DefaultTopics.Topics[topicName].sources[i];
                 if (this.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList) >= 0)
                     enabledFeedsCount++;
             }
-            if (enabledFeedsCount / DefaultTopics.Topics[topicName].length >= threshold)
+            if (enabledFeedsCount / DefaultTopics.Topics[topicName].sources.length >= threshold)
                 return true;
             else
                 return false;

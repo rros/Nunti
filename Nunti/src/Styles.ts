@@ -12,6 +12,9 @@ export const Colors = {
         light: '#00c851',
         dark: '#007e33'
     },
+};
+
+export const Accents = {
     default: {
         key: 'default',
         light: '#1eba81',
