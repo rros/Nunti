@@ -17,9 +17,7 @@ import {
     withTheme
 } from 'react-native-paper';
 
-// TODO: localisation for new keywords
-// TODO: rename "learning" to "learning data"?
-// TODO: new economy and science rss feed
+// TODO: fix remove tag button alignment
 
 import * as ScopedStorage from 'react-native-scoped-storage';
 
@@ -310,12 +308,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
     
     private async resetAllData() {
-        this.props.toggleSnack(this.props.lang.wiped_data, true);
+        this.setState({dialogButtonLoading: true});
         
         await Backend.ResetAllData();
         await this.props.reloadGlobalStates();
         
-        this.setState({ dataDialogVisible: false });
+        this.setState({ dataDialogVisible: false, dialogButtonLoading: false });
+        this.props.toggleSnack(this.props.lang.wiped_data, true);
 
         await this.props.navigation.reset({index: 0, routes: [{ name: 'wizard' }]});        
         await this.props.navigation.navigate('wizard');
@@ -577,7 +576,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         onDismiss={() => { this.setState({ tagAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}>
                         <Dialog.Title>{this.props.lang.add_tags}</Dialog.Title>
                         <Dialog.Content>
-                            <TextInput label="Tag name" autoCapitalize="none" defaultValue={this.state.inputValue}
+                            <TextInput label={this.props.lang.tag_name} autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
@@ -688,8 +687,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ dataDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}>
-                                {this.props.lang.restore}</Button>
+                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}
+                                loading={this.state.dialogButtonLoading}>{this.props.lang.restore}</Button>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>
