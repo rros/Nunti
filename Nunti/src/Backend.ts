@@ -282,8 +282,8 @@ export class Backend {
         this.UserSettings = Object.assign(new UserSettings(), await this.StorageGet('user_settings'));
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(articleSource: string): Promise<Article[][]> {
-        const arts = await this.GetArticles(articleSource);
+    public static async GetArticlesPaginated(articleSource: string, filters: string[] = []): Promise<Article[][]> {
+        const arts = await this.GetArticles(articleSource, filters);
         const timeBegin = Date.now();
 
         const pages = this.PaginateArticles(arts, this.UserSettings.FeedPageSize);
@@ -294,7 +294,7 @@ export class Backend {
         return pages;
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
-    public static async GetArticles(articleSource: string): Promise<Article[]> {
+    public static async GetArticles(articleSource: string, filters: string[] = []): Promise<Article[]> {
         console.info(`Backend: GetArticles('${articleSource}') called.`);
 
         let articles: Article[];
@@ -313,6 +313,56 @@ export class Backend {
             throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
         }
         articles.forEach((art: Article) => { Article.Fix(art); });
+
+        // apply filters
+        if (filters.length !== 0) {
+            const filterStartTime = Date.now();
+            const newarts: Article[] = [];
+            const filterTags = filters.slice(1);
+
+            for (let i = 0; i < articles.length; i++) {
+                const art = articles[i];
+                let passed = false;
+                // test tags
+                for (let tag_i = 0; tag_i < art.tags.length; tag_i++) {
+                    if (filterTags.indexOf(art.tags[tag_i].name) >= 0) {
+                        passed = true;
+                        break;
+                    }
+                }
+                if (!passed) {
+                    //text search
+                    const words = (art.title + ' ' + art.description).toLowerCase().split(' ');
+                    const searchWords = filters[0].toLowerCase().split(' ');
+                    if (filters.length == 1 && searchWords.length == 1 && searchWords[0].trim() == '') {
+                        passed = true;
+                    } else {
+                        for (let word_i = 0; word_i < words.length; word_i++) {
+                            if (passed)
+                                break;
+                            const word = words[word_i].trim();
+                            if (word == '')
+                                continue;
+                            for (let search_i = 0; search_i < searchWords.length; search_i++) {
+                                const searchWord = searchWords[search_i].trim();
+                                if (searchWord == '')
+                                    continue;
+                                if (word.indexOf(searchWord) >= 0) {
+                                    passed = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (passed)
+                    newarts.push(art);
+            }
+
+            const filterEndTime = Date.now();
+            console.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
+            articles = newarts;
+        }
 
         // repair article ids, frontend will crash if index doesnt match up with id.
         for (let i = 0; i < articles.length; i++)
