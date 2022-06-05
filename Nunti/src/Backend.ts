@@ -12,6 +12,7 @@ export class Feed {
     public url: string;
     public enabled = true;
     public noImages = false;
+    public tags: Tag[] = [];
 
     constructor(url: string) {
         this.url = url;
@@ -67,6 +68,7 @@ export class Article {
     public url = 'about:blank';
     public source = 'unknown';
     public date: Date | undefined = undefined;
+    public tags: Tag[] = [];
 
     public score = 0;
     public keywords: {[id:string]: number} = {};
@@ -92,24 +94,48 @@ export class Article {
     }
 }
 
-// TODO: temp for testing
 export class Tag {
     public name: string;
     
     constructor(name: string) {
+        if (name.trim() == '')
+            throw new Error('Tag must contain non-whitespace characters.');
         this.name = name;
     }
     
     public static async New(name: string): Promise<Tag> {
-        const tag = new Tag(name);
-        // TODO: check if tag already exists
-        return tag;
+        const prefs = await Backend.GetUserSettings();
+        let contains = false;
+        prefs.Tags.forEach((tag) => {
+            if (tag.name == name)
+                contains = true;
+        });
+        if (!contains) {
+            const tag = new Tag(name);
+            prefs.Tags.push(tag);
+            await Backend.SaveUserSettings(prefs);
+            return tag;
+        } else
+            throw new Error(`Tag ${name} already exists.`);
+    }
+
+    public static async NewOrExisting(name: string): Promise<Tag> {
+        const prefs = await Backend.GetUserSettings();
+        let found: Tag | null = null;
+        prefs.Tags.forEach((tag) => {
+            if (tag.name == name)
+                found = tag;
+        });
+        if (found === null) {
+            return Tag.New(name);
+        } else
+            return found;
     }
 }
 
 class UserSettings {
     public FeedList: Feed[] = [];
-    public TagList: Tag[] = [];
+    public Tags: Tag[] = [];
 
     public DisableImages = false;
     public LargeImages = false;
@@ -425,13 +451,16 @@ export class Backend {
             }));
         }
     }
-    /* Change RSS topics */ //TODO: create a tag for each topic (maybe in currently selected language? localised string could be sent from frontend)
-    public static async ChangeDefaultTopics(topicName: string, enable: boolean): Promise<void> {
+    /* Change RSS topics */
+    public static async ChangeDefaultTopics(topicName: string, enable: boolean, tag: string | null): Promise<void> {
         const prefs = await this.GetUserSettings();
         console.info(`Backend: Changing default topics, ${topicName} - ${enable ? 'add' : 'remove'}`);
+
         if (DefaultTopics.Topics[topicName] !== undefined) {
             for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
                 const topicFeed = DefaultTopics.Topics[topicName][i];
+                if (tag !== null)
+                    topicFeed.tags.push(await Tag.NewOrExisting(tag));
                 if (enable) {
                     if (prefs.FeedList.indexOf(topicFeed) < 0) {
                         console.debug(`add feed ${topicFeed.name} to feedlist`);
@@ -680,6 +709,10 @@ export class Backend {
 
                         try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
                         try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+
+                        feed.tags.forEach((tag) => {
+                            art.tags.push(tag);
+                        });
 
                         arts.push(art);
                     } catch(err) {

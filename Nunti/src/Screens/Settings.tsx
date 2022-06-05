@@ -58,7 +58,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             accent: this.props.prefs.Accent,
 
             feeds: this.props.prefs.FeedList,
-            tags: this.props.prefs.TagList,
+            tags: this.props.prefs.Tags,
             
             learningStatus: null,
 
@@ -251,8 +251,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
             const tag:Tag = await Tag.New(this.state.inputValue);
 
-            this.props.prefs.TagList.push(tag);
-            this.setState({tags: this.props.prefs.TagList});
+            this.setState({tags: this.props.prefs.Tags});
 
             await this.props.saveUserSettings();
             this.props.toggleSnack((this.props.lang.added_tag).replace('%tag%',tag.name), true);
@@ -271,7 +270,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         const index = updatedTags.findIndex(item => item.name === tag.name);
         updatedTags.splice(index, 1);
         
-        this.props.prefs.TagList = updatedTags;
+        this.props.prefs.Tags = updatedTags;
         this.setState({tags: updatedTags});
 
         await this.props.saveUserSettings();            
