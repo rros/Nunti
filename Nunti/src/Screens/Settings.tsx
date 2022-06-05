@@ -18,8 +18,6 @@ import {
 } from 'react-native-paper';
 
 // TODO: separate details page
-// TODO: filter in articles.tsx (don't forget to implement what happens if the current tag is removed)
-// TODO: search functionality?
 // TODO: rename "learning" to "learning data"?
 
 import * as ScopedStorage from 'react-native-scoped-storage';
@@ -33,12 +31,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.changeLanguage = this.changeLanguage.bind(this);
         this.toggleSetting = this.toggleSetting.bind(this);
 
-        //this.removeRss = this.removeRss.bind(this);
         this.addRss = this.addRss.bind(this);
+        this.removeRss = this.removeRss.bind(this);
         this.addTag = this.addTag.bind(this);
         this.removeTag = this.removeTag.bind(this);
-        //this.changeRssFeedName = this.changeRssFeedName.bind(this);
-        //this.changeRssFeedOptions = this.changeRssFeedOptions.bind(this);
+        this.changeTagFeed = this.changeTagFeed.bind(this);
+        this.changeRssFeedName = this.changeRssFeedName.bind(this);
+        this.changeRssFeedOptions = this.changeRssFeedOptions.bind(this);
         this.resetArtsCache = this.resetArtsCache.bind(this);
         this.resetAllData = this.resetAllData.bind(this);
 
@@ -84,7 +83,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             accentDialogVisible: false,
             rssAddDialogVisible: false,
             tagAddDialogVisible: false,
-            //rssStatusDialogVisible: false,
+            rssStatusDialogVisible: false,
             cacheDialogVisible: false,
             dataDialogVisible: false,
         };
@@ -265,6 +264,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             dialogButtonLoading: false, dialogButtonDisabled: true});
     }
     
+    // TODO: backend add a method to remove tag (remove the set tag in all feeds)
     private async removeTag(tag: Tag) {
         const updatedTags = this.state.tags;
         
@@ -278,7 +278,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.toggleSnack((this.props.lang.removed_tag).replace('%tag%', tag.name), true);
     }
     
-    /*private async removeRss(){
+    // TODO: clean up
+    private async removeRss(){
         // hide dialog early
         this.setState({rssStatusDialogVisible: false});
         
@@ -294,9 +295,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.toggleSnack((this.props.lang.removed_feed).replace('%feed%',this.currentFeed.name), true);
         
         await Backend.ResetCache();
-    }*/
+    }
 
-    /*private async changeRssFeedName(){
+    // TODO: backend add method to change name
+    private async changeRssFeedName(){
         const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
         this.props.prefs.FeedList[changedFeedIndex].name = this.state.inputValue;
 
@@ -306,6 +308,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await Backend.ResetCache();
     }
     
+    // TODO: backend add method to change the options
     private async changeRssFeedOptions(optionName: string){
         const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
         this.props.prefs.FeedList[changedFeedIndex][optionName] = !this.props.prefs.FeedList[changedFeedIndex][optionName];
@@ -314,7 +317,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         await this.props.saveUserSettings();
         await Backend.ResetCache();
-    }*/
+    }
+
+    // TODO: backend add method (taking name and bool)
+    private async changeTagFeed() {
+        
+    }
 
     private async resetArtsCache() {
         this.props.toggleSnack(this.props.lang.reset_art_cache, true);
@@ -417,12 +425,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         left={() => <List.Icon icon="plus" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => {this.setState({ rssAddDialogVisible: true });}}>{this.props.lang.add}</Button>} />
-                    { this.state.feeds.map((element) => {
+                    { this.state.feeds.map((feed) => {
                         return (
-                            <List.Item title={element.name}
+                            <List.Item title={feed.name}
                                 left={() => <List.Icon icon="rss" />}
                                 right={() => <Button style={Styles.settingsButton} 
-                                    onPress={() => { this.setState({ rssStatusDialogVisible: true }); this.currentFeed = element}}
+                                    onPress={() => { this.setState({ rssStatusDialogVisible: true }); this.currentFeed = feed}}
                                     >{this.props.lang.feed_status}</Button>} />
                         );
                     })}
@@ -507,85 +515,77 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
                 <Portal>
                     <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false });}}>
-                        <Dialog.Title>{this.props.lang.language}</Dialog.Title>
-                        <Dialog.Content>
-                            <Dialog.ScrollArea>
-                                <ScrollView>
-                                    <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
-                                        <RadioButton.Item label={this.props.lang.system} value="system" />
-                                        { Object.keys(this.props.Languages).map((language) => {
-                                            return(
-                                                <RadioButton.Item label={this.props.Languages[language].this_language} 
-                                                    value={this.props.Languages[language].code} />
-                                            );
-                                        })}
-                                    </RadioButton.Group>
-                                </ScrollView>
-                            </Dialog.ScrollArea>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ languageDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
-                        </Dialog.Actions>
+                        <ScrollView>
+                            <Dialog.Title>{this.props.lang.language}</Dialog.Title>
+                            <Dialog.Content>
+                                <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
+                                    <RadioButton.Item label={this.props.lang.system} value="system" />
+                                    { Object.keys(this.props.Languages).map((language) => {
+                                        return(
+                                            <RadioButton.Item label={this.props.Languages[language].this_language} 
+                                                value={this.props.Languages[language].code} />
+                                        );
+                                    })}
+                                </RadioButton.Group>
+                            </Dialog.Content>
+                            <Dialog.Actions>
+                                <Button onPress={() => { this.setState({ languageDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                            </Dialog.Actions>
+                        </ScrollView>
                     </Dialog>
                     
                     <Dialog visible={this.state.browserModeDialogVisible} onDismiss={() => { this.setState({ browserModeDialogVisible: false });}}>
-                        <Dialog.Title>{this.props.lang.browser_mode}</Dialog.Title>
-                        <Dialog.Content>
-                            <Dialog.ScrollArea>
-                                <ScrollView>
-                                    <RadioButton.Group onValueChange={newValue => this.changeBrowserMode(newValue)} value={this.state.browserMode}>
-                                        <RadioButton.Item label={this.props.lang.legacy_webview} value="legacy_webview" />
-                                        <RadioButton.Item label={this.props.lang.webview} value="webview" />
-                                        <RadioButton.Item label={this.props.lang.external_browser} value="external_browser" />
-                                    </RadioButton.Group>
-                                </ScrollView>
-                            </Dialog.ScrollArea>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ browserModeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
-                        </Dialog.Actions>
+                        <ScrollView>
+                            <Dialog.Title>{this.props.lang.browser_mode}</Dialog.Title>
+                            <Dialog.Content>
+                                <RadioButton.Group onValueChange={newValue => this.changeBrowserMode(newValue)} value={this.state.browserMode}>
+                                    <RadioButton.Item label={this.props.lang.legacy_webview} value="legacy_webview" />
+                                    <RadioButton.Item label={this.props.lang.webview} value="webview" />
+                                    <RadioButton.Item label={this.props.lang.external_browser} value="external_browser" />
+                                </RadioButton.Group>
+                            </Dialog.Content>
+                            <Dialog.Actions>
+                                <Button onPress={() => { this.setState({ browserModeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                            </Dialog.Actions>
+                        </ScrollView>
                     </Dialog>
 
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false });}}>
-                        <Dialog.Title>{this.props.lang.theme}</Dialog.Title>
-                        <Dialog.Content>
-                            <Dialog.ScrollArea>
-                                <ScrollView>
-                                    <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
-                                        <RadioButton.Item label={this.props.lang.system} value="system" />
-                                        <RadioButton.Item label={this.props.lang.light} value="light" />
-                                        <RadioButton.Item label={this.props.lang.dark} value="dark" />
-                                    </RadioButton.Group>
-                                </ScrollView>
-                            </Dialog.ScrollArea>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ themeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
-                        </Dialog.Actions>
+                        <ScrollView>
+                            <Dialog.Title>{this.props.lang.theme}</Dialog.Title>
+                            <Dialog.Content>
+                                <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
+                                    <RadioButton.Item label={this.props.lang.system} value="system" />
+                                    <RadioButton.Item label={this.props.lang.light} value="light" />
+                                    <RadioButton.Item label={this.props.lang.dark} value="dark" />
+                                </RadioButton.Group>
+                            </Dialog.Content>
+                            <Dialog.Actions>
+                                <Button onPress={() => { this.setState({ themeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                            </Dialog.Actions>
+                        </ScrollView>
                     </Dialog>
 
                     <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false });}}>
-                        <Dialog.Title>{this.props.lang.accent}</Dialog.Title>
-                        <Dialog.Content>
-                            <Dialog.ScrollArea>
-                                <ScrollView>
-                                    <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
-                                        <RadioButton.Item label={this.props.lang.default} value="default" />
-                                        <RadioButton.Item label={this.props.lang.amethyst} value="amethyst" />
-                                        <RadioButton.Item label={this.props.lang.aqua} value="aqua" />
-                                        <RadioButton.Item label={this.props.lang.black} value="black" />
-                                        <RadioButton.Item label={this.props.lang.cinnamon} value="cinnamon" />
-                                        <RadioButton.Item label={this.props.lang.forest} value="forest" />
-                                        <RadioButton.Item label={this.props.lang.ocean} value="ocean" />
-                                        <RadioButton.Item label={this.props.lang.orchid} value="orchid" />
-                                        <RadioButton.Item label={this.props.lang.space} value="space" />
-                                    </RadioButton.Group>
-                                </ScrollView>
-                            </Dialog.ScrollArea>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ accentDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
-                        </Dialog.Actions>
+                        <ScrollView>
+                            <Dialog.Title>{this.props.lang.accent}</Dialog.Title>
+                            <Dialog.Content>
+                                <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
+                                    <RadioButton.Item label={this.props.lang.default} value="default" />
+                                    <RadioButton.Item label={this.props.lang.amethyst} value="amethyst" />
+                                    <RadioButton.Item label={this.props.lang.aqua} value="aqua" />
+                                    <RadioButton.Item label={this.props.lang.black} value="black" />
+                                    <RadioButton.Item label={this.props.lang.cinnamon} value="cinnamon" />
+                                    <RadioButton.Item label={this.props.lang.forest} value="forest" />
+                                    <RadioButton.Item label={this.props.lang.ocean} value="ocean" />
+                                    <RadioButton.Item label={this.props.lang.orchid} value="orchid" />
+                                    <RadioButton.Item label={this.props.lang.space} value="space" />
+                                </RadioButton.Group>
+                            </Dialog.Content>
+                            <Dialog.Actions>
+                                <Button onPress={() => { this.setState({ accentDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                            </Dialog.Actions>
+                        </ScrollView>
                     </Dialog>
 
                     <Dialog visible={this.state.rssAddDialogVisible} 
@@ -620,33 +620,57 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     
                     <Dialog visible={this.state.rssStatusDialogVisible} 
                         onDismiss={() => { this.setState({ rssStatusDialogVisible: false, inputValue: ''});}}>
-                        <Dialog.Title>{this.props.lang.feed_status}</Dialog.Title>
-                        <Dialog.Content>
-                            <Paragraph style={Styles.settingsDialogDesc}>{this.currentFeed?.url}</Paragraph>
-                            <View style={Styles.settingsDetailsView}>
-                                <TextInput label={this.currentFeed?.name} autoCapitalize="none" 
-                                    style={Styles.settingsDetailsTextInput}
-                                    onChangeText={text => this.inputChange(text)}/>
-                                <Button onPress={this.changeRssFeedName}
-                                    style={Styles.settingsDetailsButton}
-                                    >{this.props.lang.change}</Button>
-                            </View>
-                            <List.Section>
-                                <List.Item title={this.props.lang.no_images}
-                                    left={() => <List.Icon icon="image-off" />}
-                                    right={() => <Switch value={this.currentFeed?.noImages} 
-                                        onValueChange={() => { this.changeRssFeedOptions('noImages') }} /> } />
-                                <List.Item title={this.props.lang.hide_feed}
-                                    left={() => <List.Icon icon="eye-off" />}
-                                    right={() => <Switch value={!this.currentFeed?.enabled} 
-                                        onValueChange={() => { this.changeRssFeedOptions('enabled') }} /> } />
-                            </List.Section>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} 
-                                onPress={this.removeRss}>{this.props.lang.remove}</Button>
-                        </Dialog.Actions>
+                        <ScrollView>
+                            <Dialog.Title>{this.props.lang.feed_status}</Dialog.Title>
+                            <Dialog.Content>
+                                <Paragraph style={Styles.settingsDialogDesc}>{this.currentFeed?.url}</Paragraph>
+                                <View style={Styles.settingsDetailsView}>
+                                    <TextInput label={this.currentFeed?.name} autoCapitalize="none" 
+                                        style={Styles.settingsDetailsTextInput}
+                                        onChangeText={text => this.inputChange(text)}/>
+                                    <Button onPress={this.changeRssFeedName}
+                                        style={Styles.settingsDetailsButton}
+                                        >{this.props.lang.change}</Button>
+                                </View>
+                            </Dialog.Content>
+                            <Dialog.Title>{this.props.lang.options}</Dialog.Title>
+                            <Dialog.Content>
+                                <List.Section>
+                                    <List.Item title={this.props.lang.no_images}
+                                        left={() => <List.Icon icon="image-off" />}
+                                        right={() => <Switch value={this.currentFeed?.noImages} 
+                                            onValueChange={() => { this.changeRssFeedOptions('noImages') }} /> } />
+                                    <List.Item title={this.props.lang.hide_feed}
+                                        left={() => <List.Icon icon="eye-off" />}
+                                        right={() => <Switch value={!this.currentFeed?.enabled} 
+                                            onValueChange={() => { this.changeRssFeedOptions('enabled') }} /> } />
+                                </List.Section>
+                            </Dialog.Content>
+                            <Dialog.Title>{this.props.lang.tags}</Dialog.Title>
+                            <Dialog.Content>
+                                { this.props.prefs.Tags.length > 0 ? 
+                                    <List.Section>
+                                        { this.props.prefs.Tags.map((tag) => {
+                                            return(
+                                                <List.Item title={tag.name}
+                                                    left={() => <List.Icon icon="tag-outline" />}
+                                                    right={() => <Switch value={false} 
+                                                        onValueChange={() => { this.changeTagFeed(tag.name) }} />
+                                                    } />
+                                            );
+                                        })}
+                                    </List.Section>
+                                    : <RadioButton.Group value={'no_tags'}>
+                                            <RadioButton.Item label={this.props.lang.no_tags} value="no_tags" disabled={true} />
+                                    </RadioButton.Group>
+                                }
+                            </Dialog.Content>
+                            <Dialog.Actions>
+                                <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
+                                <Button mode="contained" color={this.props.theme.colors.error} 
+                                    onPress={this.removeRss}>{this.props.lang.remove}</Button>
+                            </Dialog.Actions>
+                        </ScrollView>
                     </Dialog>
 
                     <Dialog visible={this.state.changeDialogVisible} onDismiss={() => { this.setState({ changeDialogVisible: false, inputValue: '' });}}>

@@ -213,11 +213,11 @@ export default class App extends Component {
 function CustomHeader ({ navigation, route, lang }) {
     return (
         <Appbar.Header style={{marginTop: StatusBar.currentHeight, height: route.name == 'legacyWebview' ? 0 : undefined}}> 
-            { route.name != 'wizard' && route.name != 'legacyWebview' 
-                && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
+            { route.name != 'wizard' && route.name != 'legacyWebview' ?
+                <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
-            { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') && 
-                <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({filterDialogVisible: true})} /> }
+            { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
+                <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({filterDialogVisible: true})} /> : null }
         </Appbar.Header> 
     );
 }

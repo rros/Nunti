@@ -80,6 +80,7 @@ export const English = {
     search: 'Search by keyword',
     clear: 'Clear',
     apply: 'Apply',
+    options: 'Options',
     
     feeds: 'RSS feeds',
     feed_status: 'Details',

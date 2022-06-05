@@ -92,7 +92,6 @@ class ArticlesPage extends PureComponent {
         this.currentPageIndex = 0;
         this.setState({ refreshing: true });
 
-        // TODO: call with string parameters specifying tags (will implement later)
         this.articlesFromBackend = await Backend.GetArticlesPaginated(this.props.source, this.sourceFilter);
 
         // create one animation value for each article (row)

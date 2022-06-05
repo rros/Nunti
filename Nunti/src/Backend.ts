@@ -452,17 +452,14 @@ export class Backend {
         }
     }
 
-    // TODO: remove adding default tags
     /* Change RSS topics */
-    public static async ChangeDefaultTopics(topicName: string, enable: boolean, tag: string | null): Promise<void> {
+    public static async ChangeDefaultTopics(topicName: string, enable: boolean): Promise<void> {
         const prefs = await this.GetUserSettings();
         console.info(`Backend: Changing default topics, ${topicName} - ${enable ? 'add' : 'remove'}`);
 
         if (DefaultTopics.Topics[topicName] !== undefined) {
             for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
                 const topicFeed = DefaultTopics.Topics[topicName][i];
-                if (tag !== null)
-                    topicFeed.tags.push(await Tag.NewOrExisting(tag));
                 if (enable) {
                     if (prefs.FeedList.indexOf(topicFeed) < 0) {
                         console.debug(`add feed ${topicFeed.name} to feedlist`);
