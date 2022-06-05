@@ -48,26 +48,26 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.getLearningStatus = this.getLearningStatus.bind(this);
         
         this.state = {
-            language: this.props.prefs.Language,
-            browserMode: this.props.prefs.BrowserMode,
-            noImagesSwitch: this.props.prefs.DisableImages,
-            largeImagesSwitch: this.props.prefs.LargeImages,
-            wifiOnlySwitch: this.props.prefs.WifiOnly,
+            language: Backend.UserSettings.Language,
+            browserMode: Backend.UserSettings.BrowserMode,
+            noImagesSwitch: Backend.UserSettings.DisableImages,
+            largeImagesSwitch: Backend.UserSettings.LargeImages,
+            wifiOnlySwitch: Backend.UserSettings.WifiOnly,
 
-            theme: this.props.prefs.Theme,
-            accent: this.props.prefs.Accent,
+            theme: Backend.UserSettings.Theme,
+            accent: Backend.UserSettings.Accent,
 
-            feeds: this.props.prefs.FeedList,
-            tags: this.props.prefs.Tags,
+            feeds: Backend.UserSettings.FeedList,
+            tags: Backend.UserSettings.Tags,
             
             learningStatus: null,
 
-            max_art_age: this.props.prefs.MaxArticleAgeDays,
-            discovery: this.props.prefs.DiscoverRatio * 100,
-            cache_time: this.props.prefs.ArticleCacheTime,
-            page_size: this.props.prefs.FeedPageSize,
-            max_art_feed: this.props.prefs.MaxArticlesPerChannel,
-            art_history: this.props.prefs.ArticleHistory,
+            max_art_age: Backend.UserSettings.MaxArticleAgeDays,
+            discovery: Backend.UserSettings.DiscoverRatio * 100,
+            cache_time: Backend.UserSettings.ArticleCacheTime,
+            page_size: Backend.UserSettings.FeedPageSize,
+            max_art_feed: Backend.UserSettings.MaxArticlesPerChannel,
+            art_history: Backend.UserSettings.ArticleHistory,
 
             inputValue: '',
             dialogButtonDisabled: true, // when input empty
@@ -104,39 +104,41 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.setState({learningStatus: await Backend.GetLearningStatus()});
     }
 
-    private async toggleSetting(prefName: string, stateName: string) {
-        this.props.prefs[prefName] = !this.state[stateName];
+    private toggleSetting(prefName: string, stateName: string) {
+        Backend.UserSettings[prefName] = !this.state[stateName];
+        Backend.UserSettings.Save();
+        
         this.setState({ [stateName]: !this.state[stateName]});
-        await this.props.saveUserSettings();
     }
 
-    private async changeLanguage(newLanguage: string) {
-        this.props.prefs.Language = newLanguage;
+    private changeLanguage(newLanguage: string) {
+        Backend.UserSettings.Language = newLanguage;
+        Backend.UserSettings.Save();
+        
         this.setState({ language: newLanguage });
-        await this.props.saveUserSettings();
-
         this.props.updateLanguage(newLanguage);
     }
     
-    private async changeBrowserMode(newBrowserMode: string) {
-        this.props.prefs.BrowserMode = newBrowserMode;
+    private changeBrowserMode(newBrowserMode: string) {
+        Backend.UserSettings.BrowserMode = newBrowserMode;
+        Backend.UserSettings.Save();
+        
         this.setState({ browserMode: newBrowserMode });
-        await this.props.saveUserSettings();
     }
 
-    private async changeTheme(newTheme: string) {
-        this.props.prefs.Theme = newTheme;
+    private changeTheme(newTheme: string) {
+        Backend.UserSettings.Theme = newTheme;
+        Backend.UserSettings.Save();
+        
         this.setState({ theme: newTheme });
-        await this.props.saveUserSettings();
- 
         this.props.updateTheme(newTheme);
     }
 
-    private async changeAccent(newAccent: string) {
-        this.props.prefs.Accent = newAccent;
-        this.setState({ accent: newAccent });
-        await this.props.saveUserSettings();
+    private changeAccent(newAccent: string) {
+        Backend.UserSettings.Accent = newAccent;
+        Backend.UserSettings.Save();
         
+        this.setState({ accent: newAccent });
         this.props.updateAccent(newAccent);
     }
 
@@ -156,7 +158,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         if(await Backend.TryLoadBackup(file.data)){
             this.props.toggleSnack(this.props.lang.import_ok, true);
-            this.reloadPrefs();
+            this.reloadStates();
         } else {
             this.props.toggleSnack(this.props.lang.import_fail_invalid, true);
         }
@@ -185,7 +187,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         }
     }
 
-    private async changeDialog(type: string) {
+    private changeDialog(type: string) {
         if(this.state.inputValue < (type != 'max_art_age' ? 0 : 1)){
             this.props.toggleSnack(this.props.lang['change_' + type + '_fail'], true);
             this.setState({changeDialog: false, inputValue: '', dialogButtonDisabled: true});
@@ -194,34 +196,33 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
         switch ( type ) {
             case 'max_art_age':
-                this.props.prefs.MaxArticleAgeDays = this.state.inputValue;
+                Backend.UserSettings.MaxArticleAgeDays = this.state.inputValue;
                 break;
             case 'discovery':
-                this.props.prefs.DiscoverRatio = this.state.inputValue / 100;
+                Backend.UserSettings.DiscoverRatio = this.state.inputValue / 100;
                 break;
             case 'cache_time':
-                this.props.prefs.ArticleCacheTime = this.state.inputValue;
+                Backend.UserSettings.ArticleCacheTime = this.state.inputValue;
                 break;
             case 'art_history':
-                this.props.prefs.ArticleHistory = this.state.inputValue;
+                Backend.UserSettings.ArticleHistory = this.state.inputValue;
                 break;
             case 'page_size':
-                this.props.prefs.FeedPageSize = this.state.inputValue;
+                Backend.UserSettings.FeedPageSize = this.state.inputValue;
                 break;
             case 'max_art_feed':
-                this.props.prefs.MaxArticlesPerChannel = this.state.inputValue;
+                Backend.UserSettings.MaxArticlesPerChannel = this.state.inputValue;
                 break;
             default: 
                 console.error('Advanced settings change was not applied');
                 break;
         }
 
-        await this.props.saveUserSettings();
+        Backend.UserSettings.Save();
+        Backend.ResetCache();
 
         this.props.toggleSnack(this.props.lang['change_' + type + '_success'], true);
         this.setState({ [type]: this.state.inputValue, changeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
-        
-        await Backend.ResetCache();
     }
     
     private async addRss(){ // input is in state.inputValue
@@ -239,7 +240,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             this.props.toggleSnack(this.props.lang.add_feed_fail, true);
         }
 
-        await Backend.ResetCache();
+        Backend.ResetCache();
+
         this.setState({rssAddDialogVisible: false, inputValue: '',
             dialogButtonLoading: false, dialogButtonDisabled: true});
     }
@@ -265,14 +267,13 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     
     private async removeTag(tag: Tag) {
         await tag.Remove();
-        this.props.prefs.Tags = Backend.UserSettings.Tags;
-        this.setState({tags: updatedTags});
 
+        this.setState({tags: Backend.UserSettings.Tags});
         this.props.toggleSnack((this.props.lang.removed_tag).replace('%tag%', tag.name), true);
     }
     
-    // TODO: clean up
-    private async removeRss(){
+    // TODO: CLEANUP (backend will make feed remove like above)
+    private async removeRss(feed: Feed){
         // hide dialog early
         this.setState({rssStatusDialogVisible: false});
         
@@ -281,19 +282,20 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         const index = updatedFeeds.findIndex(item => item.url === this.currentFeed.url);
         updatedFeeds.splice(index, 1);
         
-        this.props.prefs.FeedList = updatedFeeds;
+        Backend.UserSettings.FeedList = updatedFeeds;
         this.setState({feeds: updatedFeeds});
 
-        await this.props.saveUserSettings();            
+        await Backend.UserSettings.Save();            
         this.props.toggleSnack((this.props.lang.removed_feed).replace('%feed%',this.currentFeed.name), true);
         
         await Backend.ResetCache();
     }
 
+    // TODO check these 3 methods
     private async changeRssFeedName(){
         const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
-        this.props.prefs.FeedList[changedFeedIndex].name = this.state.inputValue;
-        this.props.prefs.FeedList[changedFeedIndex].Save();
+        Backend.UserSettings.FeedList[changedFeedIndex].name = this.state.inputValue;
+        Backend.UserSettings.FeedList[changedFeedIndex].Save();
 
         this.setState({feeds: this.state.feeds});
         
@@ -302,8 +304,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     
     private async changeRssFeedOptions(optionName: string){
         const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
-        this.props.prefs.FeedList[changedFeedIndex][optionName] = !this.props.prefs.FeedList[changedFeedIndex][optionName];
-        this.props.prefs.FeedList[changedFeedIndex].Save();
+        Backend.UserSettings.FeedList[changedFeedIndex][optionName] = !Backend.UserSettings.FeedList[changedFeedIndex][optionName];
+        Backend.UserSettings.FeedList[changedFeedIndex].Save();
 
         this.setState({feeds: this.state.feeds});
 
@@ -313,53 +315,52 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     // TODO: frontend
     private async changeTagFeed() {
         /*
-         * this.props.prefs.FeedList[index].Tags.....
-         * this.props.prefs.FeedList[index].Save();
+         * Backend.UserSettings.FeedList[index].Tags.....
+         * Backend.UserSettings.FeedList[index].Save();
          */
     }
 
-    private async resetArtsCache() {
+    private resetArtsCache() {
         this.props.toggleSnack(this.props.lang.reset_art_cache, true);
         this.setState({ cacheDialogVisible: false });
 
-        await Backend.ResetCache();
+        Backend.ResetCache();
     }
     
     private async resetAllData() {
         this.props.toggleSnack(this.props.lang.wiped_data, true);
         this.setState({ dataDialogVisible: false });
 
-        await Backend.ResetAllData();
-        await this.reloadPrefs();
+        Backend.ResetAllData();
+        this.reloadStates();
 
         await this.props.navigation.reset({index: 0, routes: [{ name: 'wizard' }]});        
         await this.props.navigation.navigate('wizard');
     }
 
-    private async reloadPrefs() { // used in import/export and when resetting all data
-        await this.props.loadPrefs();
-        
+    private async reloadStates() {
         this.setState({
-            language: this.props.prefs.Language,
-            browserMode: this.props.prefs.BrowserMode,
-            noImagesSwitch: this.props.prefs.DisableImages,
-            largeImagesSwitch: this.props.prefs.LargeImages,
-            wifiOnly: this.props.prefs.WifiOnly,
-            theme: this.props.prefs.Theme,
-            accent: this.props.prefs.Accent,
-            feeds: this.props.prefs.FeedList,
-            max_art_age: this.props.prefs.MaxArticleAgeDays,
-            discovery: this.props.prefs.DiscoverRatio * 100,
-            cache_time: this.props.prefs.ArticleCacheTime,
-            page_size: this.props.prefs.FeedPageSize,
-            max_art_feed: this.props.prefs.MaxArticlesPerChannel,
-            art_history: this.props.prefs.ArticleHistory,
+            language: Backend.UserSettings.Language,
+            browserMode: Backend.UserSettings.BrowserMode,
+            noImagesSwitch: Backend.UserSettings.DisableImages,
+            largeImagesSwitch: Backend.UserSettings.LargeImages,
+            wifiOnly: Backend.UserSettings.WifiOnly,
+            theme: Backend.UserSettings.Theme,
+            accent: Backend.UserSettings.Accent,
+            feeds: Backend.UserSettings.FeedList,
+            max_art_age: Backend.UserSettings.MaxArticleAgeDays,
+            discovery: Backend.UserSettings.DiscoverRatio * 100,
+            cache_time: Backend.UserSettings.ArticleCacheTime,
+            page_size: Backend.UserSettings.FeedPageSize,
+            max_art_feed: Backend.UserSettings.MaxArticlesPerChannel,
+            art_history: Backend.UserSettings.ArticleHistory,
             
             learningStatus: null,
         });
         
+        Backend.ResetCache();
         await this.getLearningStatus();
-        await Backend.ResetCache();
+        await this.props.reloadGlobalStates();
     }
 
     render() {
@@ -636,9 +637,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             
                             <Dialog.Title style={Styles.consequentDialogTitle}>{this.props.lang.tags}</Dialog.Title>
                             <Dialog.Content>
-                                { this.props.prefs.Tags.length > 0 ? 
+                                { Backend.UserSettings.Tags.length > 0 ? 
                                     <List.Section style={Styles.compactList}>
-                                        { this.props.prefs.Tags.map((tag) => {
+                                        { Backend.UserSettings.Tags.map((tag) => {
                                             return(
                                                 <List.Item title={tag.name}
                                                     left={() => <List.Icon icon="tag-outline" />}
@@ -656,22 +657,25 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             <Dialog.Actions>
                                 <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
                                 <Button mode="contained" color={this.props.theme.colors.error} 
-                                    onPress={this.removeRss}>{this.props.lang.remove}</Button>
+                                    onPress={() => this.removeRss(this.currentFeed)}>{this.props.lang.remove}</Button>
                             </Dialog.Actions>
                         </ScrollView>
                     </Dialog>
 
-                    <Dialog visible={this.state.changeDialogVisible} onDismiss={() => { this.setState({ changeDialogVisible: false, inputValue: '' });}}>
+                    <Dialog visible={this.state.changeDialogVisible} 
+                        onDismiss={() => { this.setState({ changeDialogVisible: false, inputValue: '' });}}>
                         <Dialog.Title>{this.props.lang['change_' + this.state.changeDialogType]}</Dialog.Title>
                         <Dialog.Content>
                             <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang[this.state.changeDialogType + '_dialog']}</Paragraph>
-                            <TextInput label={this.props.lang[this.state.changeDialogType]} keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
+                            <TextInput label={this.props.lang[this.state.changeDialogType]} keyboardType="numeric" 
+                                autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ changeDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
                                 {this.props.lang.cancel}</Button>
-                            <Button disabled={this.state.dialogButtonDisabled} onPress={() => this.changeDialog(this.state.changeDialogType)}>{this.props.lang.change}</Button>
+                            <Button disabled={this.state.dialogButtonDisabled} 
+                                onPress={() => this.changeDialog(this.state.changeDialogType)}>{this.props.lang.change}</Button>
                         </Dialog.Actions>
                     </Dialog>
 

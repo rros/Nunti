@@ -52,8 +52,8 @@ class ArticlesPage extends PureComponent {
             detailsVisible: false,
             refreshing: false,
             articlePage: [],
-            showImages: !this.props.prefs.DisableImages,
-            largeImages: this.props.prefs.LargeImages,
+            showImages: !Backend.UserSettings.DisableImages,
+            largeImages: Backend.UserSettings.LargeImages,
             inputValue: '',
         };
         
@@ -79,8 +79,8 @@ class ArticlesPage extends PureComponent {
                 this.refresh(); // reload bookmarks/history on each access
             }
 
-            this.setState({showImages: !this.props.prefs.DisableImages, 
-                largeImages: this.props.prefs.LargeImages});
+            this.setState({showImages: !Backend.UserSettings.DisableImages, 
+                largeImages: Backend.UserSettings.LargeImages});
         });
     }
 
@@ -127,13 +127,13 @@ class ArticlesPage extends PureComponent {
     
     // article functions
     private async readMore(url: string) {
-        if(this.props.prefs.BrowserMode == 'webview'){
+        if(Backend.UserSettings.BrowserMode == 'webview'){
             await InAppBrowser.open(url, {
                 forceCloseOnRedirection: false, showInRecents: true,
-                toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
-                navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+                toolbarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
+                navigationBarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
             });
-        } else if(this.props.prefs.BrowserMode == 'legacy_webview') {
+        } else if(Backend.UserSettings.BrowserMode == 'legacy_webview') {
             this.hideDetails();
             this.props.navigation.navigate('legacyWebview', { uri: url, source: 'feed' });
         } else { // == 'external_browser'
@@ -167,15 +167,15 @@ class ArticlesPage extends PureComponent {
         this.sourceFilter = []; // reset array
         
         if(clearFilter == true) { // reset
-            for(let i = 0; i < this.props.prefs.Tags.length; i++){
-                this.state[this.props.prefs.Tags[i].name] = false; // all states will be applied below
+            for(let i = 0; i < Backend.UserSettings.Tags.length; i++){
+                this.state[Backend.UserSettings.Tags[i].name] = false; // all states will be applied below
                 this.setState({inputValue: ''});
             }
         } else {
             this.sourceFilter.push(this.state.inputValue);
-            for(let i = 0; i < this.props.prefs.Tags.length; i++){
-                if(this.state[this.props.prefs.Tags[i].name] == true){
-                    this.sourceFilter.push(this.props.prefs.Tags[i].name);
+            for(let i = 0; i < Backend.UserSettings.Tags.length; i++){
+                if(this.state[Backend.UserSettings.Tags[i].name] == true){
+                    this.sourceFilter.push(Backend.UserSettings.Tags[i].name);
                 }
             }
         }
@@ -397,9 +397,9 @@ class ArticlesPage extends PureComponent {
                         <ScrollView>
                             <Dialog.Title>{this.props.lang.filter}</Dialog.Title>
                             <Dialog.Content>
-                                { this.props.prefs.Tags.length > 0 ? 
+                                { Backend.UserSettings.Tags.length > 0 ? 
                                     <List.Section style={Styles.compactList}>
-                                    { this.props.prefs.Tags.map((tag) => {
+                                    { Backend.UserSettings.Tags.map((tag) => {
                                         // dynamically create states for each tag
                                         if(this.state[tag.name] === undefined) {
                                             this.setState({[tag.name]: false});

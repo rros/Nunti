@@ -263,7 +263,7 @@ export class Backend {
     public static async Init(): Promise<void> {
         console.info('Backend init.');
         await this.CheckDB();
-        this.RefreshUserSettings();
+        await this.RefreshUserSettings();
     }
     public static async RefreshUserSettings(): Promise<void> {
         await this.CheckDB();

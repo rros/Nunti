@@ -44,26 +44,24 @@ class Wizard extends Component {
                                 size={15} color={this.props.theme.colors.disabled} />;}
                 }}>
                 <NavigationTabs.Screen name="Welcome">
-                    { props => <Step1Welcome {...props} lang={this.props.lang} prefs={this.props.prefs} 
-                        toggleSnack={this.props.toggleSnack} loadPrefs={this.props.loadPrefs}
-                        saveUserSettings={this.props.saveUserSettings} />}
+                    { props => <Step1Welcome {...props} lang={this.props.lang}
+                        toggleSnack={this.props.toggleSnack} reloadGlobalStates={this.props.reloadGlobalStates} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Language">
-                    { props => <Step2Language {...props} lang={this.props.lang} prefs={this.props.prefs} Languages={this.props.Languages}
-                        saveUserSettings={this.props.saveUserSettings} updateLanguage={this.props.updateLanguage} />}
+                    { props => <Step2Language {...props} lang={this.props.lang} 
+                        Languages={this.props.Languages} updateLanguage={this.props.updateLanguage} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Theming">
                     { props => <Step3Theme {...props} lang={this.props.lang} 
-                        prefs={this.props.prefs} updateTheme={this.props.updateTheme} 
-                        updateAccent={this.props.updateAccent} saveUserSettings={this.props.saveUserSettings} />}
+                        updateTheme={this.props.updateTheme} 
+                        updateAccent={this.props.updateAccent} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Topics">
                     { props => <Step4Topics {...props} lang={this.props.lang} 
-                        prefs={this.props.prefs} loadPrefs={this.props.loadPrefs}/>}
+                        reloadGlobalStates={this.props.reloadGlobalStates}/>}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Learning">
-                    { props => <Step5Learning {...props} lang={this.props.lang} 
-                        prefs={this.props.prefs} saveUserSettings={this.props.saveUserSettings}/>}
+                    { props => <Step5Learning {...props} lang={this.props.lang} />}
                 </NavigationTabs.Screen>
             </NavigationTabs.Navigator>
         );
@@ -86,11 +84,11 @@ class Step1Welcome extends Component {
         }
 
         if(await Backend.TryLoadBackup(file.data)) {
-            await this.props.loadPrefs();
+            await this.props.reloadGlobalStates();
 
             // when importing OPML files from other apps, we need to set first launch to false to leave the wizard
-            this.props.prefs.FirstLaunch = false;
-            await this.props.saveUserSettings(this.props.prefs);
+            Backend.UserSettings.FirstLaunch = false;
+            Backend.UserSettings.Save();
 
             this.props.toggleSnack(this.props.lang.import_ok, true);
             this.props.navigation.navigate('feed');
@@ -118,14 +116,15 @@ class Step2Language extends Component {
         super(props);
         
         this.state = {
-            language: this.props.prefs.Language,
+            language: Backend.UserSettings.Language,
         };
     }
     
-    private async changeLanguage(newLanguage: string) {
-        this.props.prefs.Language = newLanguage;
+    private changeLanguage(newLanguage: string) {
+        Backend.UserSettings.Language = newLanguage;
+        Backend.UserSettings.Save();
+        
         this.setState({ language: newLanguage });
-        await this.props.saveUserSettings(this.props.prefs);
 
         this.props.updateLanguage(newLanguage);
     }
@@ -155,24 +154,24 @@ class Step3Theme extends Component {
         super(props);
         
         this.state = {
-            theme: this.props.prefs.Theme,
-            accent: this.props.prefs.Accent,
+            theme: Backend.UserSettings.Theme,
+            accent: Backend.UserSettings.Accent,
         };
     }
     
     private async changeTheme(newTheme: string) {
-        this.props.prefs.Theme = newTheme;
+        Backend.UserSettings.Theme = newTheme;
+        Backend.UserSettings.Save();
+        
         this.setState({ theme: newTheme });
-        await this.props.saveUserSettings(this.props.prefs);
- 
         this.props.updateTheme(newTheme);
     }
     
     private async changeAccent(newAccent: string) {
-        this.props.prefs.Accent = newAccent;
-        this.setState({ accent: newAccent });
-        await this.props.saveUserSettings(this.props.prefs);
+        Backend.UserSettings.Accent = newAccent;
+        Backend.UserSettings.Save();
         
+        this.setState({ accent: newAccent });
         this.props.updateAccent(newAccent);
     }
 
@@ -246,12 +245,9 @@ class Step4Topics extends Component {
         }
     }
 
-    private async changeDefaultTopics(topic: string, topicNameLocalised: string) {
+    private changeDefaultTopics(topic: string, topicNameLocalised: string) {
         this.setState({[topic]: !this.state[topic]});
-        await Backend.ChangeDefaultTopics(topic, !this.state[topic]);
-
-        // reload prefs, as backend saves new ones straight into storage and this.props.prefs will become outdated
-        await this.props.loadPrefs();
+        Backend.ChangeDefaultTopics(topic, !this.state[topic]);
     }
     
     render() {
@@ -330,8 +326,8 @@ class Step5Learning extends Component {
     }
 
     private async exitWizard() {
-        this.props.prefs.FirstLaunch = false;
-        await this.props.saveUserSettings(this.props.prefs);
+        Backend.UserSettings.FirstLaunch = false;
+        Backend.UserSettings.Save();
 
         this.props.navigation.navigate('feed');
     }
@@ -343,7 +339,7 @@ class Step5Learning extends Component {
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.largerText}>{this.props.lang.adapt}</Title>
                 <Paragraph style={Styles.largerText}>
-                    {(this.props.lang.wizard_learning).replace('%noSort%', this.props.prefs.NoSortUntil)}</Paragraph>
+                    {(this.props.lang.wizard_learning).replace('%noSort%', Backend.UserSettings.NoSortUntil)}</Paragraph>
                 <Button icon="book" style={Styles.startReadingButton}
                     onPress={this.exitWizard}>{this.props.lang.start}</Button>
             </ScrollView>
