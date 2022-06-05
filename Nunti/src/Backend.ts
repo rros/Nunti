@@ -216,7 +216,7 @@ class UserSettings {
     public TotalDownvotes = 0;
 
     public async Save(): Promise<void> {
-        await Backend.StorageSave('user_settings',this);
+        await Backend.StorageSave('user_settings', this);
     }
     public async Refresh(): Promise<void> {
         await Backend.RefreshUserSettings();
@@ -277,6 +277,7 @@ export class Backend {
     }
     public static async RefreshUserSettings(): Promise<void> {
         await this.CheckDB();
+        console.debug('Backend: Refreshing UserSettings.');
         this.UserSettings = Object.assign(new UserSettings(), await this.StorageGet('user_settings'));
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
@@ -411,6 +412,7 @@ export class Backend {
         await AsyncStorage.clear();
         await this.ResetCache();
         await this.CheckDB();
+        await this.RefreshUserSettings();
     }
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
     public static async RateArticle(art: Article, rating: number): Promise<void> {
@@ -813,7 +815,7 @@ export class Backend {
 
         console.info('Backend: Downloading articles..');
         const timeBegin = Date.now();
-        const feedList = this.UserSettings.FeedList;
+        const feedList = this.UserSettings.FeedList.slice();
 
         const arts: Article[] = [];
 
@@ -919,7 +921,7 @@ export class Backend {
         }
 
         const timeEnd = Date.now();
-        console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms`);
+        console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms (${arts.length} articles processed)`);
         return arts;
     }
     private static async GetArticleScore(art: Article): Promise<number> {
