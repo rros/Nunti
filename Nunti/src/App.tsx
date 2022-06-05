@@ -65,7 +65,7 @@ export default class App extends Component {
     // language, theme, accent
     public async reloadGlobalStates() {
         await this.updateLanguage(Backend.UserSettings.Language);
-        this.updateTheme(Backend.UserSettings.Theme);
+        await this.updateTheme(Backend.UserSettings.Theme);
         
         this.setState({prefsLoaded: true});
     }
@@ -175,7 +175,7 @@ export default class App extends Component {
                                 updateAccent={this.updateAccent} toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="about">
-                            {props => <About {...props} ang={this.state.language} />}
+                            {props => <About {...props} lang={this.state.language} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true}}>
                             {props => <Wizard {...props} lang={this.state.language} Languages={Languages}

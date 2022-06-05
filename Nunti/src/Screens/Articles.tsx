@@ -35,17 +35,10 @@ class ArticlesPage extends PureComponent {
         super(props);
 
         // function bindings
-        this.initialiseAnimationValues = this.initialiseAnimationValues.bind(this);
-        this.readMore = this.readMore.bind(this);
-        this.viewDetails = this.viewDetails.bind(this);
         this.hideDetails = this.hideDetails.bind(this);
-        this.shareArticle = this.shareArticle.bind(this);
-        this.saveArticle = this.saveArticle.bind(this);
         this.refresh = this.refresh.bind(this);
         this.rateAnimation = this.rateAnimation.bind(this);
         this.endSwipe = this.endSwipe.bind(this);
-        this.applyFilter = this.applyFilter.bind(this);
-        this.inputChange = this.inputChange.bind(this);
 
         // states
         this.state = {
@@ -179,8 +172,6 @@ class ArticlesPage extends PureComponent {
                 }
             }
         }
-
-        console.log(this.sourceFilter);
 
         this.props.navigation.setParams({filterDialogVisible: false});
         this.refresh();

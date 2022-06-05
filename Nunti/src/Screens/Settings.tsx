@@ -17,7 +17,12 @@ import {
     withTheme
 } from 'react-native-paper';
 
+// TODO: localisation for new keywords
 // TODO: rename "learning" to "learning data"?
+//
+// TODO: reset all data doesn't update UI
+// TODO: rss feeds not listed
+// TODO: test adding and removing tags from feeds (+ filtering)
 
 import * as ScopedStorage from 'react-native-scoped-storage';
 
@@ -27,20 +32,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     constructor(props: any){
         super(props);
 
-        this.changeLanguage = this.changeLanguage.bind(this);
-        this.toggleSetting = this.toggleSetting.bind(this);
-
         this.addRss = this.addRss.bind(this);
-        this.removeRss = this.removeRss.bind(this);
         this.addTag = this.addTag.bind(this);
-        this.removeTag = this.removeTag.bind(this);
-        this.changeTagFeed = this.changeTagFeed.bind(this);
-        this.changeRssFeedName = this.changeRssFeedName.bind(this);
-        this.changeRssFeedOptions = this.changeRssFeedOptions.bind(this);
         this.resetArtsCache = this.resetArtsCache.bind(this);
         this.resetAllData = this.resetAllData.bind(this);
-
-        this.changeDialog = this.changeDialog.bind(this);
         
         this.import = this.import.bind(this);
         this.export = this.export.bind(this);
@@ -159,6 +154,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         if(await Backend.TryLoadBackup(file.data)){
             this.props.toggleSnack(this.props.lang.import_ok, true);
             this.reloadStates();
+
+            Backend.ResetCache();
         } else {
             this.props.toggleSnack(this.props.lang.import_fail_invalid, true);
         }
@@ -231,8 +228,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             
             const feed:Feed = await Feed.New(await Feed.GuessRSSLink(this.state.inputValue));
             
-            this.state.feeds.push(feed);
-            this.setState({feeds: this.state.feeds});
+            this.setState({feeds: Backend.UserSettings.FeedList});
 
             this.props.toggleSnack((this.props.lang.added_feed).replace('%feed%',feed.name), true);
         } catch(err) {
@@ -252,72 +248,60 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
             const tag:Tag = await Tag.New(this.state.inputValue);
 
-            this.state.tags.push(tag);
-            this.setState({tags: this.state.tags});
-
             this.props.toggleSnack((this.props.lang.added_tag).replace('%tag%',tag.name), true);
         } catch(err) {
             console.error('Can\'t add tag',err);
             this.props.toggleSnack(this.props.lang.add_tag_fail, true);
         }
 
-        this.setState({tagAddDialogVisible: false, inputValue: '',
+        this.setState({tagAddDialogVisible: false, inputValue: '', tags: Backend.UserSettings.Tags,
             dialogButtonLoading: false, dialogButtonDisabled: true});
     }
     
     private async removeTag(tag: Tag) {
-        await tag.Remove();
+        await Tag.Remove(tag);
 
         this.setState({tags: Backend.UserSettings.Tags});
         this.props.toggleSnack((this.props.lang.removed_tag).replace('%tag%', tag.name), true);
     }
     
-    // TODO: CLEANUP (backend will make feed remove like above)
     private async removeRss(feed: Feed){
         // hide dialog early
         this.setState({rssStatusDialogVisible: false});
         
-        const updatedFeeds = this.state.feeds;
-        
-        const index = updatedFeeds.findIndex(item => item.url === this.currentFeed.url);
-        updatedFeeds.splice(index, 1);
-        
-        Backend.UserSettings.FeedList = updatedFeeds;
-        this.setState({feeds: updatedFeeds});
+        await Feed.Remove(feed);
 
-        await Backend.UserSettings.Save();            
-        this.props.toggleSnack((this.props.lang.removed_feed).replace('%feed%',this.currentFeed.name), true);
+        this.setState({feeds: Backend.UserSettings.FeedList});
+        this.props.toggleSnack((this.props.lang.removed_feed).replace('%feed%', feed.name), true);
         
-        await Backend.ResetCache();
+        Backend.ResetCache();
     }
 
-    // TODO check these 3 methods
-    private async changeRssFeedName(){
-        const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
-        Backend.UserSettings.FeedList[changedFeedIndex].name = this.state.inputValue;
-        Backend.UserSettings.FeedList[changedFeedIndex].Save();
+    private async changeRssFeedName(feed: Feed){
+        feed.name = this.state.inputValue;
+        await Feed.Save(feed);
 
-        this.setState({feeds: this.state.feeds});
-        
-        await Backend.ResetCache();
+        this.setState({feeds: Backend.UserSettings.FeedList});
+        Backend.ResetCache();
     }
     
-    private async changeRssFeedOptions(optionName: string){
-        const changedFeedIndex = this.state.feeds.findIndex(item => item.url === this.currentFeed.url);
-        Backend.UserSettings.FeedList[changedFeedIndex][optionName] = !Backend.UserSettings.FeedList[changedFeedIndex][optionName];
-        Backend.UserSettings.FeedList[changedFeedIndex].Save();
+    private async changeRssFeedOptions(feed: Feed, optionName: string){
+        feed[optionName] = !this.currentFeed[optionName];
+        await Feed.Save(feed);
 
-        this.setState({feeds: this.state.feeds});
-
-        await Backend.ResetCache();
+        this.setState({feeds: Backend.UserSettings.FeedList});
+        Backend.ResetCache();
     }
 
-    // TODO: frontend
-    private async changeTagFeed() {
-        /*
-         * Backend.UserSettings.FeedList[index].Tags.....
-         * Backend.UserSettings.FeedList[index].Save();
-         */
+    private async changeTagFeed(feed: Feed, tag: Tag, value: boolean) {
+        if(value){
+            feed.Tags.push(tag);
+        } else {
+            let removeTagIndex = feed.Tags.indexOf(tag);
+            feed.Tags.splice(removeTagIndex, 1);
+        }
+
+        await Feed.Save(feed);
     }
 
     private resetArtsCache() {
@@ -329,10 +313,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     
     private async resetAllData() {
         this.props.toggleSnack(this.props.lang.wiped_data, true);
+        
+        await Backend.ResetAllData();
+        await this.reloadStates();
+        await this.props.reloadGlobalStates();
+        
         this.setState({ dataDialogVisible: false });
-
-        Backend.ResetAllData();
-        this.reloadStates();
 
         await this.props.navigation.reset({index: 0, routes: [{ name: 'wizard' }]});        
         await this.props.navigation.navigate('wizard');
@@ -358,7 +344,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             learningStatus: null,
         });
         
-        Backend.ResetCache();
         await this.getLearningStatus();
         await this.props.reloadGlobalStates();
     }
@@ -615,7 +600,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                     <TextInput label={this.currentFeed?.name} autoCapitalize="none" 
                                         style={Styles.settingsDetailsTextInput}
                                         onChangeText={text => this.inputChange(text)}/>
-                                    <Button onPress={this.changeRssFeedName}
+                                    <Button onPress={() => this.changeRssFeedName(this.currentFeed)}
                                         style={Styles.settingsDetailsButton}
                                         >{this.props.lang.change}</Button>
                                 </View>
@@ -627,11 +612,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                     <List.Item title={this.props.lang.no_images}
                                         left={() => <List.Icon icon="image-off" />}
                                         right={() => <Switch value={this.currentFeed?.noImages} 
-                                            onValueChange={() => { this.changeRssFeedOptions('noImages') }} /> } />
+                                            onValueChange={() => { this.changeRssFeedOptions(this.currentFeed, 'noImages') }} /> } />
                                     <List.Item title={this.props.lang.hide_feed}
                                         left={() => <List.Icon icon="eye-off" />}
                                         right={() => <Switch value={!this.currentFeed?.enabled} 
-                                            onValueChange={() => { this.changeRssFeedOptions('enabled') }} /> } />
+                                            onValueChange={() => { this.changeRssFeedOptions(this.currentFeed, 'enabled') }} /> } />
                                 </List.Section>
                             </Dialog.Content>
                             
@@ -643,14 +628,14 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                             return(
                                                 <List.Item title={tag.name}
                                                     left={() => <List.Icon icon="tag-outline" />}
-                                                    right={() => <Switch value={false} 
-                                                        onValueChange={() => { this.changeTagFeed(tag.name) }} />
+                                                    right={() => <Switch value={this.currentFeed?.Tags.indexOf(tag)} 
+                                                        onValueChange={(value) => { this.changeTagFeed(this.currentFeed, tag, value) }} />
                                                     } />
                                             );
                                         })}
                                     </List.Section>
                                     : <RadioButton.Group value={'no_tags'}>
-                                            <RadioButton.Item label={this.props.lang.no_tags} value="no_tags" disabled={true} />
+                                        <RadioButton.Item label={this.props.lang.no_tags} value="no_tags" disabled={true} />
                                     </RadioButton.Group>
                                 }
                             </Dialog.Content>

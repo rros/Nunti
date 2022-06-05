@@ -144,9 +144,6 @@ export class Tag {
         if (!contains) {
             const tag = new Tag(name);
             Backend.UserSettings.Tags.push(tag);
-            console.info(Backend);
-            console.info(Backend.UserSettings);
-            console.info(Backend.UserSettings.Save);
             await Backend.UserSettings.Save();
             return tag;
         } else
@@ -168,10 +165,10 @@ export class Tag {
     public static async Remove(tag: Tag): Promise<void> {
         let i = -1;
         for (let y = 0; y < Backend.UserSettings.Tags.length; y++) {
-            if (Backend.UserSettings.Tags[i].name == tag.name)
+            if (Backend.UserSettings.Tags[y].name == tag.name)
                 i = y;
         }
-        if (i <= 0)
+        if (i < 0)
             console.error(`Cannot remove tag ${tag.name} from UserSettings.`);
         else
             Backend.UserSettings.Tags.splice(i, 1);
