@@ -50,10 +50,20 @@ export class Feed {
         await prefs.Save();
     }
 
+    public static async Remove(feed: Feed): Promise<void> {
+        const i = Backend.FindFeedByUrl(feed.url, Backend.UserSettings.FeedList);
+        if (i < 0)
+            throw new Error(`Did not find feed with url '${feed.url} in feedlist.'`);
+        else {
+            Backend.UserSettings.FeedList.splice(i, 1);
+            await Backend.UserSettings.Save();
+        }
+    }
+
     public static async Get(url: string): Promise<Feed> {
         const prefs = Backend.UserSettings;
         const i = Backend.FindFeedByUrl(url, prefs.FeedList);
-        if (i <= 0)
+        if (i < 0)
             throw new Error(`Did not find feed with url '${url} in feedlist.'`);
         else
             return prefs.FeedList[i];
