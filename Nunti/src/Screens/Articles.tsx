@@ -16,6 +16,9 @@ import {
     Modal,
     Dialog,
     RadioButton,
+    TextInput,
+    Switch,
+    List,
     Button,
     Caption,
     withTheme
@@ -41,6 +44,8 @@ class ArticlesPage extends PureComponent {
         this.refresh = this.refresh.bind(this);
         this.rateAnimation = this.rateAnimation.bind(this);
         this.endSwipe = this.endSwipe.bind(this);
+        this.applyFilter = this.applyFilter.bind(this);
+        this.inputChange = this.inputChange.bind(this);
 
         // states
         this.state = {
@@ -49,6 +54,7 @@ class ArticlesPage extends PureComponent {
             articlePage: [],
             showImages: !this.props.prefs.DisableImages,
             largeImages: this.props.prefs.LargeImages,
+            inputValue: '',
         };
         
         // variables
@@ -60,6 +66,9 @@ class ArticlesPage extends PureComponent {
         this.rowAnimatedValues = [];
         this.hiddenRowAnimatedValue = new Animated.Value(0);
         this.hiddenRowActive = false; // used to choose which anim to play
+
+        // source variables
+        this.sourceFilter = [];
     }
 
     componentDidMount(){
@@ -84,7 +93,7 @@ class ArticlesPage extends PureComponent {
         this.setState({ refreshing: true });
 
         // TODO: call with string parameters specifying tags (will implement later)
-        this.articlesFromBackend = await Backend.GetArticlesPaginated(this.props.source);
+        this.articlesFromBackend = await Backend.GetArticlesPaginated(this.props.source, this.sourceFilter);
 
         // create one animation value for each article (row)
         let numberOfArticles = 0;
@@ -111,8 +120,6 @@ class ArticlesPage extends PureComponent {
     private viewDetails(article: Article){
         this.currentArticle = article;
         this.setState({ detailsVisible: true });
-
-        console.log(this.props.route.params)
     }
     
     private hideDetails(){
@@ -147,6 +154,37 @@ class ArticlesPage extends PureComponent {
         await Share.share({
             message: url
         });
+    }
+    
+    private inputChange(text: string) {
+        if(text == ''){
+            this.setState({inputValue: text, dialogButtonDisabled: true});
+        } else {
+            this.setState({inputValue: text, dialogButtonDisabled: false});
+        }
+    }
+
+    private applyFilter(clearFilter: boolean) {
+        this.sourceFilter = []; // reset array
+        
+        if(clearFilter == true) { // reset
+            for(let i = 0; i < this.props.prefs.Tags.length; i++){
+                this.state[this.props.prefs.Tags[i].name] = false; // all states will be applied below
+                this.setState({inputValue: ''});
+            }
+        } else {
+            this.sourceFilter.push(this.state.inputValue);
+            for(let i = 0; i < this.props.prefs.Tags.length; i++){
+                if(this.state[this.props.prefs.Tags[i].name] == true){
+                    this.sourceFilter.push(this.props.prefs.Tags[i].name);
+                }
+            }
+        }
+
+        console.log(this.sourceFilter);
+
+        this.props.navigation.setParams({filterDialogVisible: false});
+        this.refresh();
     }
 
     // render functions
@@ -251,26 +289,26 @@ class ArticlesPage extends PureComponent {
                             <Card style={Styles.card} 
                                 onPress={() => { this.readMore(rowData.item.url); }} 
                                 onLongPress={() => { this.viewDetails(rowData.item); }}>
-                                {this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined && <Card.Cover source={{ uri: rowData.item.cover }}/> /* large image */}
+                                {(this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined) ? <Card.Cover source={{ uri: rowData.item.cover }}/> /* large image */ : null }
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Title style={Styles.cardContentTitle}>{rowData.item.title}</Title>
-                                        { (rowData.item.description.length > 0 || (rowData.item.cover !== undefined && this.state.showImages)) &&
+                                        { (rowData.item.description.length > 0 || (rowData.item.cover !== undefined && this.state.showImages)) ?
                                             <Paragraph style={this.state.showImages && rowData.item.cover !== undefined ? Styles.cardContentParagraph : undefined}
                                                 numberOfLines={(rowData.item.cover === undefined || !this.state.showImages) ? 5 : undefined}>
                                                 {rowData.item.description}</Paragraph>
-                                        }
+                                        : null }
                                         <View style={Styles.captionContainer}>
-                                            { rowData.item.date !== undefined && <DateCaption date={rowData.item.date} lang={this.props.lang}/>}
+                                            { rowData.item.date !== undefined ? <DateCaption date={rowData.item.date} lang={this.props.lang}/> : null }
                                             <Caption>{(this.state.largeImages || !this.state.showImages || rowData.item.cover === undefined || rowData.item.date === undefined) ? 
                                                 (this.props.lang.article_from).replace('%source%', rowData.item.source) : rowData.item.source}</Caption>
                                         </View>
                                     </Card.Content>
-                                    {!this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined && /* small image */
+                                    {(!this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined) ? /* small image */
                                         <View style={Styles.cardContentCoverContainer}>
                                             <Card.Cover source={{ uri: rowData.item.cover }}/>
                                         </View> 
-                                    }
+                                    : null }
                                 </View>
                             </Card>
                         </Animated.View>
@@ -304,7 +342,7 @@ class ArticlesPage extends PureComponent {
                         );
                     }}
                     ListEmptyComponent={(props) => <ListEmptyComponent theme={this.props.theme} lang={this.props.lang} route={this.props.route} />}
-                    ListFooterComponent={() => this.state.articlePage.length != 0 && (
+                    ListFooterComponent={() => this.state.articlePage.length != 0 ? (
                         <View style={Styles.listFooterView}>
                             <View style={Styles.footerButtonView}>
                                 <Button onPress={() => { this.changePage(this.currentPageIndex-1); }}
@@ -324,55 +362,76 @@ class ArticlesPage extends PureComponent {
                                     disabled={this.currentPageIndex+1 == this.articlesFromBackend?.length}>{this.props.lang.next}</Button>
                             </View>
                         </View>
-                    )}
+                    ) : null }
                 ></SwipeListView>
+
                 <Portal>
-                    {this.currentArticle !== undefined && <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} style={Styles.modal}>
+                    {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} style={Styles.modal}>
                         <ScrollView>
                             <Card>
-                                {this.state.showImages && this.currentArticle.cover !== undefined && 
-                                    <Card.Cover source={{ uri: this.currentArticle.cover }} />}
+                                {(this.state.showImages && this.currentArticle.cover !== undefined) ? 
+                                    <Card.Cover source={{ uri: this.currentArticle.cover }} /> : null }
                                 <Card.Content>
                                     <Title>{this.currentArticle.title}</Title>
-                                    { this.currentArticle.description.length > 0 && <Paragraph>{this.currentArticle.description}</Paragraph> }
+                                    { this.currentArticle.description.length > 0 ? <Paragraph>{this.currentArticle.description}</Paragraph> : null }
                                     <View style={Styles.captionContainer}>
-                                        { this.currentArticle.date !== undefined && <DateCaption date={this.currentArticle.date} lang={this.props.lang}/>}
+                                        { this.currentArticle.date !== undefined ? <DateCaption date={this.currentArticle.date} lang={this.props.lang}/> : null }
                                         <Caption>{(this.props.lang.article_from).replace('%source%', this.currentArticle.source)}</Caption>
                                     </View>
                                 </Card.Content>
                                 <Card.Actions>
                                     <Button icon="book" onPress={() => { this.readMore(this.currentArticle.url); }}>
                                         {this.props.lang.read_more}</Button>
-                                    { this.props.buttonType != 'delete' && <Button icon="bookmark" onPress={() => { this.saveArticle(this.currentArticle); }}>
-                                        {this.props.lang.save}</Button> }
-                                    { this.props.buttonType == 'delete' && <Button icon="bookmark-remove" onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>
-                                        {this.props.lang.remove}</Button> }
+                                    { this.props.buttonType != 'delete' ? <Button icon="bookmark" onPress={() => { this.saveArticle(this.currentArticle); }}>
+                                        {this.props.lang.save}</Button> : null }
+                                    { this.props.buttonType == 'delete' ? <Button icon="bookmark-remove" onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>
+                                        {this.props.lang.remove}</Button> : null }
                                     <Button icon="share" onPress={() => { this.shareArticle(this.currentArticle.url); }} 
                                         style={Styles.cardButtonLeft}> {this.props.lang.share}</Button>
                                 </Card.Actions>
                             </Card>
                         </ScrollView>
-                    </Modal>}
+                    </Modal> : null }
 
-                    <Dialog visible={route.params?.filterDialogVisible} onDismiss={() => navigation.setParams({filterDialogVisible: false})} style={Styles.modal}>
-                        <Dialog.Title>{lang.filter}</Dialog.Title> {/* TODO: search functionality? */}
+                    <Dialog visible={this.props.route.params?.filterDialogVisible} 
+                        onDismiss={() => this.props.navigation.setParams({filterDialogVisible: false})} style={Styles.modal}>
+                        <Dialog.Title>{this.props.lang.filter}</Dialog.Title>
                         <Dialog.Content>
-                            <Dialog.ScrollArea>
-                                <ScrollView>
-                                    <RadioButton.Group onValueChange={console.log("TODO: change rss source")} value={lang.no_filter}>
-                                        <RadioButton.Item label={lang.no_filter} value="no_filter" />
-                                        { tagList.map((tag) => {
+                            { this.props.prefs.Tags.length > 0 ? 
+                                <Dialog.ScrollArea>
+                                    <ScrollView>
+                                        <List.Section>
+                                        { this.props.prefs.Tags.map((tag) => {
+                                            // dynamically create states for each tag
+                                            if(this.state[tag.name] === undefined) {
+                                                this.setState({[tag.name]: false});
+                                            }
+
                                             return(
-                                                <RadioButton.Item label={tag.name} 
-                                                    value={false} />
+                                                <List.Item title={tag.name}
+                                                    left={() => <List.Icon icon="tag-outline" />}
+                                                    right={() => <Switch value={this.state[tag.name]} 
+                                                        onValueChange={() => { this.setState({[tag.name]: !this.state[tag.name]}) }} />
+                                                    } />
                                             );
                                         })}
-                                    </RadioButton.Group>
-                                </ScrollView>
-                            </Dialog.ScrollArea>
+                                        </List.Section>
+                                    </ScrollView> 
+                                </Dialog.ScrollArea>
+                                : <RadioButton.Group value={'no_tags'}>
+                                        <RadioButton.Item label={this.props.lang.no_tags} value="no_tags" disabled={true} />
+                                </RadioButton.Group>
+                            }
+                        </Dialog.Content>
+
+                        <Dialog.Title>{this.props.lang.search}</Dialog.Title>
+                        <Dialog.Content>
+                            <TextInput label="Keyword" autoCapitalize="none" defaultValue={this.state.inputValue}
+                                onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => navigation.setParams({filterDialogVisible: false})}>{lang.dismiss}</Button>
+                            <Button onPress={() => this.applyFilter(true)}>{this.props.lang.clear}</Button>
+                            <Button onPress={() => this.applyFilter(false)}>{this.props.lang.apply}</Button>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>
@@ -387,23 +446,23 @@ function ListEmptyComponent ({ theme, route, lang }) {
             <Image source={theme.dark ? 
                 require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
                 resizeMode="contain" style={Styles.fullscreenImage}></Image>
-            { route.name == 'feed' && 
+            { route.name == 'feed' ?
                 <View>
                     <Title style={Styles.largerText}>{lang.empty_feed_title}</Title>
                     <Paragraph style={Styles.largerText}>{lang.empty_feed_desc}</Paragraph>
-                </View>
+                </View> : null
             }
-            { route.name == 'bookmarks' && 
+            { route.name == 'bookmarks' ? 
                 <View>
                     <Title style={Styles.largerText}>{lang.no_bookmarks}</Title>
                     <Paragraph style={Styles.largerText}>{lang.no_bookmarks_desc}</Paragraph>
-                </View>
+                </View> : null
             }
-            { route.name == 'history' && 
+            { route.name == 'history' ?
                 <View>
                     <Title style={Styles.largerText}>{lang.no_history}</Title>
                     <Paragraph style={Styles.largerText}>{lang.no_history_desc}</Paragraph>
-                </View>
+                </View> : null
             }
         </View>
     );

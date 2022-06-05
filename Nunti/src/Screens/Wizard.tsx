@@ -249,12 +249,9 @@ class Step4Topics extends Component {
         }
     }
 
-    // TODO: if backend decides to create localised tag, send the localised string from here
-    private async changeDefaultTopics(topic: string) {
+    private async changeDefaultTopics(topic: string, topicNameLocalised: string) {
         this.setState({[topic]: !this.state[topic]});
-        // TODO: pass the tag as a string argument to ChangeDefaultTopics
-        // another valid solution would be to add the tags beforehand in src/DefaultTopics.cs, though that would make localisation probably harder to do
-        await Backend.ChangeDefaultTopics(topic, !this.state[topic], 'placeholder-default');
+        await Backend.ChangeDefaultTopics(topic, !this.state[topic]);
 
         // reload prefs, as backend saves new ones straight into storage and this.props.prefs will become outdated
         await this.props.loadPrefs();

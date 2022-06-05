@@ -19,6 +19,8 @@ import {
 
 // TODO: separate details page
 // TODO: filter in articles.tsx (don't forget to implement what happens if the current tag is removed)
+// TODO: search functionality?
+// TODO: rename "learning" to "learning data"?
 
 import * as ScopedStorage from 'react-native-scoped-storage';
 
@@ -230,10 +232,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
             
             const feed:Feed = await Feed.New(await Feed.GuessRSSLink(this.state.inputValue));
             
-            this.props.prefs.FeedList.push(feed);
-            this.setState({feeds: this.props.prefs.FeedList});
+            this.state.feeds.push(feed);
+            this.setState({feeds: this.state.feeds});
 
-            await this.props.saveUserSettings();
             this.props.toggleSnack((this.props.lang.added_feed).replace('%feed%',feed.name), true);
         } catch(err) {
             console.error('Can\'t add RSS feed',err);
@@ -251,9 +252,9 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
             const tag:Tag = await Tag.New(this.state.inputValue);
 
-            this.setState({tags: this.props.prefs.Tags});
+            this.state.tags.push(tag);
+            this.setState({tags: this.state.tags});
 
-            await this.props.saveUserSettings();
             this.props.toggleSnack((this.props.lang.added_tag).replace('%tag%',tag.name), true);
         } catch(err) {
             console.error('Can\'t add tag',err);
@@ -333,7 +334,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         await this.props.navigation.navigate('wizard');
     }
 
-    private async reloadPrefs() {
+    private async reloadPrefs() { // used in import/export and when resetting all data
         await this.props.loadPrefs();
         
         this.setState({

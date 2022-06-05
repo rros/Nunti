@@ -451,6 +451,8 @@ export class Backend {
             }));
         }
     }
+
+    // TODO: remove adding default tags
     /* Change RSS topics */
     public static async ChangeDefaultTopics(topicName: string, enable: boolean, tag: string | null): Promise<void> {
         const prefs = await this.GetUserSettings();
