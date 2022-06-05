@@ -134,8 +134,7 @@ class Step2Language extends Component {
         return(
             <ScrollView>
                 <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
-                    <List.Section>
-                        <List.Subheader>{this.props.lang.language}</List.Subheader>
+                    <List.Section title={this.props.lang.language}>
                         <List.Item title={this.props.lang.system}
                             right={() => <RadioButton.Item value="system" />} />
                         { Object.keys(this.props.Languages).map((language) => {
@@ -181,8 +180,7 @@ class Step3Theme extends Component {
         return(
             <ScrollView>
                 <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
-                    <List.Section>
-                        <List.Subheader>{this.props.lang.theme}</List.Subheader>
+                    <List.Section title={this.props.lang.theme}>
                         <List.Item title={this.props.lang.system}
                             right={() => <RadioButton.Item value="system" />} />
                         <List.Item title={this.props.lang.light}
@@ -192,8 +190,7 @@ class Step3Theme extends Component {
                     </List.Section>
                 </RadioButton.Group>
                 <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
-                    <List.Section>
-                        <List.Subheader>{this.props.lang.accent}</List.Subheader>
+                    <List.Section title={this.props.lang.accent}>
                         <List.Item title={this.props.lang.default}
                             right={() => <RadioButton.Item value="default" />} />
                         <List.Item title={this.props.lang.amethyst}
@@ -260,8 +257,7 @@ class Step4Topics extends Component {
     render() {
         return(
             <ScrollView>
-                <List.Section>
-                    <List.Subheader>{this.props.lang.topics}</List.Subheader>
+                <List.Section title={this.props.lang.topics}>
                     <List.Item title={this.props.lang.economy}
                         left={() => <List.Icon icon="currency-usd" />}
                         right={() => <Switch value={this.state.economy} 
@@ -295,7 +291,7 @@ class Step4Topics extends Component {
                         right={() => <Switch value={this.state.worldPolitics} 
                             onValueChange={() => this.changeDefaultTopics('worldPolitics')} />} />
                 </List.Section>
-                    <List.Subheader>{this.props.lang.diff_language_news}</List.Subheader>
+                <List.Section title={this.props.lang.diff_language_news}>
                     <List.Item title={this.props.lang.czech_news}
                         left={() => <List.Icon icon="earth" />}
                         right={() => <Switch value={this.state.czechNews} 
@@ -320,7 +316,6 @@ class Step4Topics extends Component {
                         left={() => <List.Icon icon="earth" />}
                         right={() => <Switch value={this.state.japaneseNews} 
                             onValueChange={() => this.changeDefaultTopics('japaneseNews')} />} />
-                <List.Section>
                 </List.Section>
             </ScrollView>
         );

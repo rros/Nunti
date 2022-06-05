@@ -394,44 +394,42 @@ class ArticlesPage extends PureComponent {
 
                     <Dialog visible={this.props.route.params?.filterDialogVisible} 
                         onDismiss={() => this.props.navigation.setParams({filterDialogVisible: false})} style={Styles.modal}>
-                        <Dialog.Title>{this.props.lang.filter}</Dialog.Title>
-                        <Dialog.Content>
-                            { this.props.prefs.Tags.length > 0 ? 
-                                <Dialog.ScrollArea>
-                                    <ScrollView>
-                                        <List.Section>
-                                        { this.props.prefs.Tags.map((tag) => {
-                                            // dynamically create states for each tag
-                                            if(this.state[tag.name] === undefined) {
-                                                this.setState({[tag.name]: false});
-                                            }
+                        <ScrollView>
+                            <Dialog.Title>{this.props.lang.filter}</Dialog.Title>
+                            <Dialog.Content>
+                                { this.props.prefs.Tags.length > 0 ? 
+                                    <List.Section style={Styles.compactList}>
+                                    { this.props.prefs.Tags.map((tag) => {
+                                        // dynamically create states for each tag
+                                        if(this.state[tag.name] === undefined) {
+                                            this.setState({[tag.name]: false});
+                                        }
 
-                                            return(
-                                                <List.Item title={tag.name}
-                                                    left={() => <List.Icon icon="tag-outline" />}
-                                                    right={() => <Switch value={this.state[tag.name]} 
-                                                        onValueChange={() => { this.setState({[tag.name]: !this.state[tag.name]}) }} />
-                                                    } />
-                                            );
-                                        })}
-                                        </List.Section>
-                                    </ScrollView> 
-                                </Dialog.ScrollArea>
+                                        return(
+                                            <List.Item title={tag.name}
+                                                left={() => <List.Icon icon="tag-outline" />}
+                                                right={() => <Switch value={this.state[tag.name]} 
+                                                    onValueChange={() => { this.setState({[tag.name]: !this.state[tag.name]}) }} />
+                                                } />
+                                        );
+                                    })}
+                                    </List.Section>
                                 : <RadioButton.Group value={'no_tags'}>
                                         <RadioButton.Item label={this.props.lang.no_tags} value="no_tags" disabled={true} />
                                 </RadioButton.Group>
-                            }
-                        </Dialog.Content>
+                                }
+                            </Dialog.Content>
 
-                        <Dialog.Title>{this.props.lang.search}</Dialog.Title>
-                        <Dialog.Content>
-                            <TextInput label="Keyword" autoCapitalize="none" defaultValue={this.state.inputValue}
-                                onChangeText={text => this.inputChange(text)}/>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => this.applyFilter(true)}>{this.props.lang.clear}</Button>
-                            <Button onPress={() => this.applyFilter(false)}>{this.props.lang.apply}</Button>
-                        </Dialog.Actions>
+                            <Dialog.Title style={Styles.consequentDialogTitle}>{this.props.lang.search}</Dialog.Title>
+                            <Dialog.Content>
+                                <TextInput label="Keyword" autoCapitalize="none" defaultValue={this.state.inputValue}
+                                    onChangeText={text => this.inputChange(text)}/>
+                            </Dialog.Content>
+                            <Dialog.Actions>
+                                <Button onPress={() => this.applyFilter(true)}>{this.props.lang.clear}</Button>
+                                <Button onPress={() => this.applyFilter(false)}>{this.props.lang.apply}</Button>
+                            </Dialog.Actions>
+                        </ScrollView>
                     </Dialog>
                 </Portal>
             </View>

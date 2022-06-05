@@ -17,7 +17,6 @@ import {
     withTheme
 } from 'react-native-paper';
 
-// TODO: separate details page
 // TODO: rename "learning" to "learning data"?
 
 import * as ScopedStorage from 'react-native-scoped-storage';
@@ -366,8 +365,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     render() {
         return(
             <ScrollView style={Styles.topView}>
-                <List.Section>
-                    <List.Subheader>{this.props.lang.general}</List.Subheader>
+                <List.Section title={this.props.lang.general}>
                     <List.Item title={this.props.lang.language}
                         left={() => <List.Icon icon="translate" />}
                         right={() => <Button style={Styles.settingsButton} 
@@ -390,8 +388,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             onValueChange={() => { this.toggleSetting('LargeImages', 'largeImagesSwitch') }} />} />
                 </List.Section>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.theme}</List.Subheader>
+                <List.Section title={this.props.lang.theme}>
                     <List.Item title={this.props.lang.theme}
                         left={() => <List.Icon icon="theme-light-dark" />}
                         right={() => <Button style={Styles.settingsButton} 
@@ -402,8 +399,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             onPress={() => { this.setState({ accentDialogVisible: true });}}>{this.props.lang[this.state.accent]}</Button>} />
                 </List.Section>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.storage}</List.Subheader>
+                <List.Section title={this.props.lang.storage}>
                     <List.Item title={this.props.lang.import}
                         left={() => <List.Icon icon="application-import" />}
                         right={() => <Button style={Styles.settingsButton} 
@@ -414,8 +410,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             onPress={this.export}>{this.props.lang.export_button}</Button>} />
                 </List.Section>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.feeds}</List.Subheader>
+                <List.Section title={this.props.lang.feeds}>
                     <List.Item title={this.props.lang.add_feeds}
                         left={() => <List.Icon icon="plus" />}
                         right={() => <Button style={Styles.settingsButton} 
@@ -431,8 +426,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     })}
                 </List.Section>
                 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.tags}</List.Subheader>
+                <List.Section title={this.props.lang.tags}>
                     <List.Item title={this.props.lang.add_tags}
                         left={() => <List.Icon icon="plus" />}
                         right={() => <Button style={Styles.settingsButton} 
@@ -447,8 +441,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     })}
                 </List.Section>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.learning}</List.Subheader>
+                <List.Section title={this.props.lang.learning}>
                     <List.Item title={this.props.lang.rated_articles}
                         left={() => <List.Icon icon="message-draw" />}
                         right={() => <Button style={Styles.settingsButton}>{this.state.learningStatus?.TotalUpvotes + this.state.learningStatus?.TotalDownvotes}</Button> } />
@@ -462,8 +455,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             (this.props.lang.rate_more).replace('%articles%', this.state.learningStatus?.SortingEnabledIn)}</Button>}/>
                 </List.Section>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.advanced}</List.Subheader>
+                <List.Section title={this.props.lang.advanced}>
                     <List.Item title={this.props.lang.max_art_age}
                         left={() => <List.Icon icon="clock-outline" />}
                         right={() => <Button style={Styles.settingsButton} 
@@ -496,8 +488,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             {this.state.max_art_feed}</Button>} />
                 </List.Section>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.danger}</List.Subheader>
+                <List.Section title={this.props.lang.danger}>
                     <List.Item title={this.props.lang.wipe_cache}
                         left={() => <List.Icon icon="cached" />}
                         right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
@@ -628,9 +619,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                         >{this.props.lang.change}</Button>
                                 </View>
                             </Dialog.Content>
-                            <Dialog.Title>{this.props.lang.options}</Dialog.Title>
+                            
+                            <Dialog.Title style={Styles.consequentDialogTitle}>{this.props.lang.options}</Dialog.Title>
                             <Dialog.Content>
-                                <List.Section>
+                                <List.Section style={Styles.compactList}>
                                     <List.Item title={this.props.lang.no_images}
                                         left={() => <List.Icon icon="image-off" />}
                                         right={() => <Switch value={this.currentFeed?.noImages} 
@@ -641,10 +633,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                             onValueChange={() => { this.changeRssFeedOptions('enabled') }} /> } />
                                 </List.Section>
                             </Dialog.Content>
-                            <Dialog.Title>{this.props.lang.tags}</Dialog.Title>
+                            
+                            <Dialog.Title style={Styles.consequentDialogTitle}>{this.props.lang.tags}</Dialog.Title>
                             <Dialog.Content>
                                 { this.props.prefs.Tags.length > 0 ? 
-                                    <List.Section>
+                                    <List.Section style={Styles.compactList}>
                                         { this.props.prefs.Tags.map((tag) => {
                                             return(
                                                 <List.Item title={tag.name}

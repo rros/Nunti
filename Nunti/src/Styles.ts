@@ -210,4 +210,13 @@ export default Styles = StyleSheet.create ({
     settingsDetailsButton: {
         alignSelf: 'center'
     },
+
+    consequentDialogTitle: {
+        marginTop: 0,
+    },
+
+    compactList: {
+        marginBottom: 0,
+        marginTop: 0,
+    }
 });
