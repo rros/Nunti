@@ -19,10 +19,7 @@ import {
 
 // TODO: localisation for new keywords
 // TODO: rename "learning" to "learning data"?
-//
-// TODO: reset all data doesn't update UI
-// TODO: rss feeds not listed
-// TODO: test adding and removing tags from feeds (+ filtering)
+// TODO: new economy and science rss feed
 
 import * as ScopedStorage from 'react-native-scoped-storage';
 
@@ -295,13 +292,14 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
     private async changeTagFeed(feed: Feed, tag: Tag, value: boolean) {
         if(value){
-            feed.Tags.push(tag);
+            feed.tags.push(tag);
         } else {
-            let removeTagIndex = feed.Tags.indexOf(tag);
-            feed.Tags.splice(removeTagIndex, 1);
+            let removeTagIndex = feed.tags.indexOf(tag);
+            feed.tags.splice(removeTagIndex, 1);
         }
 
         await Feed.Save(feed);
+        this.setState({feeds: Backend.UserSettings.FeedList});
     }
 
     private resetArtsCache() {
@@ -315,7 +313,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         this.props.toggleSnack(this.props.lang.wiped_data, true);
         
         await Backend.ResetAllData();
-        await this.reloadStates();
         await this.props.reloadGlobalStates();
         
         this.setState({ dataDialogVisible: false });
@@ -325,6 +322,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
     }
 
     private async reloadStates() {
+        await this.props.reloadGlobalStates();
+        
         this.setState({
             language: Backend.UserSettings.Language,
             browserMode: Backend.UserSettings.BrowserMode,
@@ -345,7 +344,6 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
         });
         
         await this.getLearningStatus();
-        await this.props.reloadGlobalStates();
     }
 
     render() {
@@ -625,10 +623,17 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 { Backend.UserSettings.Tags.length > 0 ? 
                                     <List.Section style={Styles.compactList}>
                                         { Backend.UserSettings.Tags.map((tag) => {
+                                            let enabled: boolean;
+                                            if(this.currentFeed?.tags.indexOf(tag) < 0){
+                                                enabled = false;
+                                            } else {
+                                                enabled = true;
+                                            }
+
                                             return(
                                                 <List.Item title={tag.name}
                                                     left={() => <List.Icon icon="tag-outline" />}
-                                                    right={() => <Switch value={this.currentFeed?.Tags.indexOf(tag)} 
+                                                    right={() => <Switch value={enabled} 
                                                         onValueChange={(value) => { this.changeTagFeed(this.currentFeed, tag, value) }} />
                                                     } />
                                             );

@@ -172,6 +172,7 @@ export class Tag {
             console.error(`Cannot remove tag ${tag.name} from UserSettings.`);
         else
             Backend.UserSettings.Tags.splice(i, 1);
+
         Backend.UserSettings.FeedList.forEach((feed: Feed) => {
             let feed_tag_index = -1;
             for (let y = 0; y < feed.tags.length; y++) {
