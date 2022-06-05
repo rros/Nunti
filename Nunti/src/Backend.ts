@@ -28,13 +28,35 @@ export class Feed {
     public static async New(url: string): Promise<Feed> {
         const feed = new Feed(url);
         
-        const prefs = await Backend.GetUserSettings();
+        const prefs = Backend.UserSettings;
         if (Backend.FindFeedByUrl(feed.url, prefs.FeedList) >= 0)
             throw new Error('Feed already in feedlist.');
 
         await Backend.DownloadArticlesOneChannel(feed, 5, true);
 
+        prefs.FeedList.push(feed);
+        await prefs.Save();
+
         return feed;
+    }
+
+    public async Save(): Promise<void> {
+        const prefs = Backend.UserSettings;
+        const i = Backend.FindFeedByUrl(this.url, prefs.FeedList);
+        if (i >= 0)
+            prefs.FeedList[i] = this;
+        else
+            prefs.FeedList.push(this);
+        await prefs.Save();
+    }
+
+    public static async Get(url: string): Promise<Feed> {
+        const prefs = Backend.UserSettings;
+        const i = Backend.FindFeedByUrl(url, prefs.FeedList);
+        if (i <= 0)
+            throw new Error(`Did not find feed with url '${url} in feedlist.'`);
+        else
+            return prefs.FeedList[i];
     }
 
     public static async GuessRSSLink(url: string): Promise<string|null> {
@@ -104,25 +126,23 @@ export class Tag {
     }
     
     public static async New(name: string): Promise<Tag> {
-        const prefs = await Backend.GetUserSettings();
         let contains = false;
-        prefs.Tags.forEach((tag) => {
+        Backend.UserSettings.Tags.forEach((tag) => {
             if (tag.name == name)
                 contains = true;
         });
         if (!contains) {
             const tag = new Tag(name);
-            prefs.Tags.push(tag);
-            await Backend.SaveUserSettings(prefs);
+            Backend.UserSettings.Tags.push(tag);
+            await Backend.UserSettings.Save();
             return tag;
         } else
             throw new Error(`Tag ${name} already exists.`);
     }
 
     public static async NewOrExisting(name: string): Promise<Tag> {
-        const prefs = await Backend.GetUserSettings();
         let found: Tag | null = null;
-        prefs.Tags.forEach((tag) => {
+        Backend.UserSettings.Tags.forEach((tag) => {
             if (tag.name == name)
                 found = tag;
         });
@@ -162,6 +182,13 @@ class UserSettings {
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;
     public TotalDownvotes = 0;
+
+    public async Save(): Promise<void> {
+        await Backend.StorageSave('user_settings',this);
+    }
+    public async Refresh(): Promise<void> {
+        await Backend.RefreshUserSettings();
+    }
 }
 
 class Backup {
@@ -176,7 +203,7 @@ class Backup {
         const b = new Backup();
         b.Version = Backend.DB_VERSION;
         b.TimeStamp = Date.now();
-        b.UserSettings = await Backend.GetUserSettings();
+        b.UserSettings = Backend.UserSettings;
         b.LearningDB = await Backend.StorageGet('learning_db');
         b.Saved = await Backend.StorageGet('saved');
         return b;
@@ -185,6 +212,7 @@ class Backup {
 
 export class Backend {
     public static DB_VERSION = '3.1';
+    public static UserSettings: UserSettings;
     public static CurrentArticles: {[source: string]: Article[][]} = {
         'feed': [[]],
         'bookmarks': [[]],
@@ -193,25 +221,38 @@ export class Backend {
     public static get CurrentFeed(): Article[][] {
         return this.CurrentArticles['feed'];
     }
+    public static set CurrentFeed(value: Article[][]) {
+        this.CurrentArticles['feed'] = value;
+    }
     public static get CurrentBookmarks(): Article[][] {
         return this.CurrentArticles['bookmarks'];
     }
+    public static set CurrentBookmarks(value: Article[][]) {
+        this.CurrentArticles['bookmarks'] = value;
+    }
     public static get CurrentHistory(): Article[][] {
         return this.CurrentArticles['history'];
+    }
+    public static set CurrentHistory(value: Article[][]) {
+        this.CurrentArticles['history'] = value;
     }
     
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
         console.info('Backend init.');
         await this.CheckDB();
+        this.RefreshUserSettings();
+    }
+    public static async RefreshUserSettings(): Promise<void> {
+        await this.CheckDB();
+        this.UserSettings = await this.StorageGet('user_settings');
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(articleSource: string): Promise<Article[][]> {
-        const prefs = await this.GetUserSettings();
         const arts = await this.GetArticles(articleSource);
         const timeBegin = Date.now();
 
-        const pages = this.PaginateArticles(arts, prefs.FeedPageSize);
+        const pages = this.PaginateArticles(arts, this.UserSettings.FeedPageSize);
         this.CurrentArticles[articleSource] = pages;
 
         const timeEnd = Date.now();
@@ -267,7 +308,7 @@ export class Backend {
         if(await this.IsDoNotDownloadEnabled()) {
             console.log('Backend: We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
-        } else if (cacheAgeMinutes >= (await this.GetUserSettings()).ArticleCacheTime) {
+        } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
             arts = await this.DownloadArticles();
             if (arts.length > 0)
                 await FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
@@ -339,15 +380,6 @@ export class Backend {
         await this.ResetCache();
         await this.CheckDB();
     }
-    /* Gets UserSettings object from storage to nicely use in frontend. */
-    public static async GetUserSettings(): Promise<UserSettings> {
-        await this.CheckDB();
-        return await this.StorageGet('user_settings');
-    }
-    /* Saved UserSettings object to storage. */
-    public static async SaveUserSettings(us: UserSettings): Promise<void> {
-        await this.StorageSave('user_settings',us);
-    }
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
     public static async RateArticle(art: Article, rating: number): Promise<void> {
         let learning_db = await this.StorageGet('learning_db');
@@ -355,21 +387,18 @@ export class Backend {
 
         if (rating > 0) {
             //upvote
-            const prefs = await this.GetUserSettings();
-            prefs.TotalUpvotes += 1;
-            await this.SaveUserSettings(prefs);
+            this.UserSettings.TotalUpvotes += 1;
             rating = rating * Math.abs(learning_db['downvotes'] + 1 / learning_db['upvotes'] + 1);
             learning_db['upvotes'] += 1;
             learning_db_secondary['upvotes'] += 1;
         } else if (rating < 0) {
             //downvote
-            const prefs = await this.GetUserSettings();
-            prefs.TotalDownvotes += 1;
-            await this.SaveUserSettings(prefs);
+            this.UserSettings.TotalDownvotes += 1;
             rating = rating * Math.abs(learning_db['upvotes'] + 1 / learning_db['downvotes'] + 1);
             learning_db['downvotes'] += 1;
             learning_db_secondary['downvotes'] += 1;
         }
+        await this.UserSettings.Save();
 
         for(const keyword in art.keywords) {
             const wordRating = rating * art.keywords[keyword];
@@ -388,11 +417,11 @@ export class Backend {
 
         const seen = await this.StorageGet('seen');
         seen.push(art);
-        seen.splice(0, seen.length - (await this.GetUserSettings()).SeenHistoryLength); //To prevent flooding storage with seen arts.
+        seen.splice(0, seen.length - this.UserSettings.SeenHistoryLength); //To prevent flooding storage with seen arts.
         await this.StorageSave('seen', seen);
 
         /* if secondary DB is ready, replace the main and create new secondary. */
-        if (learning_db_secondary['upvotes'] + learning_db_secondary['downvotes'] > (await this.GetUserSettings()).RotateDBAfter) {
+        if (learning_db_secondary['upvotes'] + learning_db_secondary['downvotes'] > this.UserSettings.RotateDBAfter) {
             learning_db = {...learning_db_secondary};
             learning_db_secondary = {upvotes: 0, downvotes: 0, keywords: {}};
             console.warn('Backend: [OK] Rotating DB and wiping secondary DB now..');
@@ -454,36 +483,34 @@ export class Backend {
 
     /* Change RSS topics */
     public static async ChangeDefaultTopics(topicName: string, enable: boolean): Promise<void> {
-        const prefs = await this.GetUserSettings();
         console.info(`Backend: Changing default topics, ${topicName} - ${enable ? 'add' : 'remove'}`);
 
         if (DefaultTopics.Topics[topicName] !== undefined) {
             for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
                 const topicFeed = DefaultTopics.Topics[topicName][i];
                 if (enable) {
-                    if (prefs.FeedList.indexOf(topicFeed) < 0) {
+                    if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
                         console.debug(`add feed ${topicFeed.name} to feedlist`);
-                        prefs.FeedList.push(topicFeed);
+                        this.UserSettings.FeedList.push(topicFeed);
                     }
                 } else {
-                    const index = this.FindFeedByUrl(topicFeed.url, prefs.FeedList);
+                    const index = this.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList);
                     if (index >= 0) {
                         console.debug(`remove feed ${topicFeed.name} from feedlist`);
-                        prefs.FeedList.splice(index, 1);
+                        this.UserSettings.FeedList.splice(index, 1);
                     }
                 }
             }
-            await this.SaveUserSettings(prefs);
+            await this.UserSettings.Save();
         }
     }
     /* Checks wheter use has at least X percent of the topic enabled. */
     public static async IsTopicEnabled(topicName: string, threshold = 0.5): Promise<boolean> {
-        const prefs = await this.GetUserSettings();
         if (DefaultTopics.Topics[topicName] !== undefined) {
             let enabledFeedsCount = 0;
             for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
                 const topicFeed = DefaultTopics.Topics[topicName][i];
-                if (this.FindFeedByUrl(topicFeed.url, prefs.FeedList) >= 0)
+                if (this.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList) >= 0)
                     enabledFeedsCount++;
             }
             if (enabledFeedsCount / DefaultTopics.Topics[topicName].length >= threshold)
@@ -512,7 +539,8 @@ export class Backend {
                 throw Error(`Version mismatch! Backup: ${backup.Version}, current: ${this.DB_VERSION}`);
             
             if (backup.UserSettings !== undefined) {
-                await this.SaveUserSettings(await this.MergeUserSettings(backup.UserSettings));
+                await this.StorageSave('user_settings', await this.MergeUserSettings(backup.UserSettings));
+                await this.RefreshUserSettings();
             }
             if (backup.LearningDB !== undefined)
                 await this.StorageSave('learning_db', {... (await this.StorageGet('learning_db')), ...backup.LearningDB});
@@ -537,11 +565,10 @@ export class Backend {
                 }
                 console.info(`Backend: Importing OPML, imported ${feeds.length} feed(s).`);
                 
-                const prefs = await this.GetUserSettings();
                 feeds.forEach(feed => {
-                    prefs.FeedList.push(feed);
+                    this.UserSettings.FeedList.push(feed);
                 });
-                await this.SaveUserSettings(prefs);
+                await this.UserSettings.Save();
 
                 console.info('Backend: Backup/Import (OPML) loaded.');
                 return true;
@@ -553,8 +580,7 @@ export class Backend {
     }
     /* returns true if user is on cellular data and wifionly mode is enabled */
     public static async IsDoNotDownloadEnabled(): Promise<boolean> {
-        const prefs = await this.GetUserSettings();
-        return (((await NetInfo.fetch()).details?.isConnectionExpensive ?? false) && prefs.WifiOnly);
+        return (((await NetInfo.fetch()).details?.isConnectionExpensive ?? false) && this.UserSettings.WifiOnly);
     }
     /* Returns basic info about the learning process to inform the user. */
     public static async GetLearningStatus(): Promise<{
@@ -566,7 +592,7 @@ export class Backend {
         LearningLifetime: number,
         LearningLifetimeRemaining: number
     }> {
-        const prefs = await this.GetUserSettings();
+        const prefs = this.UserSettings;
         const learning_db = await this.StorageGet('learning_db');
         const status = {
             TotalUpvotes: prefs.TotalUpvotes,
@@ -755,8 +781,7 @@ export class Backend {
 
         console.info('Backend: Downloading articles..');
         const timeBegin = Date.now();
-        const prefs = await this.GetUserSettings();
-        const feedList = prefs.FeedList;
+        const feedList = this.UserSettings.FeedList;
 
         const arts: Article[] = [];
 
@@ -764,7 +789,7 @@ export class Backend {
             const promises: Promise<Article[]>[] = [];
             for (let i = 0; i < THREADS; i++) {
                 if (feedList.length > 0)
-                    promises.push(this.DownloadArticlesOneChannel(feedList.splice(0,1)[0],prefs.MaxArticlesPerChannel));
+                    promises.push(this.DownloadArticlesOneChannel(feedList.splice(0,1)[0],this.UserSettings.MaxArticlesPerChannel));
             }
             const results: Article[][] = await Promise.all(promises);
             for (let i = 0; i < results.length; i++) {
@@ -781,7 +806,6 @@ export class Backend {
     }
     /* Removes seen (already rated) articles and any duplicates from article list. */
     private static async CleanArticles(arts: Article[]): Promise<Article[]> {
-        const prefs = await this.GetUserSettings();
         const seen = await this.StorageGet('seen');
         for(let i = 0; i < seen.length; i++) {
             let index = this.FindArticleByUrl(seen[i].url,arts);
@@ -799,7 +823,7 @@ export class Backend {
             }
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
                 if ((arts[i].date ?? undefined) !== undefined) {
-                    if (Date.now() - arts[i].date.getTime() < prefs.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
+                    if (Date.now() - arts[i].date.getTime() < this.UserSettings.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
                         newarts.push(arts[i]);
                 } else
                     newarts.push(arts[i]);
@@ -825,9 +849,8 @@ export class Backend {
 
 
         const learning_db = await this.StorageGet('learning_db');
-        const prefs = await this.GetUserSettings();
-        if (learning_db['upvotes'] + learning_db['downvotes'] <= prefs.NoSortUntil) {
-            console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${prefs.NoSortUntil} required)`);
+        if (learning_db['upvotes'] + learning_db['downvotes'] <= this.UserSettings.NoSortUntil) {
+            console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${this.UserSettings.NoSortUntil} required)`);
             articles.sort((a, b) => {
                 if ((a.date ?? undefined) !== undefined && (b.date ?? undefined) !== undefined)
                     return b.date.getTime() - a.date.getTime();
@@ -846,9 +869,9 @@ export class Backend {
         });
 
         const arts: Article[] = [];
-        console.debug(`discover feature set to: ${prefs.DiscoverRatio*100} %`);
+        console.debug(`discover feature set to: ${this.UserSettings.DiscoverRatio*100} %`);
         for(let i = 0; i < scores.length; i++) {
-            if (i > 5 && parseInt(`${Math.random() * (1/prefs.DiscoverRatio)}`) == 0) {
+            if (i > 5 && parseInt(`${Math.random() * (1/this.UserSettings.DiscoverRatio)}`) == 0) {
                 // Throw in a random article instead
                 let art = undefined;
                 do {
