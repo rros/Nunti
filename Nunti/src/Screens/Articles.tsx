@@ -332,14 +332,14 @@ class ArticlesPage extends PureComponent {
                                 <Button 
                                     color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
                                     outputRange: ['grey', this.props.buttonType == 'delete' ? this.props.theme.colors.error : this.props.theme.colors.success ]})}  
-                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-up' } 
+                                    icon={this.props.buttonType == 'delete' ? 'bookmark-remove' : 'thumb-up' } 
                                     mode="contained" contentStyle={Styles.buttonRateContent} 
                                     labelStyle={{fontSize: 20}} dark={false}
                                     style={Styles.buttonRateLeft}></Button>
                                 <Button
                                     color={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
                                         outputRange: ['grey', this.props.theme.colors.error]})}  
-                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-down' } 
+                                    icon={this.props.buttonType == 'delete' ? 'bookmark-remove' : 'thumb-down' } 
                                     mode="contained" contentStyle={Styles.buttonRateContent}
                                     labelStyle={{fontSize: 20}} dark={false} 
                                     style={Styles.buttonRateRight}></Button>
@@ -413,7 +413,7 @@ class ArticlesPage extends PureComponent {
 
                                         return(
                                             <List.Item title={tag.name}
-                                                left={() => <List.Icon icon="tag-outline" />}
+                                                left={() => <List.Icon icon="tag" />}
                                                 right={() => <Switch value={this.state[tag.name]} 
                                                     onValueChange={() => { this.setState({[tag.name]: !this.state[tag.name]}) }} />
                                                 } />
