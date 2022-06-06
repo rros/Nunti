@@ -90,6 +90,46 @@ export class Feed {
             return url + '/feed';
         return null;
     }
+    
+    /* Adds a tag to feed and also updates all articles in cache */
+    public static async AddTag(feed: Feed, tag: Tag): Promise<void> {
+        feed.tags.push(tag);
+        let cache = await FSStore.getItem('cache');
+        if (cache != null) {
+            console.debug(`Updating cache, adding tag '${tag.name}' to articles from '${feed.name}'.`);
+            cache = JSON.parse(cache);
+            cache.articles.forEach((art: Article) => {
+                if (art.sourceUrl == feed.url)
+                    art.tags.push(tag);
+            });
+            await FSStore.setItem('cache', JSON.stringify(cache));
+        }
+        await Feed.Save(feed);
+    }
+    /* Removes a tag from feed and also updates all articles in cache */
+    public static async RemoveTag(feed: Feed, tag: Tag): Promise<void> {
+        feed.tags.splice(feed.tags.indexOf(tag), 1);
+        let cache = await FSStore.getItem('cache');
+        if (cache != null) {
+            console.debug(`Updating cache, removing tag '${tag.name}' from articles from '${feed.name}'.`);
+            cache = JSON.parse(cache);
+            cache.articles.forEach((art: Article) => {
+                if (art.sourceUrl == feed.url) {
+                    art.tags.splice(art.tags.indexOf(tag), 1);
+                }
+            });
+            await FSStore.setItem('cache', JSON.stringify(cache));
+        }
+        await Feed.Save(feed);
+    }
+    public static HasTag(feed: Feed, tag: Tag): boolean {
+        let has = false;
+        feed.tags.forEach((feedtag) => {
+            if (feedtag.name == tag.name)
+                has = true;
+        });
+        return has;
+    }
 }
 
 export class Article {
@@ -99,6 +139,7 @@ export class Article {
     public cover: string | undefined = undefined;
     public url = 'about:blank';
     public source = 'unknown';
+    public sourceUrl = 'unknown';
     public date: Date | undefined = undefined;
     public tags: Tag[] = [];
 
@@ -330,7 +371,7 @@ export class Backend {
                         break;
                     }
                 }
-                if (!passed) {
+                if (passed || filterTags.length == 0) {
                     //text search
                     const words = (art.title + ' ' + art.description).toLowerCase().split(' ');
                     const searchWords = filters[0].toLowerCase().split(' ');
@@ -590,7 +631,7 @@ export class Backend {
         }
     }
     /* Checks wheter use has at least X percent of the topic enabled. */
-    public static IsTopicEnabled(topicName: string, threshold = 0.5): Promise<boolean> {
+    public static async IsTopicEnabled(topicName: string, threshold = 0.5): Promise<boolean> {
         if (DefaultTopics.Topics[topicName] !== undefined) {
             let enabledFeedsCount = 0;
             for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
@@ -744,6 +785,7 @@ export class Backend {
                     try {
                         const art = new Article(Math.floor(Math.random() * 1e16));
                         art.source = feed.name;
+                        art.sourceUrl = feed.url;
                         art.title = item.getElementsByTagName('title')[0].childNodes[0].nodeValue.substr(0,256);
                         art.title = decode(art.title, {scope: 'strict'});
 

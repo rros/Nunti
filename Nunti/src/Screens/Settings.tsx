@@ -289,13 +289,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
     private async changeTagFeed(feed: Feed, tag: Tag, value: boolean) {
         if(value){
-            feed.tags.push(tag);
+            await Feed.AddTag(feed, tag);
         } else {
-            let removeTagIndex = feed.tags.indexOf(tag);
-            feed.tags.splice(removeTagIndex, 1);
+            await Feed.RemoveTag(feed, tag);
         }
 
-        await Feed.Save(feed);
         this.setState({feeds: Backend.UserSettings.FeedList});
     }
 
@@ -618,10 +616,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                     <List.Section style={Styles.compactList}>
                                         { Backend.UserSettings.Tags.map((tag) => {
                                             let enabled: boolean;
-                                            if(this.currentFeed?.tags.indexOf(tag) < 0){
-                                                enabled = false;
-                                            } else {
+                                            if(this.currentFeed != undefined && Feed.HasTag(this.currentFeed,tag)){
                                                 enabled = true;
+                                            } else {
+                                                enabled = false;
                                             }
 
                                             return(
