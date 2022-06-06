@@ -220,7 +220,22 @@ class ArticlesPage extends PureComponent {
         } else {
             await Backend.RateArticle(article, rating);
         }
-        
+
+        switch ( this.props.source ) {
+            case 'feed':
+                this.articlesFromBackend = Backend.CurrentFeed;
+                break;
+            case 'bookmarks':
+                this.articlesFromBackend = Backend.CurrentBookmarks;
+                break;
+            case 'history':
+                this.articlesFromBackend = Backend.CurrentHistory;
+                break;
+            default: 
+                console.error('Bad source, cannot update articles from backend');
+                break;
+        }
+
         // if the last page got completely emptied and user is on it, go back to the new last page
         if(this.currentPageIndex == this.articlesFromBackend.length){
             this.currentPageIndex = this.currentPageIndex - 1;

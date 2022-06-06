@@ -355,7 +355,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => {this.setState({ browserModeDialogVisible: true });}}>{this.props.lang[this.state.browserMode]}</Button>} />
                     <List.Item title={this.props.lang.wifi_only}
-                        left={() => <List.Icon icon="wifi" />}
+                        left={() => <List.Icon icon="wifi-strength-3" />}
                         right={() => <Switch value={this.state.wifiOnlySwitch} 
                             onValueChange={() => { this.toggleSetting('WifiOnly', 'wifiOnlySwitch') }} />} />
                     <List.Item title={this.props.lang.no_images}
@@ -414,7 +414,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     { this.state.tags.map((tag) => {
                         return (
                             <List.Item title={tag.name}
-                                left={() => <List.Icon icon="tag-outline" />}
+                                left={() => <List.Icon icon="tag" />}
                                 right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
                                     onPress={() => this.removeTag(tag)}>{this.props.lang.remove}</Button>} />
                         );
@@ -452,7 +452,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'discovery' });}}>
                             {this.state.discovery}%</Button>} />
                     <List.Item title={this.props.lang.cache_time}
-                        left={() => <List.Icon icon="timer-off-outline" />}
+                        left={() => <List.Icon icon="timer-off" />}
                         right={() => <Button style={Styles.settingsButton} 
                             onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'cache_time' });}}>
                             {this.state.cache_time + this.props.lang.minutes} </Button>} />

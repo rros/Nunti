@@ -3,7 +3,7 @@ import { Feed } from './Backend';
 export default class DefaultTopics {
     public static Topics: {[id: string]: {icon: string, sources: Feed[]}} = {
         'cars': {
-            icon: 'car',
+            icon: 'car-traction-control',
             sources: [
                 new Feed('https://www.autoblog.com/rss.xml'),
                 new Feed('https://www.autocar.co.uk/rss'),
@@ -11,7 +11,7 @@ export default class DefaultTopics {
             ]
         },
         'food': {
-            icon: 'hamburger',
+            icon: 'food-apple',
             sources: [
                 new Feed('https://cnz.to/feed/'),
                 new Feed('https://www.youtube.com/feeds/videos.xml?user=bgfilms'),
@@ -22,12 +22,12 @@ export default class DefaultTopics {
             icon: 'youtube-gaming',
             sources: [
                 new Feed('https://www.escapistmagazine.com/v2/feed/'),
-                new Feed('https://www.eurogamer.net/?format=rss'),
+                new Feed('https://www.gamespot.com/feeds/mashup/'),
                 new Feed('http://feeds.ign.com/ign/all'),
             ]
         },
         'history': {
-            icon: 'book-open-page-variant',
+            icon: 'book-open',
             sources: [
                 new Feed('https://americanhistory.si.edu/blog/feed'),
                 new Feed('http://www.historynet.com/feed'),

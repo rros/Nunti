@@ -157,7 +157,7 @@ export default class App extends Component {
                         drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} 
                         screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
                         <NavigationDrawer.Screen name="feed">
-                            {props => <ArticlesPage {...props} source="rss" buttonType="rate"
+                            {props => <ArticlesPage {...props} source="feed" buttonType="rate"
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="bookmarks">

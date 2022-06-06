@@ -105,7 +105,7 @@ class Step1Welcome extends Component {
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Title style={Styles.largerText}>{this.props.lang.welcome}</Title>
                 <Paragraph style={Styles.largerText}>{this.props.lang.enjoy}</Paragraph>
-                <Button icon="import" style={Styles.startReadingButton}
+                <Button icon="application-import" style={Styles.startReadingButton}
                     onPress={this.import}>{this.props.lang.import}</Button>
             </ScrollView>
         );
@@ -220,9 +220,9 @@ class Step4Topics extends Component {
         });
     }
 
-    private changeDefaultTopics(topic: string, topicNameLocalised: string) {
-        this.setState({[topic]: !this.state[topic]});
-        Backend.ChangeDefaultTopics(topic, !this.state[topic]);
+    private changeDefaultTopics(topicName: string) {
+        this.setState({[topicName]: !this.state[topicName]});
+        Backend.ChangeDefaultTopics(topicName, !this.state[topicName]);
     }
 
     render() {

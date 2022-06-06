@@ -340,7 +340,6 @@ export class Backend {
 
         let articles: Article[];
         switch (articleSource) {
-        case 'rss':
         case 'feed':
             articles = await this.GetFeedArticles();
             break;
@@ -630,8 +629,10 @@ export class Backend {
             await this.UserSettings.Save();
         }
     }
+    // NOTE from frontend: leave this sync, I can't use await in componentDidMount when creating states with this
+    // NOTE: also sync is faster (by eye) and this needs to be fast
     /* Checks wheter use has at least X percent of the topic enabled. */
-    public static async IsTopicEnabled(topicName: string, threshold = 0.5): Promise<boolean> {
+    public static IsTopicEnabled(topicName: string, threshold = 0.5): boolean {
         if (DefaultTopics.Topics[topicName] !== undefined) {
             let enabledFeedsCount = 0;
             for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
