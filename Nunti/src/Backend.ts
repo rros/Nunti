@@ -12,6 +12,7 @@ export class Feed {
     public url: string;
     public enabled = true;
     public noImages = false;
+    public tags: Tag[] = [];
 
     constructor(url: string) {
         this.url = url;
@@ -27,13 +28,45 @@ export class Feed {
     public static async New(url: string): Promise<Feed> {
         const feed = new Feed(url);
         
-        const prefs = await Backend.GetUserSettings();
+        const prefs = Backend.UserSettings;
         if (Backend.FindFeedByUrl(feed.url, prefs.FeedList) >= 0)
             throw new Error('Feed already in feedlist.');
 
         await Backend.DownloadArticlesOneChannel(feed, 5, true);
 
+        prefs.FeedList.push(feed);
+        await prefs.Save();
+
         return feed;
+    }
+
+    public static async Save(feed: Feed): Promise<void> {
+        const prefs = Backend.UserSettings;
+        const i = Backend.FindFeedByUrl(feed.url, prefs.FeedList);
+        if (i >= 0)
+            prefs.FeedList[i] = feed;
+        else
+            prefs.FeedList.push(feed);
+        await prefs.Save();
+    }
+
+    public static async Remove(feed: Feed): Promise<void> {
+        const i = Backend.FindFeedByUrl(feed.url, Backend.UserSettings.FeedList);
+        if (i < 0)
+            throw new Error(`Did not find feed with url '${feed.url} in feedlist.'`);
+        else {
+            Backend.UserSettings.FeedList.splice(i, 1);
+            await Backend.UserSettings.Save();
+        }
+    }
+
+    public static async Get(url: string): Promise<Feed> {
+        const prefs = Backend.UserSettings;
+        const i = Backend.FindFeedByUrl(url, prefs.FeedList);
+        if (i < 0)
+            throw new Error(`Did not find feed with url '${url} in feedlist.'`);
+        else
+            return prefs.FeedList[i];
     }
 
     public static async GuessRSSLink(url: string): Promise<string|null> {
@@ -57,6 +90,46 @@ export class Feed {
             return url + '/feed';
         return null;
     }
+    
+    /* Adds a tag to feed and also updates all articles in cache */
+    public static async AddTag(feed: Feed, tag: Tag): Promise<void> {
+        feed.tags.push(tag);
+        let cache = await FSStore.getItem('cache');
+        if (cache != null) {
+            console.debug(`Updating cache, adding tag '${tag.name}' to articles from '${feed.name}'.`);
+            cache = JSON.parse(cache);
+            cache.articles.forEach((art: Article) => {
+                if (art.sourceUrl == feed.url)
+                    art.tags.push(tag);
+            });
+            await FSStore.setItem('cache', JSON.stringify(cache));
+        }
+        await Feed.Save(feed);
+    }
+    /* Removes a tag from feed and also updates all articles in cache */
+    public static async RemoveTag(feed: Feed, tag: Tag): Promise<void> {
+        feed.tags.splice(feed.tags.indexOf(tag), 1);
+        let cache = await FSStore.getItem('cache');
+        if (cache != null) {
+            console.debug(`Updating cache, removing tag '${tag.name}' from articles from '${feed.name}'.`);
+            cache = JSON.parse(cache);
+            cache.articles.forEach((art: Article) => {
+                if (art.sourceUrl == feed.url) {
+                    art.tags.splice(art.tags.indexOf(tag), 1);
+                }
+            });
+            await FSStore.setItem('cache', JSON.stringify(cache));
+        }
+        await Feed.Save(feed);
+    }
+    public static HasTag(feed: Feed, tag: Tag): boolean {
+        let has = false;
+        feed.tags.forEach((feedtag) => {
+            if (feedtag.name == tag.name)
+                has = true;
+        });
+        return has;
+    }
 }
 
 export class Article {
@@ -66,7 +139,9 @@ export class Article {
     public cover: string | undefined = undefined;
     public url = 'about:blank';
     public source = 'unknown';
+    public sourceUrl = 'unknown';
     public date: Date | undefined = undefined;
+    public tags: Tag[] = [];
 
     public score = 0;
     public keywords: {[id:string]: number} = {};
@@ -92,8 +167,69 @@ export class Article {
     }
 }
 
+export class Tag {
+    public name: string;
+    
+    constructor(name: string) {
+        if (name.trim() == '')
+            throw new Error('Tag must contain non-whitespace characters.');
+        this.name = name;
+    }
+    
+    public static async New(name: string): Promise<Tag> {
+        let contains = false;
+        Backend.UserSettings.Tags.forEach((tag) => {
+            if (tag.name == name)
+                contains = true;
+        });
+        if (!contains) {
+            const tag = new Tag(name);
+            Backend.UserSettings.Tags.push(tag);
+            await Backend.UserSettings.Save();
+            return tag;
+        } else
+            throw new Error(`Tag ${name} already exists.`);
+    }
+
+    public static async NewOrExisting(name: string): Promise<Tag> {
+        let found: Tag | null = null;
+        Backend.UserSettings.Tags.forEach((tag) => {
+            if (tag.name == name)
+                found = tag;
+        });
+        if (found === null) {
+            return Tag.New(name);
+        } else
+            return found;
+    }
+
+    public static async Remove(tag: Tag): Promise<void> {
+        let i = -1;
+        for (let y = 0; y < Backend.UserSettings.Tags.length; y++) {
+            if (Backend.UserSettings.Tags[y].name == tag.name)
+                i = y;
+        }
+        if (i < 0)
+            console.error(`Cannot remove tag ${tag.name} from UserSettings.`);
+        else
+            Backend.UserSettings.Tags.splice(i, 1);
+
+        Backend.UserSettings.FeedList.forEach((feed: Feed) => {
+            let feed_tag_index = -1;
+            for (let y = 0; y < feed.tags.length; y++) {
+                if (feed.tags[i].name == tag.name)
+                    feed_tag_index = y;
+            }
+            if (feed_tag_index >= 0)
+                feed.tags.splice(feed_tag_index, 1);
+        });
+        Backend.UserSettings.Save();
+    }
+}
+
 class UserSettings {
     public FeedList: Feed[] = [];
+    public Tags: Tag[] = [];
 
     public DisableImages = false;
     public LargeImages = false;
@@ -120,6 +256,13 @@ class UserSettings {
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;
     public TotalDownvotes = 0;
+
+    public async Save(): Promise<void> {
+        await Backend.StorageSave('user_settings', this);
+    }
+    public async Refresh(): Promise<void> {
+        await Backend.RefreshUserSettings();
+    }
 }
 
 class Backup {
@@ -134,7 +277,7 @@ class Backup {
         const b = new Backup();
         b.Version = Backend.DB_VERSION;
         b.TimeStamp = Date.now();
-        b.UserSettings = await Backend.GetUserSettings();
+        b.UserSettings = Backend.UserSettings;
         b.LearningDB = await Backend.StorageGet('learning_db');
         b.Saved = await Backend.StorageGet('saved');
         return b;
@@ -143,6 +286,7 @@ class Backup {
 
 export class Backend {
     public static DB_VERSION = '3.1';
+    public static UserSettings: UserSettings;
     public static CurrentArticles: {[source: string]: Article[][]} = {
         'feed': [[]],
         'bookmarks': [[]],
@@ -151,25 +295,39 @@ export class Backend {
     public static get CurrentFeed(): Article[][] {
         return this.CurrentArticles['feed'];
     }
+    public static set CurrentFeed(value: Article[][]) {
+        this.CurrentArticles['feed'] = value;
+    }
     public static get CurrentBookmarks(): Article[][] {
         return this.CurrentArticles['bookmarks'];
     }
+    public static set CurrentBookmarks(value: Article[][]) {
+        this.CurrentArticles['bookmarks'] = value;
+    }
     public static get CurrentHistory(): Article[][] {
         return this.CurrentArticles['history'];
+    }
+    public static set CurrentHistory(value: Article[][]) {
+        this.CurrentArticles['history'] = value;
     }
     
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
         console.info('Backend init.');
         await this.CheckDB();
+        await this.RefreshUserSettings();
+    }
+    public static async RefreshUserSettings(): Promise<void> {
+        await this.CheckDB();
+        console.debug('Backend: Refreshing UserSettings.');
+        this.UserSettings = Object.assign(new UserSettings(), await this.StorageGet('user_settings'));
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(articleSource: string): Promise<Article[][]> {
-        const prefs = await this.GetUserSettings();
-        const arts = await this.GetArticles(articleSource);
+    public static async GetArticlesPaginated(articleSource: string, filters: string[] = []): Promise<Article[][]> {
+        const arts = await this.GetArticles(articleSource, filters);
         const timeBegin = Date.now();
 
-        const pages = this.PaginateArticles(arts, prefs.FeedPageSize);
+        const pages = this.PaginateArticles(arts, this.UserSettings.FeedPageSize);
         this.CurrentArticles[articleSource] = pages;
 
         const timeEnd = Date.now();
@@ -177,12 +335,11 @@ export class Backend {
         return pages;
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
-    public static async GetArticles(articleSource: string): Promise<Article[]> {
+    public static async GetArticles(articleSource: string, filters: string[] = []): Promise<Article[]> {
         console.info(`Backend: GetArticles('${articleSource}') called.`);
 
         let articles: Article[];
         switch (articleSource) {
-        case 'rss':
         case 'feed':
             articles = await this.GetFeedArticles();
             break;
@@ -196,6 +353,56 @@ export class Backend {
             throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
         }
         articles.forEach((art: Article) => { Article.Fix(art); });
+
+        // apply filters
+        if (filters.length !== 0) {
+            const filterStartTime = Date.now();
+            const newarts: Article[] = [];
+            const filterTags = filters.slice(1);
+
+            for (let i = 0; i < articles.length; i++) {
+                const art = articles[i];
+                let passed = false;
+                // test tags
+                for (let tag_i = 0; tag_i < art.tags.length; tag_i++) {
+                    if (filterTags.indexOf(art.tags[tag_i].name) >= 0) {
+                        passed = true;
+                        break;
+                    }
+                }
+                if (passed || filterTags.length == 0) {
+                    //text search
+                    const words = (art.title + ' ' + art.description).toLowerCase().split(' ');
+                    const searchWords = filters[0].toLowerCase().split(' ');
+                    if (filters.length == 1 && searchWords.length == 1 && searchWords[0].trim() == '') {
+                        passed = true;
+                    } else {
+                        for (let word_i = 0; word_i < words.length; word_i++) {
+                            if (passed)
+                                break;
+                            const word = words[word_i].trim();
+                            if (word == '')
+                                continue;
+                            for (let search_i = 0; search_i < searchWords.length; search_i++) {
+                                const searchWord = searchWords[search_i].trim();
+                                if (searchWord == '')
+                                    continue;
+                                if (word.indexOf(searchWord) >= 0) {
+                                    passed = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (passed)
+                    newarts.push(art);
+            }
+
+            const filterEndTime = Date.now();
+            console.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
+            articles = newarts;
+        }
 
         // repair article ids, frontend will crash if index doesnt match up with id.
         for (let i = 0; i < articles.length; i++)
@@ -225,7 +432,7 @@ export class Backend {
         if(await this.IsDoNotDownloadEnabled()) {
             console.log('Backend: We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
-        } else if (cacheAgeMinutes >= (await this.GetUserSettings()).ArticleCacheTime) {
+        } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
             arts = await this.DownloadArticles();
             if (arts.length > 0)
                 await FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
@@ -296,15 +503,7 @@ export class Backend {
         await AsyncStorage.clear();
         await this.ResetCache();
         await this.CheckDB();
-    }
-    /* Gets UserSettings object from storage to nicely use in frontend. */
-    public static async GetUserSettings(): Promise<UserSettings> {
-        await this.CheckDB();
-        return await this.StorageGet('user_settings');
-    }
-    /* Saved UserSettings object to storage. */
-    public static async SaveUserSettings(us: UserSettings): Promise<void> {
-        await this.StorageSave('user_settings',us);
+        await this.RefreshUserSettings();
     }
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
     public static async RateArticle(art: Article, rating: number): Promise<void> {
@@ -313,21 +512,18 @@ export class Backend {
 
         if (rating > 0) {
             //upvote
-            const prefs = await this.GetUserSettings();
-            prefs.TotalUpvotes += 1;
-            await this.SaveUserSettings(prefs);
+            this.UserSettings.TotalUpvotes += 1;
             rating = rating * Math.abs(learning_db['downvotes'] + 1 / learning_db['upvotes'] + 1);
             learning_db['upvotes'] += 1;
             learning_db_secondary['upvotes'] += 1;
         } else if (rating < 0) {
             //downvote
-            const prefs = await this.GetUserSettings();
-            prefs.TotalDownvotes += 1;
-            await this.SaveUserSettings(prefs);
+            this.UserSettings.TotalDownvotes += 1;
             rating = rating * Math.abs(learning_db['upvotes'] + 1 / learning_db['downvotes'] + 1);
             learning_db['downvotes'] += 1;
             learning_db_secondary['downvotes'] += 1;
         }
+        await this.UserSettings.Save();
 
         for(const keyword in art.keywords) {
             const wordRating = rating * art.keywords[keyword];
@@ -346,11 +542,11 @@ export class Backend {
 
         const seen = await this.StorageGet('seen');
         seen.push(art);
-        seen.splice(0, seen.length - (await this.GetUserSettings()).SeenHistoryLength); //To prevent flooding storage with seen arts.
+        seen.splice(0, seen.length - this.UserSettings.SeenHistoryLength); //To prevent flooding storage with seen arts.
         await this.StorageSave('seen', seen);
 
         /* if secondary DB is ready, replace the main and create new secondary. */
-        if (learning_db_secondary['upvotes'] + learning_db_secondary['downvotes'] > (await this.GetUserSettings()).RotateDBAfter) {
+        if (learning_db_secondary['upvotes'] + learning_db_secondary['downvotes'] > this.UserSettings.RotateDBAfter) {
             learning_db = {...learning_db_secondary};
             learning_db_secondary = {upvotes: 0, downvotes: 0, keywords: {}};
             console.warn('Backend: [OK] Rotating DB and wiping secondary DB now..');
@@ -409,40 +605,42 @@ export class Backend {
             }));
         }
     }
+
     /* Change RSS topics */
     public static async ChangeDefaultTopics(topicName: string, enable: boolean): Promise<void> {
-        const prefs = await this.GetUserSettings();
         console.info(`Backend: Changing default topics, ${topicName} - ${enable ? 'add' : 'remove'}`);
+
         if (DefaultTopics.Topics[topicName] !== undefined) {
-            for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
-                const topicFeed = DefaultTopics.Topics[topicName][i];
+            for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
+                const topicFeed = DefaultTopics.Topics[topicName].sources[i];
                 if (enable) {
-                    if (prefs.FeedList.indexOf(topicFeed) < 0) {
+                    if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
                         console.debug(`add feed ${topicFeed.name} to feedlist`);
-                        prefs.FeedList.push(topicFeed);
+                        this.UserSettings.FeedList.push(topicFeed);
                     }
                 } else {
-                    const index = this.FindFeedByUrl(topicFeed.url, prefs.FeedList);
+                    const index = this.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList);
                     if (index >= 0) {
                         console.debug(`remove feed ${topicFeed.name} from feedlist`);
-                        prefs.FeedList.splice(index, 1);
+                        this.UserSettings.FeedList.splice(index, 1);
                     }
                 }
             }
-            await this.SaveUserSettings(prefs);
+            await this.UserSettings.Save();
         }
     }
+    // NOTE from frontend: leave this sync, I can't use await in componentDidMount when creating states with this
+    // NOTE: also sync is faster (by eye) and this needs to be fast
     /* Checks wheter use has at least X percent of the topic enabled. */
-    public static async IsTopicEnabled(topicName: string, threshold = 0.5): Promise<boolean> {
-        const prefs = await this.GetUserSettings();
+    public static IsTopicEnabled(topicName: string, threshold = 0.5): boolean {
         if (DefaultTopics.Topics[topicName] !== undefined) {
             let enabledFeedsCount = 0;
-            for (let i = 0; i < DefaultTopics.Topics[topicName].length; i++) {
-                const topicFeed = DefaultTopics.Topics[topicName][i];
-                if (this.FindFeedByUrl(topicFeed.url, prefs.FeedList) >= 0)
+            for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
+                const topicFeed = DefaultTopics.Topics[topicName].sources[i];
+                if (this.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList) >= 0)
                     enabledFeedsCount++;
             }
-            if (enabledFeedsCount / DefaultTopics.Topics[topicName].length >= threshold)
+            if (enabledFeedsCount / DefaultTopics.Topics[topicName].sources.length >= threshold)
                 return true;
             else
                 return false;
@@ -468,7 +666,8 @@ export class Backend {
                 throw Error(`Version mismatch! Backup: ${backup.Version}, current: ${this.DB_VERSION}`);
             
             if (backup.UserSettings !== undefined) {
-                await this.SaveUserSettings(await this.MergeUserSettings(backup.UserSettings));
+                await this.StorageSave('user_settings', await this.MergeUserSettings(backup.UserSettings));
+                await this.RefreshUserSettings();
             }
             if (backup.LearningDB !== undefined)
                 await this.StorageSave('learning_db', {... (await this.StorageGet('learning_db')), ...backup.LearningDB});
@@ -493,11 +692,10 @@ export class Backend {
                 }
                 console.info(`Backend: Importing OPML, imported ${feeds.length} feed(s).`);
                 
-                const prefs = await this.GetUserSettings();
                 feeds.forEach(feed => {
-                    prefs.FeedList.push(feed);
+                    this.UserSettings.FeedList.push(feed);
                 });
-                await this.SaveUserSettings(prefs);
+                await this.UserSettings.Save();
 
                 console.info('Backend: Backup/Import (OPML) loaded.');
                 return true;
@@ -509,8 +707,7 @@ export class Backend {
     }
     /* returns true if user is on cellular data and wifionly mode is enabled */
     public static async IsDoNotDownloadEnabled(): Promise<boolean> {
-        const prefs = await this.GetUserSettings();
-        return (((await NetInfo.fetch()).details?.isConnectionExpensive ?? false) && prefs.WifiOnly);
+        return (((await NetInfo.fetch()).details?.isConnectionExpensive ?? false) && this.UserSettings.WifiOnly);
     }
     /* Returns basic info about the learning process to inform the user. */
     public static async GetLearningStatus(): Promise<{
@@ -522,7 +719,7 @@ export class Backend {
         LearningLifetime: number,
         LearningLifetimeRemaining: number
     }> {
-        const prefs = await this.GetUserSettings();
+        const prefs = this.UserSettings;
         const learning_db = await this.StorageGet('learning_db');
         const status = {
             TotalUpvotes: prefs.TotalUpvotes,
@@ -589,6 +786,7 @@ export class Backend {
                     try {
                         const art = new Article(Math.floor(Math.random() * 1e16));
                         art.source = feed.name;
+                        art.sourceUrl = feed.url;
                         art.title = item.getElementsByTagName('title')[0].childNodes[0].nodeValue.substr(0,256);
                         art.title = decode(art.title, {scope: 'strict'});
 
@@ -665,6 +863,10 @@ export class Backend {
                         try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
                         try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
 
+                        feed.tags.forEach((tag) => {
+                            art.tags.push(tag);
+                        });
+
                         arts.push(art);
                     } catch(err) {
                         console.error(`Cannot process article, channel: ${feed.url}, err: ${err}`);
@@ -707,8 +909,7 @@ export class Backend {
 
         console.info('Backend: Downloading articles..');
         const timeBegin = Date.now();
-        const prefs = await this.GetUserSettings();
-        const feedList = prefs.FeedList;
+        const feedList = this.UserSettings.FeedList.slice();
 
         const arts: Article[] = [];
 
@@ -716,7 +917,7 @@ export class Backend {
             const promises: Promise<Article[]>[] = [];
             for (let i = 0; i < THREADS; i++) {
                 if (feedList.length > 0)
-                    promises.push(this.DownloadArticlesOneChannel(feedList.splice(0,1)[0],prefs.MaxArticlesPerChannel));
+                    promises.push(this.DownloadArticlesOneChannel(feedList.splice(0,1)[0],this.UserSettings.MaxArticlesPerChannel));
             }
             const results: Article[][] = await Promise.all(promises);
             for (let i = 0; i < results.length; i++) {
@@ -733,7 +934,6 @@ export class Backend {
     }
     /* Removes seen (already rated) articles and any duplicates from article list. */
     private static async CleanArticles(arts: Article[]): Promise<Article[]> {
-        const prefs = await this.GetUserSettings();
         const seen = await this.StorageGet('seen');
         for(let i = 0; i < seen.length; i++) {
             let index = this.FindArticleByUrl(seen[i].url,arts);
@@ -751,7 +951,7 @@ export class Backend {
             }
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
                 if ((arts[i].date ?? undefined) !== undefined) {
-                    if (Date.now() - arts[i].date.getTime() < prefs.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
+                    if (Date.now() - arts[i].date.getTime() < this.UserSettings.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
                         newarts.push(arts[i]);
                 } else
                     newarts.push(arts[i]);
@@ -777,9 +977,8 @@ export class Backend {
 
 
         const learning_db = await this.StorageGet('learning_db');
-        const prefs = await this.GetUserSettings();
-        if (learning_db['upvotes'] + learning_db['downvotes'] <= prefs.NoSortUntil) {
-            console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${prefs.NoSortUntil} required)`);
+        if (learning_db['upvotes'] + learning_db['downvotes'] <= this.UserSettings.NoSortUntil) {
+            console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${this.UserSettings.NoSortUntil} required)`);
             articles.sort((a, b) => {
                 if ((a.date ?? undefined) !== undefined && (b.date ?? undefined) !== undefined)
                     return b.date.getTime() - a.date.getTime();
@@ -798,9 +997,9 @@ export class Backend {
         });
 
         const arts: Article[] = [];
-        console.debug(`discover feature set to: ${prefs.DiscoverRatio*100} %`);
+        console.debug(`discover feature set to: ${this.UserSettings.DiscoverRatio*100} %`);
         for(let i = 0; i < scores.length; i++) {
-            if (i > 5 && parseInt(`${Math.random() * (1/prefs.DiscoverRatio)}`) == 0) {
+            if (i > 5 && parseInt(`${Math.random() * (1/this.UserSettings.DiscoverRatio)}`) == 0) {
                 // Throw in a random article instead
                 let art = undefined;
                 do {
@@ -816,7 +1015,7 @@ export class Backend {
         }
 
         const timeEnd = Date.now();
-        console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms`);
+        console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms (${arts.length} articles processed)`);
         return arts;
     }
     private static async GetArticleScore(art: Article): Promise<number> {
@@ -933,11 +1132,11 @@ export class Backend {
         console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
     }
     private static async MergeUserSettings(old: UserSettings): Promise<UserSettings> {
-        const prefs = { ...(await this.StorageGet('user_settings')), ...old };
+        const prefs = Object.assign(await this.StorageGet('user_settings'), old);
         // cycle through Feeds and merge them, otherwise new properties will be undefined in next update
         for (let i = 0; i < prefs.FeedList.length; i++) {
             try {
-                prefs.FeedList[i] = { ...(new Feed(prefs.FeedList[i].url)), ...prefs.FeedList[i] };
+                prefs.FeedList[i] = Object.assign(new Feed(prefs.FeedList[i].url), prefs.FeedList[i]);
             } catch {
                 console.warn(`backup restore: failed to merge feed ${prefs.FeedList[i].url}`);
             }

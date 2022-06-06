@@ -10,7 +10,7 @@ import {
 } from 'react-native-paper';
 
 // our files
-import { Dark, Light, Colors } from './Styles';
+import { Dark, Light, Accents } from './Styles';
 import * as Languages from './Locale';
 import Wizard from './Screens/Wizard';
 import ArticlesPage from './Screens/Articles';
@@ -35,9 +35,8 @@ export default class App extends Component {
         this.updateLanguage = this.updateLanguage.bind(this);
         this.updateTheme = this.updateTheme.bind(this);
         this.updateAccent = this.updateAccent.bind(this);
-        this.saveUserSettings = this.saveUserSettings.bind(this);
         this.toggleSnack = this.toggleSnack.bind(this);
-        this.loadPrefs = this.loadPrefs.bind(this);
+        this.reloadGlobalStates = this.reloadGlobalStates.bind(this);
         
         this.state = {
             theme: Dark, // temporary until theme loads
@@ -52,10 +51,10 @@ export default class App extends Component {
 
     async componentDidMount() {
         await Backend.Init();
-        await this.loadPrefs();
+        await this.reloadGlobalStates();
 
         this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if(this.prefs.FirstLaunch){
+            if(Backend.UserSettings.FirstLaunch){
                 return true;
             }
         });
@@ -63,16 +62,12 @@ export default class App extends Component {
         // splash screen will hide when navigator has finished loading
     }
 
-    public async loadPrefs() {
-        this.prefs = await Backend.GetUserSettings();
-        await this.updateLanguage(this.prefs.Language);
-        this.updateTheme(this.prefs.Theme);
+    // language, theme, accent
+    public async reloadGlobalStates() {
+        await this.updateLanguage(Backend.UserSettings.Language);
+        await this.updateTheme(Backend.UserSettings.Theme);
         
         this.setState({prefsLoaded: true});
-    }
-
-    public async saveUserSettings(prefs: []) {
-        await Backend.SaveUserSettings(prefs);
     }
 
     public updateLanguage(savedLanguage: string) {
@@ -117,27 +112,27 @@ export default class App extends Component {
                 }
                 
                 this.state.theme = theme;
-                this.updateAccent(this.prefs.Accent);
+                this.updateAccent(Backend.UserSettings.Accent);
             });
         }
         
         // no need to rerender here, rerender will happen in updateAccent
         // updateAccent is called here to change accent light/dark colour according to new theme
         this.state.theme = theme;
-        this.updateAccent(this.prefs.Accent);
+        this.updateAccent(Backend.UserSettings.Accent);
     }
 
     public updateAccent(accentName: string) {
         const theme = this.state.theme;
         
         if(theme.dark){
-            theme.colors.accent = Colors[accentName].dark;
-            theme.colors.primary = Colors[accentName].dark;
-            theme.colors.accentReverse = Colors[accentName].light;
+            theme.colors.accent = Accents[accentName].dark;
+            theme.colors.primary = Accents[accentName].dark;
+            theme.colors.accentReverse = Accents[accentName].light;
         } else {
-            theme.colors.accent = Colors[accentName].light;
-            theme.colors.primary = Colors[accentName].light;
-            theme.colors.accentReverse = Colors[accentName].dark;
+            theme.colors.accent = Accents[accentName].light;
+            theme.colors.primary = Accents[accentName].light;
+            theme.colors.accentReverse = Accents[accentName].dark;
         }
 
         this.setState({theme: theme});
@@ -158,38 +153,35 @@ export default class App extends Component {
                     backgroundColor="rgba(0, 0, 0, 0.3)"
                     translucent={true}/>
                 <NavigationContainer theme={this.state.theme} onReady={() => RNBootSplash.hide({ fade: true })}>
-                    <NavigationDrawer.Navigator initialRouteName={this.prefs.FirstLaunch ? 'wizard' : 'feed'}
+                    <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
                         drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} 
                         screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
                         <NavigationDrawer.Screen name="feed">
-                            {props => <ArticlesPage {...props} prefs={this.prefs} 
-                                source="rss" buttonType="rate"
+                            {props => <ArticlesPage {...props} source="feed" buttonType="rate"
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="bookmarks">
-                            {props => <ArticlesPage {...props} prefs={this.prefs} 
-                                source="bookmarks" buttonType="delete"
+                            {props => <ArticlesPage {...props} source="bookmarks" buttonType="delete"
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="history">
-                            {props => <ArticlesPage {...props} prefs={this.prefs} 
-                                source="history" buttonType="none"
+                            {props => <ArticlesPage {...props} source="history" buttonType="none"
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="settings">
-                            {props => <Settings {...props} prefs={this.prefs} loadPrefs={this.loadPrefs} 
-                                saveUserSettings={this.saveUserSettings} lang={this.state.language}
-                                Languages={Languages}
+                            {props => <Settings {...props} reloadGlobalStates={this.reloadGlobalStates} 
+                                lang={this.state.language} Languages={Languages}
                                 updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} 
                                 updateAccent={this.updateAccent} toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="about">
-                            {props => <About {...props} prefs={this.prefs} lang={this.state.language} />}
+                            {props => <About {...props} lang={this.state.language} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true}}>
-                            {props => <Wizard {...props} prefs={this.prefs} lang={this.state.language} Languages={Languages}
-                                saveUserSettings={this.saveUserSettings} loadPrefs={this.loadPrefs} toggleSnack={this.toggleSnack}
-                                updateTheme={this.updateTheme} updateAccent={this.updateAccent} updateLanguage={this.updateLanguage} />}
+                            {props => <Wizard {...props} lang={this.state.language} Languages={Languages}
+                                reloadGlobalStates={this.reloadGlobalStates} toggleSnack={this.toggleSnack}
+                                updateTheme={this.updateTheme} updateAccent={this.updateAccent}
+                                updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="legacyWebview" options={{swipeEnabled: false, unmountOnBlur: true}}>
                             {props => <LegacyWebview {...props}/>}
@@ -213,9 +205,11 @@ export default class App extends Component {
 function CustomHeader ({ navigation, route, lang }) {
     return (
         <Appbar.Header style={{marginTop: StatusBar.currentHeight, height: route.name == 'legacyWebview' ? 0 : undefined}}> 
-            { route.name != 'wizard' && route.name != 'legacyWebview' 
-                && <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> }
+            { route.name != 'wizard' && route.name != 'legacyWebview' ?
+                <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
+            { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
+                <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({filterDialogVisible: true})} /> : null }
         </Appbar.Header> 
     );
 }

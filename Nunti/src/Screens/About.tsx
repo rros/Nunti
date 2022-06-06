@@ -26,13 +26,13 @@ class About extends PureComponent {
 
     private async openIssues() {
         const url = 'https://gitlab.com/ondrejfoltyn/nunti/-/issues';
-        if(this.props.prefs.BrowserMode == 'webview'){
+        if(Backend.UserSettings.BrowserMode == 'webview'){
             await InAppBrowser.open(url, {
                 forceCloseOnRedirection: false, showInRecents: true,
-                toolbarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
-                navigationBarColor: this.props.prefs.ThemeBrowser ? this.props.theme.colors.accent : null,
+                toolbarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
+                navigationBarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
             });
-        } else if(this.props.prefs.BrowserMode == 'legacy_webview') {
+        } else if(Backend.UserSettings.BrowserMode == 'legacy_webview') {
             this.props.navigation.navigate('legacyWebview', { uri: url, source: 'about' });
         } else { // == 'external_browser'
             Linking.openURL(url);
