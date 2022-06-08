@@ -6,6 +6,8 @@ import DefaultTopics from './DefaultTopics';
 import { decode } from 'html-entities';
 import Store from 'react-native-fs-store';
 const FSStore = new Store('store1');
+import iconv from 'iconv-lite';
+import { Buffer } from 'buffer';
 
 export class Feed {
     public name: string;
@@ -739,21 +741,39 @@ export class Backend {
         }
         console.debug('Backend: Downloading from ' + feed.name);
         const arts: Article[] = [];
-        const controller = new AbortController();
-        setTimeout(() => { controller.abort(); isTimeouted = true; }, 5000);
         let isTimeouted = false;
-
-        let r: Response;
+        let response: string;
         try {
-            r = await fetch(
-                feed.url,
-                {
-                    signal: controller.signal,
-                    headers: new Headers({
-                        'Cache-Control': 'no-cache, no-store, must-revalidate'
-                    })
-                }
-            );
+            response = await new Promise((resolve, reject) => {
+                const request = new XMLHttpRequest();
+
+                request.onload = () => {
+                    if (request.status === 200) {
+                        let text = iconv.decode(Buffer.from(request.response), 'utf-8');
+                        if (text.indexOf('\uFFFD') >= 0) //detect replacement character
+                            text = iconv.decode(Buffer.from(request.response), 'iso-8859-1');
+                        resolve(text);
+                    } else {
+                        reject(new Error(request.statusText));
+                    }
+                };
+                request.ontimeout = () => {
+                    isTimeouted = true;
+                    reject(new Error(request.statusText));
+                };
+                request.onerror = () => {
+                    console.warn(`Backend: request errored, status '${JSON.stringify(request)}'`);
+                    if (request.timeout)
+                        isTimeouted = true;
+                    reject(new Error(request.statusText));
+                };
+
+                request.responseType = 'arraybuffer';
+                request.timeout = 5000;
+                request.open('GET', feed.url);
+                request.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+                request.send();
+            });
         } catch(err) {
             if (isTimeouted)
                 console.error('Cannot read RSS (probably timeout)' + feed.name, err);
@@ -763,125 +783,119 @@ export class Backend {
                 throw new Error('Cannot read RSS ' + err);
             return [];
         }
-        if (r.ok) {
-            const parser = new DOMParser({
-                locator:{},
-                errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e; }} //eslint-disable-line
-            });
-            const serializer = new XMLSerializer();
-            try {
-                const xml = parser.parseFromString(await r.text());
-                let items: any = null; //eslint-disable-line
-                try { if (items === null || items.length == 0) items = xml.getElementsByTagName('channel')[0].getElementsByTagName('item'); } catch { /* dontcare */ } //traditional RSS
-                try { if (items === null || items.length == 0) items = xml.getElementsByTagName('feed')[0].getElementsByTagName('entry'); } catch { /* dontcare */ } //atom feeds
-                try { if (items === null || items.length == 0) items = xml.getElementsByTagName('item'); } catch { /* dontcare */ } //RDF feeds (https://validator.w3.org/feed/docs/rss1.html)
-                
-                if (items === null)
-                    throw new Error('Cannot parse feed, don\'t know where to find articles. (unsupported feed format?)');
+        const parser = new DOMParser({
+            locator:{},
+            errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e; }} //eslint-disable-line
+        });
+        const serializer = new XMLSerializer();
+        try {
+            const xml = parser.parseFromString(response);
+            let items: any = null; //eslint-disable-line
+            try { if (items === null || items.length == 0) items = xml.getElementsByTagName('channel')[0].getElementsByTagName('item'); } catch { /* dontcare */ } //traditional RSS
+            try { if (items === null || items.length == 0) items = xml.getElementsByTagName('feed')[0].getElementsByTagName('entry'); } catch { /* dontcare */ } //atom feeds
+            try { if (items === null || items.length == 0) items = xml.getElementsByTagName('item'); } catch { /* dontcare */ } //RDF feeds (https://validator.w3.org/feed/docs/rss1.html)
+            
+            if (items === null)
+                throw new Error('Cannot parse feed, don\'t know where to find articles. (unsupported feed format?)');
 
-                for (let y = 0; y < items.length; y++) {
-                    if (y >= maxperchannel)
-                        break;
-                    const item = items[y];
-                    try {
-                        const art = new Article(Math.floor(Math.random() * 1e16));
-                        art.source = feed.name;
-                        art.sourceUrl = feed.url;
-                        art.title = item.getElementsByTagName('title')[0].childNodes[0].nodeValue.substr(0,256);
-                        art.title = decode(art.title, {scope: 'strict'});
+            for (let y = 0; y < items.length; y++) {
+                if (y >= maxperchannel)
+                    break;
+                const item = items[y];
+                try {
+                    const art = new Article(Math.floor(Math.random() * 1e16));
+                    art.source = feed.name;
+                    art.sourceUrl = feed.url;
+                    art.title = item.getElementsByTagName('title')[0].childNodes[0].nodeValue.substr(0,256);
+                    art.title = decode(art.title, {scope: 'strict'});
 
-                        // fallback for CDATA retards
-                        if (art.title.trim() === '') {
-                            art.title = serializer.serializeToString(item).match(/title>.*CDATA\[(.*)\]\].*\/title/s)[1].trim();
-                            if (art.title.trim() == '')
-                                throw new Error(`Got empty title. ${item}`);
-                        }
-                        try { art.description = item.getElementsByTagName('description')[0].childNodes[0].nodeValue; } catch { /* dontcare */ } 
-                        try { art.description = item.getElementsByTagName('content')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
-                        try {
-                            //fallback for CDATA retards
-                            if (art.description.trim() === '')
-                                art.description = serializer.serializeToString(item).match(/description>.*CDATA\[(.*)\]\].*<\/description/s)[1];
-                        } catch { /* dontcare */ }
-
-                        art.description = decode(art.description, {scope: 'strict'});
-                        art.description = art.description.trim();
-
-                        try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); }  catch { /* dontcare */ }
-                        try { art.description = art.description.substr(0,1024); }  catch { /* dontcare */ }
-                        try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); }  catch { /* dontcare */ }
-                        
-                        if (!feed.noImages) {
-                            if (art.cover === undefined)
-                                try {
-                                    const imagecontent =
-                                        item.getElementsByTagName('enclosure')[0] ||
-                                        item.getElementsByTagName('media:content')[0] ||
-                                        item.getElementsByTagName('media:thumbnail')[0];
-                                    if (
-                                        imagecontent &&
-                                        ((imagecontent.hasAttribute('type') && imagecontent.getAttribute('type').includes('image')) ||
-                                        (imagecontent.hasAttribute('medium') && imagecontent.getAttribute('medium') === 'image') ||
-                                        imagecontent.getAttribute('url').match(/\.(?:(?:jpe?g)|(?:png))/i))
-                                    ) {
-                                        art.cover = imagecontent.getAttribute('url');
-                                    }
-                                    // If this first approach did not find an image, try to check the whole 'content:encoded' or if it does not exist the whole 'item'.
-                                    // Checking 'content:encoded' first is necessary, because there are feeds that contain advertisement images outside of 'content:encoded' which would be detected if only the 'item' was checked.
-                                    if (art.cover === undefined) {
-                                        const content = item.getElementsByTagName('content:encoded')[0]
-                                            ? serializer.serializeToString(item.getElementsByTagName('content:encoded')[0])
-                                            : serializer.serializeToString(item);
-                                        // Try to match an <img...> tag or &lt;img...&gt; tag. For some reason even with &lt; in the content string, a &gt; is converted to >,
-                                        // perhaps because of the serializer?
-                                        // It needs to be done this way, otherwise feeds with mixed tags and entities cannot be matched properly.
-                                        // And it's also not possible to decode the content already here, because of feeds with mixed tags and entities (they exist...).
-                                        art.cover = content.match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)
-                                            ? content
-                                                .match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)[0]
-                                                .match(/(src=[\w\W]+?)[/]?(?:>|&gt;)/i)[1]
-                                                .match(/(https?:\/\/[^<>"']+?)[\n"'<]/i)[1]
-                                            : serializer
-                                                .serializeToString(item)
-                                                .match(/(https?:\/\/[^<>"'/]+\/+[^<>"':]+?\.(?:(?:jpe?g)|(?:png)).*?)[\n"'<]/i)[1];
-                                    }
-                                    if (art.cover !== undefined) {
-                                        art.cover = decode(art.cover, { scope: 'strict' }).replace('http://', 'https://');
-                                    }
-                                } catch {
-                                /* dontcare */
-                                }
-                        } else
-                            art.cover = undefined;
-
-                        try {
-                            art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue;
-                        } catch {
-                            art.url = item.getElementsByTagName('link')[0].getAttribute('href');
-                        }
-
-                        try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
-                        try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
-
-                        feed.tags.forEach((tag) => {
-                            art.tags.push(tag);
-                        });
-
-                        arts.push(art);
-                    } catch(err) {
-                        console.error(`Cannot process article, channel: ${feed.url}, err: ${err}`);
+                    // fallback for CDATA retards
+                    if (art.title.trim() === '') {
+                        art.title = serializer.serializeToString(item).match(/title>.*CDATA\[(.*)\]\].*\/title/s)[1].trim();
+                        if (art.title.trim() == '')
+                            throw new Error(`Got empty title. ${item}`);
                     }
+                    try { art.description = item.getElementsByTagName('description')[0].childNodes[0].nodeValue; } catch { /* dontcare */ } 
+                    try { art.description = item.getElementsByTagName('content')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
+                    try {
+                        //fallback for CDATA retards
+                        if (art.description.trim() === '')
+                            art.description = serializer.serializeToString(item).match(/description>.*CDATA\[(.*)\]\].*<\/description/s)[1];
+                    } catch { /* dontcare */ }
+
+                    art.description = decode(art.description, {scope: 'strict'});
+                    art.description = art.description.trim();
+
+                    try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); }  catch { /* dontcare */ }
+                    try { art.description = art.description.substr(0,1024); }  catch { /* dontcare */ }
+                    try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); }  catch { /* dontcare */ }
+                    
+                    if (!feed.noImages) {
+                        if (art.cover === undefined)
+                            try {
+                                const imagecontent =
+                                    item.getElementsByTagName('enclosure')[0] ||
+                                    item.getElementsByTagName('media:content')[0] ||
+                                    item.getElementsByTagName('media:thumbnail')[0];
+                                if (
+                                    imagecontent &&
+                                    ((imagecontent.hasAttribute('type') && imagecontent.getAttribute('type').includes('image')) ||
+                                    (imagecontent.hasAttribute('medium') && imagecontent.getAttribute('medium') === 'image') ||
+                                    imagecontent.getAttribute('url').match(/\.(?:(?:jpe?g)|(?:png))/i))
+                                ) {
+                                    art.cover = imagecontent.getAttribute('url');
+                                }
+                                // If this first approach did not find an image, try to check the whole 'content:encoded' or if it does not exist the whole 'item'.
+                                // Checking 'content:encoded' first is necessary, because there are feeds that contain advertisement images outside of 'content:encoded' which would be detected if only the 'item' was checked.
+                                if (art.cover === undefined) {
+                                    const content = item.getElementsByTagName('content:encoded')[0]
+                                        ? serializer.serializeToString(item.getElementsByTagName('content:encoded')[0])
+                                        : serializer.serializeToString(item);
+                                    // Try to match an <img...> tag or &lt;img...&gt; tag. For some reason even with &lt; in the content string, a &gt; is converted to >,
+                                    // perhaps because of the serializer?
+                                    // It needs to be done this way, otherwise feeds with mixed tags and entities cannot be matched properly.
+                                    // And it's also not possible to decode the content already here, because of feeds with mixed tags and entities (they exist...).
+                                    art.cover = content.match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)
+                                        ? content
+                                            .match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)[0]
+                                            .match(/(src=[\w\W]+?)[/]?(?:>|&gt;)/i)[1]
+                                            .match(/(https?:\/\/[^<>"']+?)[\n"'<]/i)[1]
+                                        : serializer
+                                            .serializeToString(item)
+                                            .match(/(https?:\/\/[^<>"'/]+\/+[^<>"':]+?\.(?:(?:jpe?g)|(?:png)).*?)[\n"'<]/i)[1];
+                                }
+                                if (art.cover !== undefined) {
+                                    art.cover = decode(art.cover, { scope: 'strict' }).replace('http://', 'https://');
+                                }
+                            } catch {
+                            /* dontcare */
+                            }
+                    } else
+                        art.cover = undefined;
+
+                    try {
+                        art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue;
+                    } catch {
+                        art.url = item.getElementsByTagName('link')[0].getAttribute('href');
+                    }
+
+                    try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+                    try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+
+                    feed.tags.forEach((tag) => {
+                        art.tags.push(tag);
+                    });
+
+                    arts.push(art);
+                } catch(err) {
+                    console.error(`Cannot process article, channel: ${feed.url}, err: ${err}`);
                 }
-                console.debug(`Finished download from ${feed.name}, got ${arts.length} articles.`);
-            } catch(err) {
-                console.error(`Channel ${feed.name} faulty.`,err);
-                if (throwError)
-                    throw new Error('RSS channel faulty ' + err);
             }
-        } else {
-            console.error('Cannot read RSS ' + feed.name);
+            console.debug(`Finished download from ${feed.name}, got ${arts.length} articles.`);
+        } catch(err) {
+            console.error(`Channel ${feed.name} faulty.`,err);
             if (throwError)
-                throw new Error('Cannot read RSS, no ok response.');
+                throw new Error('RSS channel faulty ' + err);
         }
         if (arts.length == 0 && throwError)
             throw new Error('Got 0 articles from this feed.');
