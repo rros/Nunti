@@ -683,7 +683,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ dataDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
                             <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}
-                                loading={this.state.dialogButtonLoading}>{this.props.lang.restore}</Button>
+                                disabled={this.state.dialogButtonLoading} loading={this.state.dialogButtonLoading}>{this.props.lang.restore}</Button>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>
