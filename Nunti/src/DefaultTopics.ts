@@ -45,7 +45,7 @@ export default class DefaultTopics {
         'music': {
             icon: 'music',
             sources: [
-                new Feed('https://www.billboard.com/articles/rss.xml'),
+                new Feed('https://songexploder.net/'),
                 new Feed('http://consequenceofsound.net/feed'),
                 new Feed('https://edm.com/.rss/full/'),
             ]

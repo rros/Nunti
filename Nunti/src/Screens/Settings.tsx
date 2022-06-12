@@ -542,6 +542,8 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                             <RadioButton.Item label={this.props.lang[accentName]} value={accentName} />
                                         );
                                     })}
+                                    <RadioButton.Item disabled={Platform.Version < 31}
+                                        label={this.props.lang.material_you} value="material_you" />
                                 </RadioButton.Group>
                             </Dialog.Content>
                             <Dialog.Actions>

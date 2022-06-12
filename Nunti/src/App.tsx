@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { StatusBar, Appearance, NativeModules, BackHandler, Platform } from 'react-native';
+const { MaterialYouModule } = NativeModules;
 
 import { 
     Provider as PaperProvider,
@@ -122,10 +123,26 @@ export default class App extends Component {
         this.updateAccent(Backend.UserSettings.Accent);
     }
 
-    public updateAccent(accentName: string) {
+    public async updateAccent(accentName: string) {
         const theme = this.state.theme;
-        
-        if(theme.dark){
+
+        if(accentName == 'material_you' && Platform.Version < 31) {
+            accentName = 'default'; // do not overwrite save, just default to the default accent
+        } 
+
+        if(accentName == 'material_you') {
+            const palette = await MaterialYouModule.getMaterialYouPalette();
+            
+            if(theme.dark){
+                theme.colors.accent = palette.primaryLight;
+                theme.colors.primary = palette.primaryLight;
+                theme.colors.accentReverse = palette.primaryDark;
+            } else {
+                theme.colors.accent = palette.primaryDark;
+                theme.colors.primary = palette.primaryDark;
+                theme.colors.accentReverse = palette.primaryLight;
+            }
+        } else if(theme.dark) {
             theme.colors.accent = Accents[accentName].dark;
             theme.colors.primary = Accents[accentName].dark;
             theme.colors.accentReverse = Accents[accentName].light;
