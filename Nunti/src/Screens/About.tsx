@@ -15,6 +15,7 @@ import {
 import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 import { version } from '../../package.json';
 
+import { Backend } from '../Backend';
 import Styles from '../Styles';
 
 class About extends PureComponent {

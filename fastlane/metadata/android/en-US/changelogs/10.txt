@@ -1,0 +1,12 @@
+- added a rated article history page
+- added tags: you can now add tags to feed and filter by tags
+- added a search function
+- added a "Material You" accent
+- added a non-utf8 fallback
+- improved polish translation (credits to @qwrtln)
+- improved japanese translation (credits to @vaf0)
+- improved dialog design
+- improved default topics in wizard
+- fixed the ordering of bookmarks
+- fixed (hopefully) a non-deterministic startup crash
+- and a whole lot of refactoring
