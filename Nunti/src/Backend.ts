@@ -740,14 +740,17 @@ export class Backend {
             return [];
         }
         console.debug('Backend: Downloading from ' + feed.name);
+        const startTime = Date.now();
         const arts: Article[] = [];
         let isTimeouted = false;
         let response: string;
         try {
             response = await new Promise((resolve, reject) => {
                 const request = new XMLHttpRequest();
+                let isFinished = false;
 
                 request.onload = () => {
+                    isFinished = true;
                     if (request.status === 200) {
                         let text = iconv.decode(Buffer.from(request.response), 'utf-8');
                         if (text.indexOf('\uFFFD') >= 0) //detect replacement character
@@ -758,10 +761,12 @@ export class Backend {
                     }
                 };
                 request.ontimeout = () => {
+                    isFinished = true;
                     isTimeouted = true;
                     reject(new Error(request.statusText));
                 };
                 request.onerror = () => {
+                    isFinished = true;
                     console.warn(`Backend: request errored, status '${JSON.stringify(request)}'`);
                     if (request.timeout)
                         isTimeouted = true;
@@ -770,6 +775,14 @@ export class Backend {
 
                 request.responseType = 'arraybuffer';
                 request.timeout = 5000;
+                setTimeout(() => {
+                    /* 10s max-timeout because sometimes feeds connect SSL but then hang for a long time,
+                     * which "cheats" the request.timeout.*/
+                    if (!isFinished) {
+                        isTimeouted = true;
+                        reject(new Error('Timeout: answer took too long'));
+                    }
+                }, 10000);
                 request.open('GET', feed.url);
                 request.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
                 request.send();
@@ -788,6 +801,7 @@ export class Backend {
             errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e; }} //eslint-disable-line
         });
         const serializer = new XMLSerializer();
+        console.info(`Backend: Downloading from ${feed.name}, response in ${Date.now() - startTime} ms.`);
         try {
             const xml = parser.parseFromString(response);
             let items: any = null; //eslint-disable-line
@@ -891,7 +905,7 @@ export class Backend {
                     console.error(`Cannot process article, channel: ${feed.url}, err: ${err}`);
                 }
             }
-            console.debug(`Finished download from ${feed.name}, got ${arts.length} articles.`);
+            console.info(`Backend: Finished download from ${feed.name}, got ${arts.length} articles, took ${Date.now() - startTime} ms`);
         } catch(err) {
             console.error(`Channel ${feed.name} faulty.`,err);
             if (throwError)
