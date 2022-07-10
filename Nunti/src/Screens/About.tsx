@@ -66,7 +66,7 @@ class About extends PureComponent {
                     <List.Subheader>{this.props.lang.report_at}</List.Subheader>
                     <List.Item title={this.props.lang.issue_tracker}
                         left={() => <List.Icon icon="bug" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
+                        right={() => <Button textColor={this.props.theme.colors.error} style={Styles.settingsButton} 
                             onPress={this.openIssues}>{this.props.lang.report}</Button>} />
                 </List.Section>
             </ScrollView>

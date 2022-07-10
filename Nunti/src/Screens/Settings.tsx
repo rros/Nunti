@@ -6,13 +6,14 @@ import {
 } from 'react-native';
 
 import {
+    Text,
     Button,
     List,
+    Chip,
     Switch,
     Portal,
     Dialog,
     RadioButton,
-    Paragraph,
     TextInput,
     withTheme
 } from 'react-native-paper';
@@ -64,6 +65,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
 
             changeDialogVisible: false,
             changeDialogType: '',
+            changeDialogIcon: '',
             
             languageDialogVisible: false,
             browserModeDialogVisible: false,
@@ -364,7 +366,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                             onValueChange={() => { this.toggleSetting('DisableImages', 'noImagesSwitch') }} />} />
                     <List.Item title={this.props.lang.large_images}
                         left={() => <List.Icon icon="image" />}
-                        right={() => <Switch value={this.state.largeImagesSwitch} 
+                        right={() => <Switch value={this.state.largeImagesSwitch} disabled={this.state.noImagesSwitch}
                             onValueChange={() => { this.toggleSetting('LargeImages', 'largeImagesSwitch') }} />} />
                 </List.Section>
 
@@ -415,7 +417,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         return (
                             <List.Item title={tag.name}
                                 left={() => <List.Icon icon="tag" />}
-                                right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
+                                right={() => <Button textColor={this.props.theme.colors.error} style={Styles.settingsButton} 
                                     onPress={() => this.removeTag(tag)}>{this.props.lang.remove}</Button>} />
                         );
                     })}
@@ -439,50 +441,52 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     <List.Item title={this.props.lang.max_art_age}
                         left={() => <List.Icon icon="clock-outline" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'max_art_age' });}}>
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'max_art_age', changeDialogIcon: 'clock-outline' });}}>
                             {this.state.max_art_age + this.props.lang.days}</Button>} />
                     <List.Item title={this.props.lang.art_history}
                         left={() => <List.Icon icon="history" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'art_history' });}}>
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'art_history', changeDialogIcon: 'history' });}}>
                             {this.state.art_history}</Button>} />
                     <List.Item title={this.props.lang.discovery}
                         left={() => <List.Icon icon="book-search" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'discovery' });}}>
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'discovery', changeDialogIcon: 'book-search' });}}>
                             {this.state.discovery}%</Button>} />
                     <List.Item title={this.props.lang.cache_time}
                         left={() => <List.Icon icon="timer-off" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'cache_time' });}}>
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'cache_time', changeDialogIcon: 'timer-off' });}}>
                             {this.state.cache_time + this.props.lang.minutes} </Button>} />
                     <List.Item title={this.props.lang.page_size}
                         left={() => <List.Icon icon="arrow-collapse-up" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'page_size' });}}>
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'page_size', changeDialogIcon: 'arrow-collapse-up' });}}>
                             {this.state.page_size}</Button>} />
                     <List.Item title={this.props.lang.max_art_feed}
                         left={() => <List.Icon icon="arrow-collapse-up" />}
                         right={() => <Button style={Styles.settingsButton} 
-                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'max_art_feed' });}}>
+                            onPress={() => {this.setState({ changeDialogVisible: true, changeDialogType: 'max_art_feed', changeDialogIcon: 'arrow-collapse-up' });}}>
                             {this.state.max_art_feed}</Button>} />
                 </List.Section>
 
                 <List.Section title={this.props.lang.danger}>
                     <List.Item title={this.props.lang.wipe_cache}
                         left={() => <List.Icon icon="cached" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
+                        right={() => <Button textColor={this.props.theme.colors.error} style={Styles.settingsButton} 
                             onPress={() => { this.setState({cacheDialogVisible: true}); }}>{this.props.lang.reset}</Button>} />
                     <List.Item title={this.props.lang.wipe_data}
                         left={() => <List.Icon icon="alert" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
+                        right={() => <Button textColor={this.props.theme.colors.error} style={Styles.settingsButton} 
                             onPress={() => { this.setState({dataDialogVisible: true}); }}>{this.props.lang.restore}</Button>} />
                 </List.Section>
 
                 <Portal>
-                    <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false });}}>
+                    <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false });}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
                         <ScrollView>
-                            <Dialog.Title>{this.props.lang.language}</Dialog.Title>
+                            <Dialog.Icon icon="translate" />
+                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.language}</Dialog.Title>
                             <Dialog.Content>
                                 <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
                                     <RadioButton.Item label={this.props.lang.system} value="system" />
@@ -500,9 +504,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </ScrollView>
                     </Dialog>
                     
-                    <Dialog visible={this.state.browserModeDialogVisible} onDismiss={() => { this.setState({ browserModeDialogVisible: false });}}>
+                    <Dialog visible={this.state.browserModeDialogVisible} onDismiss={() => { this.setState({ browserModeDialogVisible: false });}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
                         <ScrollView>
-                            <Dialog.Title>{this.props.lang.browser_mode}</Dialog.Title>
+                            <Dialog.Icon icon="web" />
+                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.browser_mode}</Dialog.Title>
                             <Dialog.Content>
                                 <RadioButton.Group onValueChange={newValue => this.changeBrowserMode(newValue)} value={this.state.browserMode}>
                                     <RadioButton.Item label={this.props.lang.legacy_webview} value="legacy_webview" />
@@ -516,9 +522,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </ScrollView>
                     </Dialog>
 
-                    <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false });}}>
+                    <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false });}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
                         <ScrollView>
-                            <Dialog.Title>{this.props.lang.theme}</Dialog.Title>
+                            <Dialog.Icon icon="theme-light-dark" />
+                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.theme}</Dialog.Title>
                             <Dialog.Content>
                                 <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
                                     <RadioButton.Item label={this.props.lang.system} value="system" />
@@ -532,9 +540,11 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </ScrollView>
                     </Dialog>
 
-                    <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false });}}>
+                    <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false });}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
                         <ScrollView>
-                            <Dialog.Title>{this.props.lang.accent}</Dialog.Title>
+                            <Dialog.Icon icon="palette" />
+                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.accent}</Dialog.Title>
                             <Dialog.Content>
                                 <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
                                     { Object.keys(Accents).map((accentName) => {
@@ -553,8 +563,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     </Dialog>
 
                     <Dialog visible={this.state.rssAddDialogVisible} 
-                        onDismiss={() => { this.setState({ rssAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}>
-                        <Dialog.Title>{this.props.lang.add_feeds}</Dialog.Title>
+                        onDismiss={() => { this.setState({ rssAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
+                        <Dialog.Icon icon="rss" />
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.add_feeds}</Dialog.Title>
                         <Dialog.Content>
                             <TextInput label="https://www.website.com/rss" autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
@@ -568,8 +580,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     </Dialog>
 
                     <Dialog visible={this.state.tagAddDialogVisible} 
-                        onDismiss={() => { this.setState({ tagAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}>
-                        <Dialog.Title>{this.props.lang.add_tags}</Dialog.Title>
+                        onDismiss={() => { this.setState({ tagAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
+                        <Dialog.Icon icon="tag" />
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.add_tags}</Dialog.Title>
                         <Dialog.Content>
                             <TextInput label={this.props.lang.tag_name} autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
@@ -583,11 +597,12 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                     </Dialog>
                     
                     <Dialog visible={this.state.rssStatusDialogVisible} 
-                        onDismiss={() => { this.setState({ rssStatusDialogVisible: false, inputValue: ''});}}>
+                        onDismiss={() => { this.setState({ rssStatusDialogVisible: false, inputValue: ''});}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
                         <ScrollView>
-                            <Dialog.Title>{this.props.lang.feed_status}</Dialog.Title>
+                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.feed_status}</Dialog.Title>
                             <Dialog.Content>
-                                <Paragraph style={Styles.settingsDialogDesc}>{this.currentFeed?.url}</Paragraph>
+                                <Text variant="bodyMedium" style={Styles.settingsDialogDesc}>{this.currentFeed?.url}</Text>
                                 <View style={Styles.settingsDetailsView}>
                                     <TextInput label={this.currentFeed?.name} autoCapitalize="none" 
                                         style={Styles.settingsDetailsTextInput}
@@ -598,7 +613,7 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 </View>
                             </Dialog.Content>
                             
-                            <Dialog.Title style={Styles.consequentDialogTitle}>{this.props.lang.options}</Dialog.Title>
+                            <Dialog.Title style={Styles.consequentDialogTitle, Styles.textCentered}>{this.props.lang.options}</Dialog.Title>
                             <Dialog.Content>
                                 <List.Section style={Styles.compactList}>
                                     <List.Item title={this.props.lang.no_images}
@@ -612,10 +627,10 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                 </List.Section>
                             </Dialog.Content>
                             
-                            <Dialog.Title style={Styles.consequentDialogTitle}>{this.props.lang.tags}</Dialog.Title>
+                            <Dialog.Title style={Styles.consequentDialogTitle, Styles.textCentered}>{this.props.lang.tags}</Dialog.Title>
                             <Dialog.Content>
                                 { Backend.UserSettings.Tags.length > 0 ? 
-                                    <List.Section style={Styles.compactList}>
+                                    <View style={Styles.chipContainer}>
                                         { Backend.UserSettings.Tags.map((tag) => {
                                             let enabled: boolean;
                                             if(this.currentFeed != undefined && Feed.HasTag(this.currentFeed,tag)){
@@ -625,32 +640,30 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                                             }
 
                                             return(
-                                                <List.Item title={tag.name}
-                                                    left={() => <List.Icon icon="tag-outline" />}
-                                                    right={() => <Switch value={enabled} 
-                                                        onValueChange={(value) => { this.changeTagFeed(this.currentFeed, tag, value) }} />
-                                                    } />
+                                                <Chip onPress={(value) => this.changeTagFeed(this.currentFeed, tag, value)}
+                                                    selected={enabled} style={Styles.chip}
+                                                    >{tag.name}</Chip>
                                             );
                                         })}
-                                    </List.Section>
-                                    : <RadioButton.Group value={'no_tags'}>
-                                        <RadioButton.Item label={this.props.lang.no_tags} value="no_tags" disabled={true} />
-                                    </RadioButton.Group>
+                                    </View>
+                                    : <Text variant="bodyMedium" style={Styles.textCentered}>{this.props.lang.no_tags}</Text>
                                 }
                             </Dialog.Content>
                             <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
-                                <Button mode="contained" color={this.props.theme.colors.error} 
+                                <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.dismiss}</Button>
+                                <Button textColor={this.props.theme.colors.error} 
                                     onPress={() => this.removeRss(this.currentFeed)}>{this.props.lang.remove}</Button>
                             </Dialog.Actions>
                         </ScrollView>
                     </Dialog>
 
                     <Dialog visible={this.state.changeDialogVisible} 
-                        onDismiss={() => { this.setState({ changeDialogVisible: false, inputValue: '' });}}>
-                        <Dialog.Title>{this.props.lang['change_' + this.state.changeDialogType]}</Dialog.Title>
+                        onDismiss={() => { this.setState({ changeDialogVisible: false, inputValue: '' });}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
+                        <Dialog.Icon icon={this.state.changeDialogIcon} />
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang['change_' + this.state.changeDialogType]}</Dialog.Title>
                         <Dialog.Content>
-                            <Paragraph style={Styles.settingsDialogDesc}>{this.props.lang[this.state.changeDialogType + '_dialog']}</Paragraph>
+                            <Text variant="bodyMedium" style={Styles.settingsDialogDesc}>{this.props.lang[this.state.changeDialogType + '_dialog']}</Text>
                             <TextInput label={this.props.lang[this.state.changeDialogType]} keyboardType="numeric" 
                                 autoCapitalize="none" defaultValue={this.state.inputValue}
                                 onChangeText={text => this.inputChange(text)}/>
@@ -663,26 +676,30 @@ class Settings extends Component { // not using purecomponent as it doesn't rere
                         </Dialog.Actions>
                     </Dialog>
 
-                    <Dialog visible={this.state.cacheDialogVisible} onDismiss={() => { this.setState({ cacheDialogVisible: false });}}>
-                        <Dialog.Title>{this.props.lang.reset_title}</Dialog.Title>
+                    <Dialog visible={this.state.cacheDialogVisible} onDismiss={() => { this.setState({ cacheDialogVisible: false });}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
+                        <Dialog.Icon icon="cached" />
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.reset_title}</Dialog.Title>
                         <Dialog.Content>
-                            <Paragraph>{this.props.lang.reset_dialog}</Paragraph>
+                            <Text variant="bodyMedium">{this.props.lang.reset_dialog}</Text>
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ cacheDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetArtsCache}>
+                            <Button textColor={this.props.theme.colors.error} onPress={this.resetArtsCache}>
                                 {this.props.lang.reset}</Button>
                         </Dialog.Actions>
                     </Dialog>
 
-                    <Dialog visible={this.state.dataDialogVisible} onDismiss={() => { this.setState({ dataDialogVisible: false });}}>
-                        <Dialog.Title>{this.props.lang.restore_title}</Dialog.Title>
+                    <Dialog visible={this.state.dataDialogVisible} onDismiss={() => { this.setState({ dataDialogVisible: false });}}
+                        style={{backgroundColor: this.props.theme.colors.surface}}>
+                        <Dialog.Icon icon="alert" />
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.restore_title}</Dialog.Title>
                         <Dialog.Content>
-                            <Paragraph>{this.props.lang.restore_dialog}</Paragraph>
+                            <Text variant="bodyMedium">{this.props.lang.restore_dialog}</Text>
                         </Dialog.Content>
                         <Dialog.Actions>
                             <Button onPress={() => { this.setState({ dataDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
-                            <Button mode="contained" color={this.props.theme.colors.error} onPress={this.resetAllData}
+                            <Button textColor={this.props.theme.colors.error} onPress={this.resetAllData}
                                 disabled={this.state.dialogButtonLoading} loading={this.state.dialogButtonLoading}>{this.props.lang.restore}</Button>
                         </Dialog.Actions>
                     </Dialog>

@@ -1,24 +1,35 @@
 import { StyleSheet } from 'react-native';
-import { DarkTheme, DefaultTheme } from 'react-native-paper';
+import { MD3LightTheme as LightTheme, MD3DarkTheme as DarkTheme } from 'react-native-paper';
 
 export const Colors = {
     error: {
         key: 'error',
-        light: '#ff4444',
-        dark: '#cc0000'
+        light: '#cc0000',
+        dark: '#ff4444',
     },
     success: {
         key: 'success',
-        light: '#00c851',
-        dark: '#007e33'
+        light: '#007e33',
+        dark: '#00c851',
     },
 };
 
 export const Accents = {
     default: {
         key: 'default',
-        light: '#1eba81',
-        dark: '#1eba81'
+        lightPrimary: '#12724f',
+        lightOnPrimary: '#f6fefb',
+        lightSecondary: '#6e593f', 
+        lightSecondaryContainer: '#e5dcd2',
+        lightSurface: '#e5fbf3',
+        lightBackground: '#f6fefb',
+        
+        darkPrimary: '#21ca8c',
+        darkOnPrimary: '#072c1e',
+        darkSecondary: '#c7b49e',
+        darkSecondaryContainer: '#473a29',
+        darkSurface: '#041a12',
+        darkBackground: '#121212',
     },
     amethyst: {
         key: 'amethyst',
@@ -63,27 +74,34 @@ export const Accents = {
 };
 
 // customise default dark and white themes from paper
-export const Dark = {
+export const Black = {
     ...DarkTheme,
+    dark: true,
+    statusBarStyle: 'light-content',
     colors: {
         ...DarkTheme.colors,
-        accentName: 'default',
-        primary: '#1eba81',
-        accent: '#1eba81',
-        accentReverse: '#1eba81',
+        error: Colors.error.dark,
+        success: Colors.success.dark
+    }
+};
+
+export const Dark = {
+    ...DarkTheme,
+    dark: true,
+    statusBarStyle: 'light-content',
+    colors: {
+        ...DarkTheme.colors,
         error: Colors.error.dark,
         success: Colors.success.dark
     }
 };
 
 export const Light = {
-    ...DefaultTheme,
+    ...LightTheme,
+    dark: false,
+    statusBarStyle: 'dark-content',
     colors: {
-        ...DefaultTheme.colors,
-        accentName: 'default',
-        primary: '#1eba81',
-        accent: '#1eba81',
-        accentReverse: '#1eba81',
+        ...LightTheme.colors,
         error: Colors.error.light,
         success: Colors.success.light
     }
@@ -96,12 +114,14 @@ export default Styles = StyleSheet.create ({
     },
 
     modal: {
-        marginTop: 0
+        borderRadius: 20,
+        overflow: 'hidden',
+        margin: 12,
     },
 
     card: {
-        marginTop: 3,
-        marginBottom: 3,
+        marginTop: 4,
+        marginBottom: 4,
     },
 
     cardContentContainer: {
@@ -125,21 +145,36 @@ export default Styles = StyleSheet.create ({
         flex: 1,
     },
 
+    // card action container doesn't allow placing a button on the left
+    cardButtonContainer: {
+        flexDirection: 'row',
+        margin: 10,
+    },
+
     cardButtonLeft: {
-        marginLeft: 'auto'
+        marginRight: 'auto',
+        alignSelf: 'center'
+    },
+
+    cardButtonRight: {
+        marginLeft: 4,
     },
 
     captionContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        marginTop: 4,
+        marginBottom: 2
     },
 
     buttonRateLeft: {
         paddingRight: '30%',
+        borderRadius: 0,
     },
     
     buttonRateRight: {
         paddingLeft: '30%',
+        borderRadius: 0,
     },
 
     buttonRateContent: {
@@ -158,7 +193,7 @@ export default Styles = StyleSheet.create ({
     centerView: {
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 20
+        padding: 20,
     },
 
     listFooterView: {
@@ -182,12 +217,8 @@ export default Styles = StyleSheet.create ({
         marginBottom: 20
     },
 
-    largerText: {
-        textAlign: 'center',
-    },
-
     startReadingButton: {
-        marginTop: 20
+        marginTop: 10
     },
 
     settingsButton: {
@@ -221,5 +252,18 @@ export default Styles = StyleSheet.create ({
     compactList: {
         marginBottom: 0,
         marginTop: 0,
-    }
+    },
+
+    textCentered: {
+        textAlign: 'center'
+    },
+
+    chipContainer: {
+        flexDirection: "row", 
+        flexWrap: "wrap"
+    },
+
+    chip: {
+        margin: 4
+    },
 });

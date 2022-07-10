@@ -234,7 +234,7 @@ class UserSettings {
     public Tags: Tag[] = [];
 
     public DisableImages = false;
-    public LargeImages = false;
+    public LargeImages = true;
     public WifiOnly = false;
     public BrowserMode = 'webview';
     public MaxArticleAgeDays = 7;

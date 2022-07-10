@@ -11,7 +11,7 @@ import {
 } from 'react-native-paper';
 
 // our files
-import { Dark, Light, Accents } from './Styles';
+import { Black, Dark, Light, Accents } from './Styles';
 import * as Languages from './Locale';
 import Wizard from './Screens/Wizard';
 import ArticlesPage from './Screens/Articles';
@@ -117,8 +117,8 @@ export default class App extends Component {
             });
         }
         
-        // no need to rerender here, rerender will happen in updateAccent
-        // updateAccent is called here to change accent light/dark colour according to new theme
+        //no need to rerender here, rerender will happen in updateAccent
+        //updateAccent is called here to change accent light/dark colour according to new theme
         this.state.theme = theme;
         this.updateAccent(Backend.UserSettings.Accent);
     }
@@ -143,16 +143,41 @@ export default class App extends Component {
                 theme.colors.accentReverse = palette.primaryLight;
             }
         } else if(theme.dark) {
-            theme.colors.accent = Accents[accentName].dark;
-            theme.colors.primary = Accents[accentName].dark;
-            theme.colors.accentReverse = Accents[accentName].light;
+            theme.colors.primary = Accents[accentName].darkPrimary; // buttons
+            theme.colors.onPrimary = Accents[accentName].darkOnPrimary; // icons on buttons
+            theme.colors.secondary = Accents[accentName].darkSecondary; // icons in dialogs
+            theme.colors.secondaryContainer = Accents[accentName].darkSecondaryContainer; // drawer colour
+            theme.colors.surface = Accents[accentName].darkSurface; // dialog and header colour
+            theme.colors.surfaceVariant = Accents[accentName].darkSecondaryContainer; // text input
+            theme.colors.background = Accents[accentName].darkBackground; // background
+            theme.colors.inversePrimary = Accents[accentName].lightPrimary; // snackbar button colour
+            theme.colors.inverseSurface = Accents[accentName].lightSurface; // snackbar colour
         } else {
-            theme.colors.accent = Accents[accentName].light;
-            theme.colors.primary = Accents[accentName].light;
-            theme.colors.accentReverse = Accents[accentName].dark;
+            theme.colors.primary = Accents[accentName].lightPrimary; // buttons
+            theme.colors.onPrimary = Accents[accentName].lightOnPrimary; // icons on buttons
+            theme.colors.secondary = Accents[accentName].lightSecondary; // icons in dialogs
+            theme.colors.secondaryContainer = Accents[accentName].lightSecondaryContainer; // drawer colour
+            theme.colors.surface = Accents[accentName].lightSurface; // dialog and header colour
+            theme.colors.surfaceVariant = Accents[accentName].lightSecondaryContainer; // text input
+            theme.colors.background = Accents[accentName].lightBackground; // background
+            theme.colors.inversePrimary = Accents[accentName].darkPrimary; // snackbar button colour
+            theme.colors.inverseSurface = Accents[accentName].darkSurface; // snackbar colour
         }
 
+
+
+        //theme.colors.surface = "#b0f2da";
+        //theme.colors.background = "#b0f2da";
+        //theme.colors.backgroundVariant = "#b0f2da";
+        
+        // does nothing
+        //theme.colors.onSecondary = Accents[accentName].dark; // icons in dialogs
+        //theme.colors.onSecondaryContainer = Accents[accentName].dark; // drawer colour
+        //theme.colors.onPrimaryContainer = Accents[accentName].dark; // drawer colour
+        //theme.colors.primaryContainer = Accents[accentName].dark; // drawer colour
+
         this.setState({theme: theme});
+
     }
 
     public async toggleSnack(message: string, visible: bool) {
@@ -166,8 +191,9 @@ export default class App extends Component {
         
         return(
             <PaperProvider theme={this.state.theme}>
-                <StatusBar 
-                    backgroundColor="rgba(0, 0, 0, 0.3)"
+                <StatusBar
+                    barStyle={this.state.theme.statusBarStyle}
+                    backgroundColor={this.state.theme.colors.surface}
                     translucent={true}/>
                 <NavigationContainer theme={this.state.theme} onReady={() => RNBootSplash.hide({ fade: true })}>
                     <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
@@ -221,7 +247,8 @@ export default class App extends Component {
 
 function CustomHeader ({ navigation, route, lang }) {
     return (
-        <Appbar.Header style={{marginTop: StatusBar.currentHeight, height: route.name == 'legacyWebview' ? 0 : undefined}}> 
+        <Appbar.Header mode="center-aligned" elevated={false} statusBarHeight={StatusBar.currentHeight}
+            style={{height: route.name == 'legacyWebview' ? 0 : undefined}}> 
             { route.name != 'wizard' && route.name != 'legacyWebview' ?
                 <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />

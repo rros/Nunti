@@ -1,0 +1,19 @@
+text padding
+non round hidden view
+redesign modal
+modal buttons
+modal background
+fix wizard header
+appheader
+scrollview padding
+caption margin
+filter by tag chips
+default topics chips
+
+custom themes
+black theme
+redesign settings? (full width button, foldable rss/tags at least)
+"keyword" localisation
+search keyword doesn't clear
+success and error colours
+check if status bar color works in release

@@ -2,17 +2,18 @@ import React, { Component } from 'react';
 import {
     ScrollView,
     Image,
-    Platform
+    Platform,
+    View,
 } from 'react-native';
 
 import { 
-    Title,
-    Paragraph,
+    Text,
     RadioButton,
     Button,
     Switch,
     List,
-    withTheme
+    Chip,
+    withTheme,
 } from 'react-native-paper';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -39,10 +40,10 @@ class Wizard extends Component {
                     tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => { 
                         if(focused)
                             return <Icon style={Styles.wizardNavigationIcon} name="circle" 
-                                size={15} color={this.props.theme.colors.accent} />;
+                                size={15} color={this.props.theme.colors.primary} />;
                         else
                             return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off"
-                                size={15} color={this.props.theme.colors.disabled} />;}
+                                size={15} color={this.props.theme.colors.inverseSurface} />;}
                 }}>
                 <NavigationTabs.Screen name="Welcome">
                     { props => <Step1Welcome {...props} lang={this.props.lang}
@@ -103,8 +104,8 @@ class Step1Welcome extends Component {
             <ScrollView contentContainerStyle={Styles.centerView}>
                 <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Title style={Styles.largerText}>{this.props.lang.welcome}</Title>
-                <Paragraph style={Styles.largerText}>{this.props.lang.enjoy}</Paragraph>
+                <Text variant="titleLarge" style={Styles.textCentered}>{this.props.lang.welcome}</Text>
+                <Text variant="bodyMedium" style={Styles.textCentered}>{this.props.lang.enjoy}</Text>
                 <Button icon="application-import" style={Styles.startReadingButton}
                     onPress={this.import}>{this.props.lang.import}</Button>
             </ScrollView>
@@ -133,18 +134,17 @@ class Step2Language extends Component {
     render() {
         return(
             <ScrollView>
-                <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
-                    <List.Section title={this.props.lang.language}>
-                        <List.Item title={this.props.lang.system}
-                            right={() => <RadioButton.Item value="system" />} />
+                <List.Section title={this.props.lang.language}>
+                    <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
+                        <RadioButton.Item label={this.props.lang.system} value="system" />
                         { Object.keys(this.props.Languages).map((language) => {
                             return(
-                                <List.Item title={this.props.Languages[language].this_language}
-                                    right={() => <RadioButton.Item value={this.props.Languages[language].code} />} />
+                                <RadioButton.Item label={this.props.Languages[language].this_language}
+                                    value={this.props.Languages[language].code} />
                             );
                         })}
-                    </List.Section>
-                </RadioButton.Group>
+                    </RadioButton.Group>
+                </List.Section>
             </ScrollView>
         );
     }
@@ -179,29 +179,24 @@ class Step3Theme extends Component {
     render() {
         return(
             <ScrollView>
-                <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
-                    <List.Section title={this.props.lang.theme}>
-                        <List.Item title={this.props.lang.system}
-                            right={() => <RadioButton.Item value="system" />} />
-                        <List.Item title={this.props.lang.light}
-                            right={() => <RadioButton.Item value="light" />} />
-                        <List.Item title={this.props.lang.dark}
-                            right={() => <RadioButton.Item value="dark" />} />
-                    </List.Section>
-                </RadioButton.Group>
-                <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
-                    <List.Section title={this.props.lang.accent}>
+                <List.Section title={this.props.lang.theme}>
+                    <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
+                        <RadioButton.Item label={this.props.lang.system} value="system" />
+                        <RadioButton.Item label={this.props.lang.light} value="light" />
+                        <RadioButton.Item label={this.props.lang.dark} value="dark" />
+                    </RadioButton.Group>
+                </List.Section>
+                <List.Section title={this.props.lang.accent}>
+                    <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
                         { Object.keys(Accents).map((accentName) => {
                             return (
-                                <List.Item title={this.props.lang[accentName]}
-                                    right={() => <RadioButton.Item value={accentName} />} />
+                                <RadioButton.Item label={this.props.lang[accentName]} value={accentName} />
                             );
                         })}
-                        <List.Item title={this.props.lang.material_you}
-                            right={() => <RadioButton.Item disabled={Platform.Version < 31} 
-                                value="material_you" />} />
-                    </List.Section>
-                </RadioButton.Group>
+                        <RadioButton.Item label={this.props.lang.material_you} 
+                            value="material_you" disabled={Platform.Version < 31} />
+                    </RadioButton.Group>
+                </List.Section>
             </ScrollView>
         );
     }
@@ -232,32 +227,34 @@ class Step4Topics extends Component {
         return(
             <ScrollView>
                 <List.Section title={this.props.lang.topics}>
+                    <View style={Styles.chipContainer}>
                     { Object.keys(DefaultTopics.Topics).map((topicName) => {
                         if(DefaultTopics.Topics[topicName].icon == 'earth'){
                             return null;
                         }
 
                         return (
-                            <List.Item title={this.props.lang[topicName]}
-                                left={() => <List.Icon icon={DefaultTopics.Topics[topicName].icon} />}
-                                right={() => <Switch value={this.state[topicName]} 
-                                    onValueChange={() => this.changeDefaultTopics(topicName)} />} />
+                            <Chip onPress={() => this.changeDefaultTopics(topicName)}
+                                selected={this.state[topicName]} style={Styles.chip}
+                                >{this.props.lang[topicName]}</Chip>
                         );
                     })}
+                    </View>
                 </List.Section>
                 <List.Section title={this.props.lang.diff_language_news}>
+                    <View style={Styles.chipContainer}>
                     { Object.keys(DefaultTopics.Topics).map((topicName) => {
                         if(DefaultTopics.Topics[topicName].icon != 'earth'){
                             return null;
                         }
 
                         return (
-                            <List.Item title={this.props.lang[topicName]}
-                                left={() => <List.Icon icon={DefaultTopics.Topics[topicName].icon} />}
-                                right={() => <Switch value={this.state[topicName]} 
-                                    onValueChange={() => this.changeDefaultTopics(topicName)} />} />
+                            <Chip onPress={() => this.changeDefaultTopics(topicName)}
+                                selected={this.state[topicName]} style={Styles.chip}
+                                >{this.props.lang[topicName]}</Chip>
                         );
                     })}
+                    </View>
                 </List.Section>
             </ScrollView>
         );
@@ -283,10 +280,10 @@ class Step5Learning extends Component {
             <ScrollView contentContainerStyle={Styles.centerView}>
                 <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Title style={Styles.largerText}>{this.props.lang.adapt}</Title>
-                <Paragraph style={Styles.largerText}>
-                    {(this.props.lang.wizard_learning).replace('%noSort%', Backend.UserSettings.NoSortUntil)}</Paragraph>
-                <Button icon="book" style={Styles.startReadingButton}
+                <Text variant="titleLarge" style={Styles.textCentered}>{this.props.lang.adapt}</Text>
+                <Text variant="bodyMedium">
+                    {(this.props.lang.wizard_learning).replace('%noSort%', Backend.UserSettings.NoSortUntil)}</Text>
+                <Button icon="book" mode="contained" style={Styles.startReadingButton}
                     onPress={this.exitWizard}>{this.props.lang.start}</Button>
             </ScrollView>
         );
