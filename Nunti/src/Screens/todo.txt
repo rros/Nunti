@@ -9,11 +9,20 @@ scrollview padding
 caption margin
 filter by tag chips
 default topics chips
+about full width button
+redesign settings (full width buttons, subpages)
+empty page title change (prazdno -> zadne ulozene clanky?)
+localise "add some tags", localise "50 more" to "rate 50 more to enable", localise tag remove dialog, localise "inner workings", "keyword" localisation
+fix rss status url
+fix fab hiding snackbar
 
-custom themes
+fix loading button animation (move to right?)
+dialog animations
+move to subpage animation
+colorschemes
 black theme
-redesign settings? (full width button, foldable rss/tags at least)
-"keyword" localisation
 search keyword doesn't clear
 success and error colours
 check if status bar color works in release
+refactor css styles
+fastlane

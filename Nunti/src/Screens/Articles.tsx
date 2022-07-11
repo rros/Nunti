@@ -27,6 +27,7 @@ import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 import { WebView } from 'react-native-webview';
 
 import { Backend, Article } from '../Backend';
+import EmptyScreenComponent from '../Components/EmptyScreenComponent'
 
 class ArticlesPage extends PureComponent {
     constructor(props:any){
@@ -258,7 +259,7 @@ class ArticlesPage extends PureComponent {
     // NOTE: rowKey = item.id; use instead of index
     render() {
         return (
-            <View style={Styles.topView}>
+            <View>
                 <SwipeListView
                     listViewRef={(list) => this.flatListRef = list}
 
@@ -418,13 +419,12 @@ class ArticlesPage extends PureComponent {
                                             );
                                         })}
                                     </View>
-                                : <Text variant="bodyMedium" style={Styles.textCentered}>{this.props.lang.no_tags}</Text>
-                                }
+                                : <Text variant="bodyMedium" style={Styles.textCentered}>{this.props.lang.no_tags}</Text> }
                             </Dialog.Content>
 
-                            <Dialog.Title style={Styles.consequentDialogTitle, Styles.textCentered}>{this.props.lang.search}</Dialog.Title>
+                            <Dialog.Title style={[Styles.consequentDialogTitle, Styles.textCentered]}>{this.props.lang.search}</Dialog.Title>
                             <Dialog.Content>
-                                <TextInput label="Keyword" autoCapitalize="none" defaultValue={this.state.inputValue}
+                                <TextInput label={this.props.lang.keyword} autoCapitalize="none" defaultValue={this.state.inputValue}
                                     onChangeText={text => this.inputChange(text)}/>
                             </Dialog.Content>
                             <Dialog.Actions>
@@ -440,31 +440,20 @@ class ArticlesPage extends PureComponent {
 }
 
 function ListEmptyComponent ({ theme, route, lang }) {
-    return(
-        <View style={Styles.centerView}>
-            <Image source={theme.dark ? 
-                require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
-                resizeMode="contain" style={Styles.fullscreenImage}></Image>
-            { route.name == 'feed' ?
-                <View>
-                    <Text variant="titleLarge" style={Styles.textCentered}>{lang.empty_feed_title}</Text>
-                    <Text variant="bodyMedium" style={Styles.textCentered}>{lang.empty_feed_desc}</Text>
-                </View> : null
-            }
-            { route.name == 'bookmarks' ? 
-                <View>
-                    <Text variant="titleLarge" style={Styles.textCentered}>{lang.no_bookmarks}</Text>
-                    <Text variant="bodyMedium" style={Styles.textCentered}>{lang.no_bookmarks_desc}</Text>
-                </View> : null
-            }
-            { route.name == 'history' ?
-                <View>
-                    <Text variant="titleLarge" style={Styles.textCentered}>{lang.no_history}</Text>
-                    <Text variant="bodyMedium" style={Styles.textCentered}>{lang.no_history_desc}</Text>
-                </View> : null
-            }
-        </View>
-    );
+    switch ( route.name ) {
+        case 'feed':
+            return(
+                <EmptyScreenComponent title={lang.empty_feed_title} description={lang.empty_feed_desc} />
+            );
+        case 'bookmarks':
+            return(
+                <EmptyScreenComponent title={lang.no_bookmarks} description={lang.no_bookmarks_desc} />
+            );
+        case 'history':
+            return(
+                <EmptyScreenComponent title={lang.no_history} description={lang.no_history_desc} />
+            );
+    }
 }
 
 function DateCaption ({ date, lang }) {

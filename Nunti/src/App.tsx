@@ -54,6 +54,7 @@ export default class App extends Component {
         await Backend.Init();
         await this.reloadGlobalStates();
 
+        // disable back button if the user is in the wizard
         this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if(Backend.UserSettings.FirstLaunch){
                 return true;
@@ -143,8 +144,10 @@ export default class App extends Component {
                 theme.colors.accentReverse = palette.primaryLight;
             }
         } else if(theme.dark) {
-            theme.colors.primary = Accents[accentName].darkPrimary; // buttons
+            theme.colors.primary = Accents[accentName].darkPrimary; 
             theme.colors.onPrimary = Accents[accentName].darkOnPrimary; // icons on buttons
+            theme.colors.primaryContainer = Accents[accentName].darkPrimaryContainer;
+            theme.colors.onPrimaryContainer = Accents[accentName].darkOnPrimaryContainer;
             theme.colors.secondary = Accents[accentName].darkSecondary; // icons in dialogs
             theme.colors.secondaryContainer = Accents[accentName].darkSecondaryContainer; // drawer colour
             theme.colors.surface = Accents[accentName].darkSurface; // dialog and header colour
@@ -155,6 +158,8 @@ export default class App extends Component {
         } else {
             theme.colors.primary = Accents[accentName].lightPrimary; // buttons
             theme.colors.onPrimary = Accents[accentName].lightOnPrimary; // icons on buttons
+            theme.colors.primaryContainer = Accents[accentName].lightPrimaryContainer;
+            theme.colors.onPrimaryContainer = Accents[accentName].lightOnPrimaryContainer;
             theme.colors.secondary = Accents[accentName].lightSecondary; // icons in dialogs
             theme.colors.secondaryContainer = Accents[accentName].lightSecondaryContainer; // drawer colour
             theme.colors.surface = Accents[accentName].lightSurface; // dialog and header colour
@@ -173,8 +178,6 @@ export default class App extends Component {
         // does nothing
         //theme.colors.onSecondary = Accents[accentName].dark; // icons in dialogs
         //theme.colors.onSecondaryContainer = Accents[accentName].dark; // drawer colour
-        //theme.colors.onPrimaryContainer = Accents[accentName].dark; // drawer colour
-        //theme.colors.primaryContainer = Accents[accentName].dark; // drawer colour
 
         this.setState({theme: theme});
 
@@ -246,16 +249,24 @@ export default class App extends Component {
 }
 
 function CustomHeader ({ navigation, route, lang }) {
-    return (
-        <Appbar.Header mode="center-aligned" elevated={false} statusBarHeight={StatusBar.currentHeight}
-            style={{height: route.name == 'legacyWebview' ? 0 : undefined}}> 
-            { route.name != 'wizard' && route.name != 'legacyWebview' ?
-                <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
-            <Appbar.Content title={lang[route.name]} />
-            { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
-                <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({filterDialogVisible: true})} /> : null }
-        </Appbar.Header> 
-    );
+    if(route.name == 'legacyWebview') {
+        return (
+            <Appbar.Header statusBarHeight={StatusBar.currentHeight} style={{height: 0}} />
+        );
+    } else if(route.name == 'settings') { // hide and remove status bar padding (settings has it's own header)
+        return (
+            <Appbar.Header style={{height: 0}} />
+        );
+    } else {
+        return (
+            <Appbar.Header mode="center-aligned" elevated={false} statusBarHeight={StatusBar.currentHeight}> 
+                { route.name != 'wizard' ? <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
+                <Appbar.Content title={lang[route.name]} />
+                { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
+                    <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({filterDialogVisible: true})} /> : null }
+            </Appbar.Header> 
+        );
+    }
 }
 
 function CustomDrawer ({ state, navigation, theme, lang }) {

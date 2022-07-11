@@ -39,10 +39,10 @@ class Wizard extends Component {
                     tabBarIndicatorStyle: { backgroundColor: 'transparent'},
                     tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => { 
                         if(focused)
-                            return <Icon style={Styles.wizardNavigationIcon} name="circle" 
+                            return <Icon style={Styles.buttonAlign} name="circle" 
                                 size={15} color={this.props.theme.colors.primary} />;
                         else
-                            return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off"
+                            return <Icon style={Styles.buttonAlign} name="radio-button-off"
                                 size={15} color={this.props.theme.colors.inverseSurface} />;}
                 }}>
                 <NavigationTabs.Screen name="Welcome">
@@ -101,7 +101,7 @@ class Step1Welcome extends Component {
 
     render() {
         return(
-            <ScrollView contentContainerStyle={Styles.centerView}>
+            <ScrollView contentContainerStyle={Styles.centeredImageContainer}>
                 <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Text variant="titleLarge" style={Styles.textCentered}>{this.props.lang.welcome}</Text>
@@ -277,7 +277,7 @@ class Step5Learning extends Component {
 
     render() {
         return(
-            <ScrollView contentContainerStyle={Styles.centerView}>
+            <ScrollView contentContainerStyle={Styles.centeredImageContainer}>
                 <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 <Text variant="titleLarge" style={Styles.textCentered}>{this.props.lang.adapt}</Text>

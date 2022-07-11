@@ -19,6 +19,8 @@ export const Accents = {
         key: 'default',
         lightPrimary: '#12724f',
         lightOnPrimary: '#f6fefb',
+        lightPrimaryContainer: '#12724f',
+        lightOnPrimaryContainer: '#f6fefb',
         lightSecondary: '#6e593f', 
         lightSecondaryContainer: '#e5dcd2',
         lightSurface: '#e5fbf3',
@@ -26,6 +28,8 @@ export const Accents = {
         
         darkPrimary: '#21ca8c',
         darkOnPrimary: '#072c1e',
+        lightPrimaryContainer: '#21ca8c',
+        lightOnPrimaryContainer: '#072c1e',
         darkSecondary: '#c7b49e',
         darkSecondaryContainer: '#473a29',
         darkSurface: '#041a12',
@@ -109,10 +113,6 @@ export const Light = {
 
 // custom css here
 export default Styles = StyleSheet.create ({
-    topView: {
-        flex: 1,
-    },
-
     modal: {
         borderRadius: 20,
         overflow: 'hidden',
@@ -190,7 +190,7 @@ export default Styles = StyleSheet.create ({
         marginBottom: 5
     },
 
-    centerView: {
+    centeredImageContainer: {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
@@ -221,32 +221,16 @@ export default Styles = StyleSheet.create ({
         marginTop: 10
     },
 
-    settingsButton: {
-        justifyContent: 'center'
-    },
-
-    wizardNavigationIcon: {
-        alignSelf: 'center'
-    },
-
     settingsDialogDesc: {
         paddingBottom: 10
     },
-
-    settingsDetailsView: {
-        flexDirection: 'row'
-    }, 
     
     settingsDetailsTextInput: {
         flex: 1
     }, 
     
-    settingsDetailsButton: {
+    buttonAlign: {
         alignSelf: 'center'
-    },
-
-    consequentDialogTitle: {
-        marginTop: 0,
     },
 
     compactList: {
@@ -266,4 +250,30 @@ export default Styles = StyleSheet.create ({
     chip: {
         margin: 4
     },
+
+    settingsButton: { // if wrapping a list item in the touchable ripple, don't use this style
+        paddingTop: 16,
+        paddingBottom: 16,
+        paddingLeft: 24,
+        paddingRight: 16,
+    },
+
+    settingsButtonDialog: { // without horizontal padding
+        paddingTop: 16,
+        paddingBottom: 16,
+    },
+
+    rowContainer: {
+        flexDirection: 'row'
+    },
+
+    fabContainer: {
+        flexGrow: 1
+    },
+
+    fab: {
+        bottom: 16,
+        right: 16,
+        position: 'absolute',
+    }
 });

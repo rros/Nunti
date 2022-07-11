@@ -8,7 +8,8 @@ import {
 
 import { 
     List,
-    Button,
+    TouchableRipple,
+    Text,
     withTheme
 } from 'react-native-paper';
 
@@ -42,8 +43,8 @@ class About extends PureComponent {
 
     render() {
         return (
-            <ScrollView style={Styles.topView}>
-                <View style={[Styles.centerView, Styles.wizardStatusOffset]}>
+            <ScrollView>
+                <View style={Styles.centeredImageContainer}>
                     <Image source={require('../../Resources/HeartNunti.png')} 
                         resizeMode="contain" style={Styles.fullscreenImage}></Image>
                 </View>
@@ -64,10 +65,12 @@ class About extends PureComponent {
 
                 <List.Section>
                     <List.Subheader>{this.props.lang.report_at}</List.Subheader>
-                    <List.Item title={this.props.lang.issue_tracker}
-                        left={() => <List.Icon icon="bug" />}
-                        right={() => <Button textColor={this.props.theme.colors.error} style={Styles.settingsButton} 
-                            onPress={this.openIssues}>{this.props.lang.report}</Button>} />
+                    <TouchableRipple
+                        rippleColor={this.props.theme.colors.alternativeSurface}
+                        onPress={this.openIssues}>
+                        <List.Item title={this.props.lang.issue_tracker}
+                            left={() => <List.Icon icon="bug" />} />
+                    </TouchableRipple>
                 </List.Section>
             </ScrollView>
         );
