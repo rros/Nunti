@@ -157,6 +157,8 @@ class SettingsAdvanced extends Component { // not using purecomponent as it does
                             <TextInput label={this.state[this.state.changeDialogType] + 
                                 (this.state.changeDialogSuffix != '' ? this.props.lang[this.state.changeDialogSuffix] : '')}
                                 keyboardType="numeric" autoCapitalize="none" defaultValue={this.state.inputValue}
+                                right={<TextInput.Affix text={this.state.changeDialogSuffix != '' ?
+                                    this.props.lang[this.state.changeDialogSuffix] : ''} />}
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>

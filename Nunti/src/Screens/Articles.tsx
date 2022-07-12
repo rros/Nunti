@@ -5,7 +5,8 @@ import {
     Animated,
     ScrollView,
     Image,
-    Linking
+    Linking,
+    Dimensions
 } from 'react-native';
 
 import {
@@ -19,7 +20,8 @@ import {
     Chip,
     Button,
     IconButton,
-    withTheme
+    withTheme,
+    Banner,
 } from 'react-native-paper';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -47,12 +49,18 @@ class ArticlesPage extends PureComponent {
             showImages: !Backend.UserSettings.DisableImages,
             largeImages: Backend.UserSettings.LargeImages,
             inputValue: '',
+
+            bannerVisible: false,
+
+            screenHeight: Dimensions.get('window').height,
         };
         
         // variables
         this.articlesFromBackend = []; // CurrentFeed or CurrentBookmarks
         this.currentArticle = undefined;// details modal
         this.currentPageIndex = 0;
+        
+        this.bannerMessage = '';
 
         // animation values
         this.rowAnimatedValues = [];
@@ -65,7 +73,7 @@ class ArticlesPage extends PureComponent {
 
     componentDidMount(){
         this.refresh();
-        
+
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
             if(this.props.route.name != 'feed') { 
                 this.refresh(); // reload bookmarks/history on each access
@@ -74,10 +82,15 @@ class ArticlesPage extends PureComponent {
             this.setState({showImages: !Backend.UserSettings.DisableImages, 
                 largeImages: Backend.UserSettings.LargeImages});
         });
+        
+        this.dimensionsSubscription = Dimensions.addEventListener('change', ({window, screen}) => {
+            this.setState({screenHeight: window.height})
+        });
     }
 
     componentWillUnmount() {
         this._unsubscribe();
+        this.dimensionsSubscription?.remove();
     }
 
     private async refresh(){
@@ -93,6 +106,19 @@ class ArticlesPage extends PureComponent {
                 numberOfArticles = numberOfArticles + 1;
             });
         });
+
+        // show user a banner indicating possible reasons why no articles were loaded
+        if(this.props.source == 'feed' && numberOfArticles == 0) {
+            if(Backend.UserSettings.FeedList.length == 0) {
+                this.bannerMessage = this.props.lang.no_feed_banner;
+                this.setState({bannerVisible: true});
+            } else if(Backend.IsDoNotDownloadEnabled && Backend.UserSettings.WifiOnly) {
+                this.bannerMessage = this.props.lang.wifi_only_banner;
+                this.setState({bannerVisible: true});
+            }
+        } else {
+            this.setState({bannerVisible: false});
+        }
     
         this.initialiseAnimationValues(numberOfArticles);           
         this.setState({articlePage: this.articlesFromBackend[this.currentPageIndex], refreshing: false});
@@ -260,6 +286,17 @@ class ArticlesPage extends PureComponent {
     render() {
         return (
             <View>
+                <Banner visible={this.state.bannerVisible} actions={[
+                    {
+                        label: this.props.lang.dismiss,
+                        onPress: () => this.setState({wifiOnlyBannerVisible: false}),
+                    },
+                    {
+                        label: this.props.lang.goto_settings,
+                        onPress: () => { this.setState({wifiOnlyBannerVisible: false}); this.props.navigation.navigate('settings') },
+                    },
+                ]}>{this.bannerMessage}</Banner>
+
                 <SwipeListView
                     listViewRef={(list) => this.flatListRef = list}
 
@@ -372,9 +409,9 @@ class ArticlesPage extends PureComponent {
                 ></SwipeListView>
 
                 <Portal>
-                    {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
-                        <ScrollView>
-                            <Card style={Styles.modal}>
+                    {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} animationType="slide">
+                        <Card style={[Styles.modal, {maxHeight: this.state.screenHeight / 1.2}]}>
+                            <ScrollView>
                                 {(this.state.showImages && this.currentArticle.cover !== undefined) ? 
                                     <Card.Cover source={{ uri: this.currentArticle.cover }} /> : null }
                                 <Card.Content>
@@ -385,25 +422,28 @@ class ArticlesPage extends PureComponent {
                                         <Text variant="bodySmall">{(this.props.lang.article_from).replace('%source%', this.currentArticle.source)}</Text>
                                     </View>
                                 </Card.Content>
-                                <View style={Styles.cardButtonContainer}>
-                                    <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
-                                        onPress={() => { this.readMore(this.currentArticle.url); }}>{this.props.lang.read_more}</Button>
-                                    { this.props.buttonType != 'delete' ? <IconButton icon="bookmark" mode="contained-tonal" size={20}
-                                        onPress={() => { this.saveArticle(this.currentArticle); }}>{this.props.lang.save}</IconButton> : null }
-                                    { this.props.buttonType == 'delete' ? <IconButton icon="bookmark-remove" mode="contained-tonal" size={20}
-                                        onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>{this.props.lang.remove}</IconButton> : null }
-                                    <IconButton icon="share" mode="contained-tonal" style={Styles.cardButtonRight} size={20}
-                                        onPress={() => { this.shareArticle(this.currentArticle.url); }}>{this.props.lang.share}</IconButton>
-                                </View>
-                            </Card>
-                        </ScrollView>
+                            </ScrollView>
+                            <View style={Styles.cardButtonContainer}>
+                                <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
+                                    onPress={() => { this.readMore(this.currentArticle.url); }}>{this.props.lang.read_more}</Button>
+                                { this.props.buttonType != 'delete' ? <IconButton icon="bookmark" mode="contained-tonal" size={20}
+                                    onPress={() => { this.saveArticle(this.currentArticle); }}>{this.props.lang.save}</IconButton> : null }
+                                { this.props.buttonType == 'delete' ? <IconButton icon="bookmark-remove" mode="contained-tonal" size={20}
+                                    onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>{this.props.lang.remove}</IconButton> : null }
+                                <IconButton icon="share" mode="contained-tonal" style={Styles.cardButtonRight} size={20}
+                                    onPress={() => { this.shareArticle(this.currentArticle.url); }}>{this.props.lang.share}</IconButton>
+                            </View>
+                        </Card>
                     </Modal> : null }
 
-                    <Dialog visible={this.props.route.params?.filterDialogVisible} style={{backgroundColor: this.props.theme.colors.surface}}
-                        onDismiss={() => this.props.navigation.setParams({filterDialogVisible: false})}>
-                        <ScrollView>
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.filter}</Dialog.Title>
-                            <Dialog.Content>
+                    <Dialog visible={this.props.route.params?.filterDialogVisible} onDismiss={() => this.props.navigation.setParams({filterDialogVisible: false})}
+                        style={[{backgroundColor: this.props.theme.colors.surface}, Styles.dialogWithScrollView]}>
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.filter}</Dialog.Title>
+                        <Dialog.ScrollArea>
+                            <ScrollView contentContainerStyle={Styles.filterDialogScrollView}>
+                                <TextInput label={this.props.lang.keyword} autoCapitalize="none" defaultValue={this.state.inputValue}
+                                    onChangeText={text => this.inputChange(text)}/>
+                                
                                 { Backend.UserSettings.Tags.length > 0 ? 
                                     <View style={Styles.chipContainer}>
                                         { Backend.UserSettings.Tags.map((tag) => {
@@ -418,20 +458,17 @@ class ArticlesPage extends PureComponent {
                                                     >{tag.name}</Chip>
                                             );
                                         })}
+                                    </View> : <View style={Styles.settingsButtonDialog}>
+                                        <Text variant="titleMedium">{this.props.lang.no_tags}</Text>
+                                        <Text variant="bodySmall">{this.props.lang.no_tags_description}</Text>
                                     </View>
-                                : <Text variant="bodyMedium" style={Styles.textCentered}>{this.props.lang.no_tags}</Text> }
-                            </Dialog.Content>
-
-                            <Dialog.Title style={[Styles.consequentDialogTitle, Styles.textCentered]}>{this.props.lang.search}</Dialog.Title>
-                            <Dialog.Content>
-                                <TextInput label={this.props.lang.keyword} autoCapitalize="none" defaultValue={this.state.inputValue}
-                                    onChangeText={text => this.inputChange(text)}/>
-                            </Dialog.Content>
-                            <Dialog.Actions>
-                                <Button onPress={() => this.applyFilter(true)}>{this.props.lang.clear}</Button>
-                                <Button onPress={() => this.applyFilter(false)}>{this.props.lang.apply}</Button>
-                            </Dialog.Actions>
-                        </ScrollView>
+                                }
+                            </ScrollView>
+                        </Dialog.ScrollArea>
+                        <Dialog.Actions>
+                            <Button onPress={() => this.applyFilter(true)}>{this.props.lang.clear}</Button>
+                            <Button onPress={() => this.applyFilter(false)}>{this.props.lang.apply}</Button>
+                        </Dialog.Actions>
                     </Dialog>
                 </Portal>
             </View>

@@ -116,12 +116,11 @@ export default Styles = StyleSheet.create ({
     modal: {
         borderRadius: 20,
         overflow: 'hidden',
-        margin: 12,
+        marginHorizontal: 12,
     },
 
     card: {
-        marginTop: 4,
-        marginBottom: 4,
+        marginVertical: 4
     },
 
     cardContentContainer: {
@@ -186,8 +185,7 @@ export default Styles = StyleSheet.create ({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 5,
-        marginBottom: 5
+        marginVertical: 5
     },
 
     centeredImageContainer: {
@@ -206,8 +204,7 @@ export default Styles = StyleSheet.create ({
     },
 
     footerButton: {
-        paddingTop: 10,
-        paddingBottom: 10,
+        paddingVertical: 10
     },
     
     fullscreenImage: {
@@ -226,16 +223,16 @@ export default Styles = StyleSheet.create ({
     },
     
     settingsDetailsTextInput: {
-        flex: 1
+        flex: 1,
+        marginBottom: 20,
     }, 
+
+    settingsDetailsInfo: {
+        paddingBottom: 16,
+    },
     
     buttonAlign: {
         alignSelf: 'center'
-    },
-
-    compactList: {
-        marginBottom: 0,
-        marginTop: 0,
     },
 
     textCentered: {
@@ -244,7 +241,8 @@ export default Styles = StyleSheet.create ({
 
     chipContainer: {
         flexDirection: "row", 
-        flexWrap: "wrap"
+        flexWrap: "wrap",
+        marginTop: 4,
     },
 
     chip: {
@@ -252,15 +250,13 @@ export default Styles = StyleSheet.create ({
     },
 
     settingsButton: { // if wrapping a list item in the touchable ripple, don't use this style
-        paddingTop: 16,
-        paddingBottom: 16,
         paddingLeft: 24,
         paddingRight: 16,
+        paddingVertical: 16,
     },
-
-    settingsButtonDialog: { // without horizontal padding
-        paddingTop: 16,
-        paddingBottom: 16,
+    
+    settingsButtonDialog: { // no horizontal padding version
+        paddingVertical: 16,
     },
 
     rowContainer: {
@@ -268,12 +264,16 @@ export default Styles = StyleSheet.create ({
     },
 
     fabContainer: {
-        flexGrow: 1
+        flexGrow: 1,
     },
 
     fab: {
         bottom: 16,
         right: 16,
         position: 'absolute',
-    }
+    },
+
+    filterDialogScrollView: {
+        paddingVertical: 20
+    },
 });

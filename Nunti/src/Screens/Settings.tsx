@@ -4,6 +4,7 @@ import {
     View,
     StatusBar,
     Platform,
+    Dimensions,
 } from 'react-native';
 
 import {
@@ -111,6 +112,8 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
             dataDialogVisible: false,
             
             learningStatus: null,
+            
+            screenHeight: Dimensions.get('window').height,
         };
     }
     
@@ -118,10 +121,15 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
             this.getLearningStatus();
         });
+        
+        this.dimensionsSubscription = Dimensions.addEventListener('change', ({window, screen}) => {
+            this.setState({screenHeight: window.height})
+        });
     }
 
     componentWillUnmount() {
         this._unsubscribe();
+        this.dimensionsSubscription?.remove();
     }
 
     private async getLearningStatus(){
@@ -376,11 +384,11 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
 
                 <Portal>
                     <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface}}>
-                        <ScrollView>
-                            <Dialog.Icon icon="translate" />
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.language}</Dialog.Title>
-                            <Dialog.Content>
+                        style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                        <Dialog.Icon icon="translate" />
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.language}</Dialog.Title>
+                        <Dialog.ScrollArea>
+                            <ScrollView>
                                 <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
                                     <RadioButton.Item label={this.props.lang.system} value="system" />
                                     { Object.keys(this.props.Languages).map((language) => {
@@ -390,55 +398,55 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                                         );
                                     })}
                                 </RadioButton.Group>
-                            </Dialog.Content>
-                            <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ languageDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
-                            </Dialog.Actions>
-                        </ScrollView>
+                            </ScrollView>
+                        </Dialog.ScrollArea>
+                        <Dialog.Actions>
+                            <Button onPress={() => { this.setState({ languageDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                        </Dialog.Actions>
                     </Dialog>
                     
                     <Dialog visible={this.state.browserModeDialogVisible} onDismiss={() => { this.setState({ browserModeDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface}}>
-                        <ScrollView>
-                            <Dialog.Icon icon="web" />
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.browser_mode}</Dialog.Title>
-                            <Dialog.Content>
+                        style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                        <Dialog.Icon icon="web" />
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.browser_mode}</Dialog.Title>
+                        <Dialog.ScrollArea>
+                            <ScrollView>
                                 <RadioButton.Group onValueChange={newValue => this.changeBrowserMode(newValue)} value={this.state.browserMode}>
                                     <RadioButton.Item label={this.props.lang.legacy_webview} value="legacy_webview" />
                                     <RadioButton.Item label={this.props.lang.webview} value="webview" />
                                     <RadioButton.Item label={this.props.lang.external_browser} value="external_browser" />
                                 </RadioButton.Group>
-                            </Dialog.Content>
-                            <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ browserModeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
-                            </Dialog.Actions>
-                        </ScrollView>
+                            </ScrollView>
+                        </Dialog.ScrollArea>
+                        <Dialog.Actions>
+                            <Button onPress={() => { this.setState({ browserModeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                        </Dialog.Actions>
                     </Dialog>
 
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface}}>
-                        <ScrollView>
-                            <Dialog.Icon icon="theme-light-dark" />
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.theme}</Dialog.Title>
-                            <Dialog.Content>
+                        style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                        <Dialog.Icon icon="theme-light-dark" />
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.theme}</Dialog.Title>
+                        <Dialog.ScrollArea>
+                            <ScrollView>
                                 <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
                                     <RadioButton.Item label={this.props.lang.system} value="system" />
                                     <RadioButton.Item label={this.props.lang.light} value="light" />
                                     <RadioButton.Item label={this.props.lang.dark} value="dark" />
                                 </RadioButton.Group>
-                            </Dialog.Content>
-                            <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ themeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
-                            </Dialog.Actions>
-                        </ScrollView>
+                            </ScrollView>
+                        </Dialog.ScrollArea>
+                        <Dialog.Actions>
+                            <Button onPress={() => { this.setState({ themeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                        </Dialog.Actions>
                     </Dialog>
 
                     <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface}}>
-                        <ScrollView>
-                            <Dialog.Icon icon="palette" />
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.accent}</Dialog.Title>
-                            <Dialog.Content>
+                        style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                        <Dialog.Icon icon="palette" />
+                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.accent}</Dialog.Title>
+                        <Dialog.ScrollArea>
+                            <ScrollView>
                                 <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
                                     { Object.keys(Accents).map((accentName) => {
                                         return (
@@ -448,11 +456,11 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                                     <RadioButton.Item disabled={Platform.Version < 31}
                                         label={this.props.lang.material_you} value="material_you" />
                                 </RadioButton.Group>
-                            </Dialog.Content>
-                            <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ accentDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
-                            </Dialog.Actions>
-                        </ScrollView>
+                            </ScrollView>
+                        </Dialog.ScrollArea>
+                        <Dialog.Actions>
+                            <Button onPress={() => { this.setState({ accentDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                        </Dialog.Actions>
                     </Dialog>
 
                     <Dialog visible={this.state.cacheDialogVisible} onDismiss={() => { this.setState({ cacheDialogVisible: false });}}

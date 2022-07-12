@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {
     ScrollView,
     View,
+    Dimensions,
 } from 'react-native';
 
 import {
@@ -45,9 +46,21 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
             rssAddDialogVisible: false,
             rssStatusDialogVisible: false,
             rssRemoveDialogVisible: false,
+            
+            screenHeight: Dimensions.get('window').height,
         };
 
         this.currentFeed = undefined;
+    }
+    
+    componentDidMount(){
+        this.dimensionsSubscription = Dimensions.addEventListener('change', ({window, screen}) => {
+            this.setState({screenHeight: window.height})
+        });
+    }
+
+    componentWillUnmount() {
+        this.dimensionsSubscription?.remove();
     }
 
     private inputChange(text: string) {
@@ -166,15 +179,15 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
 
                         <Dialog visible={this.state.rssStatusDialogVisible} 
                             onDismiss={() => { this.setState({ rssStatusDialogVisible: false, inputValue: ''});}}
-                            style={{backgroundColor: this.props.theme.colors.surface}}>
-                            <ScrollView>
-                                <Dialog.Title style={Styles.textCentered}>{this.props.lang.feed_status}</Dialog.Title>
-                                <Dialog.Content>
-                                    <View style={Styles.settingsButtonDialog}>
+                            style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.feed_status}</Dialog.Title>
+                            <Dialog.ScrollArea>
+                                <ScrollView contentContainerStyle={Styles.filterDialogScrollView}>
+                                    <View style={Styles.settingsDetailsInfo}>
                                         <Text variant="titleMedium">{'URL'}</Text>
                                         <Text variant="bodySmall">{this.currentFeed?.url}</Text>
                                     </View>
-                                    <View style={Styles.settingsButtonDialog}>
+                                    <View style={Styles.settingsDetailsInfo}>
                                         <Text variant="titleMedium">{this.props.lang.feed_name}</Text>
                                         <Text variant="bodySmall">{this.currentFeed?.name}</Text>
                                     </View>
@@ -186,12 +199,9 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                                             style={Styles.buttonAlign}
                                             >{this.props.lang.change}</Button>
                                     </View>
-                                </Dialog.Content>
                                 
-                                <Divider bold={true} />
-                                
-                                <Dialog.Title style={Styles.textCentered}>{this.props.lang.options}</Dialog.Title>
-                                <Dialog.Content>
+                                    <Divider bold={true} />
+                                    
                                     <View style={[Styles.rowContainer, Styles.settingsButtonDialog]}>
                                         <Text variant="bodyLarge">{this.props.lang.no_images}</Text>
                                         <Switch value={this.currentFeed?.noImages} style={{marginLeft: "auto"}}
@@ -202,12 +212,9 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                                         <Switch value={!this.currentFeed?.enabled} style={{marginLeft: "auto"}}
                                             onValueChange={() => { this.changeRssFeedOptions('enabled') }} />
                                     </View>
-                                </Dialog.Content>
-                                
-                                <Divider bold={true} />
-                                
-                                <Dialog.Title style={Styles.textCentered}>{this.props.lang.tags}</Dialog.Title>
-                                <Dialog.Content>
+                                    
+                                    <Divider bold={true} />
+                                    
                                     { Backend.UserSettings.Tags.length > 0 ? 
                                         <View style={Styles.chipContainer}>
                                             { Backend.UserSettings.Tags.map((tag) => {
@@ -224,14 +231,16 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                                                         >{tag.name}</Chip>
                                                 );
                                             })}
+                                        </View> : <View style={Styles.settingsButtonDialog}>
+                                            <Text variant="titleMedium">{this.props.lang.no_tags}</Text>
+                                            <Text variant="bodySmall">{this.props.lang.no_tags_description}</Text>
                                         </View>
-                                        : <Text variant="bodyMedium" style={Styles.textCentered}>{this.props.lang.no_tags}</Text>
                                     }
-                                </Dialog.Content>
-                                <Dialog.Actions>
-                                    <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.dismiss}</Button>
-                                </Dialog.Actions>
-                            </ScrollView>
+                                </ScrollView>
+                            </Dialog.ScrollArea>
+                            <Dialog.Actions>
+                                <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.dismiss}</Button>
+                            </Dialog.Actions>
                         </Dialog>
                         
                         <Dialog visible={this.state.rssRemoveDialogVisible} onDismiss={() => { this.setState({ rssRemoveDialogVisible: false });}}

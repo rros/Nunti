@@ -165,6 +165,7 @@ export default class App extends Component {
             theme.colors.surface = Accents[accentName].lightSurface; // dialog and header colour
             theme.colors.surfaceVariant = Accents[accentName].lightSecondaryContainer; // text input
             theme.colors.background = Accents[accentName].lightBackground; // background
+            theme.colors.backgroundVariant = Accents[accentName].lightBackground; // background
             theme.colors.inversePrimary = Accents[accentName].darkPrimary; // snackbar button colour
             theme.colors.inverseSurface = Accents[accentName].darkSurface; // snackbar colour
         }
