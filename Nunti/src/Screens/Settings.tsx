@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {
     ScrollView,
     View,
-    StatusBar,
     Platform,
     Dimensions,
 } from 'react-native';
@@ -41,7 +40,8 @@ class Settings extends Component {
     render() {
         return(
             <Stack.Navigator
-                screenOptions={{header: (props) => <CustomHeader {...props} lang={this.props.lang} />}}>
+                screenOptions={{header: (props) => <CustomHeader {...props} 
+                    lang={this.props.lang} isLargeScreen={this.props.isLargeScreen}/>}}>
                 <Stack.Screen name="settings">
                     {props => <SettingsMain {...props} reloadGlobalStates={this.props.reloadGlobalStates} 
                         lang={this.props.lang} Languages={this.props.Languages} theme={this.props.theme}
@@ -69,10 +69,10 @@ class Settings extends Component {
     }
 }
 
-function CustomHeader ({ navigation, route, lang }) {
+function CustomHeader ({ navigation, route, lang, isLargeScreen }) {
     return (
-        <Appbar.Header mode="center-aligned" elevated={false} statusBarHeight={StatusBar.currentHeight}>
-            { route.name == 'settings' ? <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
+        <Appbar.Header mode={isLargeScreen ? "small" : "center-aligned"} elevated={false}> 
+            { (route.name == 'settings' && !isLargeScreen) ? <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             { route.name != 'settings' ? <Appbar.BackAction onPress={() => { navigation.goBack(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
         </Appbar.Header> 
@@ -384,7 +384,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
 
                 <Portal>
                     <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
                         <Dialog.Icon icon="translate" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.language}</Dialog.Title>
                         <Dialog.ScrollArea>
@@ -406,7 +406,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                     </Dialog>
                     
                     <Dialog visible={this.state.browserModeDialogVisible} onDismiss={() => { this.setState({ browserModeDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
                         <Dialog.Icon icon="web" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.browser_mode}</Dialog.Title>
                         <Dialog.ScrollArea>
@@ -424,7 +424,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                     </Dialog>
 
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
                         <Dialog.Icon icon="theme-light-dark" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.theme}</Dialog.Title>
                         <Dialog.ScrollArea>
@@ -442,7 +442,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                     </Dialog>
 
                     <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
                         <Dialog.Icon icon="palette" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.accent}</Dialog.Title>
                         <Dialog.ScrollArea>
@@ -464,7 +464,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                     </Dialog>
 
                     <Dialog visible={this.state.cacheDialogVisible} onDismiss={() => { this.setState({ cacheDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface}}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
                         <Dialog.Icon icon="cached" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.reset_title}</Dialog.Title>
                         <Dialog.Content>
@@ -478,7 +478,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                     </Dialog>
 
                     <Dialog visible={this.state.dataDialogVisible} onDismiss={() => { this.setState({ dataDialogVisible: false });}}
-                        style={{backgroundColor: this.props.theme.colors.surface}}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
                         <Dialog.Icon icon="alert" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.restore_title}</Dialog.Title>
                         <Dialog.Content>

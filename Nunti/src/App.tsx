@@ -1,5 +1,14 @@
 import React, { Component } from 'react';
-import { StatusBar, Appearance, NativeModules, BackHandler, Platform } from 'react-native';
+import { 
+    StatusBar,
+    Appearance,
+    NativeModules,
+    BackHandler, 
+    Platform,
+    PlatformColor,
+    ScrollView,
+    Dimensions 
+} from 'react-native';
 const { MaterialYouModule } = NativeModules;
 
 import { 
@@ -7,7 +16,9 @@ import {
     Appbar,
     Drawer,
     Portal,
-    Snackbar
+    Snackbar,
+    Text,
+    Divider
 } from 'react-native-paper';
 
 // our files
@@ -48,6 +59,20 @@ export default class App extends Component {
 
             prefsLoaded: false,
         };
+
+        // check if device has a large screen (a tablet)
+        const screen = Dimensions.get('screen');
+        let screenWidth: number;
+
+        // additional check to prevent the app from being identified
+        // as a tablet when launching in landscape mode
+        if(screen.width < screen.height) {
+            screenWidth = screen.width;
+        } else {
+            screenWidth = screen.height;
+        }
+
+        this.isLargeScreen = (screenWidth >= 768);
     }
 
     async componentDidMount() {
@@ -170,15 +195,24 @@ export default class App extends Component {
             theme.colors.inverseSurface = Accents[accentName].darkSurface; // snackbar colour
         }
 
+            //theme.colors.primary = PlatformColor('@android:color/system_accent1_400').resource_paths; 
+            //theme.colors.onPrimary = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.primaryContainer = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.onPrimaryContainer = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.secondary = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.onSecondary = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.secondaryContainer = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.onSecondaryContainer = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.background = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.onBackground = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.surface = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.onSurface = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.surfaceVariant = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.onSurfaceVariant = PlatformColor('@android:color/system_accent1_400').resource_paths;
+            //theme.colors.outline = PlatformColor('@android:color/system_accent1_400').resource_paths;
 
-
-        //theme.colors.surface = "#b0f2da";
-        //theme.colors.background = "#b0f2da";
-        //theme.colors.backgroundVariant = "#b0f2da";
-        
-        // does nothing
-        //theme.colors.onSecondary = Accents[accentName].dark; // icons in dialogs
-        //theme.colors.onSecondaryContainer = Accents[accentName].dark; // drawer colour
+            //theme.colors.inversePrimary = '#ffffff';
+            //theme.colors.inverseSurface = '#ffffff';
 
         this.setState({theme: theme});
 
@@ -198,11 +232,14 @@ export default class App extends Component {
                 <StatusBar
                     barStyle={this.state.theme.statusBarStyle}
                     backgroundColor={this.state.theme.colors.surface}
-                    translucent={true}/>
+                    translucent={false}/>
                 <NavigationContainer theme={this.state.theme} onReady={() => RNBootSplash.hide({ fade: true })}>
                     <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
-                        drawerContent={(props) => <CustomDrawer {...props} theme={this.state.theme} lang={this.state.language} />} 
-                        screenOptions={{header: (props) => <CustomHeader {...props} lang={this.state.language} />}}>
+                         drawerContent={(props) => <CustomDrawer {...props} isLargeScreen={this.isLargeScreen}
+                            theme={this.state.theme} lang={this.state.language} />} 
+                         screenOptions={{drawerType: this.isLargeScreen ? 'permanent' : 'front',
+                            header: (props) => <CustomHeader {...props} isLargeScreen={this.isLargeScreen}
+                                theme={this.state.theme} lang={this.state.language} />}}>
                         <NavigationDrawer.Screen name="feed">
                             {props => <ArticlesPage {...props} source="feed" buttonType="rate"
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
@@ -215,22 +252,24 @@ export default class App extends Component {
                             {props => <ArticlesPage {...props} source="history" buttonType="none"
                                 lang={this.state.language} toggleSnack={this.toggleSnack}/>}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="settings">
+                        <NavigationDrawer.Screen name="settings" options={{headerShown: false}}>
                             {props => <Settings {...props} reloadGlobalStates={this.reloadGlobalStates} 
-                                lang={this.state.language} Languages={Languages}
+                                lang={this.state.language} Languages={Languages} isLargeScreen={this.isLargeScreen}
                                 updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} 
                                 updateAccent={this.updateAccent} toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="about">
                             {props => <About {...props} lang={this.state.language} />}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, unmountOnBlur: true}}>
+                        <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, 
+                            unmountOnBlur: true, drawerStyle: {width: 0}}}>
                             {props => <Wizard {...props} lang={this.state.language} Languages={Languages}
                                 reloadGlobalStates={this.reloadGlobalStates} toggleSnack={this.toggleSnack}
                                 updateTheme={this.updateTheme} updateAccent={this.updateAccent}
                                 updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="legacyWebview" options={{swipeEnabled: false, unmountOnBlur: true}}>
+                        <NavigationDrawer.Screen name="legacyWebview" options={{swipeEnabled: false,
+                            unmountOnBlur: true, headerShown: false, drawerStyle: {width: 0}}}>
                             {props => <LegacyWebview {...props}/>}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
@@ -249,28 +288,20 @@ export default class App extends Component {
     }
 }
 
-function CustomHeader ({ navigation, route, lang }) {
-    if(route.name == 'legacyWebview') {
-        return (
-            <Appbar.Header statusBarHeight={StatusBar.currentHeight} style={{height: 0}} />
-        );
-    } else if(route.name == 'settings') { // hide and remove status bar padding (settings has it's own header)
-        return (
-            <Appbar.Header style={{height: 0}} />
-        );
-    } else {
-        return (
-            <Appbar.Header mode="center-aligned" elevated={false} statusBarHeight={StatusBar.currentHeight}> 
-                { route.name != 'wizard' ? <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
-                <Appbar.Content title={lang[route.name]} />
-                { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
-                    <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({filterDialogVisible: true})} /> : null }
-            </Appbar.Header> 
-        );
-    }
+function CustomHeader ({ navigation, route, lang, isLargeScreen, theme }) {
+    return (
+        <Appbar.Header mode={isLargeScreen ? "small" : "center-aligned"} elevated={false} 
+            style={{backgroundColor: theme.colors.background}}> 
+            { (route.name != 'wizard' && !isLargeScreen) ? 
+                <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
+            <Appbar.Content title={lang[route.name]} />
+            { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
+                <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({filterDialogVisible: true})} /> : null }
+        </Appbar.Header> 
+    );
 }
 
-function CustomDrawer ({ state, navigation, theme, lang }) {
+function CustomDrawer ({ state, navigation, theme, lang, isLargeScreen }) {
     const [active, setActive] = React.useState(state.routes[state.index].name);
 
     // update selected tab when going back with backbutton   
@@ -281,34 +312,38 @@ function CustomDrawer ({ state, navigation, theme, lang }) {
     });
 
     return (
-        <Drawer.Section title="Nunti" 
-            style={{backgroundColor: theme.colors.surface, height: '100%', paddingTop: '10%'}}>
-            <Drawer.Section>
-                <Drawer.Item
-                    label={lang.feed}
-                    icon="book"
-                    active={active === state.routeNames[0]}
-                    onPress={() => {
-                        setActive(state.routeNames[0]);
-                        navigation.navigate(state.routes[0]);
-                    }}/>
-                <Drawer.Item
-                    label={lang.bookmarks}
-                    icon="bookmark"
-                    active={active === state.routeNames[1]}
-                    onPress={() => {
-                        setActive(state.routeNames[1]);
-                        navigation.navigate(state.routes[1]);
-                    }}/>
-                <Drawer.Item
-                    label={lang.history}
-                    icon="history"
-                    active={active === state.routeNames[2]}
-                    onPress={() => {
-                        setActive(state.routeNames[2]);
-                        navigation.navigate(state.routes[2]);
-                    }}/>
-            </Drawer.Section>
+        <ScrollView style={[isLargeScreen ? Styles.drawerPermanent : Styles.drawer,
+            {backgroundColor: theme.colors.background}]}>
+            <Text variant="titleLarge" 
+                style={[Styles.drawerTitle, {color: theme.colors.secondary}]}>Nunti</Text>
+            
+            <Drawer.Item
+                label={lang.feed}
+                icon="book"
+                active={active === state.routeNames[0]}
+                onPress={() => {
+                    setActive(state.routeNames[0]);
+                    navigation.navigate(state.routes[0]);
+                }}/>
+            <Drawer.Item
+                label={lang.bookmarks}
+                icon="bookmark"
+                active={active === state.routeNames[1]}
+                onPress={() => {
+                    setActive(state.routeNames[1]);
+                    navigation.navigate(state.routes[1]);
+                }}/>
+            <Drawer.Item
+                label={lang.history}
+                icon="history"
+                active={active === state.routeNames[2]}
+                onPress={() => {
+                    setActive(state.routeNames[2]);
+                    navigation.navigate(state.routes[2]);
+                }}/>
+
+            <Divider bold={true} horizontalInset={12} style={Styles.drawerDivider}/>
+            
             <Drawer.Item
                 label={lang.settings}
                 icon="cog"
@@ -325,6 +360,6 @@ function CustomDrawer ({ state, navigation, theme, lang }) {
                     setActive(state.routeNames[4]);
                     navigation.navigate(state.routes[4]);
                 }}/>
-        </Drawer.Section>
+        </ScrollView>
     );
 }

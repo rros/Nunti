@@ -150,7 +150,7 @@ class SettingsAdvanced extends Component { // not using purecomponent as it does
                 <Portal>
                     <Dialog visible={this.state.changeDialogVisible} 
                         onDismiss={() => { this.setState({ changeDialogVisible: false, inputValue: '' });}}
-                        style={{backgroundColor: this.props.theme.colors.surface}}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
                         <Dialog.Icon icon={this.state.changeDialogIcon} />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang['change_' + this.state.changeDialogType]}</Dialog.Title>
                         <Dialog.Content>

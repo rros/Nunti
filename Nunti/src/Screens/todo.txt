@@ -18,13 +18,17 @@ fix fab hiding snackbar
 dialog scrollview change
 menu in articles (no wifi, no rss)
 dialog max height
+drawer large nunti
+drawer rounded buttons
+rounded cards
+margin top for article titles
+landscape drawer always visible
 
-dialog animation
-fix loading button animation (move to right?)
 
-colorschemes
-update react native to 69 (supports material you colours, nuke manual java component)
-black theme
+react-native material you 
 success and error colours
+black theme
+colorschemes
+button loading icon is bunched up on label
 check if status bar color works in release
 fastlane

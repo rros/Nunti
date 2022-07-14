@@ -104,7 +104,7 @@ class Step1Welcome extends Component {
             <ScrollView contentContainerStyle={Styles.centeredImageContainer}>
                 <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Text variant="titleLarge" style={Styles.textCentered}>{this.props.lang.welcome}</Text>
+                <Text variant="titleLarge" style={[Styles.textCentered, Styles.titleWithParagraph]}>{this.props.lang.welcome}</Text>
                 <Text variant="bodyMedium" style={Styles.textCentered}>{this.props.lang.enjoy}</Text>
                 <Button icon="application-import" style={Styles.startReadingButton}
                     onPress={this.import}>{this.props.lang.import}</Button>
@@ -280,7 +280,7 @@ class Step5Learning extends Component {
             <ScrollView contentContainerStyle={Styles.centeredImageContainer}>
                 <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Text variant="titleLarge" style={Styles.textCentered}>{this.props.lang.adapt}</Text>
+                <Text variant="titleLarge" style={[Styles.textCentered, Styles.titleWithParagraph]}>{this.props.lang.adapt}</Text>
                 <Text variant="bodyMedium">
                     {(this.props.lang.wizard_learning).replace('%noSort%', Backend.UserSettings.NoSortUntil)}</Text>
                 <Button icon="book" mode="contained" style={Styles.startReadingButton}

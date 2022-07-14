@@ -333,12 +333,12 @@ class ArticlesPage extends PureComponent {
                                 {(this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined) ? <Card.Cover source={{ uri: rowData.item.cover }}/> /* large image */ : null }
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
-                                        <Text variant="titleLarge" style={Styles.cardContentTitle}>{rowData.item.title}</Text>
+                                        <Text variant="titleLarge" style={Styles.titleWithParagraph}
+                                            numberOfLines={3}>{rowData.item.title}</Text>
                                         { (rowData.item.description.length > 0 || (rowData.item.cover !== undefined && this.state.showImages)) ?
                                             <Text variant="bodyMedium" 
                                                 style={this.state.showImages && rowData.item.cover !== undefined ? Styles.cardContentParagraph : undefined}
-                                                numberOfLines={(rowData.item.cover === undefined || !this.state.showImages) ? 5 : undefined}>
-                                                {rowData.item.description}</Text>
+                                                numberOfLines={5}>{rowData.item.description}</Text>
                                         : null }
                                         <View style={Styles.captionContainer}>
                                             { rowData.item.date !== undefined ? <DateCaption date={rowData.item.date} lang={this.props.lang}/> : null }
@@ -409,13 +409,13 @@ class ArticlesPage extends PureComponent {
                 ></SwipeListView>
 
                 <Portal>
-                    {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails} animationType="slide">
+                    {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
                         <Card style={[Styles.modal, {maxHeight: this.state.screenHeight / 1.2}]}>
                             <ScrollView>
                                 {(this.state.showImages && this.currentArticle.cover !== undefined) ? 
                                     <Card.Cover source={{ uri: this.currentArticle.cover }} /> : null }
                                 <Card.Content>
-                                    <Text variant="titleLarge">{this.currentArticle.title}</Text>
+                                    <Text variant="titleLarge" style={Styles.titleWithParagraph}>{this.currentArticle.title}</Text>
                                     { this.currentArticle.description.length > 0 ? <Text variant="bodyMedium">{this.currentArticle.description}</Text> : null }
                                     <View style={Styles.captionContainer}>
                                         { this.currentArticle.date !== undefined ? <DateCaption date={this.currentArticle.date} lang={this.props.lang}/> : null }
@@ -430,20 +430,19 @@ class ArticlesPage extends PureComponent {
                                     onPress={() => { this.saveArticle(this.currentArticle); }}>{this.props.lang.save}</IconButton> : null }
                                 { this.props.buttonType == 'delete' ? <IconButton icon="bookmark-remove" mode="contained-tonal" size={20}
                                     onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>{this.props.lang.remove}</IconButton> : null }
-                                <IconButton icon="share" mode="contained-tonal" style={Styles.cardButtonRight} size={20}
+                                <IconButton icon="share" mode="contained-tonal" size={20}
                                     onPress={() => { this.shareArticle(this.currentArticle.url); }}>{this.props.lang.share}</IconButton>
                             </View>
                         </Card>
                     </Modal> : null }
 
                     <Dialog visible={this.props.route.params?.filterDialogVisible} onDismiss={() => this.props.navigation.setParams({filterDialogVisible: false})}
-                        style={[{backgroundColor: this.props.theme.colors.surface}, Styles.dialogWithScrollView]}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.filter}</Dialog.Title>
                         <Dialog.ScrollArea>
-                            <ScrollView contentContainerStyle={Styles.filterDialogScrollView}>
+                            <ScrollView>
                                 <TextInput label={this.props.lang.keyword} autoCapitalize="none" defaultValue={this.state.inputValue}
-                                    onChangeText={text => this.inputChange(text)}/>
-                                
+                                    onChangeText={text => this.inputChange(text)} style={Styles.filterTextInput}/>
                                 { Backend.UserSettings.Tags.length > 0 ? 
                                     <View style={Styles.chipContainer}>
                                         { Backend.UserSettings.Tags.map((tag) => {

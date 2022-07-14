@@ -100,7 +100,7 @@ class SettingsTags extends Component { // not using purecomponent as it doesn't 
                     <Portal>
                         <Dialog visible={this.state.tagAddDialogVisible} 
                             onDismiss={() => { this.setState({ tagAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}
-                            style={{backgroundColor: this.props.theme.colors.surface}}>
+                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
                             <Dialog.Icon icon="tag" />
                             <Dialog.Title style={Styles.textCentered}>{this.props.lang.add_tags}</Dialog.Title>
                             <Dialog.Content>
@@ -116,7 +116,7 @@ class SettingsTags extends Component { // not using purecomponent as it doesn't 
                         </Dialog>
                         
                         <Dialog visible={this.state.tagRemoveDialogVisible} onDismiss={() => { this.setState({ tagRemoveDialogVisible: false });}}
-                            style={{backgroundColor: this.props.theme.colors.surface}}>
+                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
                             <Dialog.Icon icon="alert" />
                             <Dialog.Title style={Styles.textCentered}>{this.props.lang.remove_tag}</Dialog.Title>
                             <Dialog.Content>

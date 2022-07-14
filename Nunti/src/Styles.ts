@@ -117,10 +117,13 @@ export default Styles = StyleSheet.create ({
         borderRadius: 20,
         overflow: 'hidden',
         marginHorizontal: 12,
+        marginBottom: 24,
     },
 
     card: {
-        marginVertical: 4
+        margin: 4,
+        borderRadius: 16,
+        overflow: 'hidden',
     },
 
     cardContentContainer: {
@@ -130,10 +133,6 @@ export default Styles = StyleSheet.create ({
 
     cardContentTextContainer: {
         flex: 2,
-    },
-    
-    cardContentTitle: {
-        flex: 0,
     },
 
     cardContentParagraph: {
@@ -147,7 +146,8 @@ export default Styles = StyleSheet.create ({
     // card action container doesn't allow placing a button on the left
     cardButtonContainer: {
         flexDirection: 'row',
-        margin: 10,
+        marginHorizontal: 12,
+        marginBottom: 8
     },
 
     cardButtonLeft: {
@@ -155,25 +155,25 @@ export default Styles = StyleSheet.create ({
         alignSelf: 'center'
     },
 
-    cardButtonRight: {
-        marginLeft: 4,
+    titleWithParagraph: {
+        marginVertical: 4,
     },
 
     captionContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: 4,
-        marginBottom: 2
+        marginBottom: 4
     },
 
     buttonRateLeft: {
         paddingRight: '30%',
-        borderRadius: 0,
+        borderRadius: 16,
     },
     
     buttonRateRight: {
         paddingLeft: '30%',
-        borderRadius: 0,
+        borderRadius: 16,
     },
 
     buttonRateContent: {
@@ -185,7 +185,7 @@ export default Styles = StyleSheet.create ({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginVertical: 5
+        margin: 8
     },
 
     centeredImageContainer: {
@@ -204,7 +204,7 @@ export default Styles = StyleSheet.create ({
     },
 
     footerButton: {
-        paddingVertical: 10
+        paddingVertical: 12
     },
     
     fullscreenImage: {
@@ -215,34 +215,34 @@ export default Styles = StyleSheet.create ({
     },
 
     startReadingButton: {
-        marginTop: 10
+        marginTop: 12
     },
 
-    settingsDialogDesc: {
-        paddingBottom: 10
+    settingsDetailsTextInputContainer: {
+        marginBottom: 20,
     },
     
     settingsDetailsTextInput: {
         flex: 1,
-        marginBottom: 20,
     }, 
 
     settingsDetailsInfo: {
         paddingBottom: 16,
     },
     
-    buttonAlign: {
-        alignSelf: 'center'
-    },
-
     textCentered: {
         textAlign: 'center'
+    },
+
+    filterTextInput: {
+        marginTop: 16
     },
 
     chipContainer: {
         flexDirection: "row", 
         flexWrap: "wrap",
         marginTop: 4,
+        marginBottom: 16,
     },
 
     chip: {
@@ -260,7 +260,8 @@ export default Styles = StyleSheet.create ({
     },
 
     rowContainer: {
-        flexDirection: 'row'
+        flexDirection: 'row',
+        alignItems: 'center',
     },
 
     fabContainer: {
@@ -273,7 +274,27 @@ export default Styles = StyleSheet.create ({
         position: 'absolute',
     },
 
-    filterDialogScrollView: {
-        paddingVertical: 20
+    drawer: {
+        borderTopRightRadius: 20,
+        borderBottomRightRadius: 20,
     },
+    
+    drawerPermanent: {
+        // TODO: in permanent drawer mode, the drawer is separated from 
+        // the scene by a weird line. I have not found a way to remove this,
+        // nor a way to recolour it to the theme at least 
+    },
+
+    drawerTitle: {
+        marginVertical: 20,
+        marginLeft: 28
+    },
+
+    drawerDivider: {
+        marginVertical: 8
+    },
+
+    dialog: {
+        marginBottom: 68,
+    }
 });

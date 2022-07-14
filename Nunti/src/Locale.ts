@@ -340,7 +340,7 @@ export const Czech = {
     orchid: 'Orchidej',
     space: 'Vesmír',
     material_you: 'Material You',
-    start: 'Začít číst',
+    start: 'Začít',
     topics: 'Témata',
     politics: 'Světová politika',
     sport: 'Sport',
@@ -397,7 +397,8 @@ export const Czech = {
     feed_name: 'Název kanálu',
     wifi_only_banner: 'Režim pouze Wi-Fi je aktivní a není k dispozici žádné připojení Wi-Fi. Pro stažení článku se připojte k síti Wi-Fi.',
     no_feed_banner: 'Nebyly přidány žádné kanály RSS. Pro zobrazení článků přidejte kanály v nastavení.',
-    goto_settings: 'Zobrazit nastavení'
+    goto_settings: 'Zobrazit nastavení',
+    remove_tag: 'Odstranit štítek?', 
 };
 
 export const Japanese = {
@@ -597,7 +598,8 @@ export const Japanese = {
     feed_name: 'フィード名',
     wifi_only_banner: 'Wi-Fi専用モードが有効で、Wi-Fi接続ができない状態。Wi-Fiに接続して記事をダウンロードする。',
     no_feed_banner: 'RSSフィードは追加されていません。記事を閲覧するには、設定でフィードを追加してください。',
-    goto_settings: '設定を見る'
+    goto_settings: '設定を見る',
+    remove_tag: 'タグを外す？', 
 };
 
 export const Italian = {
@@ -797,7 +799,8 @@ export const Italian = {
     feed_name: 'Nome del feed',
     wifi_only_banner: 'La modalità solo Wi-Fi è attivata e non è disponibile alcuna connessione Wi-Fi. Connettersi alla rete Wi-Fi per scaricare gli articoli.',
     no_feed_banner: 'Non sono stati aggiunti feed RSS. Aggiungere i feed nelle impostazioni per visualizzare gli articoli.',
-    goto_settings: 'Vai alle impostazioni'
+    goto_settings: 'Vai alle impostazioni',
+    remove_tag: 'Rimuovere il tag?', 
 };
 
 export const Polish = {
@@ -997,7 +1000,8 @@ export const Polish = {
     feed_name: 'Nazwa kanału',
     wifi_only_banner: 'Tryb Tylko Wi-Fi jest włączony i nie jest dostępne połączenie Wi-Fi. Połącz się z siecią Wi-Fi, aby pobrać artykuły.',
     no_feed_banner: 'Nie dodano kanałów RSS. Dodaj kanały w ustawieniach, aby zobaczyć artykuły.',
-    goto_settings: 'Zobacz ustawienia'
+    goto_settings: 'Zobacz ustawienia',
+    remove_tag: 'Usunąć tag?', 
 };
 
 export const German = {
@@ -1197,7 +1201,8 @@ export const German = {
     feed_name: 'Name des Feeds',
     wifi_only_banner: 'Der Modus Nur Wi-Fi ist aktiviert und es ist keine Wi-Fi-Verbindung verfügbar. Stellen Sie eine Wi-Fi-Verbindung her, um Artikel herunterzuladen.',
     no_feed_banner: 'Keine RSS-Feeds hinzugefügt. Fügen Sie Feeds in den Einstellungen hinzu, um Artikel anzuzeigen.',
-    goto_settings: 'Einstellungen anzeigen'
+    goto_settings: 'Einstellungen anzeigen',
+    remove_tag: 'Tag entfernen?', 
 };
 
 export const French = {
@@ -1397,7 +1402,8 @@ export const French = {
     feed_name: 'Nom du fil',
     wifi_only_banner: 'Le mode Wi-Fi uniquement est activé et aucune connexion Wi-Fi n\'est disponible. Connectez-vous au Wi-Fi pour télécharger des articles.',
     no_feed_banner: 'Aucun fil RSS n\'a été ajouté. Ajoutez des flux dans les paramètres pour afficher les articles.',
-    goto_settings: 'Afficher les paramètres'
+    goto_settings: 'Afficher les paramètres',
+    remove_tag: 'Supprimer le tag?', 
 };
 
 export const BrazilianPortuguese = {
@@ -1597,5 +1603,6 @@ export const BrazilianPortuguese = {
     feed_name: 'Nome do feed',
     wifi_only_banner: 'O modo somente Wi-Fi está habilitado e nenhuma conexão Wi-Fi está disponível. Conecte-se a Wi-Fi para baixar artigos.',
     no_feed_banner: 'Nenhum feed RSS adicionado. Adicionar feeds nas configurações para visualizar os artigos.',
-    goto_settings: 'Ver configurações'
+    goto_settings: 'Ver configurações',
+    remove_tag: 'Remover a tag?', 
 };

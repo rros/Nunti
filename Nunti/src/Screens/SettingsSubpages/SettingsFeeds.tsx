@@ -162,7 +162,7 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                     <Portal>
                         <Dialog visible={this.state.rssAddDialogVisible} 
                             onDismiss={() => { this.setState({ rssAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}
-                            style={{backgroundColor: this.props.theme.colors.surface}}>
+                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
                             <Dialog.Icon icon="rss" />
                             <Dialog.Title style={Styles.textCentered}>{this.props.lang.add_feeds}</Dialog.Title>
                             <Dialog.Content>
@@ -179,11 +179,11 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
 
                         <Dialog visible={this.state.rssStatusDialogVisible} 
                             onDismiss={() => { this.setState({ rssStatusDialogVisible: false, inputValue: ''});}}
-                            style={{backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}}>
+                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
                             <Dialog.Title style={Styles.textCentered}>{this.props.lang.feed_status}</Dialog.Title>
                             <Dialog.ScrollArea>
                                 <ScrollView contentContainerStyle={Styles.filterDialogScrollView}>
-                                    <View style={Styles.settingsDetailsInfo}>
+                                    <View style={Styles.settingsButtonDialog}>
                                         <Text variant="titleMedium">{'URL'}</Text>
                                         <Text variant="bodySmall">{this.currentFeed?.url}</Text>
                                     </View>
@@ -191,13 +191,12 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                                         <Text variant="titleMedium">{this.props.lang.feed_name}</Text>
                                         <Text variant="bodySmall">{this.currentFeed?.name}</Text>
                                     </View>
-                                    <View style={Styles.rowContainer}>
+                                    <View style={[Styles.rowContainer, Styles.settingsDetailsTextInputContainer]}>
                                         <TextInput label={this.props.lang.feed_name} autoCapitalize="none" 
                                             style={Styles.settingsDetailsTextInput}
                                             onChangeText={text => this.inputChange(text)}/>
-                                        <Button onPress={this.changeRssFeedName}
-                                            style={Styles.buttonAlign}
-                                            >{this.props.lang.change}</Button>
+                                        <Button onPress={this.changeRssFeedName}>
+                                            {this.props.lang.change}</Button>
                                     </View>
                                 
                                     <Divider bold={true} />
@@ -244,7 +243,7 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                         </Dialog>
                         
                         <Dialog visible={this.state.rssRemoveDialogVisible} onDismiss={() => { this.setState({ rssRemoveDialogVisible: false });}}
-                            style={{backgroundColor: this.props.theme.colors.surface}}>
+                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
                             <Dialog.Icon icon="alert" />
                             <Dialog.Title style={Styles.textCentered}>{this.props.lang.remove_feed}</Dialog.Title>
                             <Dialog.Content>
