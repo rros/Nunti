@@ -148,7 +148,7 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                                                     rippleColor={this.props.theme.colors.alternativeSurface}
                                                     onPress={() => {this.currentFeed = feed, this.setState({ rssRemoveDialogVisible: true });}}>
                                                     <View style={Styles.rowContainer,
-                                                        {borderLeftWidth: 1, borderLeftColor: this.props.theme.colors.secondaryContainer}}>
+                                                        {borderLeftWidth: 1, borderLeftColor: this.props.theme.colors.secondary}}>
                                                         <List.Icon icon="close" />
                                                     </View>
                                                 </TouchableRipple>
@@ -170,7 +170,8 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                                     onChangeText={text => this.inputChange(text)}/>
                             </Dialog.Content>
                             <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ rssAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
+                                <Button onPress={() => { this.setState({ rssAddDialogVisible: false, 
+                                    inputValue: '', dialogButtonDisabled: true }); }}>
                                     {this.props.lang.cancel}</Button>
                                 <Button disabled={this.state.dialogButtonDisabled} loading={this.state.dialogButtonLoading}
                                     onPress={this.addRss}>{this.props.lang.add}</Button>
@@ -258,6 +259,7 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                 </ScrollView>
                 <FAB
                     icon={'plus'}
+                    size={this.props.isLargeScreen ? 'large' : 'medium'}
                     onPress={() => this.setState({rssAddDialogVisible: true})}
                     style={[Styles.fab]}
                 />

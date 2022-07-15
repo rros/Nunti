@@ -327,10 +327,13 @@ class ArticlesPage extends PureComponent {
                             opacity: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 1, 0],}),
                             translateX: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [-1000, 0, 1000],}), // random value, it disappears anyway
                         }}>
-                            <Card style={Styles.card}
+                            <Card mode={'contained'}
+                                style={[Styles.card, {backgroundColor: this.props.theme.dark ?
+                                    this.props.theme.colors.surface : this.props.theme.colors.secondaryContainer}]}
                                 onPress={() => { this.readMore(rowData.item.url); }} 
                                 onLongPress={() => { this.viewDetails(rowData.item); }}>
-                                {(this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined) ? <Card.Cover source={{ uri: rowData.item.cover }}/> /* large image */ : null }
+                                {(this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined) ? 
+                                    <Card.Cover source={{ uri: rowData.item.cover }}/> /* large image */ : null }
                                 <View style={Styles.cardContentContainer}>
                                     <Card.Content style={Styles.cardContentTextContainer}>
                                         <Text variant="titleLarge" style={Styles.titleWithParagraph}
@@ -369,17 +372,19 @@ class ArticlesPage extends PureComponent {
                             }]}>
                                 <Button
                                     buttonColor={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
-                                        outputRange: ['grey', this.props.buttonType == 'delete' ? this.props.theme.colors.error : this.props.theme.colors.success ]})}  
+                                        outputRange: ['grey', this.props.buttonType == 'delete' ? 
+                                            this.props.theme.colors.negativeContainer
+                                            : this.props.theme.colors.positiveContainer ]})}  
                                     icon={this.props.buttonType == 'delete' ? 'bookmark-remove' : 'thumb-up' } 
                                     mode="contained" contentStyle={Styles.buttonRateContent} 
-                                    labelStyle={{fontSize: 20}} dark={false}
+                                    labelStyle={{fontSize: 24, color: this.props.theme.colors.onSurface}}
                                     style={Styles.buttonRateLeft}></Button>
                                 <Button
                                     buttonColor={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
-                                        outputRange: ['grey', this.props.theme.colors.error]})}  
+                                        outputRange: ['grey', this.props.theme.colors.negativeContainer]})}  
                                     icon={this.props.buttonType == 'delete' ? 'bookmark-remove' : 'thumb-down' } 
                                     mode="contained" contentStyle={Styles.buttonRateContent}
-                                    labelStyle={{fontSize: 20}} dark={false} 
+                                    labelStyle={{fontSize: 24, color: this.props.theme.colors.onSurface}}
                                     style={Styles.buttonRateRight}></Button>
                             </Animated.View>
                         );
@@ -410,7 +415,8 @@ class ArticlesPage extends PureComponent {
 
                 <Portal>
                     {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
-                        <Card style={[Styles.modal, {maxHeight: this.state.screenHeight / 1.2}]}>
+                        <Card style={[Styles.modal, {backgroundColor: this.props.theme.colors.surface,
+                            maxHeight: this.state.screenHeight / 1.2}]}>
                             <ScrollView>
                                 {(this.state.showImages && this.currentArticle.cover !== undefined) ? 
                                     <Card.Cover source={{ uri: this.currentArticle.cover }} /> : null }

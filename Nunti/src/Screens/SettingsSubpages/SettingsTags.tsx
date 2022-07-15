@@ -87,7 +87,7 @@ class SettingsTags extends Component { // not using purecomponent as it doesn't 
                                                 rippleColor={this.props.theme.colors.alternativeSurface}
                                                 onPress={() => {this.setState({ tagRemoveDialogVisible: true }); this.currentTag = tag}}>
                                                 <View style={Styles.rowContainer,
-                                                    {borderLeftWidth: 1, borderLeftColor: this.props.theme.colors.secondaryContainer}}>
+                                                    {borderLeftWidth: 1, borderLeftColor: this.props.theme.colors.secondary}}>
                                                     <List.Icon icon="close" />
                                                 </View>
                                             </TouchableRipple>
@@ -131,6 +131,7 @@ class SettingsTags extends Component { // not using purecomponent as it doesn't 
                 </ScrollView>
                 <FAB
                     icon={'plus'}
+                    size={this.props.isLargeScreen ? 'large' : 'medium'}
                     onPress={() => this.setState({tagAddDialogVisible: true})}
                     style={[Styles.fab]}
                 />

@@ -23,12 +23,15 @@ drawer rounded buttons
 rounded cards
 margin top for article titles
 landscape drawer always visible
-
-
 react-native material you 
-success and error colours
+number of articles learning (sklonovani)
+success and error colors
+broken status bar when loading for the first time
 black theme
+
 colorschemes
+tablet colors + tablet large fab
+
 button loading icon is bunched up on label
 check if status bar color works in release
 fastlane

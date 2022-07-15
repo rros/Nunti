@@ -35,15 +35,15 @@ class Wizard extends Component {
     render() {
         return(
             <NavigationTabs.Navigator tabBarPosition="bottom" 
-                screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background },
+                screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.surface, elevation: 0 },
                     tabBarIndicatorStyle: { backgroundColor: 'transparent'},
                     tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => { 
                         if(focused)
-                            return <Icon style={Styles.buttonAlign} name="circle" 
+                            return <Icon style={Styles.wizardTab} name="circle" 
                                 size={15} color={this.props.theme.colors.primary} />;
                         else
-                            return <Icon style={Styles.buttonAlign} name="radio-button-off"
-                                size={15} color={this.props.theme.colors.inverseSurface} />;}
+                            return <Icon style={Styles.wizardTab} name="radio-button-off"
+                                size={15} color={this.props.theme.colors.outline} />;}
                 }}>
                 <NavigationTabs.Screen name="Welcome">
                     { props => <Step1Welcome {...props} lang={this.props.lang}
@@ -55,8 +55,7 @@ class Wizard extends Component {
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Theming">
                     { props => <Step3Theme {...props} lang={this.props.lang} 
-                        updateTheme={this.props.updateTheme} 
-                        updateAccent={this.props.updateAccent} />}
+                        theme={this.props.theme} updateTheme={this.props.updateTheme} />}
                 </NavigationTabs.Screen>
                 <NavigationTabs.Screen name="Topics">
                     { props => <Step4Topics {...props} lang={this.props.lang} 
@@ -165,7 +164,7 @@ class Step3Theme extends Component {
         Backend.UserSettings.Save();
         
         this.setState({ theme: newTheme });
-        this.props.updateTheme(newTheme);
+        this.props.updateTheme(newTheme, this.props.theme.accentName);
     }
     
     private async changeAccent(newAccent: string) {
@@ -173,7 +172,7 @@ class Step3Theme extends Component {
         Backend.UserSettings.Save();
         
         this.setState({ accent: newAccent });
-        this.props.updateAccent(newAccent);
+        this.props.updateTheme(this.props.theme.themeName, newAccent);
     }
 
     render() {
@@ -184,6 +183,7 @@ class Step3Theme extends Component {
                         <RadioButton.Item label={this.props.lang.system} value="system" />
                         <RadioButton.Item label={this.props.lang.light} value="light" />
                         <RadioButton.Item label={this.props.lang.dark} value="dark" />
+                        <RadioButton.Item label={this.props.lang.black_theme} value="black_theme" />
                     </RadioButton.Group>
                 </List.Section>
                 <List.Section title={this.props.lang.accent}>

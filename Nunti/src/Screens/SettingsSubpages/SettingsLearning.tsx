@@ -42,16 +42,17 @@ class SettingsLearning extends Component { // not using purecomponent as it does
                 <View style={Styles.settingsButton}>
                     <Text variant="titleMedium">{this.props.lang.sorting_status}</Text>
                     <Text variant="bodySmall">{this.state.learningStatus?.SortingEnabled ? 
-                        this.props.lang.learning_enabled : (this.props.lang.rate_more).replace('%articles%', this.state.learningStatus?.SortingEnabledIn)}</Text>
-                </View>
-                <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{this.props.lang.rated_articles}</Text>
-                    <Text variant="bodySmall">{(this.state.learningStatus?.TotalUpvotes + this.state.learningStatus?.TotalDownvotes)
-                        + ' ' + this.props.lang.articles}</Text>
+                        this.props.lang.learning_enabled : (this.props.lang.rate_more).replace(
+                            '%articles%', this.state.learningStatus?.SortingEnabledIn)}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
                     <Text variant="titleMedium">{this.props.lang.rating_ratio}</Text>
-                    <Text variant="bodySmall">{(this.props.lang.rating_ratio_description).replace('%ratio%', this.state.learningStatus?.VoteRatio)}</Text>
+                    <Text variant="bodySmall">{(this.props.lang.rating_ratio_description).replace(
+                        '%ratio%', this.state.learningStatus?.VoteRatio)}</Text>
+                </View>
+                <View style={Styles.settingsButton}>
+                    <Text variant="titleMedium">{this.props.lang.rated_articles}</Text>
+                    <Text variant="bodySmall">{(this.state.learningStatus?.TotalUpvotes + this.state.learningStatus?.TotalDownvotes)}</Text>
                 </View>
             </ScrollView>
         );

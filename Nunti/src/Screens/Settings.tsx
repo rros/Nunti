@@ -40,20 +40,20 @@ class Settings extends Component {
     render() {
         return(
             <Stack.Navigator
-                screenOptions={{header: (props) => <CustomHeader {...props} 
+                screenOptions={{header: (props) => <CustomHeader {...props} theme={this.props.theme}
                     lang={this.props.lang} isLargeScreen={this.props.isLargeScreen}/>}}>
                 <Stack.Screen name="settings">
                     {props => <SettingsMain {...props} reloadGlobalStates={this.props.reloadGlobalStates} 
                         lang={this.props.lang} Languages={this.props.Languages} theme={this.props.theme}
                         updateLanguage={this.props.updateLanguage} updateTheme={this.props.updateTheme} 
-                        updateAccent={this.props.updateAccent} toggleSnack={this.props.toggleSnack}/>}
+                        toggleSnack={this.props.toggleSnack}/>}
                 </Stack.Screen>
                 <Stack.Screen name="tags">
-                    {props => <SettingsTags {...props}
+                    {props => <SettingsTags {...props} isLargeScreen={this.props.isLargeScreen}
                         lang={this.props.lang} toggleSnack={this.props.toggleSnack}/>}
                 </Stack.Screen>
                 <Stack.Screen name="feeds">
-                    {props => <SettingsFeeds {...props}
+                    {props => <SettingsFeeds {...props} isLargeScreen={this.props.isLargeScreen}
                         lang={this.props.lang} toggleSnack={this.props.toggleSnack}/>}
                 </Stack.Screen>
                 <Stack.Screen name="advanced">
@@ -69,9 +69,10 @@ class Settings extends Component {
     }
 }
 
-function CustomHeader ({ navigation, route, lang, isLargeScreen }) {
+function CustomHeader ({ navigation, route, lang, isLargeScreen, theme }) {
     return (
-        <Appbar.Header mode={isLargeScreen ? "small" : "center-aligned"} elevated={false}> 
+        <Appbar.Header mode={isLargeScreen ? "small" : "center-aligned"} elevated={false}
+            style={{backgroundColor: theme.colors.primaryContainer}}> 
             { (route.name == 'settings' && !isLargeScreen) ? <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             { route.name != 'settings' ? <Appbar.BackAction onPress={() => { navigation.goBack(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
@@ -163,7 +164,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
         Backend.UserSettings.Save();
         
         this.setState({ theme: newTheme });
-        this.props.updateTheme(newTheme);
+        this.props.updateTheme(newTheme, this.props.theme.accentName);
     }
 
     private changeAccent(newAccent: string) {
@@ -171,7 +172,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
         Backend.UserSettings.Save();
         
         this.setState({ accent: newAccent });
-        this.props.updateAccent(newAccent);
+        this.props.updateTheme(this.props.theme.themeName, newAccent);
     }
 
     private async import() {
@@ -433,6 +434,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                                     <RadioButton.Item label={this.props.lang.system} value="system" />
                                     <RadioButton.Item label={this.props.lang.light} value="light" />
                                     <RadioButton.Item label={this.props.lang.dark} value="dark" />
+                                    <RadioButton.Item label={this.props.lang.black_theme} value="black_theme" />
                                 </RadioButton.Group>
                             </ScrollView>
                         </Dialog.ScrollArea>

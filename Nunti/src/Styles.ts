@@ -1,44 +1,244 @@
 import { StyleSheet } from 'react-native';
-import { MD3LightTheme as LightTheme, MD3DarkTheme as DarkTheme } from 'react-native-paper';
 
-export const Colors = {
+// use these in the material you module as well
+const Colors = {
     error: {
-        key: 'error',
-        light: '#cc0000',
-        dark: '#ff4444',
+        dark: {
+            error: '#ffb4ab',
+            onError: '#690005',
+            errorContainer: '#93000a',
+            onErrorContainer: '#ffdad6',
+        },
+        
+        light: {
+            error: '#ba1a1a',
+            onError: '#ffffff',
+            errorContainer: '#ffdad6',
+            onErrorContainer: '#410002',
+        },
     },
-    success: {
-        key: 'success',
-        light: '#007e33',
-        dark: '#00c851',
+
+    positive: {
+        dark: {
+            positive: '#8fd88a',
+            onPositive: '#00390b',
+            positiveContainer: '#175f21',
+            onPositiveContainer: '#aaf5a4',
+        },
+        
+        light: {
+            positive: '#266c2b',
+            onPositive: '#ffffff',
+            positiveContainer: '#8fd88a',
+            onPositiveContainer: '#002204',
+        },
     },
+
+    negative: {
+        dark: {
+            negative: '#ffb4aa',
+            onNegative: '#690003',
+            negativeContainer: '#9c251d',
+            onNegativeContainer: '#ffdad5',
+        },
+
+        light: {
+            negative: '#ad3228',
+            onNegative: '#ffffff',
+            negativeContainer: '#ffb4aa',
+            onNegativeContainer: '#410001',
+        },
+    }
 };
 
 export const Accents = {
     default: {
-        key: 'default',
-        lightPrimary: '#12724f',
-        lightOnPrimary: '#f6fefb',
-        lightPrimaryContainer: '#12724f',
-        lightOnPrimaryContainer: '#f6fefb',
-        lightSecondary: '#6e593f', 
-        lightSecondaryContainer: '#e5dcd2',
-        lightSurface: '#e5fbf3',
-        lightBackground: '#f6fefb',
-        
-        darkPrimary: '#21ca8c',
-        darkOnPrimary: '#072c1e',
-        lightPrimaryContainer: '#21ca8c',
-        lightOnPrimaryContainer: '#072c1e',
-        darkSecondary: '#c7b49e',
-        darkSecondaryContainer: '#473a29',
-        darkSurface: '#041a12',
-        darkBackground: '#121212',
+        // primary = #1EBA81
+        // secondary = #935328
+
+        dark: {
+            primary: '#52dea2', 
+            onPrimary: '#003824',
+            primaryContainer: '#005235',
+            onPrimaryContainer: '#72fbbc',
+
+            secondary: '#ffb68b',
+            onSecondary: '#522300',
+            secondaryContainer: '#743400',
+            onSecondaryContainer: '#ffdbc8',
+            
+            tertiary: '#a4cdde',
+            onTertiary: '#063543',
+            tertiaryContainer: '#234c5a',
+            onTertiaryContainer: '#c0e9fa',
+
+            background: '#191c1a',
+            onBackground: '#e1e3df',
+            surface: '#191c1a',
+            onSurface: '#e1e3df',
+
+            surfaceVariant: '#404943',
+            onSurfaceVariant: '#c0c9c1',
+            outline: '#8a938c',
+
+            inversePrimary: '#006c48',
+            inverseSurface: '#e1e3df',
+            inverseOnSurface: '#191c1a',
+
+            error: Colors.error.dark.error,
+            onError: Colors.error.dark.onError,
+            errorContainer: Colors.error.dark.errorContainer,
+            onErrorContainer: Colors.error.dark.onErrorContainer,
+            
+            positive: Colors.positive.dark.positive,
+            onPositive: Colors.positive.dark.onPositive,
+            positiveContainer: Colors.positive.dark.positiveContainer,
+            onPositiveContainer: Colors.positive.dark.onPositiveContainer,
+
+            negative: Colors.negative.dark.negative,
+            onNegative: Colors.negative.dark.onNegative,
+            negativeContainer: Colors.negative.dark.negativeContainer,
+            onNegativeContainer: Colors.negative.dark.onNegativeContainer,
+        },
+
+        light: {
+            primary: '#006c48', 
+            onPrimary: '#ffffff',
+            primaryContainer: '#72fbbc',
+            onPrimaryContainer: '#002113',
+
+            secondary: '#96490b',
+            onSecondary: '#ffffff',
+            secondaryContainer: '#ffdbc8',
+            onSecondaryContainer: '#321300',
+            
+            tertiary: '#3c6472',
+            onTertiary: '#ffffff',
+            tertiaryContainer: '#c0e9fa',
+            onTertiaryContainer: '#001f28',
+
+            background: '#fbfdf8',
+            onBackground: '#191c1a',
+            surface: '#fbfdf8',
+            onSurface: '#191c1a',
+
+            surfaceVariant: '#dce5dd',
+            onSurfaceVariant: '#404943',
+            outline: '#707973',
+
+            inversePrimary: '#52dea2',
+            inverseSurface: '#2e312f',
+            inverseOnSurface: '#eff1ed',
+
+            error: Colors.error.light.error,
+            onError: Colors.error.light.onError,
+            errorContainer: Colors.error.light.errorContainer,
+            onErrorContainer: Colors.error.light.onErrorContainer,
+            
+            positive: Colors.positive.light.positive,
+            onPositive: Colors.positive.light.onPositive,
+            positiveContainer: Colors.positive.light.positiveContainer,
+            onPositiveContainer: Colors.positive.light.onPositiveContainer,
+
+            negative: Colors.negative.light.negative,
+            onNegative: Colors.negative.light.onNegative,
+            negativeContainer: Colors.negative.light.negativeContainer,
+            onNegativeContainer: Colors.negative.light.onNegativeContainer,
+        },
     },
+
     amethyst: {
-        key: 'amethyst',
-        light: '#725aff',
-        dark: '#b5a9fc'
+        // primary = #725aff
+
+        dark: {
+            primary: '#c7bfff', 
+            onPrimary: '#2e2176',
+            primaryContainer: '#453a8e',
+            onPrimaryContainer: '#e4dfff',
+
+            secondary: '#c8c3dc',
+            onSecondary: '#302e41',
+            secondaryContainer: '#474459',
+            onSecondaryContainer: '#e5dff9',
+            
+            tertiary: '#ecb8ce',
+            onTertiary: '#482537',
+            tertiaryContainer: '#613b4d',
+            onTertiaryContainer: '#ffd8e7',
+
+            background: '#1c1b1f',
+            onBackground: '#e5e1e6',
+            surface: '#1c1b1f',
+            onSurface: '#e5e1e6',
+
+            surfaceVariant: '#47464f',
+            onSurfaceVariant: '#c9c5d0',
+            outline: '#928f99',
+
+            inversePrimary: '#5d53a7',
+            inverseSurface: '#e5e1e6',
+            inverseOnSurface: '#1c1b1f',
+
+            error: Colors.error.dark.error,
+            onError: Colors.error.dark.onError,
+            errorContainer: Colors.error.dark.errorContainer,
+            onErrorContainer: Colors.error.dark.onErrorContainer,
+            
+            positive: Colors.positive.dark.positive,
+            onPositive: Colors.positive.dark.onPositive,
+            positiveContainer: Colors.positive.dark.positiveContainer,
+            onPositiveContainer: Colors.positive.dark.onPositiveContainer,
+
+            negative: Colors.negative.dark.negative,
+            onNegative: Colors.negative.dark.onNegative,
+            negativeContainer: Colors.negative.dark.negativeContainer,
+            onNegativeContainer: Colors.negative.dark.onNegativeContainer,
+        },
+
+        light: {
+            primary: '#5d53a7', 
+            onPrimary: '#ffffff',
+            primaryContainer: '#e4dfff',
+            onPrimaryContainer: '#180362',
+
+            secondary: '#5f5c71',
+            onSecondary: '#ffffff',
+            secondaryContainer: '#e5dff9',
+            onSecondaryContainer: '#1b192c',
+            
+            tertiary: '#7b5265',
+            onTertiary: '#ffffff',
+            tertiaryContainer: '#ffd8e7',
+            onTertiaryContainer: '#301121',
+
+            background: '#fffbff',
+            onBackground: '#1c1b1f',
+            surface: '#fffbff',
+            onSurface: '#1c1b1f',
+
+            surfaceVariant: '#e5e0ec',
+            onSurfaceVariant: '#47464f',
+            outline: '#78767f',
+
+            inversePrimary: '#c7bfff',
+            inverseSurface: '#313034',
+            inverseOnSurface: '#f4eff4',
+
+            error: Colors.error.light.error,
+            onError: Colors.error.light.onError,
+            errorContainer: Colors.error.light.errorContainer,
+            onErrorContainer: Colors.error.light.onErrorContainer,
+            
+            positive: Colors.positive.light.positive,
+            onPositive: Colors.positive.light.onPositive,
+            positiveContainer: Colors.positive.light.positiveContainer,
+            onPositiveContainer: Colors.positive.light.onPositiveContainer,
+
+            negative: Colors.negative.light.negative,
+            onNegative: Colors.negative.light.onNegative,
+            negativeContainer: Colors.negative.light.negativeContainer,
+            onNegativeContainer: Colors.negative.light.onNegativeContainer,
+        },
     },
     aqua: {
         key: 'aqua',
@@ -77,40 +277,6 @@ export const Accents = {
     },
 };
 
-// customise default dark and white themes from paper
-export const Black = {
-    ...DarkTheme,
-    dark: true,
-    statusBarStyle: 'light-content',
-    colors: {
-        ...DarkTheme.colors,
-        error: Colors.error.dark,
-        success: Colors.success.dark
-    }
-};
-
-export const Dark = {
-    ...DarkTheme,
-    dark: true,
-    statusBarStyle: 'light-content',
-    colors: {
-        ...DarkTheme.colors,
-        error: Colors.error.dark,
-        success: Colors.success.dark
-    }
-};
-
-export const Light = {
-    ...LightTheme,
-    dark: false,
-    statusBarStyle: 'dark-content',
-    colors: {
-        ...LightTheme.colors,
-        error: Colors.error.light,
-        success: Colors.success.light
-    }
-};
-
 // custom css here
 export default Styles = StyleSheet.create ({
     modal: {
@@ -121,7 +287,8 @@ export default Styles = StyleSheet.create ({
     },
 
     card: {
-        margin: 4,
+        marginTop: 12,
+        marginHorizontal: 12,
         borderRadius: 16,
         overflow: 'hidden',
     },
@@ -167,13 +334,19 @@ export default Styles = StyleSheet.create ({
     },
 
     buttonRateLeft: {
-        paddingRight: '30%',
-        borderRadius: 16,
+        paddingRight: '25%',
+        borderTopRightRadius: 0,
+        borderBottomRightRadius: 0,
+        borderTopLeftRadius: 16,
+        borderBottomLeftRadius: 16,
     },
     
     buttonRateRight: {
-        paddingLeft: '30%',
-        borderRadius: 16,
+        paddingLeft: '25%',
+        borderTopRightRadius: 16,
+        borderBottomRightRadius: 16,
+        borderTopLeftRadius: 0,
+        borderBottomLeftRadius: 0,
     },
 
     buttonRateContent: {
@@ -185,7 +358,9 @@ export default Styles = StyleSheet.create ({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        margin: 8
+        marginTop: 24,
+        marginBottom: 16,
+        marginHorizontal: 16,
     },
 
     centeredImageContainer: {
@@ -281,7 +456,7 @@ export default Styles = StyleSheet.create ({
     
     drawerPermanent: {
         // TODO: in permanent drawer mode, the drawer is separated from 
-        // the scene by a weird line. I have not found a way to remove this,
+        // the screens by a weird line. I have not found a way to remove this,
         // nor a way to recolour it to the theme at least 
     },
 
@@ -296,5 +471,9 @@ export default Styles = StyleSheet.create ({
 
     dialog: {
         marginBottom: 68,
-    }
+    },
+
+    wizardTab: {
+        alignSelf: 'center'
+    },
 });

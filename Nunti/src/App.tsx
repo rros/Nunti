@@ -5,7 +5,6 @@ import {
     NativeModules,
     BackHandler, 
     Platform,
-    PlatformColor,
     ScrollView,
     Dimensions 
 } from 'react-native';
@@ -21,8 +20,10 @@ import {
     Divider
 } from 'react-native-paper';
 
+import { MD3LightTheme as LightTheme, MD3DarkTheme as DarkTheme } from 'react-native-paper';
+
 // our files
-import { Black, Dark, Light, Accents } from './Styles';
+import { Accents } from './Styles';
 import * as Languages from './Locale';
 import Wizard from './Screens/Wizard';
 import ArticlesPage from './Screens/Articles';
@@ -46,12 +47,11 @@ export default class App extends Component {
         // function bindings
         this.updateLanguage = this.updateLanguage.bind(this);
         this.updateTheme = this.updateTheme.bind(this);
-        this.updateAccent = this.updateAccent.bind(this);
         this.toggleSnack = this.toggleSnack.bind(this);
         this.reloadGlobalStates = this.reloadGlobalStates.bind(this);
         
         this.state = {
-            theme: Dark, // temporary until theme loads
+            theme: DarkTheme, // temporary until theme loads
             language: Languages.English, // temporary until language loads
             
             snackVisible: false,
@@ -92,7 +92,7 @@ export default class App extends Component {
     // language, theme, accent
     public async reloadGlobalStates() {
         await this.updateLanguage(Backend.UserSettings.Language);
-        await this.updateTheme(Backend.UserSettings.Theme);
+        await this.updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
         
         this.setState({prefsLoaded: true});
     }
@@ -113,109 +113,125 @@ export default class App extends Component {
         }
     }
 
-    public updateTheme(themeName: string) {
+    public async updateTheme(themeName: string, accentName: string) {
+        // theme
         let theme;
-        if(themeName == 'dark'){
-            theme = Dark;
-            this.appearanceSubscription?.remove();
-        } else if (themeName == 'light'){
-            theme = Light;
-            this.appearanceSubscription?.remove();
-        } else {
-            const scheme = Appearance.getColorScheme();
-            if(scheme == 'dark') {
-                theme = Dark;
-            } else {
-                theme = Light;
-            }
 
-            // live update
-            this.appearanceSubscription = Appearance.addChangeListener(() => {
+        if(this.state.theme.themeName == themeName) {
+            theme = this.state.theme;
+        } else {
+            if(themeName == 'system') {
                 const scheme = Appearance.getColorScheme();
                 if(scheme == 'dark') {
-                    theme = Dark;
+                    theme = DarkTheme;
                 } else {
-                    theme = Light;
+                    theme = LightTheme;
                 }
-                
-                this.state.theme = theme;
-                this.updateAccent(Backend.UserSettings.Accent);
-            });
-        }
-        
-        //no need to rerender here, rerender will happen in updateAccent
-        //updateAccent is called here to change accent light/dark colour according to new theme
-        this.state.theme = theme;
-        this.updateAccent(Backend.UserSettings.Accent);
-    }
 
-    public async updateAccent(accentName: string) {
-        const theme = this.state.theme;
+                if(this.appearanceSubscription === undefined) {
+                    // live update
+                    this.appearanceSubscription = Appearance.addChangeListener(() => {
+                        const scheme = Appearance.getColorScheme();
+                        updateTheme(scheme);
+                    });
+                }
+            } else if (themeName == 'light'){
+                theme = LightTheme;
+                this.appearanceSubscription?.remove();
+            } else { // dark and black themes
+                theme = DarkTheme;
+                this.appearanceSubscription?.remove();
+            }
+        }
+
+        // accent
+        let palette;
 
         if(accentName == 'material_you' && Platform.Version < 31) {
             accentName = 'default'; // do not overwrite save, just default to the default accent
         } 
-
-        if(accentName == 'material_you') {
-            const palette = await MaterialYouModule.getMaterialYouPalette();
-            
-            if(theme.dark){
-                theme.colors.accent = palette.primaryLight;
-                theme.colors.primary = palette.primaryLight;
-                theme.colors.accentReverse = palette.primaryDark;
+        
+        if(theme.dark){
+            if(accentName == 'material_you') {
+                palette = await MaterialYouModule.getMaterialYouPalette('dark');
             } else {
-                theme.colors.accent = palette.primaryDark;
-                theme.colors.primary = palette.primaryDark;
-                theme.colors.accentReverse = palette.primaryLight;
+                palette = Accents[accentName].dark;
             }
-        } else if(theme.dark) {
-            theme.colors.primary = Accents[accentName].darkPrimary; 
-            theme.colors.onPrimary = Accents[accentName].darkOnPrimary; // icons on buttons
-            theme.colors.primaryContainer = Accents[accentName].darkPrimaryContainer;
-            theme.colors.onPrimaryContainer = Accents[accentName].darkOnPrimaryContainer;
-            theme.colors.secondary = Accents[accentName].darkSecondary; // icons in dialogs
-            theme.colors.secondaryContainer = Accents[accentName].darkSecondaryContainer; // drawer colour
-            theme.colors.surface = Accents[accentName].darkSurface; // dialog and header colour
-            theme.colors.surfaceVariant = Accents[accentName].darkSecondaryContainer; // text input
-            theme.colors.background = Accents[accentName].darkBackground; // background
-            theme.colors.inversePrimary = Accents[accentName].lightPrimary; // snackbar button colour
-            theme.colors.inverseSurface = Accents[accentName].lightSurface; // snackbar colour
+
+            theme = this.applyThemeColors(theme, palette);
+            
+            // override surface and background if black theme is used, 
+            // otherwise it is same as dark theme
+            if(themeName == 'black_theme') {
+                theme.colors.background = '#000000';
+                theme.colors.surface = '#000000';
+            }
+            
+            StatusBar.setBarStyle('light-content');
         } else {
-            theme.colors.primary = Accents[accentName].lightPrimary; // buttons
-            theme.colors.onPrimary = Accents[accentName].lightOnPrimary; // icons on buttons
-            theme.colors.primaryContainer = Accents[accentName].lightPrimaryContainer;
-            theme.colors.onPrimaryContainer = Accents[accentName].lightOnPrimaryContainer;
-            theme.colors.secondary = Accents[accentName].lightSecondary; // icons in dialogs
-            theme.colors.secondaryContainer = Accents[accentName].lightSecondaryContainer; // drawer colour
-            theme.colors.surface = Accents[accentName].lightSurface; // dialog and header colour
-            theme.colors.surfaceVariant = Accents[accentName].lightSecondaryContainer; // text input
-            theme.colors.background = Accents[accentName].lightBackground; // background
-            theme.colors.backgroundVariant = Accents[accentName].lightBackground; // background
-            theme.colors.inversePrimary = Accents[accentName].darkPrimary; // snackbar button colour
-            theme.colors.inverseSurface = Accents[accentName].darkSurface; // snackbar colour
+            if(accentName == 'material_you') {
+                palette = await MaterialYouModule.getMaterialYouPalette('light');
+            } else {
+                palette = Accents[accentName].light;
+            }
+            
+            theme = this.applyThemeColors(theme, palette);
+        
+            StatusBar.setBarStyle('dark-content');
         }
 
-            //theme.colors.primary = PlatformColor('@android:color/system_accent1_400').resource_paths; 
-            //theme.colors.onPrimary = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.primaryContainer = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.onPrimaryContainer = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.secondary = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.onSecondary = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.secondaryContainer = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.onSecondaryContainer = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.background = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.onBackground = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.surface = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.onSurface = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.surfaceVariant = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.onSurfaceVariant = PlatformColor('@android:color/system_accent1_400').resource_paths;
-            //theme.colors.outline = PlatformColor('@android:color/system_accent1_400').resource_paths;
-
-            //theme.colors.inversePrimary = '#ffffff';
-            //theme.colors.inverseSurface = '#ffffff';
-
+        theme.accentName = accentName;
+        theme.themeName = themeName;
         this.setState({theme: theme});
 
+        StatusBar.setBackgroundColor(theme.colors.primaryContainer);
+    }
+
+    private applyThemeColors(theme, palette) {
+        theme.colors.primary = palette.primary; 
+        theme.colors.onPrimary = palette.onPrimary;
+        theme.colors.primaryContainer = palette.primaryContainer;
+        theme.colors.onPrimaryContainer = palette.onPrimaryContainer;
+
+        theme.colors.secondary = palette.secondary;
+        theme.colors.onSecondary = palette.onSecondary;
+        theme.colors.secondaryContainer = palette.secondaryContainer;
+        theme.colors.onSecondaryContainer = palette.onSecondaryContainer;
+        
+        theme.colors.tertiary = palette.tertiary;
+        theme.colors.onTertiary = palette.onTertiary;
+        theme.colors.tertiaryContainer = palette.tertiaryContainer;
+        theme.colors.onTertiaryContainer = palette.onTertiaryContainer;
+
+        theme.colors.background = palette.background;
+        theme.colors.onBackground = palette.onBackground;
+        theme.colors.surface = palette.surface;
+        theme.colors.onSurface = palette.onSurface;
+
+        theme.colors.surfaceVariant = palette.surfaceVariant;
+        theme.colors.onSurfaceVariant = palette.onSurfaceVariant;
+        theme.colors.outline = palette.outline;
+
+        theme.colors.inversePrimary = palette.inversePrimary;
+        theme.colors.inverseSurface = palette.inverseSurface;
+        theme.colors.inverseOnSurface = palette.inverseOnSurface;
+
+        theme.colors.error = palette.error;
+        theme.colors.onError = palette.onError;
+        theme.colors.errorContainer = palette.errorContainer;
+        theme.colors.onErrorContainer = palette.onErrorContainer;
+        
+        theme.colors.positive = palette.positive;
+        theme.colors.onPositive = palette.onPositive;
+        theme.colors.positiveContainer = palette.positiveContainer;
+        theme.colors.onPositiveContainer = palette.onPositiveContainer;
+
+        theme.colors.negative = palette.negative;
+        theme.colors.onNegative = palette.onNegative;
+        theme.colors.negativeContainer = palette.negativeContainer;
+        theme.colors.onNegativeContainer = palette.onNegativeContainer;
+
+        return theme;
     }
 
     public async toggleSnack(message: string, visible: bool) {
@@ -229,10 +245,6 @@ export default class App extends Component {
         
         return(
             <PaperProvider theme={this.state.theme}>
-                <StatusBar
-                    barStyle={this.state.theme.statusBarStyle}
-                    backgroundColor={this.state.theme.colors.surface}
-                    translucent={false}/>
                 <NavigationContainer theme={this.state.theme} onReady={() => RNBootSplash.hide({ fade: true })}>
                     <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
                          drawerContent={(props) => <CustomDrawer {...props} isLargeScreen={this.isLargeScreen}
@@ -256,20 +268,21 @@ export default class App extends Component {
                             {props => <Settings {...props} reloadGlobalStates={this.reloadGlobalStates} 
                                 lang={this.state.language} Languages={Languages} isLargeScreen={this.isLargeScreen}
                                 updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} 
-                                updateAccent={this.updateAccent} toggleSnack={this.toggleSnack} />}
+                                toggleSnack={this.toggleSnack} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="about">
                             {props => <About {...props} lang={this.state.language} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, 
-                            unmountOnBlur: true, drawerStyle: {width: 0}}}>
+                            unmountOnBlur: true, drawerStyle:
+                                {width: this.isLargeScreen ? 0 : undefined}}}>
                             {props => <Wizard {...props} lang={this.state.language} Languages={Languages}
                                 reloadGlobalStates={this.reloadGlobalStates} toggleSnack={this.toggleSnack}
-                                updateTheme={this.updateTheme} updateAccent={this.updateAccent}
-                                updateLanguage={this.updateLanguage} />}
+                                updateTheme={this.updateTheme} updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="legacyWebview" options={{swipeEnabled: false,
-                            unmountOnBlur: true, headerShown: false, drawerStyle: {width: 0}}}>
+                            unmountOnBlur: true, headerShown: false, drawerStyle: 
+                                {width: this.isLargeScreen ? 0 : undefined}}}>
                             {props => <LegacyWebview {...props}/>}
                         </NavigationDrawer.Screen>
                     </NavigationDrawer.Navigator>
@@ -291,7 +304,7 @@ export default class App extends Component {
 function CustomHeader ({ navigation, route, lang, isLargeScreen, theme }) {
     return (
         <Appbar.Header mode={isLargeScreen ? "small" : "center-aligned"} elevated={false} 
-            style={{backgroundColor: theme.colors.background}}> 
+            style={{backgroundColor: theme.colors.primaryContainer}}> 
             { (route.name != 'wizard' && !isLargeScreen) ? 
                 <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
@@ -313,7 +326,7 @@ function CustomDrawer ({ state, navigation, theme, lang, isLargeScreen }) {
 
     return (
         <ScrollView style={[isLargeScreen ? Styles.drawerPermanent : Styles.drawer,
-            {backgroundColor: theme.colors.background}]}>
+            {backgroundColor: theme.colors.surface}]}>
             <Text variant="titleLarge" 
                 style={[Styles.drawerTitle, {color: theme.colors.secondary}]}>Nunti</Text>
             
