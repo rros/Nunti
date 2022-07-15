@@ -1,37 +1,5 @@
-text padding
-non round hidden view
-redesign modal
-modal buttons
-modal background
-fix wizard header
-appheader
-scrollview padding
-caption margin
-filter by tag chips
-default topics chips
-about full width button
-redesign settings (full width buttons, subpages)
-empty page title change (prazdno -> zadne ulozene clanky?)
-localise "add some tags", localise "50 more" to "rate 50 more to enable", localise tag remove dialog, localise "inner workings", "keyword" localisation
-fix rss status url
-fix fab hiding snackbar
-dialog scrollview change
-menu in articles (no wifi, no rss)
-dialog max height
-drawer large nunti
-drawer rounded buttons
-rounded cards
-margin top for article titles
-landscape drawer always visible
-react-native material you 
-number of articles learning (sklonovani)
-success and error colors
-broken status bar when loading for the first time
-black theme
-
-colorschemes
-tablet colors + tablet large fab
-
+rest of the colors
 button loading icon is bunched up on label
 check if status bar color works in release
 fastlane
+change readme

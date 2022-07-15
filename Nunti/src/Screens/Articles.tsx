@@ -148,8 +148,6 @@ class ArticlesPage extends PureComponent {
         if(Backend.UserSettings.BrowserMode == 'webview'){
             await InAppBrowser.open(url, {
                 forceCloseOnRedirection: false, showInRecents: true,
-                toolbarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
-                navigationBarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
             });
         } else if(Backend.UserSettings.BrowserMode == 'legacy_webview') {
             this.hideDetails();
@@ -328,8 +326,8 @@ class ArticlesPage extends PureComponent {
                             translateX: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [-1000, 0, 1000],}), // random value, it disappears anyway
                         }}>
                             <Card mode={'contained'}
-                                style={[Styles.card, {backgroundColor: this.props.theme.dark ?
-                                    this.props.theme.colors.surface : this.props.theme.colors.secondaryContainer}]}
+                                style={[Styles.card, {backgroundColor: (this.props.theme.themeName == 'black') ?
+                                    this.props.theme.colors.surface : this.props.theme.colors.surfaceVariant}]}
                                 onPress={() => { this.readMore(rowData.item.url); }} 
                                 onLongPress={() => { this.viewDetails(rowData.item); }}>
                                 {(this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined) ? 

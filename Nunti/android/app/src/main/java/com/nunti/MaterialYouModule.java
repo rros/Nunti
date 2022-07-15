@@ -27,7 +27,7 @@ public class MaterialYouModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getMaterialYouPalette(String theme, Promise promise) {
+    public void getMaterialYouPalette(String theme, Promise promise) throws Exception {
         try{
             WritableMap colors = Arguments.createMap();
 
@@ -67,12 +67,12 @@ public class MaterialYouModule extends ReactContextBaseJavaModule {
                 
                 colors.putString("positive", "#8fd88a");
                 colors.putString("onPositive", "#00390b");
-                colors.putString("positiveContainer", "#175f21");
+                colors.putString("positiveContainer", "#045316");
                 colors.putString("onPositiveContainer", "#aaf5a4");
                 
                 colors.putString("negative", "#ffb4aa");
                 colors.putString("onNegative", "#690003");
-                colors.putString("negativeContainer", "#9c251d");
+                colors.putString("negativeContainer", "#8b1913");
                 colors.putString("onNegativeContainer", "#ffdad5");
             } else {
                 colors.putString("primary", getHexCode(R.color.system_accent1_600));
@@ -110,18 +110,18 @@ public class MaterialYouModule extends ReactContextBaseJavaModule {
                 
                 colors.putString("positive", "#266c2b");
                 colors.putString("onPositive", "#ffffff");
-                colors.putString("positiveContainer", "#8fd88a");
+                colors.putString("positiveContainer", "#aaf5a4");
                 colors.putString("onPositiveContainer", "#002204");
                 
                 colors.putString("negative", "#ad3228");
                 colors.putString("onNegative", "#ffffff");
-                colors.putString("negativeContainer", "#ffb4aa");
+                colors.putString("negativeContainer", "#ffdad5");
                 colors.putString("onNegativeContainer", "#410001");
             }
 
             promise.resolve(colors);
         } catch(Exception e) {
-            promise.resolve("Material you is not supported on this device. " + e);
+            throw new Exception("Material you is not supported on this device");
         }
     }
 

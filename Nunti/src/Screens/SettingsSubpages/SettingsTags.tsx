@@ -87,7 +87,7 @@ class SettingsTags extends Component { // not using purecomponent as it doesn't 
                                                 rippleColor={this.props.theme.colors.alternativeSurface}
                                                 onPress={() => {this.setState({ tagRemoveDialogVisible: true }); this.currentTag = tag}}>
                                                 <View style={Styles.rowContainer,
-                                                    {borderLeftWidth: 1, borderLeftColor: this.props.theme.colors.secondary}}>
+                                                    {borderLeftWidth: 1, borderLeftColor: this.props.theme.colors.outline}}>
                                                     <List.Icon icon="close" />
                                                 </View>
                                             </TouchableRipple>

@@ -434,7 +434,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                                     <RadioButton.Item label={this.props.lang.system} value="system" />
                                     <RadioButton.Item label={this.props.lang.light} value="light" />
                                     <RadioButton.Item label={this.props.lang.dark} value="dark" />
-                                    <RadioButton.Item label={this.props.lang.black_theme} value="black_theme" />
+                                    <RadioButton.Item label={this.props.lang.black} value="black" />
                                 </RadioButton.Group>
                             </ScrollView>
                         </Dialog.ScrollArea>

@@ -114,72 +114,49 @@ export default class App extends Component {
     }
 
     public async updateTheme(themeName: string, accentName: string) {
-        // theme
         let theme;
-
-        if(this.state.theme.themeName == themeName) {
-            theme = this.state.theme;
-        } else {
-            if(themeName == 'system') {
-                const scheme = Appearance.getColorScheme();
-                if(scheme == 'dark') {
-                    theme = DarkTheme;
-                } else {
-                    theme = LightTheme;
-                }
-
-                if(this.appearanceSubscription === undefined) {
-                    // live update
-                    this.appearanceSubscription = Appearance.addChangeListener(() => {
-                        const scheme = Appearance.getColorScheme();
-                        updateTheme(scheme);
-                    });
-                }
-            } else if (themeName == 'light'){
-                theme = LightTheme;
-                this.appearanceSubscription?.remove();
-            } else { // dark and black themes
-                theme = DarkTheme;
-                this.appearanceSubscription?.remove();
-            }
-        }
-
-        // accent
         let palette;
 
-        if(accentName == 'material_you' && Platform.Version < 31) {
-            accentName = 'default'; // do not overwrite save, just default to the default accent
-        } 
-        
-        if(theme.dark){
-            if(accentName == 'material_you') {
-                palette = await MaterialYouModule.getMaterialYouPalette('dark');
+        if(themeName == 'system') {
+            if(Appearance.getColorScheme() == 'light'){
+                theme = LightTheme;
+
+                palette = await this.getPalette(accentName, theme.dark);
+                StatusBar.setBarStyle('dark-content');
             } else {
-                palette = Accents[accentName].dark;
+                theme = DarkTheme;
+
+                palette = await this.getPalette(accentName, theme.dark);
+                StatusBar.setBarStyle('light-content');
             }
 
-            theme = this.applyThemeColors(theme, palette);
-            
-            // override surface and background if black theme is used, 
-            // otherwise it is same as dark theme
-            if(themeName == 'black_theme') {
-                theme.colors.background = '#000000';
-                theme.colors.surface = '#000000';
-            }
-            
-            StatusBar.setBarStyle('light-content');
-        } else {
-            if(accentName == 'material_you') {
-                palette = await MaterialYouModule.getMaterialYouPalette('light');
-            } else {
-                palette = Accents[accentName].light;
-            }
-            
-            theme = this.applyThemeColors(theme, palette);
-        
+            // live update
+            this.appearanceSubscription = Appearance.addChangeListener(() => {
+                this.updateTheme('system', this.state.theme.accentName);
+            });
+        } else if (themeName == 'light'){
+            this.appearanceSubscription?.remove();
+            theme = LightTheme;
+
+            palette = await this.getPalette(accentName, theme.dark);
             StatusBar.setBarStyle('dark-content');
-        }
+        } else { // dark and black themes
+            this.appearanceSubscription?.remove();
+            theme = DarkTheme;
 
+            palette = await this.getPalette(accentName, theme.dark);
+            StatusBar.setBarStyle('light-content');
+        }
+            
+        theme = this.applyThemeColors(theme, palette);
+
+        // override background colours when using black theme
+        // otherwise identical to dark theme
+        if(themeName == 'black') {
+            theme.colors.background = '#000000';
+            theme.colors.surface = '#000000';
+        }
+        
         theme.accentName = accentName;
         theme.themeName = themeName;
         this.setState({theme: theme});
@@ -187,7 +164,40 @@ export default class App extends Component {
         StatusBar.setBackgroundColor(theme.colors.primaryContainer);
     }
 
-    private applyThemeColors(theme, palette) {
+    private async getPalette(accentName: string, isDarkTheme: boolean): any {
+        let palette;
+
+        try {
+            if(isDarkTheme) {
+                if(accentName == 'material_you') {
+                    palette = await MaterialYouModule.getMaterialYouPalette('dark');
+                } else {
+                    palette = Accents[accentName].dark;
+                }
+            } else {
+                if(accentName == 'material_you') {
+                    palette = await MaterialYouModule.getMaterialYouPalette('light');
+                } else {
+                    palette = Accents[accentName].light;
+                }
+            }
+        } catch {
+            console.log("fallback");
+            // fallback
+            if(palette === undefined) {
+                accentName = 'default';
+
+                Backend.UserSettings.Accent = accentName;
+                Backend.UserSettings.Save();
+
+                palette = await this.getPalette(accentName, isDarkTheme);
+            }
+        }
+
+        return palette;
+    }
+
+    private applyThemeColors(theme, palette): any {
         theme.colors.primary = palette.primary; 
         theme.colors.onPrimary = palette.onPrimary;
         theme.colors.primaryContainer = palette.primaryContainer;
