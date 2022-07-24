@@ -367,7 +367,7 @@ export const Accents = {
 
 // custom css here
 export default Styles = StyleSheet.create ({
-    modal: {
+    modalCard: {
         borderRadius: 20,
         overflow: 'hidden',
         marginHorizontal: 12,
@@ -564,6 +564,8 @@ export default Styles = StyleSheet.create ({
 
     dialog: {
         marginBottom: 68,
+        maxWidth: 560,
+        marginHorizontal: 24
     },
 
     wizardTab: {

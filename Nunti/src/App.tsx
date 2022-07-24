@@ -70,11 +70,11 @@ export default class App extends Component {
         // dimension changes
         const screenWidth = Dimensions.get('window').width;
         const screenHeight = Dimensions.get('window').height;
-
+        
         if(screenWidth > screenHeight) {
-            this.isLargeScreen = (screenWidth >= 768);
-        } else {
             this.isLargeScreen = (screenHeight >= 768);
+        } else {
+            this.isLargeScreen = (screenWidth >= 768);
         }
                 
         this.snackPosition = new Animated.Value(0.0);
@@ -90,7 +90,7 @@ export default class App extends Component {
                 return true;
             }
         });
-        
+
         this.dimensionsSubscription = Dimensions.addEventListener('change', ({window, screen}) => {
             this.setState({screenHeight: window.height});
         });
@@ -196,7 +196,6 @@ export default class App extends Component {
                 }
             }
         } catch {
-            console.log("fallback");
             // fallback
             if(palette === undefined) {
                 accentName = 'default';
@@ -273,7 +272,6 @@ export default class App extends Component {
     }
 
     private async hideSnack() {
-        console.log("hide");
         Animated.timing(this.snackPosition, {
             toValue: 0,
             duration: 200,
@@ -300,17 +298,17 @@ export default class App extends Component {
                                 theme={this.state.theme} lang={this.state.language} />}}>
                         <NavigationDrawer.Screen name="feed">
                             {props => <ArticlesPage {...props} source="feed" buttonType="rate"
-                                lang={this.state.language} showSnack={this.showSnack}
+                                lang={this.state.language} showSnack={this.showSnack} isLargeScreen={this.isLargeScreen}
                                 screenHeight={this.state.screenHeight} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="bookmarks">
                             {props => <ArticlesPage {...props} source="bookmarks" buttonType="delete"
-                                lang={this.state.language} showSnack={this.showSnack}
+                                lang={this.state.language} showSnack={this.showSnack} isLargeScreen={this.isLargeScreen}
                                 screenHeight={this.state.screenHeight} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="history">
                             {props => <ArticlesPage {...props} source="history" buttonType="none"
-                                lang={this.state.language} showSnack={this.showSnack}
+                                lang={this.state.language} showSnack={this.showSnack} isLargeScreen={this.isLargeScreen}
                                 screenHeight={this.state.screenHeight} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="settings" options={{headerShown: false}}>
@@ -347,7 +345,7 @@ export default class App extends Component {
                             dismiss={4000}
                             onDismiss={this.hideSnack}
                             action={{ label: this.state.language.dismiss, onPress: this.hideSnack }}
-                            style={{width: this.isLargeScreen ? "50%" : undefined}}
+                            style={{maxWidth: 560}}
                             wrapperStyle={{alignItems: "flex-start"}}
                         >{this.state.snackMessage}</Snackbar>
                     </Animated.View>

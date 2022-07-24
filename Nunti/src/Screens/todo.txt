@@ -1,5 +1,0 @@
-rest of the colors
-button loading icon is bunched up on label
-check if status bar color works in release
-fastlane
-change readme

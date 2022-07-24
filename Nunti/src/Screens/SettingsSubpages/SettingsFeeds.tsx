@@ -162,7 +162,8 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                     <Portal>
                         <Dialog visible={this.state.rssAddDialogVisible} 
                             onDismiss={() => { this.setState({ rssAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}
-                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
+                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
+                                maxHeight: this.props.screenHeight / 1.2}]}>
                             <Dialog.Icon icon="rss" />
                             <Dialog.Title style={Styles.textCentered}>{this.props.lang.add_feeds}</Dialog.Title>
                             <Dialog.Content>
@@ -181,7 +182,8 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
 
                         <Dialog visible={this.state.rssStatusDialogVisible} 
                             onDismiss={() => { this.setState({ rssStatusDialogVisible: false, inputValue: ''});}}
-                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
+                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
+                                maxHeight: this.props.screenHeight / 1.2}]}>
                             <Dialog.Title style={Styles.textCentered}>{this.props.lang.feed_status}</Dialog.Title>
                             <Dialog.ScrollArea>
                                 <ScrollView contentContainerStyle={Styles.filterDialogScrollView}>
@@ -197,7 +199,7 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                                         <TextInput label={this.props.lang.feed_name} autoCapitalize="none" 
                                             style={Styles.settingsDetailsTextInput}
                                             onChangeText={text => this.inputChange(text)}/>
-                                        <Button onPress={this.changeRssFeedName}>
+                                        <Button onPress={this.changeRssFeedName} disabled={this.state.inputValue == ''}>
                                             {this.props.lang.change}</Button>
                                     </View>
                                 
@@ -246,7 +248,8 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                         </Dialog>
                         
                         <Dialog visible={this.state.rssRemoveDialogVisible} onDismiss={() => { this.setState({ rssRemoveDialogVisible: false });}}
-                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
+                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
+                                maxHeight: this.props.screenHeight / 1.2}]}>
                             <Dialog.Icon icon="alert" />
                             <Dialog.Title style={Styles.textCentered}>{this.props.lang.remove_feed}</Dialog.Title>
                             <Dialog.Content>

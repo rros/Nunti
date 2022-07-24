@@ -227,7 +227,7 @@ class Step4Topics extends Component {
         return(
             <ScrollView>
                 <List.Section title={this.props.lang.topics}>
-                    <View style={Styles.chipContainer}>
+                    <View style={[Styles.chipContainer, { marginHorizontal: 12 }]}>
                     { Object.keys(DefaultTopics.Topics).map((topicName) => {
                         if(DefaultTopics.Topics[topicName].icon == 'earth'){
                             return null;
@@ -242,7 +242,7 @@ class Step4Topics extends Component {
                     </View>
                 </List.Section>
                 <List.Section title={this.props.lang.diff_language_news}>
-                    <View style={Styles.chipContainer}>
+                    <View style={[Styles.chipContainer, { marginHorizontal: 12 }]}>
                     { Object.keys(DefaultTopics.Topics).map((topicName) => {
                         if(DefaultTopics.Topics[topicName].icon != 'earth'){
                             return null;

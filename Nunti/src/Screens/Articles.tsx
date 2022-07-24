@@ -102,12 +102,13 @@ class ArticlesPage extends PureComponent {
         });
 
         // show user a banner indicating possible reasons why no articles were loaded
-        if(this.props.source == 'feed' && numberOfArticles == 0) {
+        if(this.props.source == 'feed' && numberOfArticles == 0 && this.sourceFilter.length == 0) {
+            console.log("yeet");
             if(Backend.UserSettings.FeedList.length == 0) {
-                this.bannerMessage = this.props.lang.no_feed_banner;
+                this.bannerMessage = 'no_feed_banner';
                 this.setState({bannerVisible: true});
             } else if(Backend.IsDoNotDownloadEnabled && Backend.UserSettings.WifiOnly) {
-                this.bannerMessage = this.props.lang.wifi_only_banner;
+                this.bannerMessage = 'wifi_only_banner';
                 this.setState({bannerVisible: true});
             }
         } else {
@@ -167,9 +168,9 @@ class ArticlesPage extends PureComponent {
     
     private inputChange(text: string) {
         if(text == ''){
-            this.setState({inputValue: text, dialogButtonDisabled: true});
+            this.setState({inputValue: text});
         } else {
-            this.setState({inputValue: text, dialogButtonDisabled: false});
+            this.setState({inputValue: text});
         }
     }
 
@@ -266,12 +267,11 @@ class ArticlesPage extends PureComponent {
     private async changePage(newPageIndex: number){
         this.currentPageIndex = newPageIndex;
         this.flatListRef.scrollToOffset({ animated: true, offset: 0 });
-        this.setState({ refreshing: true });
 
         // wait until scroll has finished to launch article update
         // if we don't wait, the scroll will "lag" until the articles have been updated
         await new Promise(r => setTimeout(r, 200));
-        this.setState({ articlePage: this.articlesFromBackend[newPageIndex], refreshing: false });
+        this.setState({ articlePage: this.articlesFromBackend[newPageIndex]});
     }
 
     // NOTE: rowKey = item.id; use instead of index
@@ -281,13 +281,13 @@ class ArticlesPage extends PureComponent {
                 <Banner visible={this.state.bannerVisible} actions={[
                     {
                         label: this.props.lang.dismiss,
-                        onPress: () => this.setState({wifiOnlyBannerVisible: false}),
+                        onPress: () => this.setState({bannerVisible: false}),
                     },
                     {
                         label: this.props.lang.goto_settings,
-                        onPress: () => { this.setState({wifiOnlyBannerVisible: false}); this.props.navigation.navigate('settings') },
+                        onPress: () => { this.setState({bannerVisible: false}); this.props.navigation.navigate('settings') },
                     },
-                ]}>{this.bannerMessage}</Banner>
+                ]}>{this.props.lang[this.bannerMessage]}</Banner>
 
                 <SwipeListView
                     listViewRef={(list) => this.flatListRef = list}
@@ -406,8 +406,9 @@ class ArticlesPage extends PureComponent {
                 ></SwipeListView>
 
                 <Portal>
-                    {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
-                        <Card style={[Styles.modal, {backgroundColor: this.props.theme.colors.surface,
+                    {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}
+                        style={{maxWidth: 560}}>
+                        <Card style={[Styles.modalCard, {backgroundColor: this.props.theme.colors.surface,
                             maxHeight: this.props.screenHeight / 1.2}]}>
                             <ScrollView>
                                 {(this.state.showImages && this.currentArticle.cover !== undefined) ? 
@@ -426,7 +427,7 @@ class ArticlesPage extends PureComponent {
                                     onPress={() => { this.readMore(this.currentArticle.url); }}>{this.props.lang.read_more}</Button>
                                 { this.props.buttonType != 'delete' ? <IconButton icon="bookmark" mode="contained-tonal" size={20}
                                     onPress={() => { this.saveArticle(this.currentArticle); }}>{this.props.lang.save}</IconButton> : null }
-                                { this.props.buttonType == 'delete' ? <IconButton icon="bookmark-remove" mode="contained-tonal" size={20}
+                                { this.props.buttonType == 'delete' ? <IconButton icon="delete" mode="contained-tonal" size={20}
                                     onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>{this.props.lang.remove}</IconButton> : null }
                                 <IconButton icon="share" mode="contained-tonal" size={20}
                                     onPress={() => { this.shareArticle(this.currentArticle.url); }}>{this.props.lang.share}</IconButton>
@@ -435,11 +436,12 @@ class ArticlesPage extends PureComponent {
                     </Modal> : null }
 
                     <Dialog visible={this.props.route.params?.filterDialogVisible} onDismiss={() => this.props.navigation.setParams({filterDialogVisible: false})}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.props.screenHeight / 1.2}]}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
+                            maxHeight: this.props.screenHeight / 1.2}]}>
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.filter}</Dialog.Title>
                         <Dialog.ScrollArea>
                             <ScrollView>
-                                <TextInput label={this.props.lang.keyword} autoCapitalize="none" defaultValue={this.state.inputValue}
+                                <TextInput label={this.props.lang.keyword} autoCapitalize="none" value={this.state.inputValue}
                                     onChangeText={text => this.inputChange(text)} style={Styles.filterTextInput}/>
                                 { Backend.UserSettings.Tags.length > 0 ? 
                                     <View style={Styles.chipContainer}>
@@ -463,8 +465,10 @@ class ArticlesPage extends PureComponent {
                             </ScrollView>
                         </Dialog.ScrollArea>
                         <Dialog.Actions>
-                            <Button onPress={() => this.applyFilter(true)}>{this.props.lang.clear}</Button>
-                            <Button onPress={() => this.applyFilter(false)}>{this.props.lang.apply}</Button>
+                            <Button contentStyle={Styles.dialogButton} 
+                                onPress={() => this.applyFilter(true)}>{this.props.lang.clear}</Button>
+                            <Button contentStyle={Styles.dialogButton} 
+                                onPress={() => this.applyFilter(false)}>{this.props.lang.apply}</Button>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>

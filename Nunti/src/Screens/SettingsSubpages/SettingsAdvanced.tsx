@@ -52,9 +52,10 @@ class SettingsAdvanced extends Component { // not using purecomponent as it does
     }
 
     private changeDialog(type: string) {
-        if(this.state.inputValue < (type != 'max_art_age' ? 0 : 1)){
+        if(this.state.inputValue < 1 || (type == 'discovery' && this.state.inputValue > 100)){
             this.props.showSnack(this.props.lang['change_' + type + '_fail'], true);
-            this.setState({changeDialog: false, inputValue: '', dialogButtonDisabled: true});
+            this.setState({ changeDialogVisible: false,
+                inputValue: '', dialogButtonDisabled: true});
             return;      
         }
 
@@ -150,7 +151,8 @@ class SettingsAdvanced extends Component { // not using purecomponent as it does
                 <Portal>
                     <Dialog visible={this.state.changeDialogVisible} 
                         onDismiss={() => { this.setState({ changeDialogVisible: false, inputValue: '' });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface}]}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
+                            maxHeight: this.props.screenHeight / 1.2}]}>
                         <Dialog.Icon icon={this.state.changeDialogIcon} />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang['change_' + this.state.changeDialogType]}</Dialog.Title>
                         <Dialog.Content>
