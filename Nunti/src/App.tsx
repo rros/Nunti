@@ -6,7 +6,8 @@ import {
     BackHandler, 
     Platform,
     ScrollView,
-    Dimensions 
+    Dimensions,
+    Animated
 } from 'react-native';
 const { MaterialYouModule } = NativeModules;
 
@@ -19,6 +20,8 @@ import {
     Text,
     Divider
 } from 'react-native-paper';
+
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { MD3LightTheme as LightTheme, MD3DarkTheme as DarkTheme } from 'react-native-paper';
 
@@ -47,9 +50,10 @@ export default class App extends Component {
         // function bindings
         this.updateLanguage = this.updateLanguage.bind(this);
         this.updateTheme = this.updateTheme.bind(this);
-        this.toggleSnack = this.toggleSnack.bind(this);
+        this.showSnack = this.showSnack.bind(this);
+        this.hideSnack = this.hideSnack.bind(this);
         this.reloadGlobalStates = this.reloadGlobalStates.bind(this);
-        
+            
         this.state = {
             theme: DarkTheme, // temporary until theme loads
             language: Languages.English, // temporary until language loads
@@ -57,22 +61,23 @@ export default class App extends Component {
             snackVisible: false,
             snackMessage: '',
 
+            screenHeight: Dimensions.get('window').height,
+            snackMargin: 0,
+
             prefsLoaded: false,
         };
 
-        // check if device has a large screen (a tablet)
-        const screen = Dimensions.get('screen');
-        let screenWidth: number;
+        // dimension changes
+        const screenWidth = Dimensions.get('window').width;
+        const screenHeight = Dimensions.get('window').height;
 
-        // additional check to prevent the app from being identified
-        // as a tablet when launching in landscape mode
-        if(screen.width < screen.height) {
-            screenWidth = screen.width;
+        if(screenWidth > screenHeight) {
+            this.isLargeScreen = (screenWidth >= 768);
         } else {
-            screenWidth = screen.height;
+            this.isLargeScreen = (screenHeight >= 768);
         }
-
-        this.isLargeScreen = (screenWidth >= 768);
+                
+        this.snackPosition = new Animated.Value(0.0);
     }
 
     async componentDidMount() {
@@ -85,8 +90,17 @@ export default class App extends Component {
                 return true;
             }
         });
+        
+        this.dimensionsSubscription = Dimensions.addEventListener('change', ({window, screen}) => {
+            this.setState({screenHeight: window.height});
+        });
 
         // splash screen will hide when navigator has finished loading
+    }
+    
+    componentWillUnmount() {
+        this.backHandler?.remove();
+        this.dimensionsSubscription?.remove();
     }
 
     // language, theme, accent
@@ -244,8 +258,29 @@ export default class App extends Component {
         return theme;
     }
 
-    public async toggleSnack(message: string, visible: bool) {
-        this.setState({ snackVisible: visible, snackMessage: message });
+    public async showSnack(message: string) {
+        if(this.state.snackVisible == true){ // hide the previous snack and show the new one
+            this.hideSnack();
+            await new Promise(r => setTimeout(r, 200));
+        }
+        
+        this.setState({snackVisible: true, snackMessage: message});
+        Animated.timing(this.snackPosition, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+        }).start();
+    }
+
+    private async hideSnack() {
+        console.log("hide");
+        Animated.timing(this.snackPosition, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+        }).start(() => {
+            this.setState({snackVisible: false});
+        });
     }
 
     render() {
@@ -254,6 +289,7 @@ export default class App extends Component {
         } // else
         
         return(
+            <GestureHandlerRootView style={{ flex: 1 }}>
             <PaperProvider theme={this.state.theme}>
                 <NavigationContainer theme={this.state.theme} onReady={() => RNBootSplash.hide({ fade: true })}>
                     <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
@@ -264,21 +300,24 @@ export default class App extends Component {
                                 theme={this.state.theme} lang={this.state.language} />}}>
                         <NavigationDrawer.Screen name="feed">
                             {props => <ArticlesPage {...props} source="feed" buttonType="rate"
-                                lang={this.state.language} toggleSnack={this.toggleSnack}/>}
+                                lang={this.state.language} showSnack={this.showSnack}
+                                screenHeight={this.state.screenHeight} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="bookmarks">
                             {props => <ArticlesPage {...props} source="bookmarks" buttonType="delete"
-                                lang={this.state.language} toggleSnack={this.toggleSnack}/>}
+                                lang={this.state.language} showSnack={this.showSnack}
+                                screenHeight={this.state.screenHeight} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="history">
                             {props => <ArticlesPage {...props} source="history" buttonType="none"
-                                lang={this.state.language} toggleSnack={this.toggleSnack}/>}
+                                lang={this.state.language} showSnack={this.showSnack}
+                                screenHeight={this.state.screenHeight} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="settings" options={{headerShown: false}}>
                             {props => <Settings {...props} reloadGlobalStates={this.reloadGlobalStates} 
                                 lang={this.state.language} Languages={Languages} isLargeScreen={this.isLargeScreen}
                                 updateLanguage={this.updateLanguage} updateTheme={this.updateTheme} 
-                                toggleSnack={this.toggleSnack} />}
+                                showSnack={this.showSnack} screenHeight={this.state.screenHeight} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="about">
                             {props => <About {...props} lang={this.state.language} />}
@@ -287,7 +326,7 @@ export default class App extends Component {
                             unmountOnBlur: true, drawerStyle:
                                 {width: this.isLargeScreen ? 0 : undefined}}}>
                             {props => <Wizard {...props} lang={this.state.language} Languages={Languages}
-                                reloadGlobalStates={this.reloadGlobalStates} toggleSnack={this.toggleSnack}
+                                reloadGlobalStates={this.reloadGlobalStates} showSnack={this.showSnack}
                                 updateTheme={this.updateTheme} updateLanguage={this.updateLanguage} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="legacyWebview" options={{swipeEnabled: false,
@@ -298,15 +337,23 @@ export default class App extends Component {
                     </NavigationDrawer.Navigator>
                 </NavigationContainer> 
                 <Portal>
-                    <Snackbar
-                        visible={this.state.snackVisible}
-                        duration={4000}
-                        action={{ label: this.state.language.dismiss, onPress: () => {this.setState({ snackVisible: false });} }}
-                        onDismiss={() => { this.setState({ snackVisible: false }); }}
-                        theme={{ colors: { accent: this.state.theme.colors.accentReverse }}}
-                    >{this.state.snackMessage}</Snackbar>
+                    <Animated.View style={{position: 'absolute', right: 0, left: 0, bottom: 0,
+                        translateY: this.snackPosition.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [80, 0],})
+                        }}>
+                        <Snackbar
+                            visible={this.state.snackVisible}
+                            dismiss={4000}
+                            onDismiss={this.hideSnack}
+                            action={{ label: this.state.language.dismiss, onPress: this.hideSnack }}
+                            style={{width: this.isLargeScreen ? "50%" : undefined}}
+                            wrapperStyle={{alignItems: "flex-start"}}
+                        >{this.state.snackMessage}</Snackbar>
+                    </Animated.View>
                 </Portal>
             </PaperProvider>
+            </GestureHandlerRootView>
         );
     }
 }
@@ -327,7 +374,7 @@ function CustomHeader ({ navigation, route, lang, isLargeScreen, theme }) {
 function CustomDrawer ({ state, navigation, theme, lang, isLargeScreen }) {
     const [active, setActive] = React.useState(state.routes[state.index].name);
 
-    // update selected tab when going back with backbutton   
+    // update selected tab when going back with backbutton
     React.useEffect(() => { 
         if(active != state.routes[state.index].name) {
             setActive(state.routes[state.index].name);

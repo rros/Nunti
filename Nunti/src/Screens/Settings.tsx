@@ -3,7 +3,6 @@ import {
     ScrollView,
     View,
     Platform,
-    Dimensions,
 } from 'react-native';
 
 import {
@@ -46,19 +45,22 @@ class Settings extends Component {
                     {props => <SettingsMain {...props} reloadGlobalStates={this.props.reloadGlobalStates} 
                         lang={this.props.lang} Languages={this.props.Languages} theme={this.props.theme}
                         updateLanguage={this.props.updateLanguage} updateTheme={this.props.updateTheme} 
-                        toggleSnack={this.props.toggleSnack}/>}
+                        showSnack={this.props.showSnack} screenHeight={this.props.screenHeight}/>}
                 </Stack.Screen>
                 <Stack.Screen name="tags">
                     {props => <SettingsTags {...props} isLargeScreen={this.props.isLargeScreen}
-                        lang={this.props.lang} toggleSnack={this.props.toggleSnack}/>}
+                        lang={this.props.lang} showSnack={this.props.showSnack}
+                        screenHeight={this.props.screenHeight}/>}
                 </Stack.Screen>
                 <Stack.Screen name="feeds">
                     {props => <SettingsFeeds {...props} isLargeScreen={this.props.isLargeScreen}
-                        lang={this.props.lang} toggleSnack={this.props.toggleSnack}/>}
+                        lang={this.props.lang} showSnack={this.props.showSnack}
+                        screenHeight={this.props.screenHeight}/>}
                 </Stack.Screen>
                 <Stack.Screen name="advanced">
                     {props => <SettingsAdvanced {...props}
-                        lang={this.props.lang} toggleSnack={this.props.toggleSnack}/>}
+                        lang={this.props.lang} showSnack={this.props.showSnack}
+                        screenHeight={this.props.screenHeight}/>}
                 </Stack.Screen>
                 <Stack.Screen name="learning">
                     {props => <SettingsLearning {...props}
@@ -113,8 +115,6 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
             dataDialogVisible: false,
             
             learningStatus: null,
-            
-            screenHeight: Dimensions.get('window').height,
         };
     }
     
@@ -122,15 +122,10 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
             this.getLearningStatus();
         });
-        
-        this.dimensionsSubscription = Dimensions.addEventListener('change', ({window, screen}) => {
-            this.setState({screenHeight: window.height})
-        });
     }
 
     componentWillUnmount() {
         this._unsubscribe();
-        this.dimensionsSubscription?.remove();
     }
 
     private async getLearningStatus(){
@@ -185,17 +180,17 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
         }
 
         if(allowed_mime.indexOf(file.mime) < 0) {
-            this.props.toggleSnack(this.props.lang.import_fail_format, true);
+            this.props.showSnack(this.props.lang.import_fail_format, true);
             return;
         }
 
         if(await Backend.TryLoadBackup(file.data)){
-            this.props.toggleSnack(this.props.lang.import_ok, true);
+            this.props.showSnack(this.props.lang.import_ok, true);
             this.reloadStates();
 
             Backend.ResetCache();
         } else {
-            this.props.toggleSnack(this.props.lang.import_fail_invalid, true);
+            this.props.showSnack(this.props.lang.import_fail_invalid, true);
         }
     }
 
@@ -206,16 +201,16 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
             if(await ScopedStorage.createDocument('NuntiBackup.json', 'application/json', backup, 'utf8') == null){
                 return;
             } else{
-                this.props.toggleSnack(this.props.lang.export_ok, true);
+                this.props.showSnack(this.props.lang.export_ok, true);
             }
         } catch (err) {
-            this.props.toggleSnack(this.props.lang.export_fail, true);
+            this.props.showSnack(this.props.lang.export_fail, true);
             console.log('Failed to export backup. ' + err);
         }
     }
 
     private resetArtsCache() {
-        this.props.toggleSnack(this.props.lang.reset_art_cache, true);
+        this.props.showSnack(this.props.lang.reset_art_cache, true);
         this.setState({ cacheDialogVisible: false });
 
         Backend.ResetCache();
@@ -228,7 +223,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
         await this.props.reloadGlobalStates();
         
         this.setState({ dataDialogVisible: false, dialogButtonLoading: false });
-        this.props.toggleSnack(this.props.lang.wiped_data, true);
+        this.props.showSnack(this.props.lang.wiped_data, true);
 
         await this.props.navigation.reset({index: 0, routes: [{ name: 'wizard' }]});        
         await this.props.navigation.navigate('wizard');
@@ -385,7 +380,7 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
 
                 <Portal>
                     <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.props.screenHeight / 1.2}]}>
                         <Dialog.Icon icon="translate" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.language}</Dialog.Title>
                         <Dialog.ScrollArea>
@@ -402,12 +397,13 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                             </ScrollView>
                         </Dialog.ScrollArea>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ languageDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                            <Button onPress={() => { this.setState({ languageDialogVisible: false });}}
+                                contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
                         </Dialog.Actions>
                     </Dialog>
                     
                     <Dialog visible={this.state.browserModeDialogVisible} onDismiss={() => { this.setState({ browserModeDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.props.screenHeight / 1.2}]}>
                         <Dialog.Icon icon="web" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.browser_mode}</Dialog.Title>
                         <Dialog.ScrollArea>
@@ -420,12 +416,13 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                             </ScrollView>
                         </Dialog.ScrollArea>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ browserModeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                            <Button onPress={() => { this.setState({ browserModeDialogVisible: false });}}
+                                contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
                         </Dialog.Actions>
                     </Dialog>
 
                     <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.props.screenHeight / 1.2}]}>
                         <Dialog.Icon icon="theme-light-dark" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.theme}</Dialog.Title>
                         <Dialog.ScrollArea>
@@ -439,12 +436,13 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                             </ScrollView>
                         </Dialog.ScrollArea>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ themeDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                            <Button onPress={() => { this.setState({ themeDialogVisible: false });}}
+                                contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
                         </Dialog.Actions>
                     </Dialog>
 
                     <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.props.screenHeight / 1.2}]}>
                         <Dialog.Icon icon="palette" />
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.accent}</Dialog.Title>
                         <Dialog.ScrollArea>
@@ -461,7 +459,8 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                             </ScrollView>
                         </Dialog.ScrollArea>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ accentDialogVisible: false });}}>{this.props.lang.dismiss}</Button>
+                            <Button onPress={() => { this.setState({ accentDialogVisible: false });}}
+                                contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
                         </Dialog.Actions>
                     </Dialog>
 
@@ -473,9 +472,10 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                             <Text variant="bodyMedium">{this.props.lang.reset_description}</Text>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ cacheDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
-                            <Button textColor={this.props.theme.colors.error} onPress={this.resetArtsCache}>
-                                {this.props.lang.reset}</Button>
+                            <Button onPress={() => { this.setState({ cacheDialogVisible: false }); }}
+                                contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
+                            <Button onPress={this.resetArtsCache} contentStyle={Styles.dialogButton}
+                                mode="contained-tonal">{this.props.lang.reset}</Button>
                         </Dialog.Actions>
                     </Dialog>
 
@@ -487,9 +487,11 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
                             <Text variant="bodyMedium">{this.props.lang.restore_description}</Text>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ dataDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
-                            <Button textColor={this.props.theme.colors.error} onPress={this.resetAllData}
-                                disabled={this.state.dialogButtonLoading} loading={this.state.dialogButtonLoading}>{this.props.lang.restore}</Button>
+                            <Button onPress={() => { this.setState({ dataDialogVisible: false }); }}
+                                contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
+                            <Button onPress={this.resetAllData} mode="contained-tonal" 
+                                disabled={this.state.dialogButtonLoading} contentStyle={Styles.dialogButton} 
+                                loading={this.state.dialogButtonLoading}>{this.props.lang.restore}</Button>
                         </Dialog.Actions>
                     </Dialog>
                 </Portal>

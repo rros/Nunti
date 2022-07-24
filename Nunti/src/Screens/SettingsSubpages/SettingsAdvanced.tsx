@@ -53,7 +53,7 @@ class SettingsAdvanced extends Component { // not using purecomponent as it does
 
     private changeDialog(type: string) {
         if(this.state.inputValue < (type != 'max_art_age' ? 0 : 1)){
-            this.props.toggleSnack(this.props.lang['change_' + type + '_fail'], true);
+            this.props.showSnack(this.props.lang['change_' + type + '_fail'], true);
             this.setState({changeDialog: false, inputValue: '', dialogButtonDisabled: true});
             return;      
         }
@@ -85,7 +85,7 @@ class SettingsAdvanced extends Component { // not using purecomponent as it does
         Backend.UserSettings.Save();
         Backend.ResetCache();
 
-        this.props.toggleSnack(this.props.lang['change_' + type + '_success'], true);
+        this.props.showSnack(this.props.lang['change_' + type + '_success'], true);
         this.setState({ [type]: this.state.inputValue, changeDialogVisible: false, inputValue: '', dialogButtonDisabled: true});
     }
 
@@ -162,9 +162,9 @@ class SettingsAdvanced extends Component { // not using purecomponent as it does
                                 onChangeText={text => this.inputChange(text)}/>
                         </Dialog.Content>
                         <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ changeDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
-                                {this.props.lang.cancel}</Button>
-                            <Button disabled={this.state.dialogButtonDisabled} 
+                            <Button onPress={() => { this.setState({ changeDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}
+                                contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
+                            <Button disabled={this.state.dialogButtonDisabled} mode="contained-tonal" contentStyle={Styles.dialogButton}
                                 onPress={() => this.changeDialog(this.state.changeDialogType)}>{this.props.lang.change}</Button>
                         </Dialog.Actions>
                     </Dialog>

@@ -522,6 +522,11 @@ export default Styles = StyleSheet.create ({
         paddingVertical: 16,
     },
 
+    dialogButton: { // marginHorizontal doesn't work with contentStyle
+        marginLeft: 12,
+        marginRight: 12,
+    },
+
     rowContainer: {
         flexDirection: 'row',
         alignItems: 'center',

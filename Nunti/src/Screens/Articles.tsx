@@ -51,8 +51,6 @@ class ArticlesPage extends PureComponent {
             inputValue: '',
 
             bannerVisible: false,
-
-            screenHeight: Dimensions.get('window').height,
         };
         
         // variables
@@ -81,10 +79,6 @@ class ArticlesPage extends PureComponent {
 
             this.setState({showImages: !Backend.UserSettings.DisableImages, 
                 largeImages: Backend.UserSettings.LargeImages});
-        });
-        
-        this.dimensionsSubscription = Dimensions.addEventListener('change', ({window, screen}) => {
-            this.setState({screenHeight: window.height})
         });
     }
 
@@ -159,9 +153,9 @@ class ArticlesPage extends PureComponent {
 
     private async saveArticle(article: Article) {
         if(await Backend.TrySaveArticle(article)) {
-            this.props.toggleSnack(this.props.lang.article_saved, true);
+            this.props.showSnack(this.props.lang.article_saved, true);
         } else {
-            this.props.toggleSnack(this.props.lang.article_already_saved, true);
+            this.props.showSnack(this.props.lang.article_already_saved, true);
         }
     }
 
@@ -372,16 +366,16 @@ class ArticlesPage extends PureComponent {
                                     buttonColor={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
                                         outputRange: ['grey', this.props.buttonType == 'delete' ? 
                                             this.props.theme.colors.negativeContainer
-                                            : this.props.theme.colors.positiveContainer ]})}  
-                                    icon={this.props.buttonType == 'delete' ? 'bookmark-remove' : 'thumb-up' } 
-                                    mode="contained" contentStyle={Styles.buttonRateContent} 
+                                            : this.props.theme.colors.positiveContainer ]})}
+                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-up' } 
+                                    mode="contained-tonal" contentStyle={Styles.buttonRateContent} 
                                     labelStyle={{fontSize: 24, color: this.props.theme.colors.onSurface}}
                                     style={Styles.buttonRateLeft}></Button>
                                 <Button
                                     buttonColor={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
-                                        outputRange: ['grey', this.props.theme.colors.negativeContainer]})}  
-                                    icon={this.props.buttonType == 'delete' ? 'bookmark-remove' : 'thumb-down' } 
-                                    mode="contained" contentStyle={Styles.buttonRateContent}
+                                        outputRange: ['grey', this.props.theme.colors.negativeContainer]})}
+                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-down' } 
+                                    mode="contained-tonal" contentStyle={Styles.buttonRateContent}
                                     labelStyle={{fontSize: 24, color: this.props.theme.colors.onSurface}}
                                     style={Styles.buttonRateRight}></Button>
                             </Animated.View>
@@ -414,7 +408,7 @@ class ArticlesPage extends PureComponent {
                 <Portal>
                     {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}>
                         <Card style={[Styles.modal, {backgroundColor: this.props.theme.colors.surface,
-                            maxHeight: this.state.screenHeight / 1.2}]}>
+                            maxHeight: this.props.screenHeight / 1.2}]}>
                             <ScrollView>
                                 {(this.state.showImages && this.currentArticle.cover !== undefined) ? 
                                     <Card.Cover source={{ uri: this.currentArticle.cover }} /> : null }
@@ -441,7 +435,7 @@ class ArticlesPage extends PureComponent {
                     </Modal> : null }
 
                     <Dialog visible={this.props.route.params?.filterDialogVisible} onDismiss={() => this.props.navigation.setParams({filterDialogVisible: false})}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.state.screenHeight / 1.2}]}>
+                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, maxHeight: this.props.screenHeight / 1.2}]}>
                         <Dialog.Title style={Styles.textCentered}>{this.props.lang.filter}</Dialog.Title>
                         <Dialog.ScrollArea>
                             <ScrollView>

@@ -80,10 +80,10 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
             
             this.setState({feeds: Backend.UserSettings.FeedList});
 
-            this.props.toggleSnack((this.props.lang.added_feed).replace('%feed%',feed.name), true);
+            this.props.showSnack((this.props.lang.added_feed).replace('%feed%',feed.name), true);
         } catch(err) {
             console.error('Can\'t add RSS feed',err);
-            this.props.toggleSnack(this.props.lang.add_feed_fail, true);
+            this.props.showSnack(this.props.lang.add_feed_fail, true);
         }
 
         Backend.ResetCache();
@@ -99,7 +99,7 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
         await Feed.Remove(this.currentFeed);
 
         this.setState({feeds: Backend.UserSettings.FeedList});
-        this.props.toggleSnack((this.props.lang.removed_feed).replace('%feed%', this.currentFeed.name), true);
+        this.props.showSnack((this.props.lang.removed_feed).replace('%feed%', this.currentFeed.name), true);
         
         Backend.ResetCache();
     }
@@ -171,10 +171,11 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                             </Dialog.Content>
                             <Dialog.Actions>
                                 <Button onPress={() => { this.setState({ rssAddDialogVisible: false, 
-                                    inputValue: '', dialogButtonDisabled: true }); }}>
-                                    {this.props.lang.cancel}</Button>
+                                    inputValue: '', dialogButtonDisabled: true }); }}
+                                    contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
                                 <Button disabled={this.state.dialogButtonDisabled} loading={this.state.dialogButtonLoading}
-                                    onPress={this.addRss}>{this.props.lang.add}</Button>
+                                    mode="contained-tonal" onPress={this.addRss}
+                                    contentStyle={Styles.dialogButton}>{this.props.lang.add}</Button>
                             </Dialog.Actions>
                         </Dialog>
 
@@ -239,7 +240,8 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                                 </ScrollView>
                             </Dialog.ScrollArea>
                             <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}>{this.props.lang.dismiss}</Button>
+                                <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}
+                                    contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
                             </Dialog.Actions>
                         </Dialog>
                         
@@ -251,8 +253,10 @@ class SettingsFeeds extends Component { // not using purecomponent as it doesn't
                                 <Text variant="bodyMedium">{(this.props.lang.remove_confirmation).replace('%item%', this.currentFeed?.name)}</Text>
                             </Dialog.Content>
                             <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ rssRemoveDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
-                                <Button textColor={this.props.theme.colors.error} onPress={this.removeRss}>{this.props.lang.remove}</Button>
+                                <Button onPress={() => { this.setState({ rssRemoveDialogVisible: false }); }}
+                                    contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
+                                <Button mode="contained-tonal" onPress={this.removeRss}
+                                    contentStyle={Styles.dialogButton}>{this.props.lang.remove}</Button>
                             </Dialog.Actions>
                         </Dialog>
                     </Portal>

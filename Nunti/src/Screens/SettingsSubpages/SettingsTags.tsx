@@ -55,10 +55,10 @@ class SettingsTags extends Component { // not using purecomponent as it doesn't 
 
             const tag:Tag = await Tag.New(this.state.inputValue);
 
-            this.props.toggleSnack((this.props.lang.added_tag).replace('%tag%',tag.name), true);
+            this.props.showSnack((this.props.lang.added_tag).replace('%tag%',tag.name), true);
         } catch(err) {
             console.error('Can\'t add tag',err);
-            this.props.toggleSnack(this.props.lang.add_tag_fail, true);
+            this.props.showSnack(this.props.lang.add_tag_fail, true);
         }
 
         this.setState({tagAddDialogVisible: false, inputValue: '', tags: Backend.UserSettings.Tags,
@@ -69,7 +69,7 @@ class SettingsTags extends Component { // not using purecomponent as it doesn't 
         await Tag.Remove(this.currentTag);
 
         this.setState({tags: Backend.UserSettings.Tags, tagRemoveDialogVisible: false});
-        this.props.toggleSnack((this.props.lang.removed_tag).replace('%tag%', this.currentTag.name), true);
+        this.props.showSnack((this.props.lang.removed_tag).replace('%tag%', this.currentTag.name), true);
     }
     
     render() {
@@ -108,10 +108,11 @@ class SettingsTags extends Component { // not using purecomponent as it doesn't 
                                     onChangeText={text => this.inputChange(text)}/>
                             </Dialog.Content>
                             <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ tagAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}>
-                                    {this.props.lang.cancel}</Button>
-                                <Button disabled={this.state.dialogButtonDisabled} loading={this.state.dialogButtonLoading}
-                                    onPress={this.addTag}>{this.props.lang.add}</Button>
+                                <Button onPress={() => { this.setState({ tagAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}
+                                    contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
+                                <Button disabled={this.state.dialogButtonDisabled} 
+                                    loading={this.state.dialogButtonLoading} contentStyle={Styles.dialogButton}
+                                    mode="contained-tonal" onPress={this.addTag}>{this.props.lang.add}</Button>
                             </Dialog.Actions>
                         </Dialog>
                         
@@ -123,8 +124,10 @@ class SettingsTags extends Component { // not using purecomponent as it doesn't 
                                 <Text variant="bodyMedium">{(this.props.lang.remove_confirmation).replace('%item%', this.currentTag?.name)}</Text>
                             </Dialog.Content>
                             <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ tagRemoveDialogVisible: false }); }}>{this.props.lang.cancel}</Button>
-                                <Button textColor={this.props.theme.colors.error} onPress={this.removeTag}>{this.props.lang.remove}</Button>
+                                <Button onPress={() => { this.setState({ tagRemoveDialogVisible: false }); }}
+                                    contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
+                                <Button mode="contained-tonal" contentStyle={Styles.dialogButton} 
+                                    onPress={this.removeTag}>{this.props.lang.remove}</Button>
                             </Dialog.Actions>
                         </Dialog>
                     </Portal>
