@@ -90,6 +90,8 @@ export class Feed {
             return url + '/rss';
         if (await isWorking(url + '/feed'))
             return url + '/feed';
+        if (await isWorking(url + '/rss.xml'))
+            return url + '/rss.xml';
         return null;
     }
     
