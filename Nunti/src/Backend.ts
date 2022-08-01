@@ -325,6 +325,12 @@ export class Backend {
         await this.CheckDB();
         console.debug('Backend: Refreshing UserSettings.');
         this.UserSettings = Object.assign(new UserSettings(), await this.StorageGet('user_settings'));
+        this.UserSettings.FeedList.sort((a: Feed, b: Feed) => {
+            if ((a.name ?? undefined) !== undefined && (b.name ?? undefined) !== undefined)
+                return b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1;
+            else
+                return -1;
+        });
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(articleSource: string, filters: string[] = []): Promise<Article[][]> {
