@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { StatusBar, Appearance, NativeModules, BackHandler, Platform } from 'react-native';
-const { MaterialYouModule } = NativeModules;
+const { MaterialYouModule, NotificationsModule } = NativeModules;
 
 import { 
     Provider as PaperProvider,
@@ -29,6 +29,8 @@ import RNBootSplash from 'react-native-bootsplash';
 const NavigationDrawer = createDrawerNavigator();
 
 export default class App extends Component {
+    backHandler: any;
+    appearanceSubscription: any;
     constructor(props:any) {
         super(props);
 
@@ -53,6 +55,15 @@ export default class App extends Component {
     async componentDidMount() {
         await Backend.Init();
         await this.reloadGlobalStates();
+
+        //TODO: test
+        setTimeout(async () => {
+            console.debug('notificationmodule.test calling now');
+            if (await NotificationsModule.test("testing loool")) {
+                console.debug('notification test passed');
+            }
+        }, 5000);
+        console.debug('notificationmodule.test timeout armed');
 
         this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if(Backend.UserSettings.FirstLaunch){
