@@ -1,62 +1,64 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    ScrollView,
     View,
 } from 'react-native';
 
 import {
     Text,
-    withTheme
+    withTheme,
+    Card
 } from 'react-native-paper';
 
+import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
+
+import { browserRef } from '../../App';
 import { Backend } from '../../Backend';
 
-class SettingsLearning extends Component { // not using purecomponent as it doesn't rerender array map
-    constructor(props: any){
-        super(props);
+function SettingsLearning (props) { // not using purecomponent as it doesn't rerender array map
+    const [learningStatus, setLearningStatus] = useState(null);
 
-        this.getLearningStatus = this.getLearningStatus.bind(this);
-
-        this.state = {
-            learningStatus: null,
-        };
-    }
-
-    componentDidMount(){
-        this._unsubscribe = this.props.navigation.addListener('focus', () => {
-            this.getLearningStatus();
+    // on component mount
+    useEffect(() => {
+        const _unsubscribe = props.navigation.addListener('focus', () => {
+            (async () => {
+                setLearningStatus(await Backend.GetLearningStatus());
+            })();
         });
-    }
-
-    componentWillUnmount() {
-        this._unsubscribe();
-    }
-
-    private async getLearningStatus(){
-        this.setState({learningStatus: await Backend.GetLearningStatus()});
-    }
+    }, []);
     
-    render() {
-        return(
-            <ScrollView>
+    return(
+        <ScrollView showsVerticalScrollIndicator={false}>
+            <Card mode={'contained'} style={Styles.card}>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{this.props.lang.sorting_status}</Text>
-                    <Text variant="bodySmall">{this.state.learningStatus?.SortingEnabled ? 
-                        this.props.lang.learning_enabled : (this.props.lang.rate_more).replace(
-                            '%articles%', this.state.learningStatus?.SortingEnabledIn)}</Text>
+                    <Text variant="titleMedium">{props.lang.sorting_status}</Text>
+                    <Text variant="labelSmall">{learningStatus?.SortingEnabled ? 
+                        props.lang.learning_enabled : (props.lang.rate_more).replace(
+                            '%articles%', learningStatus?.SortingEnabledIn)}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{this.props.lang.rating_ratio}</Text>
-                    <Text variant="bodySmall">{(this.props.lang.rating_ratio_description).replace(
-                        '%ratio%', this.state.learningStatus?.VoteRatio)}</Text>
+                    <Text variant="titleMedium">{props.lang.rating_ratio}</Text>
+                    <Text variant="labelSmall">{(props.lang.rating_ratio_description).replace(
+                        '%ratio%', learningStatus?.VoteRatio)}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{this.props.lang.rated_articles}</Text>
-                    <Text variant="bodySmall">{(this.state.learningStatus?.TotalUpvotes + this.state.learningStatus?.TotalDownvotes)}</Text>
+                    <Text variant="titleMedium">{props.lang.rated_articles}</Text>
+                    <Text variant="labelSmall">{props.lang.articles + ': ' + (learningStatus?.TotalUpvotes
+                        + learningStatus?.TotalDownvotes)}</Text>
                 </View>
-            </ScrollView>
-        );
-    }
+            </Card>
+            
+            <Card mode={'contained'} style={Styles.card}>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => browserRef.current.openBrowser(
+                        'https://gitlab.com/ondrejfoltyn/nunti/-/issues/28')}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{"Learn more"}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+            </Card>
+        </ScrollView>
+    );
 }
 
 export default withTheme(SettingsLearning);

@@ -1,278 +1,289 @@
-import React, { Component } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-    ScrollView,
     View,
-    Dimensions,
+    FlatList
 } from 'react-native';
 
 import {
     Text,
     Button,
-    Divider,
-    TouchableRipple,
-    Portal,
     Switch,
     Dialog,
-    List,
     Chip,
     TextInput,
     FAB,
+    Card,
     withTheme
 } from 'react-native-paper';
 
 import * as ScopedStorage from 'react-native-scoped-storage';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
+import { modalRef, snackbarRef, globalStateRef } from '../../App';
 import { Backend, Feed } from '../../Backend';
 import { Accents } from '../../Styles';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 
-class SettingsFeeds extends Component { // not using purecomponent as it doesn't rerender array map
-    constructor(props: any){
-        super(props);
+function SettingsFeeds (props) {
+    const [feeds, setFeeds] = useState(Backend.UserSettings.FeedList);
+    const flatListRef = useRef();
 
-        this.addRss = this.addRss.bind(this);
-        this.removeRss = this.removeRss.bind(this);
-        this.changeRssFeedName = this.changeRssFeedName.bind(this);
-        this.changeRssFeedOptions = this.changeRssFeedOptions.bind(this);
-        this.changeTagFeed = this.changeTagFeed.bind(this);
+    const changeFeedsParentState = (newFeeds: [], scrollToEnd: boolean = false) => {
+        setFeeds(newFeeds)
         
-        this.state = {
-            feeds: Backend.UserSettings.FeedList,
-        
-            inputValue: '',
-            dialogButtonDisabled: true, // when input empty
-            dialogButtonLoading: false,
-
-            rssAddDialogVisible: false,
-            rssStatusDialogVisible: false,
-            rssRemoveDialogVisible: false,
-            
-            screenHeight: Dimensions.get('window').height,
-        };
-
-        this.currentFeed = undefined;
-    }
-    
-    componentDidMount(){
-        this.dimensionsSubscription = Dimensions.addEventListener('change', ({window, screen}) => {
-            this.setState({screenHeight: window.height})
-        });
-    }
-
-    componentWillUnmount() {
-        this.dimensionsSubscription?.remove();
-    }
-
-    private inputChange(text: string) {
-        if(text == ''){
-            this.setState({inputValue: text, dialogButtonDisabled: true});
-        } else {
-            this.setState({inputValue: text, dialogButtonDisabled: false});
+        if(scrollToEnd) {
+            flatListRef.current.scrollToEnd();
         }
     }
 
- 
-    private async addRss(){ // input is in state.inputValue
-        try {
-            this.setState({dialogButtonLoading: true, dialogButtonDisabled: true});
+    const renderItem = ({ item, index }) => (
+        <Card mode="contained" style={[{borderRadius: 0, overflow: 'hidden'},
+            (index == 0) ? Styles.flatListCardTop : undefined,
+            (index == feeds.length - 1) ? Styles.flatListCardBottom : undefined]}>
+        <TouchableNativeFeedback
+            background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+            onPress={() => modalRef.current.showModal(() => <FeedDetailsModal lang={props.lang}
+                feed={item} theme={props.theme} changeFeedsParentState={changeFeedsParentState} />)}>
+        <View style={[Styles.settingsRowContainer, Styles.settingsButton]}>
+            <Icon style={Styles.settingsIcon} name="rss" 
+                size={24} color={props.theme.colors.secondary} />
+            <Text variant="titleMedium" style={{flexShrink: 1}}>{item.name}</Text>
             
-            const feed:Feed = await Feed.New(await Feed.GuessRSSLink(this.state.inputValue));
-            
-            this.setState({feeds: Backend.UserSettings.FeedList});
+            <View style={Styles.settingsRightContent}>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => modalRef.current.showModal(() => <FeedRemoveModal lang={props.lang}
+                        feed={item} changeFeedsParentState={changeFeedsParentState} />)}>
+                    <View style={{borderLeftWidth: 1, borderLeftColor: props.theme.colors.outline}}>
+                        <Icon name="close" style={Styles.settingsIcon} style={{margin: 12}}
+                            size={24} color={props.theme.colors.onSurface} />
+                    </View>
+                </TouchableNativeFeedback>
+            </View>
+        </View>
+        </TouchableNativeFeedback>
+        </Card>
+    );
 
-            this.props.showSnack((this.props.lang.added_feed).replace('%feed%',feed.name), true);
+    return(
+        <View style={Styles.fabContainer}>
+            <FlatList
+                ref={(ref) => flatListRef.current = ref}
+                    
+                data={feeds}
+                keyExtractor={item => item.url}
+
+                showsVerticalScrollIndicator={false}
+                removeClippedSubviews={true}
+
+                contentContainerStyle={[{marginHorizontal: 8, marginVertical: 4,
+                    paddingBottom: 132}]}
+
+                renderItem={renderItem}
+                renderScrollComponent={(props) => <ScrollView {...props} />}
+                ListEmptyComponent={<EmptyScreenComponent title={props.lang.no_feeds}
+                    description={props.lang.no_feeds_description}/>}
+            ></FlatList>
+            <FAB
+                icon={'plus'}
+                size={'large'}
+                onPress={() => modalRef.current.showModal(() => <FeedAddModal lang={props.lang} 
+                    changeFeedsParentState={changeFeedsParentState} />)}
+                style={Styles.fab}
+            />
+        </View>
+    );
+}
+
+function FeedAddModal ({lang, changeFeedsParentState}) {
+    const [inputValue, setInputValue] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const addFeed = async () => {
+        setLoading(true);
+
+        try {
+            const feed:Feed = await Feed.New(await Feed.GuessRSSLink(inputValue));
+            snackbarRef.current.showSnack((lang.added_feed).replace('%feed%', ("\"" + feed.name + "\"")));
+            changeFeedsParentState(Backend.UserSettings.FeedList, true);
+            globalStateRef.current.resetCache();
         } catch(err) {
             console.error('Can\'t add RSS feed',err);
-            this.props.showSnack(this.props.lang.add_feed_fail, true);
+            snackbarRef.current.showSnack(lang.add_feed_fail);
         }
 
-        Backend.ResetCache();
+        modalRef.current.hideModal();
+    }
 
-        this.setState({rssAddDialogVisible: false, inputValue: '',
-            dialogButtonLoading: false, dialogButtonDisabled: true});
+    return(
+        <>
+        <Dialog.Icon icon="rss" />
+        <Dialog.Title style={Styles.centeredText}>{lang.add_feeds}</Dialog.Title>
+        <View style={Styles.modalNonScrollArea}>
+            <TextInput label={"https://www.website.com/rss"} autoCapitalize="none"
+                onChangeText={text => setInputValue(text)}/>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={addFeed} loading={loading} disabled={inputValue == '' || loading}
+                style={Styles.modalButton}>{lang.add}</Button>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{lang.dismiss}</Button>
+        </View>
+        </>
+    );
+}
+
+function FeedRemoveModal ({feed, lang, changeFeedsParentState}) {
+    const [loading, setLoading] = useState(false);
+    
+    const removeFeed = async () => {
+        setLoading(true);
+
+        await Feed.Remove(feed);
+
+        snackbarRef.current.showSnack((lang.removed_feed).replace('%feed%',
+            ("\"" + feed.name + "\"")));
+        
+        changeFeedsParentState(Backend.UserSettings.FeedList);
+        modalRef.current.hideModal();
+        globalStateRef.current.resetCache();
+    }
+
+    return(
+        <>
+        <Dialog.Icon icon="alert" />
+        <Dialog.Title style={Styles.centeredText}>{lang.remove_feed}</Dialog.Title>
+        <View style={Styles.modalNonScrollArea}>
+            <Text variant="bodyMedium">{(lang.remove_confirmation).replace('%item%',
+                ("\"" + feed.name + "\""))}</Text>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={removeFeed} loading={loading} disabled={loading}
+                style={Styles.modalButton}>{lang.remove}</Button>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{lang.dismiss}</Button>
+        </View>
+        </>
+    );
+}
+
+function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
+    const [noImages, setNoImages] = useState(feed['noImages']);
+    const [enabled, setEnabled] = useState(!feed['enabled']);
+    const [tags, setTags] = useState(feed.tags);
+    const [inputValue, setInputValue] = useState('');
+    const [loading, setLoading] = useState(false);
+    
+    const [forceValue, forceUpdate] = useState(false);
+    
+    const changeFeedName = async () => {
+        setLoading(true);
+
+        feed.name = inputValue;
+        await Feed.Save(feed);
+
+        changeFeedsParentState(Backend.UserSettings.FeedList);
+        globalStateRef.current.resetCache();
+        
+        setInputValue('');
+        setLoading(false);
     }
     
-    private async removeRss(){
-        // hide dialog early
-        this.setState({rssRemoveDialogVisible: false});
-        
-        await Feed.Remove(this.currentFeed);
+    const changeFeedOption = async (optionName: string) => {
+        feed[optionName] = !feed[optionName];
+        setNoImages(feed['noImages']);
+        setEnabled(!feed['enabled']);
 
-        this.setState({feeds: Backend.UserSettings.FeedList});
-        this.props.showSnack((this.props.lang.removed_feed).replace('%feed%', this.currentFeed.name), true);
-        
-        Backend.ResetCache();
+        await Feed.Save(feed);
+
+        changeFeedsParentState(Backend.UserSettings.FeedList);
+        globalStateRef.current.resetCache();
     }
 
-    private async changeRssFeedName(){
-        this.currentFeed.name = this.state.inputValue;
-        await Feed.Save(this.currentFeed);
-
-        this.setState({feeds: Backend.UserSettings.FeedList});
-        Backend.ResetCache();
-    }
-    
-    private async changeRssFeedOptions(optionName: string){
-        this.currentFeed[optionName] = !this.currentFeed[optionName];
-        await Feed.Save(this.currentFeed);
-
-        this.setState({feeds: Backend.UserSettings.FeedList});
-        Backend.ResetCache();
-    }
-
-    private async changeTagFeed(tag: Tag, value: boolean) {
-        if(value){
-            await Feed.AddTag(this.currentFeed, tag);
+    const changeFeedTag = async (tag: Tag) => {
+        if(!feed.tags.some(pickedTag => pickedTag.name == tag.name)){
+            feed = await Feed.AddTag(feed, tag);
         } else {
-            await Feed.RemoveTag(this.currentFeed, tag);
+            feed = await Feed.RemoveTag(feed, tag);
         }
+        
+        setTags(feed.tags);
+        forceUpdate(!forceValue);
 
-        this.setState({feeds: Backend.UserSettings.FeedList});
+        changeFeedsParentState(Backend.UserSettings.FeedList);
+        globalStateRef.current.resetCache();
     }
 
-    render() {
-        return(
-            <View style={Styles.fabContainer}>
-                <ScrollView>
-                    { this.state.feeds.length > 0 ? 
-                        <View>
-                            { this.state.feeds.map((feed) => {
-                                return (
-                                    <TouchableRipple
-                                        rippleColor={this.props.theme.colors.alternativeSurface}
-                                        onPress={() => {this.currentFeed = feed, this.setState({ rssStatusDialogVisible: true });}}>
-                                        <List.Item title={feed.name}
-                                            left={() => <List.Icon icon="rss" />}
-                                            right={() => 
-                                                <TouchableRipple
-                                                    rippleColor={this.props.theme.colors.alternativeSurface}
-                                                    onPress={() => {this.currentFeed = feed, this.setState({ rssRemoveDialogVisible: true });}}>
-                                                    <View style={Styles.rowContainer,
-                                                        {borderLeftWidth: 1, borderLeftColor: this.props.theme.colors.outline}}>
-                                                        <List.Icon icon="close" />
-                                                    </View>
-                                                </TouchableRipple>
-                                            }/>
-                                    </TouchableRipple>
-                                );
-                            })}
+    return(
+        <>
+        <Dialog.Icon icon="rss" />
+        <Dialog.Title style={Styles.centeredText}>{lang.feed_status}</Dialog.Title>
+        <View style={[Styles.modalScrollArea, {borderTopColor: theme.colors.outline, 
+            borderBottomColor: theme.colors.outline}]}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={Styles.settingsModalButton}>
+                    <Text variant="titleMedium">{'URL'}</Text>
+                    <Text variant="labelSmall">{feed.url}</Text>
+                </View>
+                <View style={[Styles.settingsModalButton, {paddingTop: 0}]}>
+                    <Text variant="titleMedium">{lang.feed_name}</Text>
+                    <Text variant="labelSmall">{feed.name}</Text>
+                </View>
+                
+                <View style={[ Styles.settingsModalButton, Styles.settingsRowContainer, {paddingTop: 0,
+                    borderBottomColor: theme.colors.outline, borderBottomWidth: 1}]}>
+                    <TextInput label={lang.feed_name} autoCapitalize="none" 
+                        style={{flex: 1}} value={inputValue}
+                        onChangeText={text => setInputValue(text)}/>
+                    <Button onPress={changeFeedName} disabled={inputValue == ''} mode="outlined"
+                        style={Styles.modalButton}>{lang.change}</Button>
+                </View>
+
+                <View style={{borderBottomColor: theme.colors.outline, borderBottomWidth: 1}}>
+                    <TouchableNativeFeedback shouldActivateOnStart={true}
+                        background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+                        onPress={() => changeFeedOption('noImages')}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer, {paddingHorizontal: 0}]}>
+                            <Text variant="titleMedium">{lang.no_images}</Text>
+                            <Switch value={noImages} style={Styles.settingsRightContent}
+                                onValueChange={() => changeFeedOption('noImages')} />
                         </View>
-                    : <EmptyScreenComponent title={this.props.lang.no_feeds} description={this.props.lang.no_feeds_description}/> }
+                    </TouchableNativeFeedback>
+                    <TouchableNativeFeedback shouldActivateOnStart={true}
+                        background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+                        onPress={() => changeFeedOption('enabled')}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer, {paddingHorizontal: 0}]}>
+                            <Text variant="titleMedium">{lang.hide_feed}</Text>
+                            <Switch value={enabled} style={Styles.settingsRightContent}
+                                onValueChange={() => changeFeedOption('enabled')} />
+                        </View>
+                    </TouchableNativeFeedback>
+                </View>
+                
+                { Backend.UserSettings.Tags.length > 0 ? 
+                    <View style={[Styles.settingsModalButton, Styles.chipContainer]}>
+                        { Backend.UserSettings.Tags.map((tag) => {
+                            return(
+                                <Chip onPress={() => changeFeedTag(tag)}
+                                    selected={feed.tags.some(pickedTag => pickedTag.name == tag.name)}
+                                        style={Styles.chip}>{tag.name}</Chip>
+                            );
+                        })}
+                    </View> : <View style={Styles.settingsModalButton}>
+                        <Text variant="titleMedium">{lang.no_tags}</Text>
+                        <Text variant="labelSmall">{lang.no_tags_description}</Text>
+                    </View>
+                }
 
-                    <Portal>
-                        <Dialog visible={this.state.rssAddDialogVisible} 
-                            onDismiss={() => { this.setState({ rssAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}
-                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                                maxHeight: this.props.screenHeight / 1.2}]}>
-                            <Dialog.Icon icon="rss" />
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.add_feeds}</Dialog.Title>
-                            <Dialog.Content>
-                                <TextInput label="https://www.website.com/rss" autoCapitalize="none" defaultValue={this.state.inputValue}
-                                    onChangeText={text => this.inputChange(text)}/>
-                            </Dialog.Content>
-                            <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ rssAddDialogVisible: false, 
-                                    inputValue: '', dialogButtonDisabled: true }); }}
-                                    contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
-                                <Button disabled={this.state.dialogButtonDisabled} loading={this.state.dialogButtonLoading}
-                                    mode="contained-tonal" onPress={this.addRss}
-                                    contentStyle={Styles.dialogButton}>{this.props.lang.add}</Button>
-                            </Dialog.Actions>
-                        </Dialog>
-
-                        <Dialog visible={this.state.rssStatusDialogVisible} 
-                            onDismiss={() => { this.setState({ rssStatusDialogVisible: false, inputValue: ''});}}
-                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                                maxHeight: this.props.screenHeight / 1.2}]}>
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.feed_status}</Dialog.Title>
-                            <Dialog.ScrollArea>
-                                <ScrollView contentContainerStyle={Styles.filterDialogScrollView}>
-                                    <View style={Styles.settingsButtonDialog}>
-                                        <Text variant="titleMedium">{'URL'}</Text>
-                                        <Text variant="bodySmall">{this.currentFeed?.url}</Text>
-                                    </View>
-                                    <View style={Styles.settingsDetailsInfo}>
-                                        <Text variant="titleMedium">{this.props.lang.feed_name}</Text>
-                                        <Text variant="bodySmall">{this.currentFeed?.name}</Text>
-                                    </View>
-                                    <View style={[Styles.rowContainer, Styles.settingsDetailsTextInputContainer]}>
-                                        <TextInput label={this.props.lang.feed_name} autoCapitalize="none" 
-                                            style={Styles.settingsDetailsTextInput}
-                                            onChangeText={text => this.inputChange(text)}/>
-                                        <Button onPress={this.changeRssFeedName} disabled={this.state.inputValue == ''}>
-                                            {this.props.lang.change}</Button>
-                                    </View>
-                                
-                                    <Divider bold={true} />
-                                    
-                                    <View style={[Styles.rowContainer, Styles.settingsButtonDialog]}>
-                                        <Text variant="bodyLarge">{this.props.lang.no_images}</Text>
-                                        <Switch value={this.currentFeed?.noImages} style={{marginLeft: "auto"}}
-                                            onValueChange={() => { this.changeRssFeedOptions('noImages') }} />
-                                    </View>
-                                    <View style={[Styles.rowContainer, Styles.settingsButtonDialog]}>
-                                        <Text variant="bodyLarge">{this.props.lang.hide_feed}</Text>
-                                        <Switch value={!this.currentFeed?.enabled} style={{marginLeft: "auto"}}
-                                            onValueChange={() => { this.changeRssFeedOptions('enabled') }} />
-                                    </View>
-                                    
-                                    <Divider bold={true} />
-                                    
-                                    { Backend.UserSettings.Tags.length > 0 ? 
-                                        <View style={Styles.chipContainer}>
-                                            { Backend.UserSettings.Tags.map((tag) => {
-                                                let enabled: boolean;
-                                                if(this.currentFeed != undefined && Feed.HasTag(this.currentFeed,tag)){
-                                                    enabled = true;
-                                                } else {
-                                                    enabled = false;
-                                                }
-
-                                                return(
-                                                    <Chip onPress={(value) => this.changeTagFeed(tag, value)}
-                                                        selected={enabled} style={Styles.chip}
-                                                        >{tag.name}</Chip>
-                                                );
-                                            })}
-                                        </View> : <View style={Styles.settingsButtonDialog}>
-                                            <Text variant="titleMedium">{this.props.lang.no_tags}</Text>
-                                            <Text variant="bodySmall">{this.props.lang.no_tags_description}</Text>
-                                        </View>
-                                    }
-                                </ScrollView>
-                            </Dialog.ScrollArea>
-                            <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ rssStatusDialogVisible: false }); }}
-                                    contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
-                            </Dialog.Actions>
-                        </Dialog>
-                        
-                        <Dialog visible={this.state.rssRemoveDialogVisible} onDismiss={() => { this.setState({ rssRemoveDialogVisible: false });}}
-                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                                maxHeight: this.props.screenHeight / 1.2}]}>
-                            <Dialog.Icon icon="alert" />
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.remove_feed}</Dialog.Title>
-                            <Dialog.Content>
-                                <Text variant="bodyMedium">{(this.props.lang.remove_confirmation).replace('%item%', this.currentFeed?.name)}</Text>
-                            </Dialog.Content>
-                            <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ rssRemoveDialogVisible: false }); }}
-                                    contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
-                                <Button mode="contained-tonal" onPress={this.removeRss}
-                                    contentStyle={Styles.dialogButton}>{this.props.lang.remove}</Button>
-                            </Dialog.Actions>
-                        </Dialog>
-                    </Portal>
-                </ScrollView>
-                <FAB
-                    icon={'plus'}
-                    size={this.props.isLargeScreen ? 'large' : 'medium'}
-                    onPress={() => this.setState({rssAddDialogVisible: true})}
-                    style={[Styles.fab]}
-                />
-            </View>
-        );
-    }
+            </ScrollView>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{lang.dismiss}</Button>
+        </View>
+        </>
+    );
 }
 
 export default withTheme(SettingsFeeds);

@@ -1,80 +1,62 @@
-import React, { PureComponent } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
-    ScrollView,
     Image,
-    Linking
 } from 'react-native';
 
 import { 
-    List,
-    TouchableRipple,
     Text,
-    withTheme
+    withTheme,
+    Card
 } from 'react-native-paper';
 
-import { InAppBrowser } from 'react-native-inappbrowser-reborn';
+import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 import { version } from '../../package.json';
 
+import { browserRef } from '../App';
 import { Backend } from '../Backend';
-import Styles from '../Styles';
 
-class About extends PureComponent {
-    constructor(props:any){
-        super(props);
-        
-        this.openIssues = this.openIssues.bind(this);
-    }
+function About (props) {
+    return (
+        <ScrollView>
+            <View style={Styles.centeredImageContainer}>
+                <Image source={require('../../Resources/HeartNunti.png')} 
+                    resizeMode="contain" style={Styles.fullscreenImage}></Image>
+            </View>
 
-    private async openIssues() {
-        const url = 'https://gitlab.com/ondrejfoltyn/nunti/-/issues';
-        if(Backend.UserSettings.BrowserMode == 'webview'){
-            await InAppBrowser.open(url, {
-                forceCloseOnRedirection: false, showInRecents: true,
-                toolbarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
-                navigationBarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
-            });
-        } else if(Backend.UserSettings.BrowserMode == 'legacy_webview') {
-            this.props.navigation.navigate('legacyWebview', { uri: url, source: 'about' });
-        } else { // == 'external_browser'
-            Linking.openURL(url);
-        }
-    }
-
-    render() {
-        return (
-            <ScrollView>
-                <View style={Styles.centeredImageContainer}>
-                    <Image source={require('../../Resources/HeartNunti.png')} 
-                        resizeMode="contain" style={Styles.fullscreenImage}></Image>
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.app_info}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                <View style={Styles.settingsButton}>
+                    <Text variant="titleMedium">{version}</Text>
                 </View>
+            </Card>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.app_info}</List.Subheader>
-                    <List.Item title={version}
-                        left={() => <List.Icon icon="check-decagram" />} />
-                </List.Section>
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.made_by}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                <View style={Styles.settingsButton}>
+                    <Text variant="titleMedium">{'Richard Klapáč'}</Text>
+                </View>
+                <View style={Styles.settingsButton}>
+                    <Text variant="titleMedium">{'Ondřej Foltýn'}</Text>
+                </View>
+            </Card>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.made_by}</List.Subheader>
-                    <List.Item title="Richard Klapáč"
-                        left={() => <List.Icon icon="human-greeting" />} />
-                    <List.Item title="Ondřej Foltýn"
-                        left={() => <List.Icon icon="human-greeting" />} />
-                </List.Section>
-
-                <List.Section>
-                    <List.Subheader>{this.props.lang.report_at}</List.Subheader>
-                    <TouchableRipple
-                        rippleColor={this.props.theme.colors.alternativeSurface}
-                        onPress={this.openIssues}>
-                        <List.Item title={this.props.lang.issue_tracker}
-                            left={() => <List.Icon icon="bug" />} />
-                    </TouchableRipple>
-                </List.Section>
-            </ScrollView>
-        );
-    }
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.report_at}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => browserRef.current.openBrowser(
+                        'https://gitlab.com/ondrejfoltyn/nunti/-/issues')}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.issue_tracker}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+            </Card>
+        </ScrollView>
+    );
 }
 
 export default withTheme(About);

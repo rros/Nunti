@@ -1,148 +1,161 @@
-import React, { Component } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-    ScrollView,
     View,
+    FlatList
 } from 'react-native';
 
 import {
     Text,
     Button,
-    Divider,
-    TouchableRipple,
-    Portal,
     Dialog,
-    List,
     TextInput,
     FAB,
-    withTheme
+    withTheme,
+    Card,
+    Divider
 } from 'react-native-paper';
 
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
+
+import { modalRef, snackbarRef } from '../../App';
 import { Backend, Tag } from '../../Backend';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 
-class SettingsTags extends Component { // not using purecomponent as it doesn't rerender array map
-    constructor(props: any){
-        super(props);
+function SettingsTags (props) {
+    const [tags, setTags] = useState(Backend.UserSettings.Tags);
+    const flatListRef = useRef();
+    
+    const changeTagsParentState = (newTags: [], scrollToEnd: boolean = false) => {
+        setTags(newTags);
 
-        this.addTag = this.addTag.bind(this);
-        this.removeTag = this.removeTag.bind(this);
-        
-        this.state = {
-            tags: Backend.UserSettings.Tags,
-            
-            inputValue: '',
-            dialogButtonDisabled: true, // when input empty
-            dialogButtonLoading: false,
-
-            tagAddDialogVisible: false,
-            tagRemoveDialogVisible: false,
-        };
-
-        this.currentTag = undefined;
-    }
-
-    private inputChange(text: string) {
-        if(text == ''){
-            this.setState({inputValue: text, dialogButtonDisabled: true});
-        } else {
-            this.setState({inputValue: text, dialogButtonDisabled: false});
+        if(scrollToEnd) {
+            flatListRef.current.scrollToEnd();
         }
     }
+    
+    const renderItem = ({ item, index }) => (
+        <Card mode="contained" style={[{borderRadius: 0}, 
+            (index == 0) ? Styles.flatListCardTop : undefined,
+            (index == tags.length - 1) ? Styles.flatListCardBottom : undefined]}>
+            <View style={[Styles.settingsRowContainer, Styles.settingsButton]}>
+                <Icon style={Styles.settingsIcon} name="tag" 
+                    size={24} color={props.theme.colors.secondary} />
+                <Text variant="titleMedium" style={{flexShrink: 1}}>{item.name}</Text>
+                    
+                <View style={Styles.settingsRightContent}>
+                    <TouchableNativeFeedback
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                        onPress={() => modalRef.current.showModal(() => <TagRemoveModal lang={props.lang}
+                            tag={item} changeTagsParentState={changeTagsParentState} />)}>
+                        <View style={[{borderLeftWidth: 1, borderLeftColor: props.theme.colors.outline}]}>
+                            <Icon name="close" style={{margin: 12}}
+                                size={24} color={props.theme.colors.onSurface} />
+                        </View>
+                    </TouchableNativeFeedback>
+                </View>
+            </View>
+        </Card>
+    );
+    
+    return(
+        <View style={Styles.fabContainer}>
+                <FlatList
+                    ref={(ref) => flatListRef.current = ref}
+                    
+                    data={tags}
+                    keyExtractor={item => item.name}
 
-    private async addTag() { // input is in state.inputValue
+                    showsVerticalScrollIndicator={false}
+                    removeClippedSubviews={true}
+
+                    contentContainerStyle={[{marginHorizontal: 8, marginVertical: 4,
+                        paddingBottom: 132}]}
+
+                    renderItem={renderItem}
+                    renderScrollComponent={(props) => <ScrollView {...props} />}
+                    ListEmptyComponent={<EmptyScreenComponent title={props.lang.no_tags}
+                        description={props.lang.no_tags_description}/>}
+                ></FlatList>
+            <FAB
+                icon={'plus'}
+                size={'large'}
+                onPress={() => modalRef.current.showModal(() => <TagAddModal lang={props.lang} 
+                    changeTagsParentState={changeTagsParentState} />)}
+                style={Styles.fab}
+            />
+        </View>
+    );
+}
+
+function TagAddModal ({lang, changeTagsParentState}) {
+    const [inputValue, setInputValue] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const addTag = async () => {
+        setLoading(true);
+
         try{
-            this.setState({dialogButtonLoading: true, dialogButtonDisabled: true});
-
-            const tag:Tag = await Tag.New(this.state.inputValue);
-
-            this.props.showSnack((this.props.lang.added_tag).replace('%tag%',tag.name), true);
+            const tag:Tag = await Tag.New(inputValue);
+            snackbarRef.current.showSnack((lang.added_tag).replace('%tag%', ("\"" + tag.name + "\"")));
+            changeTagsParentState(Backend.UserSettings.Tags, true);
         } catch(err) {
             console.error('Can\'t add tag',err);
-            this.props.showSnack(this.props.lang.add_tag_fail, true);
+            snackbarRef.current.showSnack(lang.add_tag_fail);
         }
 
-        this.setState({tagAddDialogVisible: false, inputValue: '', tags: Backend.UserSettings.Tags,
-            dialogButtonLoading: false, dialogButtonDisabled: true});
+        modalRef.current.hideModal();
     }
-    
-    private async removeTag() {
-        await Tag.Remove(this.currentTag);
 
-        this.setState({tags: Backend.UserSettings.Tags, tagRemoveDialogVisible: false});
-        this.props.showSnack((this.props.lang.removed_tag).replace('%tag%', this.currentTag.name), true);
-    }
-    
-    render() {
-        return(
-            <View style={Styles.fabContainer}>
-                <ScrollView>
-                    { this.state.tags.length > 0 ? 
-                        <View>
-                            { this.state.tags.map((tag) => {
-                                return (
-                                    <List.Item title={tag.name}
-                                        left={() => <List.Icon icon="tag" />}
-                                        right={() => 
-                                            <TouchableRipple
-                                                rippleColor={this.props.theme.colors.alternativeSurface}
-                                                onPress={() => {this.setState({ tagRemoveDialogVisible: true }); this.currentTag = tag}}>
-                                                <View style={Styles.rowContainer,
-                                                    {borderLeftWidth: 1, borderLeftColor: this.props.theme.colors.outline}}>
-                                                    <List.Icon icon="close" />
-                                                </View>
-                                            </TouchableRipple>
-                                        }/>
-                                );
-                            })}
-                        </View>
-                    : <EmptyScreenComponent title={this.props.lang.no_tags} description={this.props.lang.no_tags_description}/> }
+    return(
+        <>
+        <Dialog.Icon icon="tag" />
+        <Dialog.Title style={Styles.centeredText}>{lang.add_tags}</Dialog.Title>
+        <View style={Styles.modalNonScrollArea}>
+            <TextInput label={lang.tag_name} autoCapitalize="none"
+                onChangeText={text => setInputValue(text)}/>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={addTag} loading={loading} disabled={inputValue == '' || loading}
+                style={Styles.modalButton}>{lang.add}</Button>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{lang.dismiss}</Button>
+        </View>
+        </>
+    );
+}
 
-                    <Portal>
-                        <Dialog visible={this.state.tagAddDialogVisible} 
-                            onDismiss={() => { this.setState({ tagAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true });}}
-                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                                maxHeight: this.props.screenHeight / 1.2}]}>
-                            <Dialog.Icon icon="tag" />
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.add_tags}</Dialog.Title>
-                            <Dialog.Content>
-                                <TextInput label={this.props.lang.tag_name} autoCapitalize="none" defaultValue={this.state.inputValue}
-                                    onChangeText={text => this.inputChange(text)}/>
-                            </Dialog.Content>
-                            <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ tagAddDialogVisible: false, inputValue: '', dialogButtonDisabled: true }); }}
-                                    contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
-                                <Button disabled={this.state.dialogButtonDisabled} 
-                                    loading={this.state.dialogButtonLoading} contentStyle={Styles.dialogButton}
-                                    mode="contained-tonal" onPress={this.addTag}>{this.props.lang.add}</Button>
-                            </Dialog.Actions>
-                        </Dialog>
-                        
-                        <Dialog visible={this.state.tagRemoveDialogVisible} onDismiss={() => { this.setState({ tagRemoveDialogVisible: false });}}
-                            style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                                maxHeight: this.props.screenHeight / 1.2}]}>
-                            <Dialog.Icon icon="alert" />
-                            <Dialog.Title style={Styles.textCentered}>{this.props.lang.remove_tag}</Dialog.Title>
-                            <Dialog.Content>
-                                <Text variant="bodyMedium">{(this.props.lang.remove_confirmation).replace('%item%', this.currentTag?.name)}</Text>
-                            </Dialog.Content>
-                            <Dialog.Actions>
-                                <Button onPress={() => { this.setState({ tagRemoveDialogVisible: false }); }}
-                                    contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
-                                <Button mode="contained-tonal" contentStyle={Styles.dialogButton} 
-                                    onPress={this.removeTag}>{this.props.lang.remove}</Button>
-                            </Dialog.Actions>
-                        </Dialog>
-                    </Portal>
-                </ScrollView>
-                <FAB
-                    icon={'plus'}
-                    size={this.props.isLargeScreen ? 'large' : 'medium'}
-                    onPress={() => this.setState({tagAddDialogVisible: true})}
-                    style={[Styles.fab]}
-                />
-            </View>
-        );
+function TagRemoveModal ({tag, lang, changeTagsParentState}) {
+    const [loading, setLoading] = useState(false);
+    
+    const removeTag = async () => {
+        setLoading(true);
+
+        await Tag.Remove(tag);
+
+        changeTagsParentState(Backend.UserSettings.Tags);
+
+        modalRef.current.hideModal();
+        snackbarRef.current.showSnack((lang.removed_tag).replace('%tag%',
+            ("\"" + tag.name + "\"")));
     }
+
+    return(
+        <>
+        <Dialog.Icon icon="alert" />
+        <Dialog.Title style={Styles.centeredText}>{lang.remove_tag}</Dialog.Title>
+        <View style={Styles.modalNonScrollArea}>
+            <Text variant="bodyMedium">{(lang.remove_confirmation).replace('%item%',
+                ("\"" + tag.name + "\""))}</Text>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={removeTag} loading={loading} disabled={loading}
+                style={Styles.modalButton}>{lang.remove}</Button>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{lang.dismiss}</Button>
+        </View>
+        </>
+    );
 }
 
 export default withTheme(SettingsTags);

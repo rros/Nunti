@@ -1,21 +1,14 @@
-import React, { PureComponent } from 'react';
+import React, { useState, useRef, useEffect, useImperativeHandle, Component } from 'react';
 import {
     View,
     Share,
-    Animated,
-    ScrollView,
-    Image,
-    Linking,
-    Dimensions
+    FlatList,
 } from 'react-native';
 
 import {
     Text,
     Card,
-    Portal,
-    Modal,
     Dialog,
-    RadioButton,
     TextInput,
     Chip,
     Button,
@@ -24,230 +17,177 @@ import {
     Banner,
 } from 'react-native-paper';
 
-import { SwipeListView } from 'react-native-swipe-list-view';
-import { InAppBrowser } from 'react-native-inappbrowser-reborn';
-import { WebView } from 'react-native-webview';
+import { Swipeable, TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
+import Animated, { 
+    useAnimatedStyle,
+    useSharedValue,
+    useAnimatedRef,
+    withTiming,
+    interpolate,
+} from 'react-native-reanimated';
+
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { Backend, Article } from '../Backend';
+import { modalRef, snackbarRef, browserRef, globalStateRef } from '../App';
 import EmptyScreenComponent from '../Components/EmptyScreenComponent'
 
-class ArticlesPage extends PureComponent {
+// use a class wrapper to stop rerenders caused by global snack/modal
+class ArticlesPageOptimisedWrapper extends Component {
     constructor(props:any){
         super(props);
-
-        // function bindings
-        this.hideDetails = this.hideDetails.bind(this);
-        this.refresh = this.refresh.bind(this);
-        this.rateAnimation = this.rateAnimation.bind(this);
-        this.endSwipe = this.endSwipe.bind(this);
-
-        // states
-        this.state = {
-            detailsVisible: false,
-            refreshing: false,
-            articlePage: [],
-            showImages: !Backend.UserSettings.DisableImages,
-            largeImages: Backend.UserSettings.LargeImages,
-            inputValue: '',
-
-            bannerVisible: false,
-        };
-        
-        // variables
-        this.articlesFromBackend = []; // CurrentFeed or CurrentBookmarks
-        this.currentArticle = undefined;// details modal
-        this.currentPageIndex = 0;
-        
-        this.bannerMessage = '';
-
-        // animation values
-        this.rowAnimatedValues = [];
-        this.hiddenRowAnimatedValue = new Animated.Value(0);
-        this.hiddenRowActive = false; // used to choose which anim to play
-
-        // source variables
-        this.sourceFilter = [];
     }
 
-    componentDidMount(){
-        this.refresh();
+    shouldComponentUpdate(nextProps, nextState) {
+        if(nextProps.theme.themeName != this.props.theme.themeName
+            || nextProps.theme.accentName != this.props.theme.accentName
+            || nextProps.lang.this_language != this.props.lang.this_language
+            || nextProps.screenType != this.props.screenType){
+           return true;
+        } else {
+            return false;
+        }
+    }
 
-        this._unsubscribe = this.props.navigation.addListener('focus', () => {
-            if(this.props.route.name != 'feed') { 
-                this.refresh(); // reload bookmarks/history on each access
+    render() {
+        return(
+            <ArticlesPage {...this.props} />
+        );
+    }
+}
+
+function ArticlesPage (props) {
+    const [refreshing, setRefreshing] = useState(false);
+    const [articlePage, setArticlePage] = useState([]);
+    const [showImages, setShowImages] = useState(!Backend.UserSettings.DisableImages);
+    const [bannerVisible, setBannerVisible] = useState(false);
+
+    const [forceValue, forceUpdate] = useState(false);
+
+    // variables
+    const articlesFromBackend = useRef([]); // CurrentFeed/CurrentBookmarks/CurrentHistory
+    const currentArticle = useRef(); // details modal
+    const currentPageIndex = useRef(0);
+    const bannerMessage = useRef('');
+    const sourceFilter = useRef([]);
+    const flatListRef = useAnimatedRef(); //scrollTo from reanimated doesn't work, use old .scrollToOffset
+    
+    // on component mount
+    useEffect(() => {
+        refresh(true);
+
+        const onFocus = props.navigation.addListener('focus', () => {
+            if(props.route.name != 'feed') { 
+                refresh(false); // reload bookmarks/history on each access
+            } else if (globalStateRef.current.cacheWasReset.current) {
+                console.log("Cache was reset, reloading articles");
+                globalStateRef.current.cacheWasReset.current = false;
+                refresh();
             }
 
-            this.setState({showImages: !Backend.UserSettings.DisableImages, 
-                largeImages: Backend.UserSettings.LargeImages});
+            setShowImages(!Backend.UserSettings.DisableImages);
         });
-    }
+        
+        // show filter modal on filter press in appbar header
+        const onState = props.navigation.addListener('state', (parentState) => {
+            parentState.data.state.routes.some(pickedRoute => {
+                if(pickedRoute.name == props.route.name && pickedRoute.params.showFilterDialog) {
+                    props.navigation.setParams({showFilterDialog: false})
+                    modalRef.current.showModal(() => <FilterModalContent theme={props.theme}
+                        applyFilter={applyFilter} lang={props.lang}
+                        sourceFilter={sourceFilter.current} />);
+                }
+            });
+        });
+    }, []);
 
-    componentWillUnmount() {
-        this._unsubscribe();
-        this.dimensionsSubscription?.remove();
-    }
+    const refresh = async (refreshIndicator: boolean = true) => {
+        flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
+        currentPageIndex.current = 0;
 
-    private async refresh(){
-        this.currentPageIndex = 0;
-        this.setState({ refreshing: true });
-
-        this.articlesFromBackend = await Backend.GetArticlesPaginated(this.props.source, this.sourceFilter);
+        if(refreshIndicator) {
+            setRefreshing(true);
+        }
+        
+        articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, sourceFilter.current);
 
         // create one animation value for each article (row)
         let numberOfArticles = 0;
-        this.articlesFromBackend.forEach((page) => {
+        articlesFromBackend.current.forEach((page) => {
             page.forEach(() => {
                 numberOfArticles = numberOfArticles + 1;
             });
         });
 
         // show user a banner indicating possible reasons why no articles were loaded
-        if(this.props.source == 'feed' && numberOfArticles == 0 && this.sourceFilter.length == 0) {
-            console.log("yeet");
+        banner: if(props.source == 'feed' && numberOfArticles == 0 && sourceFilter.current.length == 0) {
             if(Backend.UserSettings.FeedList.length == 0) {
-                this.bannerMessage = 'no_feed_banner';
-                this.setState({bannerVisible: true});
+                bannerMessage.current = 'no_feed_banner';
             } else if(Backend.IsDoNotDownloadEnabled && Backend.UserSettings.WifiOnly) {
-                this.bannerMessage = 'wifi_only_banner';
-                this.setState({bannerVisible: true});
+                bannerMessage.current = 'wifi_only_banner';
+            } else {
+                break banner;
             }
+            
+            setBannerVisible(true);
         } else {
-            this.setState({bannerVisible: false});
+            setBannerVisible(false);
         }
     
-        this.initialiseAnimationValues(numberOfArticles);           
-        this.setState({articlePage: this.articlesFromBackend[this.currentPageIndex], refreshing: false});
-    }
-
-    public initialiseAnimationValues(articleNumber: number){
-        this.rowTranslateValues = [];
-        Array(articleNumber)
-            .fill('')
-            .forEach((_, i) => {
-                this.rowAnimatedValues[`${i}`] = new Animated.Value(0.5);
-            });
-    }
-
-    // modal functions
-    private viewDetails(article: Article){
-        this.currentArticle = article;
-        this.setState({ detailsVisible: true });
-    }
-    
-    private hideDetails(){
-        this.setState({ detailsVisible: false });
+        setRefreshing(false);
+        setArticlePage(articlesFromBackend.current[currentPageIndex.current]);
     }
     
     // article functions
-    private async readMore(url: string) {
-        if(Backend.UserSettings.BrowserMode == 'webview'){
-            await InAppBrowser.open(url, {
-                forceCloseOnRedirection: false, showInRecents: true,
-            });
-        } else if(Backend.UserSettings.BrowserMode == 'legacy_webview') {
-            this.hideDetails();
-            this.props.navigation.navigate('legacyWebview', { uri: url, source: 'feed' });
-        } else { // == 'external_browser'
-            Linking.openURL(url);
-        }
-    }
-
-    private async saveArticle(article: Article) {
+    const saveArticle = async (article: Article) => {
         if(await Backend.TrySaveArticle(article)) {
-            this.props.showSnack(this.props.lang.article_saved, true);
+            snackbarRef.current.showSnack(props.lang.article_saved, true);
         } else {
-            this.props.showSnack(this.props.lang.article_already_saved, true);
+            snackbarRef.current.showSnack(props.lang.article_already_saved, true);
         }
     }
 
-    private async shareArticle(url: string) {
+    const shareArticle = async (url: string) => {
         await Share.share({
             message: url
         });
     }
-    
-    private inputChange(text: string) {
-        if(text == ''){
-            this.setState({inputValue: text});
-        } else {
-            this.setState({inputValue: text});
-        }
-    }
 
-    private applyFilter(clearFilter: boolean) {
-        this.sourceFilter = []; // reset array
+    const applyFilter = (appliedFilter: []) => {
+        setRefreshing(true);
+
+        sourceFilter.current = appliedFilter;
         
-        if(clearFilter == true) { // reset
-            for(let i = 0; i < Backend.UserSettings.Tags.length; i++){
-                this.state[Backend.UserSettings.Tags[i].name] = false; // all states will be applied below
-                this.setState({inputValue: ''});
-            }
-        } else {
-            this.sourceFilter.push(this.state.inputValue);
-            for(let i = 0; i < Backend.UserSettings.Tags.length; i++){
-                if(this.state[Backend.UserSettings.Tags[i].name] == true){
-                    this.sourceFilter.push(Backend.UserSettings.Tags[i].name);
-                }
-            }
-        }
-
-        this.props.navigation.setParams({filterDialogVisible: false});
-        this.refresh();
+        modalRef.current.hideModal();
+        refresh();
     }
 
-    // render functions
-    private rateAnimation(){
-        Animated.timing(this.hiddenRowAnimatedValue, {
-            toValue: this.hiddenRowActive ? 0 : 1,
-            useNativeDriver: false,
-            duration: 100
-        }).start();
-
-        this.hiddenRowActive = !this.hiddenRowActive;
-    }
-
-    private endSwipe(rowKey: number, data: any) {
-        if(data.translateX > 100 || data.translateX < -100){
-            let ratedGood = -1;
-            if(data.translateX > 0){
-                ratedGood = 1;
-            } else {
-                ratedGood = -1;
-            }
-
-            this.rowAnimatedValues[rowKey].setValue(0.5);
-            Animated.timing(this.rowAnimatedValues[rowKey], {
-                toValue: data.translateX > 0 ? 1 : 0,
-                duration: 400,
-                useNativeDriver: false,
-            }).start(() => {
-                const article = this.state.articlePage.find(item => item.id === rowKey);
-                this.modifyArticle(article, ratedGood);
-            });
-        }
-    }
-
-    private async modifyArticle(article: Article, rating: number){
-        if(this.props.buttonType == 'delete'){
-            if(this.state.detailsVisible == true){
-                this.props.toggleSnack(this.props.lang.removed_saved, true);
-                this.hideDetails();
+    const modifyArticle = async (article: Article, direction: string) => {
+        if(props.buttonType == 'delete'){
+            if(modalRef.current.modalVisible){
+                snackbarRef.current.showSnack(props.lang.removed_saved);
+                modalRef.current.hideModal();
             }
 
             await Backend.TryRemoveSavedArticle(article);
         } else {
+            let rating = -1; // 'left'
+            if(direction != 'right'){
+                rating = 1;
+            }
+
             await Backend.RateArticle(article, rating);
         }
 
-        switch ( this.props.source ) {
+        switch (props.source) {
             case 'feed':
-                this.articlesFromBackend = Backend.CurrentFeed;
+                articlesFromBackend.current = Backend.CurrentFeed;
                 break;
             case 'bookmarks':
-                this.articlesFromBackend = Backend.CurrentBookmarks;
+                articlesFromBackend.current = Backend.CurrentBookmarks;
                 break;
             case 'history':
-                this.articlesFromBackend = Backend.CurrentHistory;
+                articlesFromBackend.current = Backend.CurrentHistory;
                 break;
             default: 
                 console.error('Bad source, cannot update articles from backend');
@@ -255,226 +195,95 @@ class ArticlesPage extends PureComponent {
         }
 
         // if the last page got completely emptied and user is on it, go back to the new last page
-        if(this.currentPageIndex == this.articlesFromBackend.length){
-            this.currentPageIndex = this.currentPageIndex - 1;
+        if(currentPageIndex.current == articlesFromBackend.current.length){
+            currentPageIndex.current = currentPageIndex.current - 1;
+            setArticlePage(articlesFromBackend.current[currentPageIndex.current]);
         }
 
-        // reference value won't rerender the page anyway, so save time by not using setState
-        this.state.articlePage = this.articlesFromBackend[this.currentPageIndex];
-        this.forceUpdate();
+        forceUpdate(!forceValue);
     }
 
-    private async changePage(newPageIndex: number){
-        this.currentPageIndex = newPageIndex;
-        this.flatListRef.scrollToOffset({ animated: true, offset: 0 });
+    const changePage = async (newPageIndex: number) => {
+        currentPageIndex.current = newPageIndex;
+        flatListRef.current.scrollToOffset({ animated: true, offset: 0 });
 
-        // wait until scroll has finished to launch article update
-        // if we don't wait, the scroll will "lag" until the articles have been updated
-        await new Promise(r => setTimeout(r, 200));
-        this.setState({ articlePage: this.articlesFromBackend[newPageIndex]});
+        setArticlePage(articlesFromBackend.current[newPageIndex]);
     }
 
-    // NOTE: rowKey = item.id; use instead of index
-    render() {
-        return (
-            <View>
-                <Banner visible={this.state.bannerVisible} actions={[
-                    {
-                        label: this.props.lang.dismiss,
-                        onPress: () => this.setState({bannerVisible: false}),
-                    },
-                    {
-                        label: this.props.lang.goto_settings,
-                        onPress: () => { this.setState({bannerVisible: false}); this.props.navigation.navigate('settings') },
-                    },
-                ]}>{this.props.lang[this.bannerMessage]}</Banner>
+    const getDateCaption = (date: string): string => {   
+        const difference = ((Date.now() - date) / (24*60*60*1000));
+        let dateCaption = '';
 
-                <SwipeListView
-                    listViewRef={(list) => this.flatListRef = list}
+        if(Object.is(difference, NaN)){
+            return undefined;
+        }
 
-                    data={this.state.articlePage}
-                    recalculateHiddenLayout={true}
-                    removeClippedSubviews={false}
-                    
-                    keyExtractor={item => item.id}
-                    refreshing={this.state.refreshing}
-                    onRefresh={this.refresh}
-                    
-                    useNativeDriver={false}
+        if(difference <= 1) { // hours
+            const hours = Math.round(difference * 24);
+            if(hours == 0){
+                dateCaption = props.lang.just_now;
+            } else {
+                dateCaption = props.lang.hours_ago.replace('%time%', hours);
+            }
+        } else { // days
+            dateCaption = props.lang.days_ago.replace('%time%', Math.round(difference));
+        }
 
-                    stopLeftSwipe={150}
-                    stopRightSwipe={-150}
-
-                    leftActivationValue={100}
-                    rightActivationValue={-100}
-
-                    onLeftActionStatusChange={this.rateAnimation}
-                    onRightActionStatusChange={this.rateAnimation}
-
-                    swipeGestureEnded={this.endSwipe}
-
-                    renderItem={ (rowData) => (
-                        <Animated.View style={{ 
-                            maxHeight: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 1000, 0],}), 
-                            opacity: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [0, 1, 0],}),
-                            translateX: this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.5, 1], outputRange: [-1000, 0, 1000],}), // random value, it disappears anyway
-                        }}>
-                            <Card mode={'contained'}
-                                style={[Styles.card, {backgroundColor: (this.props.theme.themeName == 'black') ?
-                                    this.props.theme.colors.surface : this.props.theme.colors.surfaceVariant}]}
-                                onPress={() => { this.readMore(rowData.item.url); }} 
-                                onLongPress={() => { this.viewDetails(rowData.item); }}>
-                                {(this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined) ? 
-                                    <Card.Cover source={{ uri: rowData.item.cover }}/> /* large image */ : null }
-                                <View style={Styles.cardContentContainer}>
-                                    <Card.Content style={Styles.cardContentTextContainer}>
-                                        <Text variant="titleLarge" style={Styles.titleWithParagraph}
-                                            numberOfLines={3}>{rowData.item.title}</Text>
-                                        { (rowData.item.description.length > 0 || (rowData.item.cover !== undefined && this.state.showImages)) ?
-                                            <Text variant="bodyMedium" 
-                                                style={this.state.showImages && rowData.item.cover !== undefined ? Styles.cardContentParagraph : undefined}
-                                                numberOfLines={5}>{rowData.item.description}</Text>
-                                        : null }
-                                        <View style={Styles.captionContainer}>
-                                            { rowData.item.date !== undefined ? <DateCaption date={rowData.item.date} lang={this.props.lang}/> : null }
-                                            <Text variant="bodySmall">
-                                                {(this.state.largeImages || !this.state.showImages || rowData.item.cover === undefined || rowData.item.date === undefined) ? 
-                                                (this.props.lang.article_from).replace('%source%', rowData.item.source) : rowData.item.source}</Text>
-                                        </View>
-                                    </Card.Content>
-                                    {(!this.state.largeImages && this.state.showImages && rowData.item.cover !== undefined) ? /* small image */
-                                        <View style={Styles.cardContentCoverContainer}>
-                                            <Card.Cover source={{ uri: rowData.item.cover }}/>
-                                        </View> 
-                                    : null }
-                                </View>
-                            </Card>
-                        </Animated.View>
-                    )}
-                    renderHiddenItem={(rowData) => {
-                        if(this.props.buttonType == 'none'){
-                            return null;
-                        }
-
-                        return(
-                            <Animated.View style={[Styles.swipeListHidden, { //if refreshing then hides the hidden row
-                                opacity: this.state.refreshing ? 0 : 
-                                    this.rowAnimatedValues[rowData.item.id].interpolate({inputRange: [0, 0.49, 0.5, 0.51, 1],
-                                    outputRange: [0, 0, 1, 0, 0],}),
-                            }]}>
-                                <Button
-                                    buttonColor={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1],
-                                        outputRange: ['grey', this.props.buttonType == 'delete' ? 
-                                            this.props.theme.colors.negativeContainer
-                                            : this.props.theme.colors.positiveContainer ]})}
-                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-up' } 
-                                    mode="contained-tonal" contentStyle={Styles.buttonRateContent} 
-                                    labelStyle={{fontSize: 24, color: this.props.theme.colors.onSurface}}
-                                    style={Styles.buttonRateLeft}></Button>
-                                <Button
-                                    buttonColor={this.hiddenRowAnimatedValue.interpolate({inputRange: [0, 1], 
-                                        outputRange: ['grey', this.props.theme.colors.negativeContainer]})}
-                                    icon={this.props.buttonType == 'delete' ? 'delete' : 'thumb-down' } 
-                                    mode="contained-tonal" contentStyle={Styles.buttonRateContent}
-                                    labelStyle={{fontSize: 24, color: this.props.theme.colors.onSurface}}
-                                    style={Styles.buttonRateRight}></Button>
-                            </Animated.View>
-                        );
-                    }}
-                    ListEmptyComponent={(props) => <ListEmptyComponent theme={this.props.theme} lang={this.props.lang} route={this.props.route} />}
-                    ListFooterComponent={() => this.state.articlePage.length != 0 ? (
-                        <View style={Styles.listFooterView}>
-                            <View style={Styles.footerButtonView}>
-                                <Button onPress={() => { this.changePage(this.currentPageIndex-1); }}
-                                    icon="chevron-left"
-                                    contentStyle={Styles.footerButton}
-                                    disabled={this.currentPageIndex == 0}>{this.props.lang.back}</Button>
-                            </View>
-                            <View style={Styles.footerButtonView}>
-                                <Button onPress={() => { this.flatListRef.scrollToOffset({ animated: true, offset: 0 }); }}
-                                    contentStyle={Styles.footerButton}>
-                                    {this.currentPageIndex+1}</Button>
-                            </View>
-                            <View style={Styles.footerButtonView}>
-                                <Button onPress={() => { this.changePage(this.currentPageIndex+1); }}
-                                    icon="chevron-right"
-                                    contentStyle={[Styles.footerButton, {flexDirection: 'row-reverse'}]}
-                                    disabled={this.currentPageIndex+1 == this.articlesFromBackend?.length}>{this.props.lang.next}</Button>
-                            </View>
-                        </View>
-                    ) : null }
-                ></SwipeListView>
-
-                <Portal>
-                    {this.currentArticle !== undefined ? <Modal visible={this.state.detailsVisible} onDismiss={this.hideDetails}
-                        style={{maxWidth: 560}}>
-                        <Card style={[Styles.modalCard, {backgroundColor: this.props.theme.colors.surface,
-                            maxHeight: this.props.screenHeight / 1.2}]}>
-                            <ScrollView>
-                                {(this.state.showImages && this.currentArticle.cover !== undefined) ? 
-                                    <Card.Cover source={{ uri: this.currentArticle.cover }} /> : null }
-                                <Card.Content>
-                                    <Text variant="titleLarge" style={Styles.titleWithParagraph}>{this.currentArticle.title}</Text>
-                                    { this.currentArticle.description.length > 0 ? <Text variant="bodyMedium">{this.currentArticle.description}</Text> : null }
-                                    <View style={Styles.captionContainer}>
-                                        { this.currentArticle.date !== undefined ? <DateCaption date={this.currentArticle.date} lang={this.props.lang}/> : null }
-                                        <Text variant="bodySmall">{(this.props.lang.article_from).replace('%source%', this.currentArticle.source)}</Text>
-                                    </View>
-                                </Card.Content>
-                            </ScrollView>
-                            <View style={Styles.cardButtonContainer}>
-                                <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
-                                    onPress={() => { this.readMore(this.currentArticle.url); }}>{this.props.lang.read_more}</Button>
-                                { this.props.buttonType != 'delete' ? <IconButton icon="bookmark" mode="contained-tonal" size={20}
-                                    onPress={() => { this.saveArticle(this.currentArticle); }}>{this.props.lang.save}</IconButton> : null }
-                                { this.props.buttonType == 'delete' ? <IconButton icon="delete" mode="contained-tonal" size={20}
-                                    onPress={() => { this.modifyArticle(this.currentArticle, 0) }}>{this.props.lang.remove}</IconButton> : null }
-                                <IconButton icon="share" mode="contained-tonal" size={20}
-                                    onPress={() => { this.shareArticle(this.currentArticle.url); }}>{this.props.lang.share}</IconButton>
-                            </View>
-                        </Card>
-                    </Modal> : null }
-
-                    <Dialog visible={this.props.route.params?.filterDialogVisible} onDismiss={() => this.props.navigation.setParams({filterDialogVisible: false})}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                            maxHeight: this.props.screenHeight / 1.2}]}>
-                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.filter}</Dialog.Title>
-                        <Dialog.ScrollArea>
-                            <ScrollView>
-                                <TextInput label={this.props.lang.keyword} autoCapitalize="none" value={this.state.inputValue}
-                                    onChangeText={text => this.inputChange(text)} style={Styles.filterTextInput}/>
-                                { Backend.UserSettings.Tags.length > 0 ? 
-                                    <View style={Styles.chipContainer}>
-                                        { Backend.UserSettings.Tags.map((tag) => {
-                                            // dynamically create states for each tag
-                                            if(this.state[tag.name] === undefined) {
-                                                this.setState({[tag.name]: false});
-                                            }
-
-                                            return(
-                                                <Chip onPress={() => this.setState({[tag.name]: !this.state[tag.name]})}
-                                                    selected={this.state[tag.name]} style={Styles.chip}
-                                                    >{tag.name}</Chip>
-                                            );
-                                        })}
-                                    </View> : <View style={Styles.settingsButtonDialog}>
-                                        <Text variant="titleMedium">{this.props.lang.no_tags}</Text>
-                                        <Text variant="bodySmall">{this.props.lang.no_tags_description}</Text>
-                                    </View>
-                                }
-                            </ScrollView>
-                        </Dialog.ScrollArea>
-                        <Dialog.Actions>
-                            <Button contentStyle={Styles.dialogButton} 
-                                onPress={() => this.applyFilter(true)}>{this.props.lang.clear}</Button>
-                            <Button contentStyle={Styles.dialogButton} 
-                                onPress={() => this.applyFilter(false)}>{this.props.lang.apply}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-                </Portal>
-            </View>
-        );
+        return dateCaption;
     }
+
+    const renderItem = ({item}) => (
+        <ArticleCard item={item} showImages={showImages} getDateCaption={getDateCaption}
+            screenType={props.screenType} viewDetails={() => { currentArticle.current = item; 
+                modalRef.current.showModal((() => <DetailsModalContent lang={props.lang} theme={props.theme}
+                    getDateCaption={getDateCaption} showImages={showImages} currentArticle={currentArticle}
+                    buttonType={props.buttonType} screenType={props.screenType} saveArticle={saveArticle}
+                    shareArticle={shareArticle} modifyArticle={modifyArticle}/>))}}
+            theme={props.theme} lang={props.lang} buttonType={props.buttonType}
+            modifyArticle={modifyArticle} />
+    );
+    
+    return (
+        <View>
+            <Banner visible={bannerVisible} actions={[
+                {
+                    label: props.lang.dismiss,
+                    onPress: () => setBannerVisible(false),
+                },
+                {
+                    label: props.lang.goto_settings,
+                    onPress: () => { setBannerVisible(false); props.navigation.navigate('settings') },
+                },
+            ]}>{props.lang[bannerMessage.current]}</Banner>
+
+            <FlatList
+                ref={(ref) => flatListRef.current = ref}
+
+                data={articlePage}
+                keyExtractor={item => item.id}
+                refreshing={refreshing}
+                onRefresh={refresh}
+
+                showsVerticalScrollIndicator={false}
+                removeClippedSubviews={true}
+
+                renderItem={renderItem}
+                ListEmptyComponent={<ListEmptyComponent theme={props.theme} lang={props.lang} route={props.route} />}
+                ListFooterComponent={() => articlePage.length != 0 ? (
+                    <View style={Styles.footerContainer}>
+                        <IconButton onPress={() => { changePage(currentPageIndex.current-1); }}
+                            icon="chevron-left" mode="outlined"
+                            disabled={currentPageIndex.current == 0} />
+                        <Button onPress={() => { flatListRef.current.scrollToOffset(0, true); }}
+                            style={{flex: 1, alignSelf: 'center'}}>{currentPageIndex.current+1}</Button>
+                        <IconButton onPress={() => { changePage(currentPageIndex.current+1); }}
+                            icon="chevron-right" mode="outlined"
+                            disabled={currentPageIndex.current+1 == articlesFromBackend.current?.length} />
+                    </View>
+                ) : null }
+            ></FlatList>
+        </View>
+    );
 }
 
 function ListEmptyComponent ({ theme, route, lang }) {
@@ -494,24 +303,306 @@ function ListEmptyComponent ({ theme, route, lang }) {
     }
 }
 
-function DateCaption ({ date, lang }) {
-    const difference = ((Date.now() - date) / (24*60*60*1000));
-    let caption = '';
+function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {
+    const [inputValue, setInputValue] = useState(sourceFilter.length > 0 ? sourceFilter[0] : '');
+    const [tags, setTags] = useState([]);
+    const [forceValue, forceUpdate] = useState(false);
+    
+    // on component mount
+    useEffect(() => {
+        const newTags = tags;
+        
+        (sourceFilter.slice(1, sourceFilter.length)).forEach((tagName) => {    
+            tags.push({name: tagName});
+        });
+        
+        setTags(newTags);
+        forceUpdate(!forceValue);
+    }, []);
 
-    if(difference <= 1) { // hours
-        const hours = Math.round(difference * 24);
-        if(hours == 0){
-            caption = lang.just_now;
+    const tagClick = (tag: Tag) => {
+        const newTags = tags;
+
+        if(!newTags.some(pickedTag => pickedTag.name == tag.name)){
+            newTags.push(tag);
         } else {
-            caption = lang.hours_ago.replace('%time%', hours);
+            newTags.splice(newTags.indexOf(tag), 1);
         }
-    } else { // days
-        caption = lang.days_ago.replace('%time%', Math.round(difference));
+        
+        setTags(newTags);
+        forceUpdate(!forceValue);
     }
 
-    return(
-        <Text variant="bodySmall">{caption}</Text>
+    const createFilter = () => {
+        const newFilter = [];
+
+        newFilter.push(inputValue);
+        for(let i = 0; i < tags.length; i++){
+            newFilter.push(tags[i].name);
+        }
+
+        applyFilter(newFilter);
+    }
+
+    const clearFilter = () => {
+        if(sourceFilter.length == 0) {
+            modalRef.current.hideModal();
+        } else {
+            applyFilter([]);
+        }
+    }
+
+    return (
+        <>
+        <Dialog.Icon icon="filter-variant" />
+        <Dialog.Title style={Styles.centeredText}>{lang.filter}</Dialog.Title>
+        <View style={[Styles.modalScrollArea, {borderTopColor: theme.colors.outline, 
+            borderBottomColor: theme.colors.outline}]}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={[Styles.settingsModalButton, {paddingBottom: 0}]}>
+                    <TextInput label={lang.keyword} autoCapitalize="none" defaultValue={inputValue}
+                         onChangeText={text => setInputValue(text) } />
+                </View>
+                
+                { Backend.UserSettings.Tags.length > 0 ? 
+                    <View style={[Styles.settingsModalButton, Styles.chipContainer]}>
+                        { Backend.UserSettings.Tags.map((tag) => {
+                            return(
+                                <Chip onPress={() => tagClick(tag)}
+                                    selected={tags.some(pickedTag => pickedTag.name == tag.name)} style={Styles.chip}>{tag.name}</Chip>
+                            );
+                        })}
+                    </View> : <View style={Styles.settingsModalButton}>
+                        <Text variant="titleMedium">{lang.no_tags}</Text>
+                        <Text variant="labelSmall">{lang.no_tags_description}</Text>
+                    </View>
+                }
+            </ScrollView>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button style={Styles.modalButton}
+                disabled={tags.length == 0 && inputValue == ''}
+                onPress={createFilter}>{lang.apply}</Button>
+            <Button style={Styles.modalButton}
+                onPress={clearFilter}>{lang.clear}</Button>
+        </View>
+        </>
     );
 }
 
-export default withTheme(ArticlesPage);
+function DetailsModalContent ({ showImages, currentArticle, lang, theme, screenType,
+    buttonType, saveArticle, modifyArticle, shareArticle, getDateCaption }) {
+    if(currentArticle.current.cover === undefined || !showImages) {
+        return(
+            <View style={{flexShrink: 1}}>
+                <View style={[Styles.cardContent, {borderBottomColor: theme.colors.outline,
+                    borderBottomWidth: (currentArticle.current.description.length != 0 ? 0 : 1)}]}>
+                    <Text variant="titleLarge">{currentArticle.current.title}</Text>
+                    <Text variant="labelSmall" style={Styles.captionText}>
+                        {getDateCaption(currentArticle.current.date) === undefined ?
+                            currentArticle.current.source :
+                            getDateCaption(currentArticle.current.date) + ' • ' + currentArticle.current.source}</Text>
+                </View>
+
+                { currentArticle.current.description.length != 0 ?
+                <View style={[{flexShrink: 1, borderBottomColor: theme.colors.outline, borderBottomWidth: 1, 
+                    borderTopColor: theme.colors.outline, borderTopWidth: 1 }]}>
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
+                                            <Text variant="bodyMedium">
+                            {currentArticle.current.description}</Text>
+                </ScrollView>
+                </View> : null }
+
+                <View style={Styles.cardButtonContainer}>
+                    <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
+                        onPress={() => { browserRef.current.openBrowser(currentArticle.current.url); }}>{lang.read_more}</Button>
+                    { buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
+                        onPress={() => { saveArticle(currentArticle.current); }} /> : null }
+                    <IconButton icon="share" size={24} style={{marginRight: 0}}
+                        onPress={() => { shareArticle(currentArticle.current.url); }} />
+                </View>
+            </View>
+        );
+    } else if(screenType == 1) {
+        return(
+            <View style={{flexShrink: 1}}>
+            <View style={{flexDirection: 'row-reverse', flexShrink: 1, 
+                borderBottomColor: theme.colors.outline, borderBottomWidth: 1}}>
+                <Card.Cover style={[Styles.cardCover, Styles.cardCoverSide]}
+                    source={{ uri: currentArticle.current.cover }}/>
+
+                <View style={{flex: 1, marginTop: 12}}>
+                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
+                        <Text variant="titleLarge">{currentArticle.current.title}</Text>
+                        <Text style={Styles.captionText} variant="labelSmall">
+                            {getDateCaption(currentArticle.current.date) === undefined ?
+                                currentArticle.current.source :
+                                getDateCaption(currentArticle.current.date) + ' • ' + currentArticle.current.source}</Text>
+                        { currentArticle.current.description.length != 0 ?
+                            <Text variant="bodyMedium" style={Styles.bodyText}>
+                                {currentArticle.current.description}</Text> : null }
+                    </ScrollView>
+                </View>
+            </View>
+
+            <View style={Styles.cardButtonContainer}>
+                <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
+                    onPress={() => { browserRef.current.openBrowser(currentArticle.current.url); }}>{lang.read_more}</Button>
+                { buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
+                    onPress={() => { saveArticle(currentArticle.current); }} /> : null }
+                <IconButton icon="share" size={24} style={{marginRight: 0}}
+                    onPress={() => { shareArticle(currentArticle.current.url); }} />
+            </View>
+            </View>
+        );
+    } else {
+        return(
+            <View style={{flexShrink: 1}}>
+                <Card.Cover style={Styles.cardCover} 
+                    source={{ uri: currentArticle.current.cover }}/>
+                                
+                <View style={[{flexShrink: 1, borderBottomColor: theme.colors.outline, borderBottomWidth: 1}]}>
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
+                    <Text variant="titleLarge">{currentArticle.current.title}</Text>
+                    <Text style={Styles.captionText} variant="labelSmall">
+                        {getDateCaption(currentArticle.current.date) === undefined ?
+                            currentArticle.current.source :
+                            getDateCaption(currentArticle.current.date) + ' • ' + currentArticle.current.source}</Text>
+                    { currentArticle.current.description.length != 0 ?
+                        <Text variant="bodyMedium" style={Styles.bodyText}>
+                            {currentArticle.current.description}</Text> : null }
+                </ScrollView>
+                </View>
+
+                <View style={Styles.cardButtonContainer}>
+                    <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
+                        onPress={() => { browserRef.current.openBrowser(currentArticle.current.url); }}>{lang.read_more}</Button>
+                    { buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
+                        onPress={() => { saveArticle(currentArticle.current); }} /> : null }
+                    <IconButton icon="share" size={24} style={{marginRight: 0}}
+                        onPress={() => { shareArticle(currentArticle.current.url); }} />
+                </View>
+            </View>
+        );
+    }
+}
+
+function ArticleCard ({ item, showImages, getDateCaption, screenType,
+    viewDetails, theme, lang, buttonType, source, modifyArticle }) {
+    
+    const cardAnim = useSharedValue(1);
+    const cardOpacityAnim = useSharedValue(0);
+
+    const cardContainerAnimStyle = useAnimatedStyle(() => { return { 
+        maxHeight: withTiming(interpolate(cardAnim.value, [0, 1], [0, 500]), {duration: 500}),
+        opacity: withTiming(cardOpacityAnim.value),
+    };});
+    const swipeComponentAnimStyle = useAnimatedStyle(() => { return { 
+        scaleY: withTiming(interpolate(cardAnim.value, [0, 1], [0.8, 1])),
+    };});
+    
+    // on component mount
+    useEffect(() => {
+        appearAnimation();
+    }, []);
+    
+    const appearAnimation = () => {
+        cardOpacityAnim.value = 1;
+    }
+    
+    const disappearAnimation = () => {
+        cardAnim.value = 0;
+        cardOpacityAnim.value = 0;
+    }
+
+    const leftSwipeComponent = () => { 
+        return (
+            <Animated.View style={[Styles.cardSwipeLeft, {backgroundColor: (buttonType == 'delete') ? 
+                theme.colors.negativeContainer : theme.colors.positiveContainer}, swipeComponentAnimStyle]}>
+                <Icon name={buttonType == 'delete' ? 'delete' : 'thumb-up'}
+                    size={24} color={theme.colors.onSurface} style={Styles.cardSwipeIcon}/>
+            </Animated.View>
+        );}
+    
+    const rightSwipeComponent = () => { 
+        return (
+            <Animated.View style={[Styles.cardSwipeRight, 
+                {backgroundColor: theme.colors.negativeContainer}, swipeComponentAnimStyle]}>
+                <Icon name={buttonType == 'delete' ? 'delete' : 'thumb-down'} 
+                    size={24} color={theme.colors.onSurface} style={Styles.cardSwipeIcon}/>
+            </Animated.View>
+        );}
+
+    if(screenType >= 1) {
+        return(
+            <Animated.View style={cardContainerAnimStyle}>
+            <Swipeable renderLeftActions={source == 'history' ? null : leftSwipeComponent} 
+                renderRightActions={source == 'history' ? null : rightSwipeComponent}
+                onSwipeableWillOpen={(direction) => { disappearAnimation(); }}
+                onSwipeableOpen={(direction) => { modifyArticle(item, direction); }}
+                leftThreshold={150} rightThreshold={150}>
+                <View mode={'contained'} style={[Styles.card, {backgroundColor: theme.colors.secondaryContainer}]}>
+                <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+                    useForeground={true}
+                    onPress={() => { browserRef.current.openBrowser(item.url); }} 
+                    onLongPress={() => { viewDetails(item); }}>
+                    
+                    <View style={{flexDirection: 'row-reverse'}}>
+                        {(item.cover !== undefined && showImages) ? 
+                            <Card.Cover style={[Styles.cardCover, Styles.cardCoverSide]} source={{ uri: item.cover }}/> : null }
+                        <View style={[Styles.cardContent, {flex: 1}]}>
+                            <Text variant="titleLarge" numberOfLines={3}>{item.title}</Text>
+                            <Text variant="bodyMedium" numberOfLines={7} style={[{flexGrow: 1, 
+                                flex: ((item.cover !== undefined && showImages) ? 1 : undefined),
+                                marginTop: (item.description.length != 0 ? 8 : 0)}]}
+                                >{item.description.length != 0 ? item.description : ''}</Text>
+                        <Text style={Styles.captionText} variant="labelSmall">
+                            {getDateCaption(item.date) === undefined ?
+                                item.source :
+                                getDateCaption(item.date) + ' • ' + item.source}</Text>
+                    </View>
+
+                </View>
+                </TouchableNativeFeedback>
+                </View>
+            </Swipeable>
+            </Animated.View>
+        );
+    } else {
+        return(
+            <Animated.View style={cardContainerAnimStyle}>
+            <Swipeable renderLeftActions={source == 'history' ? null : leftSwipeComponent} 
+                renderRightActions={source == 'history' ? null : rightSwipeComponent}
+                onSwipeableWillOpen={(direction) => { disappearAnimation(); }}
+                onSwipeableOpen={(direction) => { modifyArticle(item, direction); }}
+                leftThreshold={150} rightThreshold={150}>
+                <View mode={'contained'} style={[Styles.card, {backgroundColor: theme.colors.secondaryContainer}]}>
+                <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+                    useForeground={true}
+                    onPress={() => { browserRef.current.openBrowser(item.url); }} 
+                    onLongPress={() => { viewDetails(item); }}>
+                    
+                    <View>
+                        {(item.cover !== undefined && showImages) ? 
+                            <Card.Cover style={Styles.cardCover} source={{ uri: item.cover }}/> : null }
+                        <View style={Styles.cardContent}>
+                            <Text variant="titleLarge" numberOfLines={3}>{item.title}</Text>
+                            { ((item.description.length != 0 && !showImages) || item.cover === undefined) ?
+                                <Text variant="bodyMedium" style={Styles.bodyText} 
+                                    numberOfLines={7}>{item.description}</Text> : null }
+                        <Text style={Styles.captionText} variant="labelSmall">
+                            {getDateCaption(item.date) === undefined ?
+                                item.source :
+                                getDateCaption(item.date) + ' • ' + item.source}</Text>
+                    </View>
+
+                </View>
+                </TouchableNativeFeedback>
+                </View>
+            </Swipeable>
+            </Animated.View>
+        );
+    }
+}
+
+export default withTheme(ArticlesPageOptimisedWrapper);

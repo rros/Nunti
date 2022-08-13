@@ -367,170 +367,214 @@ export const Accents = {
 
 // custom css here
 export default Styles = StyleSheet.create ({
-    modalCard: {
-        borderRadius: 20,
-        overflow: 'hidden',
-        marginHorizontal: 12,
-        marginBottom: 24,
+    modal: {
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
     },
+
+    modalContentWrapper: {
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    modalContent: {
+        borderRadius: 28,
+        overflow: 'hidden',
+        width: '100%',
+        maxWidth: 560,
+        maxHeight: '100%',
+        flexShrink: 1,
+    },
+
+    modalNonScrollArea: {
+        paddingHorizontal: 24,
+    },
+
+    modalScrollArea: {
+        flexShrink: 1,
+        paddingHorizontal: 24,
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+    },
+
+    modalScrollAreaNoPadding: {
+        flexShrink: 1,
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+    },
+
+    modalButtonContainer: {
+        flexDirection: 'row-reverse',
+        margin: 24,
+        alignItems: 'center'
+    },
+
+    modalButton: {
+        marginLeft: 8,
+    },
+
+    modalRadioButton: {
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+    }, 
 
     card: {
-        marginTop: 12,
-        marginHorizontal: 12,
-        borderRadius: 16,
+        marginVertical: 4,
+        marginHorizontal: 8,
+        borderRadius: 12,
         overflow: 'hidden',
     },
 
-    cardContentContainer: {
-        flex: 0,
-        flexDirection: 'row',
+    flatListCardTop: {
+        borderTopRightRadius: 12,
+        borderTopLeftRadius: 12,
+    },
+    
+    flatListCardBottom: {
+        borderBottomRightRadius: 12,
+        borderBottomLeftRadius: 12,
     },
 
-    cardContentTextContainer: {
-        flex: 2,
+    cardCover: {
+        borderRadius: 12,
+    },
+    
+    cardCoverSide: {
+        flex: 1, 
+        margin: 12
     },
 
-    cardContentParagraph: {
-        flex: 1,
+    cardContent: {
+        padding: 12,
     },
 
-    cardContentCoverContainer: {
-        flex: 1,
-    },
-
-    // card action container doesn't allow placing a button on the left
     cardButtonContainer: {
         flexDirection: 'row',
-        marginHorizontal: 12,
-        marginBottom: 8
+        margin: 12,
     },
 
     cardButtonLeft: {
         marginRight: 'auto',
-        alignSelf: 'center'
-    },
-
-    titleWithParagraph: {
-        marginVertical: 4,
-    },
-
-    captionContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 4,
-        marginBottom: 4
-    },
-
-    buttonRateLeft: {
-        paddingRight: '25%',
-        borderTopRightRadius: 0,
-        borderBottomRightRadius: 0,
-        borderTopLeftRadius: 16,
-        borderBottomLeftRadius: 16,
+        alignSelf: 'center',
     },
     
-    buttonRateRight: {
-        paddingLeft: '25%',
-        borderTopRightRadius: 16,
-        borderBottomRightRadius: 16,
-        borderTopLeftRadius: 0,
-        borderBottomLeftRadius: 0,
-    },
-
-    buttonRateContent: {
-        height: '100%',
-    },
-
-    swipeListHidden: {
-        alignItems: 'center',
+    cardSwipeLeft: {
         flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 24,
-        marginBottom: 16,
-        marginHorizontal: 16,
+        marginVertical: 4,
+        marginHorizontal: 8,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    
+    cardSwipeRight: {
+        flex: 1,
+        marginVertical: 4,
+        marginHorizontal: 8,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'flex-end',
     },
 
+    cardSwipeIcon: {
+        paddingHorizontal: 24
+    },
+
+    captionText: {
+        marginTop: 8,
+    },
+
+    bodyText: {
+        marginTop: 8,
+    },
+
+    centeredText: {
+        textAlign: 'center'
+    },
+    
+    footerContainer: {
+        flexDirection: 'row',
+        flex: 1,
+        marginHorizontal: 16,
+        marginBottom: 4,
+    },
+    
     centeredImageContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 20,
-    },
-
-    listFooterView: {
-        flexDirection: 'row',
-        flex: 1
-    },
-
-    footerButtonView: {
-        flex: 1
-    },
-
-    footerButton: {
-        paddingVertical: 12
+        paddingVertical: 12,
     },
     
     fullscreenImage: {
         height: 200,
         width: undefined,
         aspectRatio: 1,
-        marginBottom: 20
     },
 
-    startReadingButton: {
-        marginTop: 12
+    settingsButton: { 
+        paddingHorizontal: 12,
+        paddingVertical: 12,
     },
 
-    settingsDetailsTextInputContainer: {
-        marginBottom: 20,
+    settingsModalButton: {
+        paddingVertical: 12,
     },
     
-    settingsDetailsTextInput: {
+    settingsSectionTitle: { 
+        paddingHorizontal: 20,
+        paddingTop: 12,
+    },
+
+    settingsRowContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+
+    settingsRightContent: {
+        marginLeft: 'auto',
+    },
+
+    settingsIcon: {
+        marginRight: 12,
+    },
+
+    settingsCheckboxLabel: {
+        marginLeft: 12,
+    },
+
+    settingsTextInputRow: {
         flex: 1,
-    }, 
-
-    settingsDetailsInfo: {
-        paddingBottom: 16,
-    },
-    
-    textCentered: {
-        textAlign: 'center'
-    },
-
-    filterTextInput: {
-        marginTop: 16
     },
 
     chipContainer: {
         flexDirection: "row", 
         flexWrap: "wrap",
-        marginTop: 4,
-        marginBottom: 16,
     },
 
     chip: {
         margin: 4
     },
-
-    settingsButton: { // if wrapping a list item in the touchable ripple, don't use this style
-        paddingLeft: 24,
-        paddingRight: 16,
-        paddingVertical: 16,
-    },
     
-    settingsButtonDialog: { // no horizontal padding version
-        paddingVertical: 16,
-    },
+    //settingsButtonDialog: { // no horizontal padding version
+        //paddingVertical: 16,
+    //},
+    
+    //settingsDetailsTextInputContainer: {
+        //marginBottom: 16,
+    //},
+    
+    //settingsDetailsTextInput: {
+        //flex: 1,
+    //}, 
 
-    dialogButton: { // marginHorizontal doesn't work with contentStyle
-        marginLeft: 12,
-        marginRight: 12,
-    },
-
-    rowContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
+    //settingsDetailsInfo: {
+        //paddingBottom: 16,
+    //},
 
     fabContainer: {
         flexGrow: 1,
@@ -543,18 +587,22 @@ export default Styles = StyleSheet.create ({
     },
 
     drawer: {
-        borderTopRightRadius: 20,
-        borderBottomRightRadius: 20,
+        flex: 1,
+        borderTopRightRadius: 16,
+        borderBottomRightRadius: 16,
+        overflow: 'hidden',
     },
     
     drawerPermanent: {
+        flex: 1,
+
         // TODO: in permanent drawer mode, the drawer is separated from 
         // the screens by a weird line. I have not found a way to remove this,
-        // nor a way to recolour it to the theme at least 
+        // nor a way to recolour it to the theme
     },
 
     drawerTitle: {
-        marginVertical: 20,
+        marginVertical: 16,
         marginLeft: 28
     },
 
@@ -562,13 +610,35 @@ export default Styles = StyleSheet.create ({
         marginVertical: 8
     },
 
-    dialog: {
-        marginBottom: 68,
-        maxWidth: 560,
-        marginHorizontal: 24
+    wizardTabContainer: {
+        flex: 1,
+        justifyContent: 'center'
     },
 
-    wizardTab: {
-        alignSelf: 'center'
+    wizardCardWithButton: {
+        marginVertical: 4,
+        marginHorizontal: 8,
+        alignItems: 'center',
+    },
+
+    snackBarWrapper: {
+        position: 'absolute',
+        bottom: 8,
+        left: 8,
+        right: 8,
+        maxWidth: 560,
+    },
+
+    snackBar: {
+        width: '100%',
+        borderRadius: 4,
+        elevation: 2,
+        minHeight: 48,
+        paddingVertical: 8,
+        paddingLeft: 16,
+        paddingRight: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
 });

@@ -94,7 +94,7 @@ export class Feed {
     }
     
     /* Adds a tag to feed and also updates all articles in cache */
-    public static async AddTag(feed: Feed, tag: Tag): Promise<void> {
+    public static async AddTag(feed: Feed, tag: Tag): Promise<Tag> {
         feed.tags.push(tag);
         let cache = await FSStore.getItem('cache');
         if (cache != null) {
@@ -107,9 +107,10 @@ export class Feed {
             await FSStore.setItem('cache', JSON.stringify(cache));
         }
         await Feed.Save(feed);
+        return feed;
     }
     /* Removes a tag from feed and also updates all articles in cache */
-    public static async RemoveTag(feed: Feed, tag: Tag): Promise<void> {
+    public static async RemoveTag(feed: Feed, tag: Tag): Promise<Tag> {
         feed.tags.splice(feed.tags.indexOf(tag), 1);
         let cache = await FSStore.getItem('cache');
         if (cache != null) {
@@ -123,6 +124,7 @@ export class Feed {
             await FSStore.setItem('cache', JSON.stringify(cache));
         }
         await Feed.Save(feed);
+        return feed;
     }
     public static HasTag(feed: Feed, tag: Tag): boolean {
         let has = false;

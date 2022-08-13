@@ -1,25 +1,25 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import {
-    ScrollView,
     View,
     Platform,
+    BackHandler,
 } from 'react-native';
 
 import {
     Text,
     Button,
-    Divider,
-    TouchableRipple,
     Switch,
-    Portal,
-    Dialog,
     RadioButton,
     withTheme,
-    Appbar
+    Appbar,
+    Dialog,
+    Card,
 } from 'react-native-paper';
 
 import * as ScopedStorage from 'react-native-scoped-storage';
+import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
+import { modalRef, snackbarRef, globalStateRef } from '../App';
 import { Backend } from '../Backend';
 import { Accents } from '../Styles';
 
@@ -31,36 +31,55 @@ import SettingsFeeds from './SettingsSubpages/SettingsFeeds';
 import SettingsAdvanced from './SettingsSubpages/SettingsAdvanced';
 import SettingsLearning from './SettingsSubpages/SettingsLearning';
 
+// use a class wrapper to stop rerenders caused by global snack/modal
 class Settings extends Component {
-    constructor(props: any) {
+    constructor(props:any){
         super(props);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if(nextProps.theme.themeName != this.props.theme.themeName
+            || nextProps.theme.accentName != this.props.theme.accentName
+            || nextProps.lang.this_language != this.props.lang.this_language
+            || nextProps.screenType != this.props.screenType){
+           return true;
+        } else {
+            return false;
+        }
+    }
+
+    componentDidMount(){
+        this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+            if(modalRef.current.modalVisible) {
+                modalRef.current.hideModal();
+                return true;
+            } else {
+                return false;
+            }
+        });       
     }
 
     render() {
         return(
-            <Stack.Navigator
-                screenOptions={{header: (props) => <CustomHeader {...props} theme={this.props.theme}
-                    lang={this.props.lang} isLargeScreen={this.props.isLargeScreen}/>}}>
+            <Stack.Navigator backBehavior="none"
+                screenOptions={{header: (props) => <CustomHeader {...props} lang={this.props.lang}
+                    theme={this.props.theme} screenType={this.props.screenType} />, animation: 'fade' 
+                        /* animation slide in from right is too laggy and the default one is very very weird */}}>
                 <Stack.Screen name="settings">
-                    {props => <SettingsMain {...props} reloadGlobalStates={this.props.reloadGlobalStates} 
-                        lang={this.props.lang} Languages={this.props.Languages} theme={this.props.theme}
-                        updateLanguage={this.props.updateLanguage} updateTheme={this.props.updateTheme} 
-                        showSnack={this.props.showSnack} screenHeight={this.props.screenHeight}/>}
+                    {props => <SettingsMain {...props} lang={this.props.lang} resetApp={this.props.resetApp}
+                        Languages={this.props.Languages} theme={this.props.theme} />}
                 </Stack.Screen>
                 <Stack.Screen name="tags">
                     {props => <SettingsTags {...props} isLargeScreen={this.props.isLargeScreen}
-                        lang={this.props.lang} showSnack={this.props.showSnack}
-                        screenHeight={this.props.screenHeight}/>}
+                        lang={this.props.lang} cacheReset={this.props.cacheReset} />}
                 </Stack.Screen>
                 <Stack.Screen name="feeds">
                     {props => <SettingsFeeds {...props} isLargeScreen={this.props.isLargeScreen}
-                        lang={this.props.lang} showSnack={this.props.showSnack}
-                        screenHeight={this.props.screenHeight}/>}
+                        lang={this.props.lang} cacheReset={this.props.cacheReset} />}
                 </Stack.Screen>
                 <Stack.Screen name="advanced">
                     {props => <SettingsAdvanced {...props}
-                        lang={this.props.lang} showSnack={this.props.showSnack}
-                        screenHeight={this.props.screenHeight}/>}
+                        lang={this.props.lang} cacheReset={this.props.cacheReset} />}
                 </Stack.Screen>
                 <Stack.Screen name="learning">
                     {props => <SettingsLearning {...props}
@@ -71,106 +90,58 @@ class Settings extends Component {
     }
 }
 
-function CustomHeader ({ navigation, route, lang, isLargeScreen, theme }) {
+function CustomHeader ({ navigation, route, lang, theme, screenType }) {
     return (
-        <Appbar.Header mode={isLargeScreen ? "small" : "center-aligned"} elevated={false}
-            style={{backgroundColor: theme.colors.primaryContainer}}> 
-            { (route.name == 'settings' && !isLargeScreen) ? <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
+        <Appbar.Header mode={screenType >= 2 ? 'small' : 'center-aligned'} elevated={false}> 
+            { (route.name == 'settings' && screenType <= 1) ? 
+                <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             { route.name != 'settings' ? <Appbar.BackAction onPress={() => { navigation.goBack(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
         </Appbar.Header> 
     );
 }
 
-class SettingsMain extends Component { // not using purecomponent as it doesn't rerender array map
-    constructor(props: any){
-        super(props);
+function SettingsMain (props) {
+    const [language, setLanguage] = useState(Backend.UserSettings.Language);
+    const [browserMode, setBrowserMode] = useState(Backend.UserSettings.BrowserMode);
+    const [disableImages, setDisableImages] = useState(Backend.UserSettings.DisableImages);
+    const [wifiOnly, setWifiOnly] = useState(Backend.UserSettings.WifiOnly);
 
-        this.resetArtsCache = this.resetArtsCache.bind(this);
-        this.resetAllData = this.resetAllData.bind(this);
-        
-        this.import = this.import.bind(this);
-        this.export = this.export.bind(this);
-        
-        this.getLearningStatus = this.getLearningStatus.bind(this);
-        
-        this.state = {
-            language: Backend.UserSettings.Language,
-            browserMode: Backend.UserSettings.BrowserMode,
-            noImagesSwitch: Backend.UserSettings.DisableImages,
-            largeImagesSwitch: Backend.UserSettings.LargeImages,
-            wifiOnlySwitch: Backend.UserSettings.WifiOnly,
+    const [theme, setTheme] = useState(Backend.UserSettings.Theme);
+    const [accent, setAccent] = useState(Backend.UserSettings.Accent);
+    const [feeds, setFeeds] = useState(Backend.UserSettings.FeedList);
+    const [tags, setTags] = useState(Backend.UserSettings.Tags);
 
-            theme: Backend.UserSettings.Theme,
-            accent: Backend.UserSettings.Accent,
-
-            feeds: Backend.UserSettings.FeedList,
-            tags: Backend.UserSettings.Tags,
-            
-            languageDialogVisible: false,
-            browserModeDialogVisible: false,
-            themeDialogVisible: false,
-            accentDialogVisible: false,
-            cacheDialogVisible: false,
-            dataDialogVisible: false,
-            
-            learningStatus: null,
-        };
-    }
+    const [learningStatus, setLearningStatus] = useState(null);
     
-    componentDidMount(){
-        this._unsubscribe = this.props.navigation.addListener('focus', () => {
-            this.getLearningStatus();
+    // on component mount
+    useEffect(() => {
+        const _unsubscribe = props.navigation.addListener('focus', () => {
+            (async () => {
+                setLearningStatus(await Backend.GetLearningStatus());
+            })();
         });
-    }
+    }, []);
+    
+    const changeWifiOnly = () => {
+        const newValue = !wifiOnly;
 
-    componentWillUnmount() {
-        this._unsubscribe();
-    }
+        setWifiOnly(newValue);
 
-    private async getLearningStatus(){
-        this.setState({learningStatus: await Backend.GetLearningStatus()});
+        Backend.UserSettings.WifiOnly = newValue;
+        Backend.UserSettings.Save();
     }
     
-    private toggleSetting(prefName: string, stateName: string) {
-        Backend.UserSettings[prefName] = !this.state[stateName];
+    const changeDisableImages = () => {
+        const newValue = !disableImages;
+
+        setDisableImages(newValue);
+
+        Backend.UserSettings.DisableImages = newValue;
         Backend.UserSettings.Save();
-        
-        this.setState({ [stateName]: !this.state[stateName]});
     }
 
-    private changeLanguage(newLanguage: string) {
-        Backend.UserSettings.Language = newLanguage;
-        Backend.UserSettings.Save();
-        
-        this.setState({ language: newLanguage });
-        this.props.updateLanguage(newLanguage);
-    }
-    
-    private changeBrowserMode(newBrowserMode: string) {
-        Backend.UserSettings.BrowserMode = newBrowserMode;
-        Backend.UserSettings.Save();
-        
-        this.setState({ browserMode: newBrowserMode });
-    }
-
-    private changeTheme(newTheme: string) {
-        Backend.UserSettings.Theme = newTheme;
-        Backend.UserSettings.Save();
-        
-        this.setState({ theme: newTheme });
-        this.props.updateTheme(newTheme, this.props.theme.accentName);
-    }
-
-    private changeAccent(newAccent: string) {
-        Backend.UserSettings.Accent = newAccent;
-        Backend.UserSettings.Save();
-        
-        this.setState({ accent: newAccent });
-        this.props.updateTheme(this.props.theme.themeName, newAccent);
-    }
-
-    private async import() {
+    const importBackup = async () => {
         const file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, 'utf8');
         const allowed_mime = ['text/plain', 'application/octet-stream', 'application/json'];
 
@@ -180,330 +151,383 @@ class SettingsMain extends Component { // not using purecomponent as it doesn't 
         }
 
         if(allowed_mime.indexOf(file.mime) < 0) {
-            this.props.showSnack(this.props.lang.import_fail_format, true);
+            snackbarRef.current.showSnack(props.lang.import_fail_format);
             return;
         }
 
         if(await Backend.TryLoadBackup(file.data)){
-            this.props.showSnack(this.props.lang.import_ok, true);
-            this.reloadStates();
+            snackbarRef.current.showSnack(props.lang.import_ok);
+    
+            setLanguage(Backend.UserSettings.Language);
+            setBrowserMode(Backend.UserSettings.BrowserMode);
+            setDisableImages(Backend.UserSettings.DisableImages);
+            setWifiOnly(Backend.UserSettings.WifiOnly);
+            setTheme(Backend.UserSettings.Theme);
+            setAccent(Backend.UserSettings.Accent);
+            setFeeds(Backend.UserSettings.FeedList);
+            setTags(Backend.UserSettings.Tags);
 
-            Backend.ResetCache();
+            globalStateRef.current.updateLanguage(Backend.UserSettings.Language);
+            globalStateRef.current.updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
+
+            globalStateRef.current.resetCache();
         } else {
-            this.props.showSnack(this.props.lang.import_fail_invalid, true);
+            snackbarRef.current.showSnack(props.lang.import_fail_invalid);
         }
     }
 
-    private async export() {
+    const exportBackup = async() => {
         const backup: string = await Backend.CreateBackup();
 
         try {
             if(await ScopedStorage.createDocument('NuntiBackup.json', 'application/json', backup, 'utf8') == null){
                 return;
             } else{
-                this.props.showSnack(this.props.lang.export_ok, true);
+                snackbarRef.current.showSnack(props.lang.export_ok);
             }
         } catch (err) {
-            this.props.showSnack(this.props.lang.export_fail, true);
+            snackbarRef.current.showSnack(props.lang.export_fail);
             console.log('Failed to export backup. ' + err);
         }
     }
 
-    private resetArtsCache() {
-        this.props.showSnack(this.props.lang.reset_art_cache, true);
-        this.setState({ cacheDialogVisible: false });
+    return(
+        <ScrollView showsVerticalScrollIndicator={false}>
+            <Card mode={'contained'} style={Styles.card}>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => modalRef.current.showModal(() => <LanguageModal 
+                        lang={props.lang} Languages={props.Languages} theme={props.theme} 
+                        changeLanguageParentState={setLanguage} />)}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.language}</Text>
+                        <Text variant="labelSmall">{props.lang[language]}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => modalRef.current.showModal(() => <BrowserModeModal 
+                        lang={props.lang} theme={props.theme} 
+                        changeBrowserModeParentState={setBrowserMode} />)}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.browser_mode}</Text>
+                        <Text variant="labelSmall">{props.lang[browserMode]}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => changeWifiOnly()}>
+                    <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                        <Text variant="titleMedium">{props.lang.wifi_only}</Text>
+                        <Switch value={wifiOnly} style={Styles.settingsRightContent}
+                            onValueChange={() => changeWifiOnly()} />
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => changeDisableImages()}>
+                    <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                        <Text variant="titleMedium">{props.lang.no_images}</Text>
+                        <Switch value={disableImages} style={Styles.settingsRightContent}
+                            onValueChange={() => changeDisableImages()} />
+                    </View>
+                </TouchableNativeFeedback>
+            </Card>
+            
+            <Card mode={'contained'} style={Styles.card}>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => modalRef.current.showModal(() => <ThemeModal
+                        lang={props.lang} theme={props.theme} 
+                        changeThemeParentState={setTheme} />)}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.theme}</Text>
+                        <Text variant="labelSmall">{props.lang[theme]}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => modalRef.current.showModal(() => <AccentModal
+                        lang={props.lang} theme={props.theme} 
+                        changeAccentParentState={setAccent} />)}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.accent}</Text>
+                        <Text variant="labelSmall">{props.lang[accent]}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+            </Card>
+            
+            <Card mode={'contained'} style={Styles.card}>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={importBackup}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.import}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={exportBackup}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.export}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+            </Card>
+            
+            <Card mode={'contained'} style={Styles.card}>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => props.navigation.navigate('feeds')}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.feeds}</Text>
+                        <Text variant="labelSmall">{props.lang.feeds + ": " + feeds.length}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => props.navigation.navigate('tags')}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.tags}</Text>
+                        <Text variant="labelSmall">{props.lang.tags + ": " + tags.length}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+            </Card>
+            
+            <Card mode={'contained'} style={Styles.card}>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => props.navigation.navigate('learning')}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.learning}</Text>
+                        <Text variant="labelSmall">{learningStatus?.SortingEnabled ? 
+                            props.lang.learning_enabled : (props.lang.rate_more).replace('%articles%',
+                                learningStatus?.SortingEnabledIn)}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => props.navigation.navigate('advanced')}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium">{props.lang.advanced}</Text>
+                        <Text variant="labelSmall">{props.lang.advanced_description}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+            </Card>
+            
+            <Card mode={'contained'} style={Styles.card}>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => modalRef.current.showModal(() => <ResetDataModal lang={props.lang}
+                        theme={props.theme} />)}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.error}}>
+                            {props.lang.wipe_data}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+            </Card>
+        </ScrollView>
+    );
+}
 
-        Backend.ResetCache();
+function LanguageModal ({lang, theme, Languages, changeLanguageParentState}) {
+    const [selectedLang, setSelectedLang] = useState(Backend.UserSettings.Language);
+    const [_lang, setLang] = useState(lang);
+
+    const changeLanguage = (newLanguage: string) => {
+        setSelectedLang(newLanguage);
+        changeLanguageParentState(newLanguage);
+
+        setLang(globalStateRef.current.updateLanguage(newLanguage));
     }
-    
-    private async resetAllData() {
-        this.setState({dialogButtonLoading: true});
-        
-        await Backend.ResetAllData();
-        await this.props.reloadGlobalStates();
-        
-        this.setState({ dataDialogVisible: false, dialogButtonLoading: false });
-        this.props.showSnack(this.props.lang.wiped_data, true);
 
-        await this.props.navigation.reset({index: 0, routes: [{ name: 'wizard' }]});        
-        await this.props.navigation.navigate('wizard');
-    }
+    return(
+        <>
+        <Dialog.Icon icon="translate" />
+        <Dialog.Title style={Styles.centeredText}>{_lang.language}</Dialog.Title>
+        <View style={[Styles.modalScrollAreaNoPadding, {borderTopColor: theme.colors.outline, 
+            borderBottomColor: theme.colors.outline}]}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <RadioButton.Group value={selectedLang}>
+                    <ModalRadioButton lang={_lang} theme={theme} value={'system'} changeValue={changeLanguage} />
 
-    private async reloadStates() {
-        await this.props.reloadGlobalStates();
-        
-        this.setState({
-            language: Backend.UserSettings.Language,
-            browserMode: Backend.UserSettings.BrowserMode,
-            noImagesSwitch: Backend.UserSettings.DisableImages,
-            largeImagesSwitch: Backend.UserSettings.LargeImages,
-            wifiOnly: Backend.UserSettings.WifiOnly,
-            theme: Backend.UserSettings.Theme,
-            accent: Backend.UserSettings.Accent,
-            feeds: Backend.UserSettings.FeedList,
-            tags: Backend.UserSettings.Tags,
-        });
-    }
-
-    render() {
-        return(
-            <ScrollView>
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => {this.setState({ languageDialogVisible: true });}}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.language}</Text>
-                        <Text variant="bodySmall">{this.props.lang[this.state.language]}</Text>
-                    </View>
-                </TouchableRipple>
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => {this.setState({ browserModeDialogVisible: true });}}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.browser_mode}</Text>
-                        <Text variant="bodySmall">{this.props.lang[this.state.browserMode]}</Text>
-                    </View>
-                </TouchableRipple>
-                <View style={[Styles.rowContainer, Styles.settingsButton]}>
-                    <Text variant="titleMedium">{this.props.lang.wifi_only}</Text>
-                    <Switch value={this.state.wifiOnlySwitch} style={{marginLeft: "auto"}}
-                        onValueChange={() => { this.toggleSetting('WifiOnly', 'wifiOnlySwitch') }} />
-                </View>
-                <View style={[Styles.rowContainer, Styles.settingsButton]}>
-                        <Text variant="titleMedium">{this.props.lang.no_images}</Text>
-                        <Switch value={this.state.noImagesSwitch} style={{marginLeft: "auto"}}
-                            onValueChange={() => { this.toggleSetting('DisableImages', 'noImagesSwitch') }} />
-                </View>
-                <View style={[Styles.rowContainer, Styles.settingsButton]}>
-                        <Text variant="titleMedium">{this.props.lang.large_images}</Text>
-                        <Switch value={this.state.largeImagesSwitch} style={{marginLeft: "auto"}} disabled={this.state.noImagesSwitch}
-                            onValueChange={() => { this.toggleSetting('LargeImages', 'largeImagesSwitch') }} />
-                </View>
-
-                <Divider bold={true} />
-                
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => {this.setState({ themeDialogVisible: true });}}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.theme}</Text>
-                        <Text variant="bodySmall">{this.props.lang[this.state.theme]}</Text>
-                    </View>
-                </TouchableRipple>
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => {this.setState({ accentDialogVisible: true });}}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.accent}</Text>
-                        <Text variant="bodySmall">{this.props.lang[this.state.accent]}</Text>
-                    </View>
-                </TouchableRipple>
-
-                <Divider bold={true} />
-                
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={this.import}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.import}</Text>
-                    </View>
-                </TouchableRipple>
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={this.export}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.export}</Text>
-                    </View>
-                </TouchableRipple>
-
-                <Divider bold={true} />
-                
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => { this.props.navigation.navigate('feeds'); }}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.feeds}</Text>
-                        <Text variant="bodySmall">{this.state.feeds.length + " " + this.props.lang.feeds}</Text>
-                    </View>
-                </TouchableRipple>
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => { this.props.navigation.navigate('tags'); }}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.tags}</Text>
-                        <Text variant="bodySmall">{this.state.tags.length + " " + this.props.lang.tags}</Text>
-                    </View>
-                </TouchableRipple>
-
-                <Divider bold={true} />
-                
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => { this.props.navigation.navigate('learning'); }}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.learning}</Text>
-                        <Text variant="bodySmall">{this.state.learningStatus?.SortingEnabled ? 
-                            this.props.lang.learning_enabled : 
-                            (this.props.lang.rate_more).replace('%articles%', this.state.learningStatus?.SortingEnabledIn)}</Text>
-                    </View>
-                </TouchableRipple>
-
-                <Divider bold={true} />
-                
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => { this.props.navigation.navigate('advanced'); }}>
-                    <View>
-                        <Text variant="titleMedium">{this.props.lang.advanced}</Text>
-                        <Text variant="bodySmall">{this.props.lang.advanced_description}</Text>
-                    </View>
-                </TouchableRipple>
-
-                <Divider bold={true} />
-                
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => {this.setState({ cacheDialogVisible: true });}}>
-                    <View>
-                        <Text variant="titleMedium" style={{color: this.props.theme.colors.error}}>
-                            {this.props.lang.wipe_cache}</Text>
-                    </View>
-                </TouchableRipple>
-                <TouchableRipple style={Styles.settingsButton}
-                    rippleColor={this.props.theme.colors.alternativeSurface}
-                    onPress={() => {this.setState({ dataDialogVisible: true });}}>
-                    <View>
-                        <Text variant="titleMedium" style={{color: this.props.theme.colors.error}}>
-                            {this.props.lang.wipe_data}</Text>
-                    </View>
-                </TouchableRipple>
-
-                <Portal>
-                    <Dialog visible={this.state.languageDialogVisible} onDismiss={() => { this.setState({ languageDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                            maxHeight: this.props.screenHeight / 1.2}]}>
-                        <Dialog.Icon icon="translate" />
-                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.language}</Dialog.Title>
-                        <Dialog.ScrollArea>
-                            <ScrollView>
-                                <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
-                                    <RadioButton.Item label={this.props.lang.system} value="system" />
-                                    { Object.keys(this.props.Languages).map((language) => {
-                                        return(
-                                            <RadioButton.Item label={this.props.Languages[language].this_language} 
-                                                value={this.props.Languages[language].code} />
-                                        );
-                                    })}
-                                </RadioButton.Group>
-                            </ScrollView>
-                        </Dialog.ScrollArea>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ languageDialogVisible: false });}}
-                                contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-                    
-                    <Dialog visible={this.state.browserModeDialogVisible} onDismiss={() => { this.setState({ browserModeDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                            maxHeight: this.props.screenHeight / 1.2}]}>
-                        <Dialog.Icon icon="web" />
-                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.browser_mode}</Dialog.Title>
-                        <Dialog.ScrollArea>
-                            <ScrollView>
-                                <RadioButton.Group onValueChange={newValue => this.changeBrowserMode(newValue)} value={this.state.browserMode}>
-                                    <RadioButton.Item label={this.props.lang.legacy_webview} value="legacy_webview" />
-                                    <RadioButton.Item label={this.props.lang.webview} value="webview" />
-                                    <RadioButton.Item label={this.props.lang.external_browser} value="external_browser" />
-                                </RadioButton.Group>
-                            </ScrollView>
-                        </Dialog.ScrollArea>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ browserModeDialogVisible: false });}}
-                                contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-
-                    <Dialog visible={this.state.themeDialogVisible} onDismiss={() => { this.setState({ themeDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                            maxHeight: this.props.screenHeight / 1.2}]}>
-                        <Dialog.Icon icon="theme-light-dark" />
-                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.theme}</Dialog.Title>
-                        <Dialog.ScrollArea>
-                            <ScrollView>
-                                <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
-                                    <RadioButton.Item label={this.props.lang.system} value="system" />
-                                    <RadioButton.Item label={this.props.lang.light} value="light" />
-                                    <RadioButton.Item label={this.props.lang.dark} value="dark" />
-                                    <RadioButton.Item label={this.props.lang.black} value="black" />
-                                </RadioButton.Group>
-                            </ScrollView>
-                        </Dialog.ScrollArea>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ themeDialogVisible: false });}}
-                                contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-
-                    <Dialog visible={this.state.accentDialogVisible} onDismiss={() => { this.setState({ accentDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                            maxHeight: this.props.screenHeight / 1.2}]}>
-                        <Dialog.Icon icon="palette" />
-                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.accent}</Dialog.Title>
-                        <Dialog.ScrollArea>
-                            <ScrollView>
-                                <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
-                                    { Object.keys(Accents).map((accentName) => {
-                                        return (
-                                            <RadioButton.Item label={this.props.lang[accentName]} value={accentName} />
-                                        );
-                                    })}
-                                    <RadioButton.Item disabled={Platform.Version < 31}
-                                        label={this.props.lang.material_you} value="material_you" />
-                                </RadioButton.Group>
-                            </ScrollView>
-                        </Dialog.ScrollArea>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ accentDialogVisible: false });}}
-                                contentStyle={Styles.dialogButton}>{this.props.lang.dismiss}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-
-                    <Dialog visible={this.state.cacheDialogVisible} onDismiss={() => { this.setState({ cacheDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                            maxHeight: this.props.screenHeight / 1.2}]}>
-                        <Dialog.Icon icon="cached" />
-                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.reset_title}</Dialog.Title>
-                        <Dialog.Content>
-                            <Text variant="bodyMedium">{this.props.lang.reset_description}</Text>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ cacheDialogVisible: false }); }}
-                                contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
-                            <Button onPress={this.resetArtsCache} contentStyle={Styles.dialogButton}
-                                mode="contained-tonal">{this.props.lang.reset}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-
-                    <Dialog visible={this.state.dataDialogVisible} onDismiss={() => { this.setState({ dataDialogVisible: false });}}
-                        style={[Styles.dialog, {backgroundColor: this.props.theme.colors.surface, 
-                            maxHeight: this.props.screenHeight / 1.2}]}>
-                        <Dialog.Icon icon="alert" />
-                        <Dialog.Title style={Styles.textCentered}>{this.props.lang.restore_title}</Dialog.Title>
-                        <Dialog.Content>
-                            <Text variant="bodyMedium">{this.props.lang.restore_description}</Text>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button onPress={() => { this.setState({ dataDialogVisible: false }); }}
-                                contentStyle={Styles.dialogButton}>{this.props.lang.cancel}</Button>
-                            <Button onPress={this.resetAllData} mode="contained-tonal" 
-                                disabled={this.state.dialogButtonLoading} contentStyle={Styles.dialogButton} 
-                                loading={this.state.dialogButtonLoading}>{this.props.lang.restore}</Button>
-                        </Dialog.Actions>
-                    </Dialog>
-                </Portal>
+                    { Object.keys(Languages).map((language) => {
+                        return(
+                            <ModalRadioButton lang={_lang} theme={theme} value={Languages[language].code}
+                                changeValue={changeLanguage} />
+                        );
+                    })}
+                </RadioButton.Group>
             </ScrollView>
-        );
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{_lang.dismiss}</Button>
+        </View>
+        </>
+    );
+}
+
+function BrowserModeModal ({lang, theme, changeBrowserModeParentState}) {
+    const [browserMode, setBrowserMode] = useState(Backend.UserSettings.BrowserMode);
+
+    const changeBrowserMode = (newBrowserMode: string) => {
+        Backend.UserSettings.BrowserMode = newBrowserMode;
+        Backend.UserSettings.Save();
+
+        changeBrowserModeParentState(newBrowserMode);
+        setBrowserMode(newBrowserMode);
     }
+
+    return(
+        <>
+        <Dialog.Icon icon="web" />
+        <Dialog.Title style={Styles.centeredText}>{lang.browser_mode}</Dialog.Title>
+        <View style={[Styles.modalScrollAreaNoPadding, {borderTopColor: theme.colors.outline, 
+            borderBottomColor: theme.colors.outline}]}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <RadioButton.Group value={browserMode}>
+                    <ModalRadioButton lang={lang} theme={theme} value={'legacy_webview'} changeValue={changeBrowserMode} />
+                    <ModalRadioButton lang={lang} theme={theme} value={'webview'} changeValue={changeBrowserMode} />
+                    <ModalRadioButton lang={lang} theme={theme} value={'external_browser'} changeValue={changeBrowserMode} />
+                </RadioButton.Group>
+            </ScrollView>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{lang.dismiss}</Button>
+        </View>
+        </>
+    );
+}
+
+function ThemeModal ({lang, theme, changeThemeParentState}) {
+    const [selectedTheme, setSelectedTheme] = useState(Backend.UserSettings.Theme);
+    const [_theme, setTheme] = useState(theme);
+
+    const changeTheme = async (newTheme: string) => {
+        setSelectedTheme(newTheme);
+        changeThemeParentState(newTheme);
+
+        setTheme(await globalStateRef.current.updateTheme(newTheme, Backend.UserSettings.Accent));
+    }
+
+    return(
+        <>
+        <Dialog.Icon icon="theme-light-dark" />
+        <Dialog.Title style={Styles.centeredText}>{lang.theme}</Dialog.Title>
+        <View style={[Styles.modalScrollAreaNoPadding, {borderTopColor: _theme.colors.outline, 
+            borderBottomColor: _theme.colors.outline}]}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <RadioButton.Group value={selectedTheme}>
+                    <ModalRadioButton lang={lang} theme={_theme} value={'system'} changeValue={changeTheme} />
+                    <ModalRadioButton lang={lang} theme={_theme} value={'light'} changeValue={changeTheme} />
+                    <ModalRadioButton lang={lang} theme={_theme} value={'dark'} changeValue={changeTheme} />
+                    <ModalRadioButton lang={lang} theme={_theme} value={'black'} changeValue={changeTheme} />
+                </RadioButton.Group>
+            </ScrollView>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{lang.dismiss}</Button>
+        </View>
+        </>
+    );
+}
+
+function AccentModal ({lang, theme, changeAccentParentState}) {
+    const [selectedAccent, setSelectedAccent] = useState(Backend.UserSettings.Accent);
+    const [_theme, setTheme] = useState(theme);
+
+    const changeAccent = async (newAccent: string) => {
+        setSelectedAccent(newAccent);
+        changeAccentParentState(newAccent);
+
+        setTheme(await globalStateRef.current.updateTheme(Backend.UserSettings.Theme, newAccent));
+    }
+
+    return(
+        <>
+        <Dialog.Icon icon="palette" />
+        <Dialog.Title style={Styles.centeredText}>{lang.accent}</Dialog.Title>
+        <View style={[Styles.modalScrollAreaNoPadding, {borderTopColor: _theme.colors.outline, 
+            borderBottomColor: _theme.colors.outline}]}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <RadioButton.Group onValueChange={newValue => changeAccent(newValue)} value={selectedAccent}>
+                    { Object.keys(Accents).map((accentName) => {
+                        return (
+                            <ModalRadioButton lang={lang} theme={_theme} value={accentName} changeValue={changeAccent} />
+                        );
+                    })}
+                    <ModalRadioButton lang={lang} theme={_theme} value={'material_you'} 
+                        changeValue={changeAccent} disabled={Platform.Version < 31}/>
+                </RadioButton.Group>
+            </ScrollView>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{lang.dismiss}</Button>
+        </View>
+        </>
+    );
+}
+
+function ResetDataModal ({lang, theme}) {
+    const [loading, setLoading] = useState(false);
+    const [secondsLeft, setSecondsLeft] = useState(5);
+    
+    const timerRef = React.useRef(secondsLeft);
+
+    // on component mount
+    useEffect(() => {
+        const timer = setInterval(() => {
+            timerRef.current -= 1;
+            if (timerRef.current < 0) {
+                clearInterval(timer);
+            } else {
+                setSecondsLeft(timerRef.current);
+            }
+        }, 1000);
+        
+        return () => {
+            clearInterval(timer);
+        };
+    }, []);
+    
+    const resetData = () => {
+        setLoading(true);
+        globalStateRef.current.resetApp();
+    }
+
+    return(
+        <>
+        <Dialog.Icon icon="alert" />
+        <Dialog.Title style={Styles.centeredText}>{lang.restore_title}</Dialog.Title>
+        <View style={Styles.modalNonScrollArea}>
+            <Text variant="bodyMedium">{lang.restore_description + 
+                (secondsLeft != 0 ? ' (' + secondsLeft + ')' : '')}</Text>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button onPress={resetData} loading={loading} disabled={loading || secondsLeft != 0}
+                textColor={theme.colors.error} style={Styles.modalButton}>{lang.restore}</Button>
+            <Button onPress={() => modalRef.current.hideModal() }
+                style={Styles.modalButton}>{lang.dismiss}</Button>
+        </View>
+        </>
+    );
+}
+
+function ModalRadioButton({lang, theme, value, changeValue, disabled}) {
+    return(
+        <TouchableNativeFeedback disabled={disabled}
+            background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+            onPress={() => changeValue(value)}>
+            <View style={[Styles.modalRadioButton, Styles.settingsRowContainer]}>
+                <RadioButton.Android value={value} disabled={disabled} />
+                <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                    {lang[value]}</Text>
+            </View>
+        </TouchableNativeFeedback>
+    );
 }
 
 export default withTheme(Settings);
