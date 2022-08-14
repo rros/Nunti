@@ -59,6 +59,10 @@ class Settings extends Component {
         });       
     }
 
+    componentWillUnmount() {
+        this.backHandler.remove();
+    }
+
     render() {
         return(
             <Stack.Navigator backBehavior="none"
@@ -116,11 +120,15 @@ function SettingsMain (props) {
     
     // on component mount
     useEffect(() => {
-        const _unsubscribe = props.navigation.addListener('focus', () => {
+        const onFocus = props.navigation.addListener('focus', () => {
             (async () => {
                 setLearningStatus(await Backend.GetLearningStatus());
             })();
         });
+        
+        return () => { 
+            onFocus();
+        }
     }, []);
     
     const changeWifiOnly = () => {

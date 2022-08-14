@@ -626,7 +626,7 @@ export default Styles = StyleSheet.create ({
         bottom: 8,
         left: 8,
         right: 8,
-        maxWidth: 560,
+        maxWidth: 344,
     },
 
     snackBar: {

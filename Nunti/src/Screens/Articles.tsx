@@ -99,6 +99,11 @@ function ArticlesPage (props) {
                 }
             });
         });
+        
+        return () => {
+            onFocus();
+            onState();
+        }
     }, []);
 
     const refresh = async (refreshIndicator: boolean = true) => {

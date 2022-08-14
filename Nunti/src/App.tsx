@@ -167,7 +167,12 @@ export default function App (props) {
 
         // splash screen will hide when navigator has finished loading
         
-        return () => backHandler.remove();
+        return () => { 
+            backHandler.remove();
+            dimensionsSubscription.remove();
+            
+            clearInterval(snackTimer.current);
+        }
     }, []);
 
     const dimensionsUpdate = (height: number, width: number) => {

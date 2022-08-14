@@ -19,11 +19,15 @@ function SettingsLearning (props) { // not using purecomponent as it doesn't rer
 
     // on component mount
     useEffect(() => {
-        const _unsubscribe = props.navigation.addListener('focus', () => {
+        const onFocus = props.navigation.addListener('focus', () => {
             (async () => {
                 setLearningStatus(await Backend.GetLearningStatus());
             })();
         });
+        
+        return () => { 
+            onFocus();
+        }
     }, []);
     
     return(
