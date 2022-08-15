@@ -7,7 +7,6 @@ import {
 import {
     Text,
     Button,
-    Switch,
     Dialog,
     Chip,
     TextInput,
@@ -23,6 +22,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 import { modalRef, snackbarRef, globalStateRef } from '../../App';
 import { Backend, Feed } from '../../Backend';
 import { Accents } from '../../Styles';
+import Switch from '../../Components/Switch';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 
 function SettingsFeeds (props) {

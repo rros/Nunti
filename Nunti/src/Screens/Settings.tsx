@@ -8,7 +8,6 @@ import {
 import {
     Text,
     Button,
-    Switch,
     RadioButton,
     withTheme,
     Appbar,
@@ -22,6 +21,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 import { modalRef, snackbarRef, globalStateRef } from '../App';
 import { Backend } from '../Backend';
 import { Accents } from '../Styles';
+import Switch from '../Components/Switch';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 const Stack = createNativeStackNavigator();

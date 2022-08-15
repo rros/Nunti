@@ -69,7 +69,7 @@ export default function App (props) {
 
     const [snackVisible, setSnackVisible] = useState(false);
     const [snackMessage, setSnackMessage] = useState('');
-    const snackTimerDuration = React.useRef(5);
+    const snackTimerDuration = React.useRef(4);
     const snackTimer = React.useRef();
     
     const [screenHeight, setScreenHeight] = useState(Dimensions.get('window').height);
@@ -137,6 +137,16 @@ export default function App (props) {
     useEffect(() => {
         if(snackVisible) {
             snackAnim.value = 1;
+
+            snackTimerDuration.current = 4;
+            snackTimer.current = setInterval(() => {
+                snackTimerDuration.current -= 1;
+                
+                if (snackTimerDuration.current <= 0) {
+                    clearInterval(snackTimer.current);
+                    hideSnack();
+                }
+            }, 1000);
         }
     }, [snackVisible]);
 
@@ -149,9 +159,7 @@ export default function App (props) {
 
         // disable back button if the user is in the wizard
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if(Backend.UserSettings.FirstLaunch) {
-                return true;
-            } else if(modalAnim.value) {
+            if(modalAnim.value) {
                 hideModal();
                 return true;
             } else if(drawerNavigationRef.getCurrentRoute().name != 'feed') {
@@ -368,6 +376,14 @@ export default function App (props) {
         theme.colors.elevation.level3 = Color(palette.primary).alpha(0.11).toString();
         theme.colors.elevation.level4 = Color(palette.primary).alpha(0.12).toString();
         theme.colors.elevation.level5 = Color(palette.primary).alpha(0.14).toString();
+        
+        // snackbar
+        theme.colors.inverseElevation = {};
+        //theme.colors.elevation.level1 = Color(palette.primary).alpha(0.05).toString();
+        theme.colors.inverseElevation.level2 = Color(palette.inversePrimary).alpha(0.08).toString();
+        //theme.colors.elevation.level3 = Color(palette.primary).alpha(0.11).toString();
+        //theme.colors.elevation.level4 = Color(palette.primary).alpha(0.12).toString();
+        //theme.colors.elevation.level5 = Color(palette.primary).alpha(0.14).toString();
 
         theme.colors.pressedState = Color(palette.onSurface).alpha(0.12).toString();
         theme.colors.backdrop = Color(palette.onSurface).alpha(0.20).toString(); // recommended value is 0.32
@@ -387,17 +403,6 @@ export default function App (props) {
         setSnackMessage(message);
         setSnackVisible(true);
 
-        snackTimerDuration.current = 5;
-        snackTimer.current = setInterval(() => {
-            snackTimerDuration.current -= 1;
-            if (snackTimerDuration.current < 0) {
-                clearInterval(snackTimer.current);
-                hideSnack();
-            } else {
-                snackTimerDuration.current -= 1;
-            }
-        }, 1000);
-        
         // animation starts running after message gets loaded (useEffect)
     }
 
@@ -425,7 +430,7 @@ export default function App (props) {
             });
         } else if(Backend.UserSettings.BrowserMode == 'legacy_webview') {
             hideModal();
-            drawerNavigationRef.navigate('legacyWebview', { uri: url, source: 'feed' });
+            drawerNavigationRef.navigate('legacyWebview', { uri: url, source: drawerNavigationRef.getCurrentRoute().name });
         } else { // == 'external_browser'
             Linking.openURL(url);
         }
@@ -521,29 +526,17 @@ export default function App (props) {
                     </View>
                 </View> : null}
                 
-                { snackVisible ? <View style={Styles.snackBarWrapper}>
-                    <Animated.View style={[snackAnimStyle, Styles.snackBar, {backgroundColor: theme.colors.inverseSurface}]}>
+                { snackVisible ? <Animated.View style={[Styles.snackBarWrapper, snackAnimStyle, {backgroundColor: theme.colors.inverseSurface, overflow: 'hidden'}]}>
+                    <View style={[Styles.snackBar, {backgroundColor: theme.colors.inverseElevation.level2}]}>
                         <Text style={{color: theme.colors.inverseOnSurface, flexShrink: 1}}>{snackMessage}</Text>
                         <Button textColor={theme.colors.inversePrimary}
                             onPress={hideSnack}>{language.dismiss}</Button>
-                    </Animated.View>
-                </View> : null }
+                    </View>
+                </Animated.View> : null }
             </Portal>
         </PaperProvider>
         </GestureHandlerRootView>
     );
-                //<Animated.View style={[Styles.snackbar, snackAnimStyle]}>
-                    //<Animated.View style={{}}>
-                    //<Snackbar
-                        //visible={snackVisible}
-                        //dismiss={4000}
-                        //onDismiss={hideSnack}
-                        //action={{ label: language.dismiss, onPress: hideSnack }}
-                        //style={{maxWidth: 560}}
-                        //wrapperStyle={{alignItems: 'center'}}
-                    //>{snackMessage}</Snackbar>
-                    //</Animated.View>
-                //</Animated.View>
 }
 
 function CustomHeader ({ navigation, route, lang, screenType, theme, showModal }) {

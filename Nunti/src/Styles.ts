@@ -627,12 +627,12 @@ export default Styles = StyleSheet.create ({
         left: 8,
         right: 8,
         maxWidth: 344,
+        borderRadius: 4,
+        elevation: 2,
     },
 
     snackBar: {
         width: '100%',
-        borderRadius: 4,
-        elevation: 2,
         minHeight: 48,
         paddingVertical: 8,
         paddingLeft: 16,
@@ -640,5 +640,20 @@ export default Styles = StyleSheet.create ({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        //overflow: 'hidden'
+    },
+
+    switchTrack: {
+        borderWidth: 2,
+        height: 32,
+        width: 52,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        paddingLeft: 6,
+    },
+
+    switchThumb: {
+        borderRadius: 12
     },
 });
