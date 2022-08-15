@@ -848,9 +848,9 @@ export class Backend {
                     art.description = decode(art.description, {scope: 'strict'});
                     art.description = art.description.trim();
 
-                    try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); }  catch { /* dontcare */ }
-                    try { art.description = art.description.substr(0,1024); }  catch { /* dontcare */ }
-                    try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); }  catch { /* dontcare */ }
+                    try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); } catch { /* dontcare */ }
+                    try { art.description = art.description.substr(0,1024); } catch { /* dontcare */ }
+                    try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); } catch { /* dontcare */ }
                     
                     if (!feed.noImages) {
                         if (art.cover === undefined)
@@ -889,16 +889,30 @@ export class Backend {
                                 if (art.cover !== undefined) {
                                     art.cover = decode(art.cover, { scope: 'strict' }).replace('http://', 'https://');
                                 }
-                            } catch {
-                            /* dontcare */
-                            }
+                            } catch { /* dontcare */ }
                     } else
                         art.cover = undefined;
 
-                    try {
-                        art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue;
-                    } catch {
-                        art.url = item.getElementsByTagName('link')[0].getAttribute('href');
+                    if (!art.url?.trim()) {
+                        try { art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
+                    }
+                    if (!art.url?.trim()) {
+                        try {
+                            const linkElements = item.getElementsByTagName('link');
+                            if (linkElements.length == 1)
+                                art.url = item.getElementsByTagName('link')[0].getAttribute('href');
+                            else {
+                                // Needed for Atom feeds which provide multiple <link>, i.e.: Blogspot
+                                // see gitlab issue #53
+                                for (let i = 0; i < linkElements.length; i++) {
+                                    if (linkElements[i].getAttribute('rel') == 'alternate')
+                                        art.url = linkElements[i].getAttribute('href');
+                                }
+                            }
+                        } catch { /* dontcare */ }
+                    }
+                    if (!art.url?.trim()) {
+                        throw new Error(`Could not find any link to article (title: '${art.title}')`);
                     }
 
                     try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
