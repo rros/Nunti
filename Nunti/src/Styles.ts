@@ -507,7 +507,7 @@ export default Styles = StyleSheet.create ({
     centeredImageContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 12,
+        paddingVertical: 24,
     },
     
     fullscreenImage: {
@@ -615,10 +615,15 @@ export default Styles = StyleSheet.create ({
         justifyContent: 'center'
     },
 
-    wizardCardWithButton: {
+    wizardCardWithButtonContainer: {
         marginVertical: 4,
         marginHorizontal: 8,
         alignItems: 'center',
+    },
+    
+    wizardCardWithButtonContainer: {
+        maxWidth: 560,
+        width: '100%',
     },
 
     snackBarWrapper: {
@@ -643,10 +648,17 @@ export default Styles = StyleSheet.create ({
         //overflow: 'hidden'
     },
 
-    switchTrack: {
-        borderWidth: 2,
+    switchOutline: {
         height: 32,
         width: 52,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    switchTrack: {
+        height: 28,
+        width: 48,
         borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'flex-start',

@@ -40,14 +40,13 @@ function SettingsLearning (props) { // not using purecomponent as it doesn't rer
                             '%articles%', learningStatus?.SortingEnabledIn)}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{props.lang.rating_ratio}</Text>
-                    <Text variant="labelSmall">{(props.lang.rating_ratio_description).replace(
-                        '%ratio%', learningStatus?.VoteRatio)}</Text>
+                    <Text variant="titleMedium">{props.lang.rated_articles}</Text>
+                    <Text variant="labelSmall">{learningStatus?.TotalUpvotes
+                        + learningStatus?.TotalDownvotes}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{props.lang.rated_articles}</Text>
-                    <Text variant="labelSmall">{props.lang.articles + ': ' + (learningStatus?.TotalUpvotes
-                        + learningStatus?.TotalDownvotes)}</Text>
+                    <Text variant="titleMedium">{props.lang.rating_ratio}</Text>
+                    <Text variant="labelSmall">{learningStatus?.VoteRatio}</Text>
                 </View>
             </Card>
             
@@ -57,7 +56,7 @@ function SettingsLearning (props) { // not using purecomponent as it doesn't rer
                     onPress={() => browserRef.current.openBrowser(
                         'https://gitlab.com/ondrejfoltyn/nunti/-/issues/28')}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{"Learn more"}</Text>
+                        <Text variant="titleMedium">{props.lang.learn_more}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>

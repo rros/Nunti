@@ -288,7 +288,7 @@ function SettingsMain (props) {
                     onPress={() => props.navigation.navigate('feeds')}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium">{props.lang.feeds}</Text>
-                        <Text variant="labelSmall">{props.lang.feeds + ": " + feeds.length}</Text>
+                        <Text variant="labelSmall">{feeds.length}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback 
@@ -296,7 +296,7 @@ function SettingsMain (props) {
                     onPress={() => props.navigation.navigate('tags')}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium">{props.lang.tags}</Text>
-                        <Text variant="labelSmall">{props.lang.tags + ": " + tags.length}</Text>
+                        <Text variant="labelSmall">{tags.length}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
@@ -518,7 +518,7 @@ function ResetDataModal ({lang, theme}) {
             <Button onPress={resetData} loading={loading} disabled={loading || secondsLeft != 0}
                 textColor={theme.colors.error} style={Styles.modalButton}>{lang.restore}</Button>
             <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.dismiss}</Button>
+                style={Styles.modalButton}>{lang.cancel}</Button>
         </View>
         </>
     );

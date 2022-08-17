@@ -7,7 +7,6 @@ import {
     BackHandler, 
     Linking,
     Platform,
-    ScrollView,
     Dimensions,
     View,
     TouchableWithoutFeedback,
@@ -49,7 +48,7 @@ import About from './Screens/About';
 import LegacyWebview from './Screens/LegacyWebview';
 import Backend from './Backend';
 
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { NavigationContainer, useNavigationContainerRef, CommonActions } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
@@ -476,15 +475,15 @@ export default function App (props) {
                      screenOptions={{drawerType: screenType >= 2 ? 'permanent' : 'front', overlayColor: theme.colors.backdrop,
                         header: (props) => <CustomHeader {...props} screenType={screenType}
                             theme={theme} lang={language} />}}>
-                    <NavigationDrawer.Screen name="feed" initialParams={{ showFilterDialog: false }}>
+                    <NavigationDrawer.Screen name="feed" initialParams={{ showFilterModal: false }}>
                         {props => <ArticlesPageOptimisedWrapper {...props} source="feed" buttonType="rate"
                             lang={language} screenType={screenType} />}
                     </NavigationDrawer.Screen>
-                    <NavigationDrawer.Screen name="bookmarks" initialParams={{ showFilterDialog: false }}>
+                    <NavigationDrawer.Screen name="bookmarks" initialParams={{ showFilterModal: false }}>
                         {props => <ArticlesPageOptimisedWrapper {...props} source="bookmarks" buttonType="delete"
                             lang={language} screenType={screenType} />}
                     </NavigationDrawer.Screen>
-                    <NavigationDrawer.Screen name="history" initialParams={{ showFilterDialog: false }}>
+                    <NavigationDrawer.Screen name="history" initialParams={{ showFilterModal: false }}>
                         {props => <ArticlesPageOptimisedWrapper {...props} source="history" buttonType="none"
                             lang={language} screenType={screenType} />}
                     </NavigationDrawer.Screen>
@@ -546,7 +545,7 @@ function CustomHeader ({ navigation, route, lang, screenType, theme, showModal }
                 <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
             { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
-                <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({showFilterDialog: true}) } /> : null }
+                <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({showFilterModal: true}) } /> : null }
         </Appbar.Header> 
     );
 }
@@ -575,7 +574,7 @@ function CustomDrawer ({ state, navigation, theme, lang, screenType }) {
                 active={active === state.routeNames[0]}
                 onPress={() => {
                     if(active == 'wizard'){
-                        snackbarRef.current.showSnack('Complete the wizard first');
+                        snackbarRef.current.showSnack(lang.complete_wizard_first);
                         return;
                     }
 
@@ -588,7 +587,7 @@ function CustomDrawer ({ state, navigation, theme, lang, screenType }) {
                 active={active === state.routeNames[1]}
                 onPress={() => {
                     if(active == 'wizard'){
-                        snackbarRef.current.showSnack('Complete the wizard first');
+                        snackbarRef.current.showSnack(lang.complete_wizard_first);
                         return;
                     }
 
@@ -601,7 +600,7 @@ function CustomDrawer ({ state, navigation, theme, lang, screenType }) {
                 active={active === state.routeNames[2]}
                 onPress={() => {
                     if(active == 'wizard'){
-                        snackbarRef.current.showSnack('Complete the wizard first');
+                        snackbarRef.current.showSnack(lang.complete_wizard_first);
                         return;
                     }
 
@@ -617,7 +616,7 @@ function CustomDrawer ({ state, navigation, theme, lang, screenType }) {
                 active={active === state.routeNames[3]}
                 onPress={() => {
                     if(active == 'wizard'){
-                        snackbarRef.current.showSnack('Complete the wizard first');
+                        snackbarRef.current.showSnack(lang.complete_wizard_first);
                         return;
                     }
                     
@@ -630,7 +629,7 @@ function CustomDrawer ({ state, navigation, theme, lang, screenType }) {
                 active={active === state.routeNames[4]}
                 onPress={() => {
                     if(active == 'wizard'){
-                        snackbarRef.current.showSnack('Complete the wizard first');
+                        snackbarRef.current.showSnack(lang.complete_wizard_first);
                         return;
                     }
 

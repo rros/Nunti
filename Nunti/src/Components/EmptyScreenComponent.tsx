@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import {
     StyleSheet,
-    ScrollView,
     Image,
     View,
 } from 'react-native';
@@ -16,6 +15,8 @@ import Animated, {
     useSharedValue,
     withTiming,
 } from 'react-native-reanimated';
+
+import { ScrollView } from 'react-native-gesture-handler';
 
 function EmptyScreenComponent (props) {
     const emptyPageAnim = useSharedValue(0);

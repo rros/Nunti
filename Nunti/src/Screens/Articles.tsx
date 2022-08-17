@@ -68,7 +68,10 @@ function ArticlesPage (props) {
     const articlesFromBackend = useRef([]); // CurrentFeed/CurrentBookmarks/CurrentHistory
     const currentArticle = useRef(); // details modal
     const currentPageIndex = useRef(0);
+
+    const bannerAction = useRef('');
     const bannerMessage = useRef('');
+
     const sourceFilter = useRef([]);
     const flatListRef = useAnimatedRef(); //scrollTo from reanimated doesn't work, use old .scrollToOffset
     
@@ -91,8 +94,8 @@ function ArticlesPage (props) {
         // show filter modal on filter press in appbar header
         const onState = props.navigation.addListener('state', (parentState) => {
             parentState.data.state.routes.some(pickedRoute => {
-                if(pickedRoute.name == props.route.name && pickedRoute.params.showFilterDialog) {
-                    props.navigation.setParams({showFilterDialog: false})
+                if(pickedRoute.name == props.route.name && pickedRoute.params.showFilterModal) {
+                    props.navigation.setParams({showFilterModal: false})
                     modalRef.current.showModal(() => <FilterModalContent theme={props.theme}
                         applyFilter={applyFilter} lang={props.lang}
                         sourceFilter={sourceFilter.current} />);
@@ -125,11 +128,16 @@ function ArticlesPage (props) {
         });
 
         // show user a banner indicating possible reasons why no articles were loaded
-        banner: if(props.source == 'feed' && numberOfArticles == 0 && sourceFilter.current.length == 0) {
+        banner: if(props.source == 'feed' && numberOfArticles == 0) {
             if(Backend.UserSettings.FeedList.length == 0) {
                 bannerMessage.current = 'no_feed_banner';
+                bannerAction.current = 'goto_settings';
             } else if(Backend.IsDoNotDownloadEnabled && Backend.UserSettings.WifiOnly) {
                 bannerMessage.current = 'wifi_only_banner';
+                bannerAction.current = 'goto_settings';
+            } else if(sourceFilter.current.length != 0) {
+                bannerMessage.current = 'filter_nothing_found_banner';
+                bannerAction.current = 'open_filter';
             } else {
                 break banner;
             }
@@ -237,6 +245,16 @@ function ArticlesPage (props) {
         return dateCaption;
     }
 
+    const bannerDoAction = (action: string) => {
+        if(action == 'goto_settings') {
+            props.navigation.navigate('settings');
+        } else if(action == 'open_filter') {
+            modalRef.current.showModal(() => <FilterModalContent theme={props.theme}
+                applyFilter={applyFilter} lang={props.lang}
+                sourceFilter={sourceFilter.current} />);
+        }
+    }
+
     const renderItem = ({item}) => (
         <ArticleCard item={item} showImages={showImages} getDateCaption={getDateCaption}
             screenType={props.screenType} viewDetails={() => { currentArticle.current = item; 
@@ -245,7 +263,7 @@ function ArticlesPage (props) {
                     buttonType={props.buttonType} screenType={props.screenType} saveArticle={saveArticle}
                     shareArticle={shareArticle} modifyArticle={modifyArticle}/>))}}
             theme={props.theme} lang={props.lang} buttonType={props.buttonType}
-            modifyArticle={modifyArticle} />
+            modifyArticle={modifyArticle} source={props.source} />
     );
     
     return (
@@ -256,8 +274,8 @@ function ArticlesPage (props) {
                     onPress: () => setBannerVisible(false),
                 },
                 {
-                    label: props.lang.goto_settings,
-                    onPress: () => { setBannerVisible(false); props.navigation.navigate('settings') },
+                    label: props.lang[bannerAction.current],
+                    onPress: () => bannerDoAction(bannerAction.current),
                 },
             ]}>{props.lang[bannerMessage.current]}</Banner>
 

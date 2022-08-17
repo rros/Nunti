@@ -103,8 +103,8 @@ function Step1Welcome (props) {
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
             </View>
 
-            <View style={Styles.wizardCardWithButton}>
-                <Card mode={'contained'} style={[{maxWidth: 560, width: '100%'}, Styles.card]}>
+            <View style={Styles.wizardCardWithButtonContainer}>
+                <Card mode={'contained'} style={[Styles.wizardCardWithButton, Styles.card]}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1}]}>{props.lang.welcome}</Text>
                         <Text variant="bodyMedium" style={Styles.bodyText}>{props.lang.enjoy}</Text>
@@ -351,8 +351,8 @@ function Step5Learning (props) {
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
             </View>
 
-            <View style={Styles.wizardCardWithButton}>
-                <Card mode={'contained'} style={[{maxWidth: 560, width: '100%'}, Styles.card]}>
+            <View style={Styles.wizardCardWithButtonContainer}>
+                <Card mode={'contained'} style={[Styles.wizardCardWithButton, Styles.card]}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1}]}>{props.lang.adapt}</Text>
                         <Text variant="bodyMedium" style={Styles.bodyText}>{(props.lang.wizard_learning).replace(

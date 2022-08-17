@@ -209,7 +209,7 @@ function ChangeAdvancedModal ({lang, icon, title, suffix, currentValue, changeAd
                 loading={loading} disabled={inputValue == '' || loading}
                 style={Styles.modalButton}>{lang.change}</Button>
             <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.dismiss}</Button>
+                style={Styles.modalButton}>{lang.cancel}</Button>
         </View>
         </>
     );
@@ -234,7 +234,7 @@ function ResetCacheModal ({lang, theme}) {
             <Button onPress={resetCache}
                 style={Styles.modalButton}>{lang.reset}</Button>
             <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.dismiss}</Button>
+                style={Styles.modalButton}>{lang.cancel}</Button>
         </View>
         </>
     );

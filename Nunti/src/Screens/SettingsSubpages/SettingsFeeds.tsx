@@ -128,7 +128,7 @@ function FeedAddModal ({lang, changeFeedsParentState}) {
             <Button onPress={addFeed} loading={loading} disabled={inputValue == '' || loading}
                 style={Styles.modalButton}>{lang.add}</Button>
             <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.dismiss}</Button>
+                style={Styles.modalButton}>{lang.cancel}</Button>
         </View>
         </>
     );
@@ -162,7 +162,7 @@ function FeedRemoveModal ({feed, lang, changeFeedsParentState}) {
             <Button onPress={removeFeed} loading={loading} disabled={loading}
                 style={Styles.modalButton}>{lang.remove}</Button>
             <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.dismiss}</Button>
+                style={Styles.modalButton}>{lang.cancel}</Button>
         </View>
         </>
     );
@@ -241,7 +241,7 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
                 </View>
 
                 <View style={{borderBottomColor: theme.colors.outline, borderBottomWidth: 1}}>
-                    <TouchableNativeFeedback shouldActivateOnStart={true}
+                    <TouchableNativeFeedback
                         background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
                         onPress={() => changeFeedOption('noImages')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer, {paddingHorizontal: 0}]}>
@@ -250,7 +250,7 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
                                 onValueChange={() => changeFeedOption('noImages')} />
                         </View>
                     </TouchableNativeFeedback>
-                    <TouchableNativeFeedback shouldActivateOnStart={true}
+                    <TouchableNativeFeedback
                         background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
                         onPress={() => changeFeedOption('enabled')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer, {paddingHorizontal: 0}]}>

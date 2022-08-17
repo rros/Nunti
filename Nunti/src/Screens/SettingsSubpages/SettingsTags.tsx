@@ -119,7 +119,7 @@ function TagAddModal ({lang, changeTagsParentState}) {
             <Button onPress={addTag} loading={loading} disabled={inputValue == '' || loading}
                 style={Styles.modalButton}>{lang.add}</Button>
             <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.dismiss}</Button>
+                style={Styles.modalButton}>{lang.cancel}</Button>
         </View>
         </>
     );
@@ -152,7 +152,7 @@ function TagRemoveModal ({tag, lang, changeTagsParentState}) {
             <Button onPress={removeTag} loading={loading} disabled={loading}
                 style={Styles.modalButton}>{lang.remove}</Button>
             <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.dismiss}</Button>
+                style={Styles.modalButton}>{lang.cancel}</Button>
         </View>
         </>
     );

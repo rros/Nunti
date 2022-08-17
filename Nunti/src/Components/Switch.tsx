@@ -16,8 +16,10 @@ import Animated, {
 function Switch (props) {
     //const [switchState, setSwitchState] = useState(props.value);
     const switchAnim = useSharedValue(props.value);
+    const switchOutlineAnimStyle = useAnimatedStyle(() => { return {
+        backgroundColor: withTiming(interpolateColor(switchAnim.value, [0, 1], [props.theme.colors.outline, props.theme.colors.primary]), {duration: 150}),
+    };});
     const switchTrackAnimStyle = useAnimatedStyle(() => { return {
-        borderColor: withTiming(interpolateColor(switchAnim.value, [0, 1], [props.theme.colors.outline, props.theme.colors.primary]), {duration: 150}),
         backgroundColor: withTiming(interpolateColor(switchAnim.value, [0, 1], [props.theme.colors.surface, props.theme.colors.primary]), {duration: 150}),
     };});
     const switchThumbAnimStyle = useAnimatedStyle(() => { return { 
@@ -37,8 +39,10 @@ function Switch (props) {
     });
 
     return(
-        <Animated.View style={[props.style, Styles.switchTrack, switchTrackAnimStyle]}>
-            <Animated.View style={[Styles.switchThumb, switchThumbAnimStyle]}></Animated.View>
+        <Animated.View style={[props.style, Styles.switchOutline, switchOutlineAnimStyle]}>
+            <Animated.View style={[Styles.switchTrack, switchTrackAnimStyle]}>
+                <Animated.View style={[Styles.switchThumb, switchThumbAnimStyle]}></Animated.View>
+            </Animated.View>
         </Animated.View>
     );
 }
