@@ -255,7 +255,7 @@ class UserSettings {
     public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
     public SeenHistoryLength = 700; //to prevent flooding storage with seen articles history
     public FeedPageSize = 20; //articles per page
-    public ArticleHistory = 40;
+    public ArticleHistory = 40; //length (articles count) of history display to user
 
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;
@@ -331,6 +331,12 @@ export class Backend {
             else
                 return -1;
         });
+        this.UserSettings.Tags.sort((a: Tag, b: Tag) => {
+            if ((a.name ?? undefined) !== undefined && (b.name ?? undefined) !== undefined)
+                return b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1;
+            else
+                return -1;
+        });
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(articleSource: string, filters: string[] = []): Promise<Article[][]> {
@@ -357,7 +363,7 @@ export class Backend {
             articles = (await this.GetSavedArticles()).reverse();
             break;
         case 'history':
-            articles = (await this.StorageGet('seen')).reverse().slice(0,50);
+            articles = (await this.StorageGet('seen')).reverse().slice(0, this.UserSettings.ArticleHistory);
             break;
         default:
             throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
