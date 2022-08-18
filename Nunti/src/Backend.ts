@@ -90,6 +90,8 @@ export class Feed {
             return url + '/rss';
         if (await isWorking(url + '/feed'))
             return url + '/feed';
+        if (await isWorking(url + '/rss.xml'))
+            return url + '/rss.xml';
         return null;
     }
     
@@ -255,7 +257,7 @@ class UserSettings {
     public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
     public SeenHistoryLength = 700; //to prevent flooding storage with seen articles history
     public FeedPageSize = 20; //articles per page
-    public ArticleHistory = 40;
+    public ArticleHistory = 40; //length (articles count) of history display to user
 
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;
@@ -325,6 +327,18 @@ export class Backend {
         await this.CheckDB();
         console.debug('Backend: Refreshing UserSettings.');
         this.UserSettings = Object.assign(new UserSettings(), await this.StorageGet('user_settings'));
+        this.UserSettings.FeedList.sort((a: Feed, b: Feed) => {
+            if ((a.name ?? undefined) !== undefined && (b.name ?? undefined) !== undefined)
+                return b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1;
+            else
+                return -1;
+        });
+        this.UserSettings.Tags.sort((a: Tag, b: Tag) => {
+            if ((a.name ?? undefined) !== undefined && (b.name ?? undefined) !== undefined)
+                return b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1;
+            else
+                return -1;
+        });
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(articleSource: string, filters: string[] = []): Promise<Article[][]> {
@@ -351,7 +365,7 @@ export class Backend {
             articles = (await this.GetSavedArticles()).reverse();
             break;
         case 'history':
-            articles = (await this.StorageGet('seen')).reverse().slice(0,50);
+            articles = (await this.StorageGet('seen')).reverse().slice(0, this.UserSettings.ArticleHistory);
             break;
         default:
             throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
@@ -787,6 +801,16 @@ export class Backend {
                 }, 10000);
                 request.open('GET', feed.url);
                 request.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+                const agents = [
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0',
+                    'Mozilla/5.0 (X11; Linux x86_64; rv:103.0) Gecko/20100101 Firefox/103.0',
+                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
+                    'Mozilla/5.0 (Windows NT 10.0; rv:103.0) Gecko/20100101 Firefox/103.0',
+                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15',
+                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:103.0) Gecko/20100101 Firefox/103.0'
+                ];
+                request.setRequestHeader('User-Agent', agents[parseInt(`${Math.random() * agents.length}`)]);
                 request.send();
             });
         } catch(err) {
@@ -842,9 +866,9 @@ export class Backend {
                     art.description = decode(art.description, {scope: 'strict'});
                     art.description = art.description.trim();
 
-                    try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); }  catch { /* dontcare */ }
-                    try { art.description = art.description.substr(0,1024); }  catch { /* dontcare */ }
-                    try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); }  catch { /* dontcare */ }
+                    try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); } catch { /* dontcare */ }
+                    try { art.description = art.description.substr(0,1024); } catch { /* dontcare */ }
+                    try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); } catch { /* dontcare */ }
                     
                     if (!feed.noImages) {
                         if (art.cover === undefined)
@@ -883,16 +907,30 @@ export class Backend {
                                 if (art.cover !== undefined) {
                                     art.cover = decode(art.cover, { scope: 'strict' }).replace('http://', 'https://');
                                 }
-                            } catch {
-                            /* dontcare */
-                            }
+                            } catch { /* dontcare */ }
                     } else
                         art.cover = undefined;
 
-                    try {
-                        art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue;
-                    } catch {
-                        art.url = item.getElementsByTagName('link')[0].getAttribute('href');
+                    if (!art.url?.trim()) {
+                        try { art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
+                    }
+                    if (!art.url?.trim()) {
+                        try {
+                            const linkElements = item.getElementsByTagName('link');
+                            if (linkElements.length == 1)
+                                art.url = item.getElementsByTagName('link')[0].getAttribute('href');
+                            else {
+                                // Needed for Atom feeds which provide multiple <link>, i.e.: Blogspot
+                                // see gitlab issue #53
+                                for (let i = 0; i < linkElements.length; i++) {
+                                    if (linkElements[i].getAttribute('rel') == 'alternate')
+                                        art.url = linkElements[i].getAttribute('href');
+                                }
+                            }
+                        } catch { /* dontcare */ }
+                    }
+                    if (!art.url?.trim()) {
+                        throw new Error(`Could not find any link to article (title: '${art.title}')`);
                     }
 
                     try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
