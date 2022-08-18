@@ -53,14 +53,10 @@ import { NavigationContainer, useNavigationContainerRef, CommonActions } from '@
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import RNBootSplash from 'react-native-bootsplash';
+import BackgroundFetch from 'react-native-background-fetch';
 
 const NavigationDrawer = createDrawerNavigator();
 const { MaterialYouModule } = NativeModules;
-
-export const modalRef = React.createRef();
-export const snackbarRef = React.createRef();
-export const browserRef = React.createRef();
-export const globalStateRef = React.createRef();
 
 export default function App (props) {
     const [theme, setTheme] = useState(DarkTheme);
@@ -153,6 +149,34 @@ export default function App (props) {
     useEffect(() => {
         (async () => {
             await Backend.Init();
+
+            /* set up background task */
+            const onEvent = async (taskId: string) => {
+                console.info('[BackgroundFetch] task: ', taskId);
+                await Backend.RunBackgroundTask(taskId, false);
+                BackgroundFetch.finish(taskId);
+            }
+            const onTimeout = async (taskId: string) => {
+                console.warn('[BackgroundFetch] TIMEOUT task: ', taskId);
+                BackgroundFetch.finish(taskId);
+            }
+            // Initialize BackgroundFetch only once when component mounts.
+            const status = await BackgroundFetch.configure({
+                minimumFetchInterval: Backend.UserSettings.NewArticlesNotificationPeriod,
+                enableHeadless: true,
+                stopOnTerminate: false,
+                startOnBoot: true,
+            }, onEvent, onTimeout);
+            console.info('[BackgroundFetch] configure status: ', status);
+            BackgroundFetch.scheduleTask({
+                taskId: 'com.nunti.backgroundTaskSecondary',
+                periodic: true,
+                delay: Backend.UserSettings.ArticleCacheTime * 0.75,
+                enableHeadless: true,
+                stopOnTerminate: false,
+                startOnBoot: true,
+            });
+            /* ----- */
             await reloadGlobalStates();
         })();
 
