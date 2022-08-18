@@ -24,11 +24,11 @@ if (!__DEV__) {
 AppRegistry.registerComponent(appName, () => App);
 
 import BackgroundFetch from 'react-native-background-fetch';
+import Backend from './src/Backend';
 
 let MyHeadlessTask = async (event) => {
-    // Get task id from event {}:
     let taskId = event.taskId;
-    let isTimeout = event.timeout;  // <-- true when your background-time has expired.
+    let isTimeout = event.timeout;
     if (isTimeout) {
         // This task has exceeded its allowed running-time.
         console.warn('[BackgroundFetch] Headless TIMEOUT:', taskId);
@@ -36,13 +36,7 @@ let MyHeadlessTask = async (event) => {
         return;
     }
     console.info('[BackgroundFetch HeadlessTask] start: ', taskId);
-
-    // Perform an example HTTP request.
-    // Important:  await asychronous tasks when using HeadlessJS.
-    let response = await fetch('https://reactnative.dev/movies.json');
-    let responseJson = await response.json();
-    console.log('[BackgroundFetch HeadlessTask] response: ', responseJson);
-
+    await Backend.RunBackgroundTask(taskId, true);
     console.info('[BackgroundFetch HeadlessTask] finishing now: ', taskId);
     BackgroundFetch.finish(taskId);
 };

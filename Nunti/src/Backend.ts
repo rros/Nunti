@@ -8,6 +8,8 @@ import Store from 'react-native-fs-store';
 const FSStore = new Store('store1');
 import iconv from 'iconv-lite';
 import { Buffer } from 'buffer';
+import { NativeModules } from 'react-native';
+const NotificationsModule = NativeModules.Notifications
 
 export class Feed {
     public name: string;
@@ -321,6 +323,7 @@ export class Backend {
         await this.CheckDB();
         await this.RefreshUserSettings();
     }
+    /* Re-load and recheck UserSettings from storage. (unsaved changes will be lost) */
     public static async RefreshUserSettings(): Promise<void> {
         await this.CheckDB();
         console.debug('Backend: Refreshing UserSettings.');
@@ -425,6 +428,47 @@ export class Backend {
             articles[i].id = i;
     
         return articles;
+    }
+    /* Sends push notification to user, returns true on success, false on fail. */
+    public static async SendNotification(message: string, channel: string): Promise<boolean> {
+        let channelName: string;
+        let channelDescription: string;
+        switch (channel) {
+        case 'new_articles':
+            channelName = 'New articles';
+            channelDescription = 'Best recommended article notifications.';
+            break;
+        case 'other':
+            channelName = 'Other';
+            channelDescription = 'Other notifications';
+            break;
+        default:
+            console.error(`Backend: Failed attempt to send notification by channel '${channel}' - channel not allowed.`);
+            return false;
+        }
+        const result: true | string = await NotificationsModule.notify('Nunti', message, channelName, channelDescription);
+        if (result === true) {
+            console.info(`Backend: Notification via channel ${channel} successfully sent. ('${message}')`);
+            return true;
+        } else {
+            console.error(`Backend: Failed to send notification '${message}', reason: ${result}`);
+            return false;
+        }
+    }
+    /* Does background task work, can be even called before Backend.Init() */
+    public static async RunBackgroundTask(taskId: string, isHeadless: boolean): Promise<void> {
+        console.info(`Backed: Gained control over backgroundTask, id:${taskId}, isHeadless:${isHeadless}`);
+        try {
+            await this.Init();
+            const arts = await this.GetArticles('feed');
+            // TODO: locale
+            if(!await this.SendNotification(`Recommended for you: ${arts[0].title}`, 'new_articles'))
+                throw new Error('Failed to send notification.');
+        } catch (err) {
+            console.error(`Backed: Exception on backgroundTask, id:${taskId}, error:`, err);
+        } finally {
+            console.info(`Backed: Exiting backgroundTask, id:${taskId}`);
+        }
     }
     /* Retrieves sorted articles to show in feed. */
     public static async GetFeedArticles(): Promise<Article[]> {

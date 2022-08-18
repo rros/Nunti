@@ -54,22 +54,15 @@ export default class App extends Component {
     }
 
     async initBackgroundFetch(): Promise<void> {
-        // BackgroundFetch event handler.
         const onEvent = async (taskId: string) => {
-            console.log('[BackgroundFetch] task: ', taskId);
-            // Do your background work...
-            console.log('Nunti background work TODO');
-            // IMPORTANT:  You must signal to the OS that your task is complete.
+            console.info('[BackgroundFetch] task: ', taskId);
+            await Backend.RunBackgroundTask(taskId, false);
             BackgroundFetch.finish(taskId);
         }
-
-        // Timeout callback is executed when your Task has exceeded its allowed running-time.
-        // You must stop what you're doing immediately BackgroundFetch.finish(taskId)
         const onTimeout = async (taskId: string) => {
             console.warn('[BackgroundFetch] TIMEOUT task: ', taskId);
             BackgroundFetch.finish(taskId);
         }
-
         // Initialize BackgroundFetch only once when component mounts.
         const status = await BackgroundFetch.configure({
             minimumFetchInterval: 15,
@@ -77,22 +70,13 @@ export default class App extends Component {
             stopOnTerminate: false,
             startOnBoot: true,
         }, onEvent, onTimeout);
-
-        console.log('[BackgroundFetch] configure status: ', status);
+        console.info('[BackgroundFetch] configure status: ', status);
     }
     async componentDidMount() {
         await Backend.Init();
         await this.reloadGlobalStates();
         
         this.initBackgroundFetch();
-        //TODO: test
-        setTimeout(async () => {
-            console.debug('notificationmodule.test calling now');
-            if (await NotificationsModule.test('testing loool')) {
-                console.debug('notification test passed');
-            }
-        }, 5000);
-        console.debug('notificationmodule.test timeout armed');
 
         this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if(Backend.UserSettings.FirstLaunch){

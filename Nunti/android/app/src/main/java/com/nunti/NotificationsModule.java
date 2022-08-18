@@ -30,29 +30,32 @@ public class NotificationsModule extends ReactContextBaseJavaModule {
 
     @Override
     public String getName() {
-        return "NotificationsModule";
+        return "Notifications";
     }
 
     @ReactMethod
-    public void test(String message, Promise promise) {
+    public void notify(
+            String title,
+            String message,
+            String _channelName,
+            String channelDescription,
+            Promise promise
+        ) {
         try {
+            //TODO: make the notification clickable
             int notificationId  = new Random().nextInt();
             String channelId  = "Messages";
             NotificationCompat.Builder builder = new NotificationCompat.Builder(moduleContext, channelId);
-            builder.setSmallIcon( R.drawable.icon_foreground );
-            builder.setContentTitle( "Nunti" );
+            builder.setSmallIcon( R.drawable.icon_notifications );
+            builder.setContentTitle( title );
             builder.setContentText( message );
-            builder.setStyle( new NotificationCompat.BigTextStyle().bigText(
-                    "Subtitle"
-            ) );
+            builder.setStyle( new NotificationCompat.BigTextStyle().bigText(message).setSummaryText(title) );
             builder.setPriority( NotificationCompat.PRIORITY_HIGH );
             builder.setContentIntent( null );
             builder.setAutoCancel( true );
-
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                CharSequence channelName = "New article";
-                String channelDescription = "New articles which you may like";
+                CharSequence channelName = _channelName;
                 int importance = NotificationManager.IMPORTANCE_HIGH;
                 NotificationChannel channel = new NotificationChannel( channelId,channelName,importance );
                 channel.setDescription( channelDescription );
