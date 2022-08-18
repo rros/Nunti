@@ -329,7 +329,6 @@ export class Backend {
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
         console.info('Backend init.');
-        await this.CheckDB();
         await this.RefreshUserSettings();
     }
     /* Re-load and recheck UserSettings from storage. (unsaved changes will be lost) */
@@ -495,6 +494,7 @@ export class Backend {
                         if (notifcache.seen_urls.indexOf(arts[i].url) < 0) {
                             art = arts[i];
                             notifcache.seen_urls.push(art.url);
+                            notifcache.splice(0, notifcache.length - 20); //keep only last 20
                             break;
                         }
                     }
