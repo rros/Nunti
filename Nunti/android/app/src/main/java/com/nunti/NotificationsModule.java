@@ -18,6 +18,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 
 public class NotificationsModule extends ReactContextBaseJavaModule {
     ReactApplicationContext moduleContext;
@@ -42,7 +44,6 @@ public class NotificationsModule extends ReactContextBaseJavaModule {
             Promise promise
         ) {
         try {
-            //TODO: make the notification clickable
             int notificationId  = new Random().nextInt();
             String channelId  = "Messages";
             NotificationCompat.Builder builder = new NotificationCompat.Builder(moduleContext, channelId);
@@ -51,7 +52,10 @@ public class NotificationsModule extends ReactContextBaseJavaModule {
             builder.setContentText( message );
             builder.setStyle( new NotificationCompat.BigTextStyle().bigText(message).setSummaryText(title) );
             builder.setPriority( NotificationCompat.PRIORITY_HIGH );
-            builder.setContentIntent( null );
+            Intent notifyIntent = new Intent(moduleContext, MainActivity.class);
+            notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent notifyPendingIntent = PendingIntent.getActivity(moduleContext, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            builder.setContentIntent( notifyPendingIntent );
             builder.setAutoCancel( true );
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

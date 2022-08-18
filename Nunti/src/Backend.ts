@@ -249,6 +249,13 @@ class UserSettings {
 
     public FirstLaunch = true;
 
+    public EnableBackgroundSync = true; //synchronizes articles in background before cache expires
+
+    /* "daily" notif. with recommended article;
+     * period in minutes, use -1 to disable
+     * !minimum is 15 minutes! */
+    public NewArticlesNotificationPeriod = 12*60;
+
     /* Advanced */
     public DiscoverRatio = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)
     public ArticleCacheTime: number = 3*60; //minutes
@@ -456,14 +463,48 @@ export class Backend {
         }
     }
     /* Does background task work, can be even called before Backend.Init() */
+    /* Is run for ALL background tasks (both sync and notification) */
     public static async RunBackgroundTask(taskId: string, isHeadless: boolean): Promise<void> {
         console.info(`Backed: Gained control over backgroundTask, id:${taskId}, isHeadless:${isHeadless}`);
+        await this.Init();
+        if (!this.UserSettings.EnableBackgroundSync && this.UserSettings.NewArticlesNotificationPeriod <= 0) {
+            console.info('Backend: BackgroundSync and notifications disabled, exiting..');
+            return;
+        }
         try {
-            await this.Init();
+            if (this.UserSettings.EnableBackgroundSync) {
+                console.debug('Backend: BackgroundSync is enabled, checking cache...');
+                const cache = await this.GetArticleCache();
+                const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
+                if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime * 0.75) {
+                    console.info('Backend: BackgroundSync - cache will expire soon, invalidating cache to force re-sync...');
+                    cache.timestamp = 0;
+                    await FSStore.setItem('cache',JSON.stringify(cache));
+                }
+            }
             const arts = await this.GetArticles('feed');
-            // TODO: locale
-            if(!await this.SendNotification(`Recommended for you: ${arts[0].title}`, 'new_articles'))
-                throw new Error('Failed to send notification.');
+            if (this.UserSettings.NewArticlesNotificationPeriod > 0) {
+                const notifcache = await this.StorageGet('notifications-cache');
+                const lastNotificationBeforeMins = (Date.now() - parseInt(notifcache.timestamp.toString())) / 60000;
+                if (lastNotificationBeforeMins >= this.UserSettings.NewArticlesNotificationPeriod) {
+                    notifcache.timestamp = Date.now();
+                    let art: Article | null = null;
+                    for (let i = 0; i < arts.length; i++) {
+                        if (notifcache.seen_urls.indexOf(arts[i].url) < 0) {
+                            art = arts[i];
+                            notifcache.seen_urls.push(art.url);
+                            break;
+                        }
+                    }
+                    if (art == null)
+                        console.warn('Backend: BackgroundSync notifications - no available article to show.');
+                    else {
+                        if(!await this.SendNotification(art.title, 'new_articles'))
+                            throw new Error('Failed to send notification.');
+                    }
+                    await this.StorageSave('notifications-cache', notifcache);
+                }
+            }
         } catch (err) {
             console.error(`Backed: Exception on backgroundTask, id:${taskId}, error:`, err);
         } finally {
@@ -475,19 +516,11 @@ export class Backend {
         console.log('Backend: Loading new articles..');
         const timeBegin: number = Date.now();
         await this.CheckDB();
-
-        let cache = await FSStore.getItem('cache');
-        if (cache == null) {
-            console.debug('Cache is null, initializing it.');
-            await FSStore.setItem('cache',JSON.stringify({'timestamp':0,'articles':[]}));
-            cache = {'timestamp': 0, 'articles': []};
-        } else
-            cache = JSON.parse(cache);
-
-        cache.articles.forEach((art: Article) => { Article.Fix(art); });
+        
+        const cache = await this.GetArticleCache();
         let arts: Article[];
 
-        const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp)) / 60000;
+        const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
 
         if(await this.IsDoNotDownloadEnabled()) {
             console.log('Backend: We are on cellular data and wifiOnly mode is enabled. Will use cache.');
@@ -505,7 +538,7 @@ export class Backend {
         arts = await this.CleanArticles(arts);
 
         const timeEnd = Date.now();
-        console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
+        console.log(`Backend: Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
         return arts;
     }
     /* Tries to save an article, true on success, false on fail. */
@@ -647,6 +680,13 @@ export class Backend {
         if (await AsyncStorage.getItem('seen') === null) {
             console.debug('Backend: CheckDB(): Init "seen" key in DB..');
             await AsyncStorage.setItem('seen',JSON.stringify([]));
+        }
+        if (await AsyncStorage.getItem('notifications-cache') === null) {
+            console.debug('Backend: CheckDB(): Init "notifications-cache" key in DB..');
+            await AsyncStorage.setItem('notifications-cache',JSON.stringify({
+                seen_urls: [],
+                timestamp: 0,
+            }));
         }
         if (await AsyncStorage.getItem('learning_db') === null) {
             console.debug('Backend: CheckDB(): Init "learning_db" key in DB..');
@@ -1138,6 +1178,18 @@ export class Backend {
         }
         art.score = score;
         return score;
+    }
+    private static async GetArticleCache(): Promise<{timestamp: number | string, articles: Article[]}> {
+        let cache = await FSStore.getItem('cache');
+        if (cache == null) {
+            console.debug('Cache is null, initializing it.');
+            cache = {'timestamp': 0, 'articles': []};
+            await FSStore.setItem('cache',JSON.stringify(cache));
+        } else {
+            cache = JSON.parse(cache);
+        }
+        cache.articles.forEach((art: Article) => { Article.Fix(art); });
+        return cache;
     }
     /* Fills in article.keywords property, does all the TF-IDF magic. */
     private static ExtractKeywords(arts: Article[]) {

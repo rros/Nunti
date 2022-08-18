@@ -65,12 +65,20 @@ export default class App extends Component {
         }
         // Initialize BackgroundFetch only once when component mounts.
         const status = await BackgroundFetch.configure({
-            minimumFetchInterval: 15,
+            minimumFetchInterval: Backend.UserSettings.NewArticlesNotificationPeriod,
             enableHeadless: true,
             stopOnTerminate: false,
             startOnBoot: true,
         }, onEvent, onTimeout);
         console.info('[BackgroundFetch] configure status: ', status);
+        BackgroundFetch.scheduleTask({
+            taskId: 'com.nunti.backgroundTaskSecondary',
+            periodic: true,
+            delay: Backend.UserSettings.ArticleCacheTime * 0.75,
+            enableHeadless: true,
+            stopOnTerminate: false,
+            startOnBoot: true,
+        });
     }
     async componentDidMount() {
         await Backend.Init();
