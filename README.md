@@ -28,7 +28,7 @@ Or alternatively you can download the apk for any version over at our [releases 
 
 ### Adaptive learning
 
-Nunti allows you to rate articles and then uses an advanced algorithm to sort new articles depending on which topics interest you the most.
+Nunti allows you to rate articles and then uses an advanced algorithm to sort new articles depending on which topics interest you the most. Learn more about the adaptive learning [here](https://gitlab.com/ondrejfoltyn/nunti/-/issues/28).
 
 ### Modern material design
 
