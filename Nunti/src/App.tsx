@@ -58,6 +58,11 @@ import BackgroundFetch from 'react-native-background-fetch';
 const NavigationDrawer = createDrawerNavigator();
 const { MaterialYouModule } = NativeModules;
 
+export const modalRef = React.createRef();
+export const snackbarRef = React.createRef();
+export const browserRef = React.createRef();
+export const globalStateRef = React.createRef();
+
 export default function App (props) {
     const [theme, setTheme] = useState(DarkTheme);
     const [language, setLanguage] = useState(Languages.English);
