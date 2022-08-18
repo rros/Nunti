@@ -241,7 +241,8 @@ function Step3Theme (props) {
                     <TouchableNativeFeedback disabled={Platform.Version < 31}
                         background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                         onPress={() => changeAccent('material_you')}>
-                        <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer,
+                            {backgroundColor: (Platform.Version < 31 ? props.theme.colors.pressedState : 'transparent')}]}>
                             <RadioButton.Android value={'material_you'} disabled={Platform.Version < 31} />
                             <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
                                 {props.lang.material_you}</Text>

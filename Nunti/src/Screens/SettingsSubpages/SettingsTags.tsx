@@ -60,23 +60,22 @@ function SettingsTags (props) {
     
     return(
         <View style={Styles.fabContainer}>
-                <FlatList
-                    ref={(ref) => flatListRef.current = ref}
-                    
-                    data={tags}
-                    keyExtractor={item => item.name}
+            <FlatList
+                ref={(ref) => flatListRef.current = ref}
+                
+                data={tags}
+                keyExtractor={item => item.name}
 
-                    showsVerticalScrollIndicator={false}
-                    removeClippedSubviews={true}
+                showsVerticalScrollIndicator={false}
+                removeClippedSubviews={true}
 
-                    contentContainerStyle={[{marginHorizontal: 8, marginVertical: 4,
-                        paddingBottom: 132}]}
+                contentContainerStyle={Styles.fabScrollView}
 
-                    renderItem={renderItem}
-                    renderScrollComponent={(props) => <ScrollView {...props} />}
-                    ListEmptyComponent={<EmptyScreenComponent title={props.lang.no_tags}
-                        description={props.lang.no_tags_description}/>}
-                ></FlatList>
+                renderItem={renderItem}
+                renderScrollComponent={(props) => <ScrollView {...props} />}
+                ListEmptyComponent={<EmptyScreenComponent title={props.lang.no_tags}
+                    description={props.lang.no_tags_description} bottomOffset={false}/>}
+            ></FlatList>
             <FAB
                 icon={'plus'}
                 size={'large'}

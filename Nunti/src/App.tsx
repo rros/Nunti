@@ -201,6 +201,7 @@ export default function App (props) {
         return () => { 
             backHandler.remove();
             dimensionsSubscription.remove();
+            appearanceSubscription?.remove();
             
             clearInterval(snackTimer.current);
         }

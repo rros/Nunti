@@ -77,13 +77,12 @@ function SettingsFeeds (props) {
                 showsVerticalScrollIndicator={false}
                 removeClippedSubviews={true}
 
-                contentContainerStyle={[{marginHorizontal: 8, marginVertical: 4,
-                    paddingBottom: 132}]}
+                contentContainerStyle={Styles.fabScrollView}
 
                 renderItem={renderItem}
                 renderScrollComponent={(props) => <ScrollView {...props} />}
                 ListEmptyComponent={<EmptyScreenComponent title={props.lang.no_feeds}
-                    description={props.lang.no_feeds_description}/>}
+                    description={props.lang.no_feeds_description} bottomOffset={false}/>}
             ></FlatList>
             <FAB
                 icon={'plus'}

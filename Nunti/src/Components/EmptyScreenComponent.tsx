@@ -3,6 +3,8 @@ import {
     StyleSheet,
     Image,
     View,
+    Dimensions,
+    StatusBar
 } from 'react-native';
 
 import {
@@ -30,14 +32,18 @@ function EmptyScreenComponent (props) {
     }, []);
 
     return(
-        <Animated.ScrollView style={emptyPageAnimStyle} contentContainerStyle={Styles.centeredImageContainer}>
-            <Image source={props.theme.dark ? 
-                require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
-                resizeMode="contain" style={Styles.fullscreenImage}></Image>
+        <Animated.ScrollView style={emptyPageAnimStyle} contentContainerStyle={Styles.EmptyPageContainer}>
+        <View style={[Styles.EmptyPageContent, {paddingBottom: (props.bottomOffset ? '15%' : '0%')}]}>
+            <View style={Styles.EmptyPageImageContainer}>
+                <Image source={props.theme.dark ? 
+                    require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
+                    resizeMode="contain" style={Styles.fullscreenImage}></Image>
+            </View>
             <View>
                 <Text variant="titleLarge" style={Styles.centeredText}>{props.title}</Text>
                 <Text variant="bodyMedium" style={[Styles.centeredText, Styles.bodyText]}>{props.description}</Text>
             </View>
+        </View>
         </Animated.ScrollView>
     );
 }

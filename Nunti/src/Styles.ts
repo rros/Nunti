@@ -59,7 +59,6 @@ const Colors = {
 export const Accents = {
     default: {
         // primary base = #1eba81
-        // secondary base = #935328
 
         dark: {
             primary: '#52dea2', 
@@ -67,10 +66,10 @@ export const Accents = {
             primaryContainer: '#005235',
             onPrimaryContainer: '#72fbbc',
 
-            secondary: '#ffb68b',
-            onSecondary: '#522300',
-            secondaryContainer: '#743400',
-            onSecondaryContainer: '#ffdbc8',
+            secondary: '#b4ccbc',
+            onSecondary: '#20352a',
+            secondaryContainer: '#364b3f',
+            onSecondaryContainer: '#d0e8d8',
             
             tertiary: '#a4cdde',
             onTertiary: '#063543',
@@ -112,10 +111,10 @@ export const Accents = {
             primaryContainer: '#72fbbc',
             onPrimaryContainer: '#002113',
 
-            secondary: '#96490b',
+            secondary: '#4d6356',
             onSecondary: '#ffffff',
-            secondaryContainer: '#ffdbc8',
-            onSecondaryContainer: '#321300',
+            secondaryContainer: '#d0e8d8',
+            onSecondaryContainer: '#0a1f15',
             
             tertiary: '#3c6472',
             onTertiary: '#ffffff',
@@ -147,7 +146,7 @@ export const Accents = {
 
             negative: '#9f4111',
             onNegative: '#ffffff',
-            negativeContainer: '#ffdbcd',
+            negativeContainer: '#ffb597',
             onNegativeContainer: '#360f00',
         },
     },
@@ -241,7 +240,7 @@ export const Accents = {
 
             negative: '#ad2d4a',
             onNegative: '#ffffff',
-            negativeContainer: '#ffd9dc',
+            negativeContainer: '#ffb2bb',
             onNegativeContainer: '#400011',
         },
     },
@@ -334,34 +333,474 @@ export const Accents = {
 
             negative: '#ad2d4a',
             onNegative: '#ffffff',
-            negativeContainer: '#ffd9dc',
+            negativeContainer: '#ffb2bb#84c188',
             onNegativeContainer: '#400011',
         },
     },
     cinnamon: {
-        key: 'cinnamon',
-        light: '#af6050',
-        dark: '#c3a6a2'
+        // primary base = #c3a6a2
+
+        dark: {
+            primary: '#ffb4a5', 
+            onPrimary: '#5f1609',
+            primaryContainer: '#7d2c1c',
+            onPrimaryContainer: '#ffdad3',
+
+            secondary: '#e7bdb4',
+            onSecondary: '#442a24',
+            secondaryContainer: '#5d3f39',
+            onSecondaryContainer: '#ffdad3',
+            
+            tertiary: '#dcc48c',
+            onTertiary: '#3d2f04',
+            tertiaryContainer: '#554519',
+            onTertiaryContainer: '#f9e0a6',
+
+            background: '#201a19',
+            onBackground: '#ede0dd',
+            surface: '#201a19',
+            onSurface: '#ede0dd',
+
+            surfaceVariant: '#534340',
+            onSurfaceVariant: '#d8c2bd',
+            outline: '#a08c88',
+
+            inversePrimary: '#9c4331',
+            inverseSurface: '#fffbff',
+            inverseOnSurface: '#201a19',
+
+            error: Colors.error.dark.error,
+            onError: Colors.error.dark.onError,
+            errorContainer: Colors.error.dark.errorContainer,
+            onErrorContainer: Colors.error.dark.onErrorContainer,
+            
+            positive: '#aad472',
+            onPositive: '#203700',
+            positiveContainer: '#304f00',
+            onPositiveContainer: '#c5f08b',
+
+            negative: '#ffb4a7',
+            onNegative: '#680200',
+            negativeContainer: '#8b190e',
+            onNegativeContainer: '#ffdad4',
+        },
+
+        light: {
+            primary: '#9c4331', 
+            onPrimary: '#ffffff',
+            primaryContainer: '#ffdad3',
+            onPrimaryContainer: '#3e0400',
+
+            secondary: '#775750',
+            onSecondary: '#ffffff',
+            secondaryContainer: '#ffdad3',
+            onSecondaryContainer: '#2c1511',
+            
+            tertiary: '#6e5c2e',
+            onTertiary: '#ffffff',
+            tertiaryContainer: '#f9e0a6',
+            onTertiaryContainer: '#241a00',
+
+            background: '#fffbff',
+            onBackground: '#201a19',
+            surface: '#fffbff',
+            onSurface: '#201a19',
+
+            surfaceVariant: '#f5ddd9',
+            onSurfaceVariant: '#534340',
+            outline: '#85736f',
+
+            inversePrimary: '#ffb4a5',
+            inverseSurface: '#201a19',
+            inverseOnSurface: '#ede0dd',
+
+            error: Colors.error.light.error,
+            onError: Colors.error.light.onError,
+            errorContainer: Colors.error.light.errorContainer,
+            onErrorContainer: Colors.error.light.onErrorContainer,
+            
+            positive: '#456812',
+            onPositive: '#ffffff',
+            positiveContainer: '#c5f08b',
+            onPositiveContainer: '#102000',
+
+            negative: '#ad3223',
+            onNegative: '#ffffff',
+            negativeContainer: '#ffb4aa',
+            onNegativeContainer: '#400100',
+        },
     },
     forest: {
-        key: 'forest',
-        light: '#1b873b',
-        dark: '#84c188'
+        // primary base = #84c188
+
+        dark: {
+            primary: '#88d990', 
+            onPrimary: '#003913',
+            primaryContainer: '#00531e',
+            onPrimaryContainer: '#a4f5aa',
+
+            secondary: '#b8ccb5',
+            onSecondary: '#243424',
+            secondaryContainer: '#3a4b3a',
+            onSecondaryContainer: '#d4e8d1',
+            
+            tertiary: '#a1ced6',
+            onTertiary: '#00363d',
+            tertiaryContainer: '#1f4d54',
+            onTertiaryContainer: '#bdeaf3',
+
+            background: '#1a1c19',
+            onBackground: '#e2e3dd',
+            surface: '#1a1c19',
+            onSurface: '#e2e3dd',
+
+            surfaceVariant: '#424940',
+            onSurfaceVariant: '#c1c9be',
+            outline: '#8b9389',
+
+            inversePrimary: '#1b6c31',
+            inverseSurface: '#fcfdf7',
+            inverseOnSurface: '#1a1c19',
+
+            error: Colors.error.dark.error,
+            onError: Colors.error.dark.onError,
+            errorContainer: Colors.error.dark.errorContainer,
+            onErrorContainer: Colors.error.dark.onErrorContainer,
+            
+            positive: '#8bd88d',
+            onPositive: '#003910',
+            positiveContainer: '#00531a',
+            onPositiveContainer: '#a6f5a7',
+
+            negative: '#ffb597',
+            onNegative: '#591d00',
+            negativeContainer: '#7e2c00',
+            onNegativeContainer: '#ffdbcd',
+        },
+
+        light: {
+            primary: '#1b6c31', 
+            onPrimary: '#ffffff',
+            primaryContainer: '#a4f5aa',
+            onPrimaryContainer: '#002108',
+
+            secondary: '#516350',
+            onSecondary: '#ffffff',
+            secondaryContainer: '#d4e8d1',
+            onSecondaryContainer: '#0f1f11',
+            
+            tertiary: '#39656c',
+            onTertiary: '#ffffff',
+            tertiaryContainer: '#bdeaf3',
+            onTertiaryContainer: '#001f24',
+
+            background: '#fcfdf7',
+            onBackground: '#1a1c19',
+            surface: '#fcfdf7',
+            onSurface: '#1a1c19',
+
+            surfaceVariant: '#dee5d9',
+            onSurfaceVariant: '#424940',
+            outline: '#727970',
+
+            inversePrimary: '#88d990',
+            inverseSurface: '#1a1c19',
+            inverseOnSurface: '#e2e3dd',
+
+            error: Colors.error.light.error,
+            onError: Colors.error.light.onError,
+            errorContainer: Colors.error.light.errorContainer,
+            onErrorContainer: Colors.error.light.onErrorContainer,
+            
+            positive: '#206c2e',
+            onPositive: '#ffffff',
+            positiveContainer: '#a6f5a7',
+            onPositiveContainer: '#002106',
+
+            negative: '#9f4111',
+            onNegative: '#ffffff',
+            negativeContainer: '#ffb597',
+            onNegativeContainer: '#360f00',
+        },
+    },
+    gold: {
+        // primary base = #ffbe00
+
+        dark: {
+            primary: '#fcbc00', 
+            onPrimary: '#402d00',
+            primaryContainer: '#5c4300',
+            onPrimaryContainer: '#ffdea1',
+
+            secondary: '#d8c4a0',
+            onSecondary: '#3b2f15',
+            secondaryContainer: '#53452a',
+            onSecondaryContainer: '#f5e0bb',
+            
+            tertiary: '#b1cfa9',
+            onTertiary: '#1e361b',
+            tertiaryContainer: '#344d30',
+            onTertiaryContainer: '#cdebc3',
+
+            background: '#1e1b16',
+            onBackground: '#e9e1d9',
+            surface: '#1e1b16',
+            onSurface: '#e9e1d9',
+
+            surfaceVariant: '#4d4639',
+            onSurfaceVariant: '#d1c5b4',
+            outline: '#998f80',
+
+            inversePrimary: '#7a5900',
+            inverseSurface: '#fffbff',
+            inverseOnSurface: '#1e1b16',
+
+            error: Colors.error.dark.error,
+            onError: Colors.error.dark.onError,
+            errorContainer: Colors.error.dark.errorContainer,
+            onErrorContainer: Colors.error.dark.onErrorContainer,
+            
+            positive: '#aad472',
+            onPositive: '#203700',
+            positiveContainer: '#304f00',
+            onPositiveContainer: '#c5f08b',
+
+            negative: '#ffb597',
+            onNegative: '#591d00',
+            negativeContainer: '#7e2c00',
+            onNegativeContainer: '#ffdbcd',
+        },
+
+        light: {
+            primary: '#7a5900', 
+            onPrimary: '#ffffff',
+            primaryContainer: '#ffdea1',
+            onPrimaryContainer: '#261900',
+
+            secondary: '#6c5c3f',
+            onSecondary: '#ffffff',
+            secondaryContainer: '#f5e0bb',
+            onSecondaryContainer: '#241a04',
+            
+            tertiary: '#4b6546',
+            onTertiary: '#ffffff',
+            tertiaryContainer: '#cdebc3',
+            onTertiaryContainer: '#082008',
+
+            background: '#fffbff',
+            onBackground: '#1e1b16',
+            surface: '#fffbff',
+            onSurface: '#1e1b16',
+
+            surfaceVariant: '#ede1cf',
+            onSurfaceVariant: '#4d4639',
+            outline: '#7f7667',
+
+            inversePrimary: '#fcbc00',
+            inverseSurface: '#1e1b16',
+            inverseOnSurface: '#e9e1d9',
+
+            error: Colors.error.light.error,
+            onError: Colors.error.light.onError,
+            errorContainer: Colors.error.light.errorContainer,
+            onErrorContainer: Colors.error.light.onErrorContainer,
+            
+            positive: '#456812',
+            onPositive: '#ffffff',
+            positiveContainer: '#c5f08b',
+            onPositiveContainer: '#102000',
+
+            negative: '#9f4111',
+            onNegative: '#ffffff',
+            negativeContainer: '#ffb597',
+            onNegativeContainer: '#360f00',
+        },
     },
     ocean: {
-        key: 'ocean',
-        light: '#0c80a7',
-        dark: '#28bdd7'
+        // primary base = #00ffff
+
+        dark: {
+            primary: '#00dddd', 
+            onPrimary: '#003737',
+            primaryContainer: '#004f4f',
+            onPrimaryContainer: '#00fbfb',
+
+            secondary: '#b0cccb',
+            onSecondary: '#1b3534',
+            secondaryContainer: '#324b4b',
+            onSecondaryContainer: '#cce8e7',
+            
+            tertiary: '#b3c8e8',
+            onTertiary: '#1c314b',
+            tertiaryContainer: '#334863',
+            onTertiaryContainer: '#d3e4ff',
+
+            background: '#191c1c',
+            onBackground: '#e0e3e2',
+            surface: '#191c1c',
+            onSurface: '#e0e3e2',
+
+            surfaceVariant: '#3f4948',
+            onSurfaceVariant: '#bec9c8',
+            outline: '#889392',
+
+            inversePrimary: '#006a6a',
+            inverseSurface: '#fafdfc',
+            inverseOnSurface: '#191c1c',
+
+            error: Colors.error.dark.error,
+            onError: Colors.error.dark.onError,
+            errorContainer: Colors.error.dark.errorContainer,
+            onErrorContainer: Colors.error.dark.onErrorContainer,
+            
+            positive: '#74daa4',
+            onPositive: '#003822',
+            positiveContainer: '#005233',
+            onPositiveContainer: '#90f7be',
+
+            negative: '#ffb597',
+            onNegative: '#591d00',
+            negativeContainer: '#7e2c00',
+            onNegativeContainer: '#ffdbcd',
+        },
+
+        light: {
+            primary: '#006a6a', 
+            onPrimary: '#ffffff',
+            primaryContainer: '#00fbfb',
+            onPrimaryContainer: '#002020',
+
+            secondary: '#4a6363',
+            onSecondary: '#ffffff',
+            secondaryContainer: '#cce8e7',
+            onSecondaryContainer: '#051f1f',
+            
+            tertiary: '#4b607c',
+            onTertiary: '#ffffff',
+            tertiaryContainer: '#d3e4ff',
+            onTertiaryContainer: '#041c35',
+
+            background: '#fafdfc',
+            onBackground: '#191c1c',
+            surface: '#fafdfc',
+            onSurface: '#191c1c',
+
+            surfaceVariant: '#dae5e4',
+            onSurfaceVariant: '#3f4948',
+            outline: '#6f7979',
+
+            inversePrimary: '#00dddd',
+            inverseSurface: '#191c1c',
+            inverseOnSurface: '#e0e3e2',
+
+            error: Colors.error.light.error,
+            onError: Colors.error.light.onError,
+            errorContainer: Colors.error.light.errorContainer,
+            onErrorContainer: Colors.error.light.onErrorContainer,
+            
+            positive: '#006c45',
+            onPositive: '#ffffff',
+            positiveContainer: '#90f7be',
+            onPositiveContainer: '#002112',
+
+            negative: '#9f4111',
+            onNegative: '#ffffff',
+            negativeContainer: '#ffb597',
+            onNegativeContainer: '#360f00',
+        },
     },
     orchid: {
-        key: 'orchid',
-        light: '#c42cc9',
-        dark: '#e68aed'
-    },
-    space: {
-        key: 'space',
-        light: '#47618a',
-        dark: '#99accc'
+        // primary base = #c42cc9
+
+        dark: {
+            primary: '#ffaaf8', 
+            onPrimary: '#5a005e',
+            primaryContainer: '#7f0085',
+            onPrimaryContainer: '#ffd6f7',
+
+            secondary: '#d9bfd3',
+            onSecondary: '#3c2b3a',
+            secondaryContainer: '#544151',
+            onSecondaryContainer: '#f6daef',
+            
+            tertiary: '#f6b8a9',
+            onTertiary: '#4c261c',
+            tertiaryContainer: '#663b30',
+            onTertiaryContainer: '#ffdbd2',
+
+            background: '#1e1a1d',
+            onBackground: '#e9e0e4',
+            surface: '#1e1a1d',
+            onSurface: '#e9e0e4',
+
+            surfaceVariant: '#4e444b',
+            onSurfaceVariant: '#d1c3cb',
+            outline: '#9a8d96',
+
+            inversePrimary: '#a700ae',
+            inverseSurface: '#fffbff',
+            inverseOnSurface: '#1e1a1d',
+
+            error: Colors.error.dark.error,
+            onError: Colors.error.dark.onError,
+            errorContainer: Colors.error.dark.errorContainer,
+            onErrorContainer: Colors.error.dark.onErrorContainer,
+            
+            positive: '#a9d473',
+            onPositive: '#1f3700',
+            positiveContainer: '#2f4f00',
+            onPositiveContainer: '#c4f18c',
+
+            negative: '#ffb2bb',
+            onNegative: '#670021',
+            negativeContainer: '#8c1134',
+            onNegativeContainer: '#ffd9dc',
+        },
+
+        light: {
+            primary: '#a700ae', 
+            onPrimary: '#ffffff',
+            primaryContainer: '#ffd6f7',
+            onPrimaryContainer: '#37003a',
+
+            secondary: '#6d5869',
+            onSecondary: '#ffffff',
+            secondaryContainer: '#f6daef',
+            onSecondaryContainer: '#261625',
+            
+            tertiary: '#825246',
+            onTertiary: '#ffffff',
+            tertiaryContainer: '#ffdbd2',
+            onTertiaryContainer: '#321209',
+
+            background: '#fffbff',
+            onBackground: '#1e1a1d',
+            surface: '#fffbff',
+            onSurface: '#1e1a1d',
+
+            surfaceVariant: '#eddee8',
+            onSurfaceVariant: '#4e444b',
+            outline: '#7f747c',
+
+            inversePrimary: '#ffaaf8',
+            inverseSurface: '#1e1a1d',
+            inverseOnSurface: '#e9e0e4',
+
+            error: Colors.error.light.error,
+            onError: Colors.error.light.onError,
+            errorContainer: Colors.error.light.errorContainer,
+            onErrorContainer: Colors.error.light.onErrorContainer,
+            
+            positive: '#446813',
+            onPositive: '#ffffff',
+            positiveContainer: '#c4f18c',
+            onPositiveContainer: '#102000',
+
+            negative: '#ad2d4a',
+            onNegative: '#ffffff',
+            negativeContainer: '#ffb2bb',
+            onNegativeContainer: '#400011',
+        },
     },
 };
 
@@ -503,11 +942,25 @@ export default Styles = StyleSheet.create ({
         marginHorizontal: 16,
         marginBottom: 4,
     },
+
+    EmptyPageContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
+
+    EmptyPageContent: {
+        paddingHorizontal: 48,
+    },
+
+    EmptyPageImageContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     
     centeredImageContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 24,
+        padding: 24,
     },
     
     fullscreenImage: {
@@ -580,6 +1033,13 @@ export default Styles = StyleSheet.create ({
         flexGrow: 1,
     },
 
+    fabScrollView: {
+        flexGrow: 1,
+        marginHorizontal: 8,
+        marginVertical: 4,
+        paddingBottom: 132,
+    },
+
     fab: {
         bottom: 16,
         right: 16,
@@ -618,12 +1078,12 @@ export default Styles = StyleSheet.create ({
     wizardCardWithButtonContainer: {
         marginVertical: 4,
         marginHorizontal: 8,
-        alignItems: 'center',
     },
     
     wizardCardWithButtonContainer: {
         maxWidth: 560,
         width: '100%',
+        alignSelf: 'center',
     },
 
     snackBarWrapper: {
