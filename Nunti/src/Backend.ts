@@ -995,10 +995,10 @@ export class Backend {
                     } else
                         art.cover = undefined;
 
-                    if (!art.url?.trim()) {
+                    if (art.url == 'about:blank') {
                         try { art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
                     }
-                    if (!art.url?.trim()) {
+                    if (art.url == 'about:blank') {
                         try {
                             const linkElements = item.getElementsByTagName('link');
                             if (linkElements.length == 1)
@@ -1013,7 +1013,7 @@ export class Backend {
                             }
                         } catch { /* dontcare */ }
                     }
-                    if (!art.url?.trim()) {
+                    if (!art.url?.trim() || art.url == 'about:blank') {
                         throw new Error(`Could not find any link to article (title: '${art.title}')`);
                     }
 
@@ -1086,8 +1086,10 @@ export class Backend {
     }
     /* Removes seen (already rated) articles and any duplicates from article list. */
     private static async CleanArticles(arts: Article[]): Promise<Article[]> {
+        const startTime = Date.now();
+        const startCount = arts.length;
         const seen = await this.StorageGet('seen');
-        for(let i = 0; i < seen.length; i++) {
+        for (let i = 0; i < seen.length; i++) {
             let index = this.FindArticleByUrl(seen[i].url,arts);
             while(index >= 0) {
                 arts.splice(index,1);
@@ -1098,7 +1100,7 @@ export class Backend {
         const newarts: Article[] = [];
         for (let i = 0; i < arts.length; i++) {
             if (arts[i] == undefined) {
-                console.warn('Backend, cleanarticles: expected article, got undefined.');
+                console.warn('Backend: [CleanArticles] expected an article, got undefined.');
                 continue;
             }
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
@@ -1109,6 +1111,8 @@ export class Backend {
                     newarts.push(arts[i]);
             }
         }
+        const endTime = Date.now()
+        console.debug(`Backend: [CleanArticles] finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles.`);
         return newarts;
     }
     private static async SortArticles(articles: Article[]): Promise<Article[]> {
