@@ -494,7 +494,7 @@ export class Backend {
                         if (notifcache.seen_urls.indexOf(arts[i].url) < 0) {
                             art = arts[i];
                             notifcache.seen_urls.push(art.url);
-                            notifcache.splice(0, notifcache.length - 20); //keep only last 20
+                            notifcache.seen_urls.splice(0, notifcache.seen_urls.length - 20); //keep only last 20
                             break;
                         }
                     }
@@ -508,7 +508,7 @@ export class Backend {
                 }
             }
         } catch (err) {
-            console.error(`Backed: Exception on backgroundTask, id:${taskId}, error:`, err);
+            console.error(`Backend: Exception on backgroundTask, id:${taskId}, error:`, err);
         } finally {
             console.info(`Backed: Exiting backgroundTask, id:${taskId}`);
         }
@@ -1186,6 +1186,7 @@ export class Backend {
         return score;
     }
     private static async GetArticleCache(): Promise<{timestamp: number | string, articles: Article[]}> {
+        const startTime = Date.now()
         let cache = await FSStore.getItem('cache');
         if (cache == null) {
             console.debug('Cache is null, initializing it.');
@@ -1195,6 +1196,8 @@ export class Backend {
             cache = JSON.parse(cache);
         }
         cache.articles.forEach((art: Article) => { Article.Fix(art); });
+        const endTime = Date.now();
+        console.debug(`Backend: Retrieved article cache in ${endTime - startTime} ms.`);
         return cache;
     }
     /* Fills in article.keywords property, does all the TF-IDF magic. */
