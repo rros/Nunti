@@ -30,7 +30,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { Backend, Article } from '../Backend';
 import { modalRef, snackbarRef, browserRef, globalStateRef } from '../App';
-import EmptyScreenComponent from '../Components/EmptyScreenComponent'
+import EmptyScreenComponent from '../Components/EmptyScreenComponent';
 
 // use a class wrapper to stop rerenders caused by global snack/modal
 class ArticlesPageOptimisedWrapper extends Component {
@@ -72,22 +72,31 @@ function ArticlesPage (props) {
     const bannerAction = useRef('');
     const bannerMessage = useRef('');
 
-    const sourceFilter = useRef([]);
+    const lang = useRef(props.lang); // modal event cannot read updated props
+    const sourceFilter = useRef({sortType: '', search: '', tags: []});
     const flatListRef = useAnimatedRef(); //scrollTo from reanimated doesn't work, use old .scrollToOffset
     
     // on component mount
     useEffect(() => {
-        refresh(true);
+        (async () => {
+            const learningStatus = await Backend.GetLearningStatus();
+            sourceFilter.current.sortType = learningStatus.SortingEnabled ? 'learning' : 'date';
+
+            refresh(true);
+        })();
 
         const onFocus = props.navigation.addListener('focus', () => {
             if(props.route.name != 'feed') { 
                 refresh(false); // reload bookmarks/history on each access
-            } else if (globalStateRef.current.cacheWasReset.current) {
-                console.log("Cache was reset, reloading articles");
-                globalStateRef.current.cacheWasReset.current = false;
+            } else if (globalStateRef.current.shouldFeedReload.current) {
+                console.log("Cache was reset, reloading articles, resetting filter");
+
+                sourceFilter.current.tags = [];
+                sourceFilter.current.search = '';
+
+                globalStateRef.current.shouldFeedReload.current = false;
                 refresh();
             }
-
             setShowImages(!Backend.UserSettings.DisableImages);
         });
         
@@ -97,7 +106,7 @@ function ArticlesPage (props) {
                 if(pickedRoute.name == props.route.name && pickedRoute.params.showFilterModal) {
                     props.navigation.setParams({showFilterModal: false})
                     modalRef.current.showModal(() => <FilterModalContent theme={props.theme}
-                        applyFilter={applyFilter} lang={props.lang}
+                        applyFilter={applyFilter} lang={lang.current}
                         sourceFilter={sourceFilter.current} />);
                 }
             });
@@ -109,6 +118,10 @@ function ArticlesPage (props) {
         }
     }, []);
 
+    useEffect(() => {
+        lang.current = props.lang;
+    });
+
     const refresh = async (refreshIndicator: boolean = true) => {
         flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
         currentPageIndex.current = 0;
@@ -117,7 +130,11 @@ function ArticlesPage (props) {
             setRefreshing(true);
         }
         
-        articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, sourceFilter.current);
+        // TODO BACKEND: uncomment this line and remove the next one when backend implements new filter object
+        // sourceFilter.current => {sortType: '', search: '', tags: []}
+
+        //articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, sourceFilter.current);
+        articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, []);
 
         // create one animation value for each article (row)
         let numberOfArticles = 0;
@@ -135,7 +152,7 @@ function ArticlesPage (props) {
             } else if(Backend.IsDoNotDownloadEnabled && Backend.UserSettings.WifiOnly) {
                 bannerMessage.current = 'wifi_only_banner';
                 bannerAction.current = 'goto_settings';
-            } else if(sourceFilter.current.length != 0) {
+            } else if(sourceFilter.current.tags.length != 0 && sourceFilter.current.search == '') {
                 bannerMessage.current = 'filter_nothing_found_banner';
                 bannerAction.current = 'open_filter';
             } else {
@@ -166,13 +183,25 @@ function ArticlesPage (props) {
         });
     }
 
-    const applyFilter = (appliedFilter: []) => {
+    const applySorting = (sortType: string) => {
         setRefreshing(true);
 
-        sourceFilter.current = appliedFilter;
+        sourceFilter.current.sortType = sortType;
+        refresh(true);
+    
+        console.log(sourceFilter)
+    }
+
+    const applyFilter = (search: string, tags: []) => {
+        setRefreshing(true);
+
+        sourceFilter.current.tags = tags;
+        sourceFilter.current.search = search;
         
         modalRef.current.hideModal();
-        refresh();
+        refresh(true);
+        
+        console.log(sourceFilter)
     }
 
     const modifyArticle = async (article: Article, direction: string) => {
@@ -293,6 +322,8 @@ function ArticlesPage (props) {
                 contentContainerStyle={{ flexGrow: 1 }}
 
                 renderItem={renderItem}
+                ListHeaderComponent={props.source == 'feed' ? <SortingSegmentedButton applySorting={applySorting}
+                    theme={props.theme} lang={props.lang} sourceFilter={sourceFilter.current} /> : null}
                 ListEmptyComponent={<ListEmptyComponent theme={props.theme} lang={props.lang} route={props.route} />}
                 ListFooterComponent={() => articlePage.length != 0 ? (
                     <View style={Styles.footerContainer}>
@@ -331,22 +362,72 @@ function ListEmptyComponent ({ theme, route, lang }) {
     }
 }
 
-function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {
-    const [inputValue, setInputValue] = useState(sourceFilter.length > 0 ? sourceFilter[0] : '');
-    const [tags, setTags] = useState([]);
-    const [forceValue, forceUpdate] = useState(false);
-    
+function SortingSegmentedButton({ theme, lang, sourceFilter, applySorting }) {
+    const [sortType, setSortType] = useState();
+    const [learningDisabled, setLearningDisabled] = useState();
+
     // on component mount
     useEffect(() => {
-        const newTags = tags;
-        
-        (sourceFilter.slice(1, sourceFilter.length)).forEach((tagName) => {    
-            tags.push({name: tagName});
-        });
-        
-        setTags(newTags);
-        forceUpdate(!forceValue);
+        (async () => {
+            const learningStatus = await Backend.GetLearningStatus();
+            setLearningDisabled(!learningStatus.SortingEnabled);
+            setSortType(learningStatus.SortingEnabled ? 'learning' : 'date');
+        })();
     }, []);
+
+    useEffect(() => {
+        (async () => {
+            const learningStatus = await Backend.GetLearningStatus();
+            setLearningDisabled(!learningStatus.SortingEnabled);
+        })();
+    });
+
+    const changesortType = (newSortType) => {
+        if(sortType != newSortType) {
+            setSortType(newSortType);
+            applySorting(newSortType);
+        }
+    }
+    
+    return(
+        <View style={[Styles.segmentedButtonContainerOutline, {backgroundColor: theme.colors.outline}]}>
+        <View style={Styles.segmentedButtonContainer}>
+            <View style={{flex: 1}}>
+            <TouchableNativeFeedback disabled={learningDisabled} style={{backgroundColor: theme.colors.surface}}
+                background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+                onPress={() => changesortType('learning')}>
+                <View style={[Styles.segmentedButton, {borderRightColor: theme.colors.outline, backgroundColor: (!learningDisabled ? 
+                    (sortType == 'learning' ? theme.colors.secondaryContainer : theme.colors.surface) : theme.colors.pressedState)}]}>
+                    { sortType == 'learning' ? <Icon size={18} name="check" color={theme.colors.onSecondaryContainer} 
+                        style={Styles.segmentedButtonIcon}/> : null }
+                    <Text variant="labelLarge" style={{color: (sortType == 'learning' ? 
+                        theme.colors.onSecondaryContainer : theme.colors.onSurface)}}>{lang.sort_learning}</Text>
+                </View>
+            </TouchableNativeFeedback>
+            </View>
+
+            <View style={{flex: 1}}>
+            <TouchableNativeFeedback
+                background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+                onPress={() => changesortType('date')}>
+                <View style={[Styles.segmentedButton, {borderRightWidth: 0, backgroundColor: (sortType == 'date' ? 
+                    theme.colors.secondaryContainer : theme.colors.surface)}]}>
+                    { sortType == 'date' ? <Icon size={18} name="check" color={theme.colors.onSecondaryContainer} 
+                        style={Styles.segmentedButtonIcon}/> : null }
+                    <Text variant="labelLarge" style={{color: (sortType == 'date' ? 
+                        theme.colors.onSecondaryContainer : theme.colors.onSurface)}}>{lang.sort_date}</Text>
+                </View>
+            </TouchableNativeFeedback>
+            </View>
+        </View>
+        </View>
+    );
+}
+
+function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {
+    const [inputValue, setInputValue] = useState(sourceFilter.search);
+    const [tags, setTags] = useState(sourceFilter.tags);
+    const [forceValue, forceUpdate] = useState(false);
 
     const tagClick = (tag: Tag) => {
         const newTags = tags;
@@ -364,19 +445,14 @@ function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {
     const createFilter = () => {
         const newFilter = [];
 
-        newFilter.push(inputValue);
-        for(let i = 0; i < tags.length; i++){
-            newFilter.push(tags[i].name);
-        }
-
-        applyFilter(newFilter);
+        applyFilter(inputValue, tags);
     }
 
     const clearFilter = () => {
-        if(sourceFilter.length == 0) {
+        if(sourceFilter.tags.length == 0 ** sourceFilter.search == '') {
             modalRef.current.hideModal();
         } else {
-            applyFilter([]);
+            applyFilter('', []);
         }
     }
 

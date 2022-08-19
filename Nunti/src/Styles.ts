@@ -1012,22 +1012,6 @@ export default Styles = StyleSheet.create ({
     chip: {
         margin: 4
     },
-    
-    //settingsButtonDialog: { // no horizontal padding version
-        //paddingVertical: 16,
-    //},
-    
-    //settingsDetailsTextInputContainer: {
-        //marginBottom: 16,
-    //},
-    
-    //settingsDetailsTextInput: {
-        //flex: 1,
-    //}, 
-
-    //settingsDetailsInfo: {
-        //paddingBottom: 16,
-    //},
 
     fabContainer: {
         flexGrow: 1,
@@ -1089,15 +1073,19 @@ export default Styles = StyleSheet.create ({
     snackBarWrapper: {
         position: 'absolute',
         bottom: 8,
-        left: 8,
-        right: 8,
+        alignSelf: 'center',
+        alignItems: 'center',
         maxWidth: 344,
+        width: '100%',
+    },
+
+    snackBarBase: {
+        width: '100%',
         borderRadius: 4,
         elevation: 2,
     },
 
     snackBar: {
-        width: '100%',
         minHeight: 48,
         paddingVertical: 8,
         paddingLeft: 16,
@@ -1105,7 +1093,6 @@ export default Styles = StyleSheet.create ({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        //overflow: 'hidden'
     },
 
     switchOutline: {
@@ -1128,4 +1115,32 @@ export default Styles = StyleSheet.create ({
     switchThumb: {
         borderRadius: 12
     },
+
+    segmentedButtonContainerOutline: {
+        height: 40,
+        padding: 1,
+        borderRadius: 20,
+        margin: 8,
+        flex: 1,
+    },
+
+    segmentedButtonContainer: {
+        borderRadius: 20,
+        flexDirection: 'row',
+        overflow: 'hidden',
+        flex: 1,
+    },
+
+    segmentedButton: {
+        flexDirection: 'row',
+        paddingHorizontal: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        borderRightWidth: 1,
+    },
+
+    segmentedButtonIcon: {
+        marginRight: 8,
+    }
 });

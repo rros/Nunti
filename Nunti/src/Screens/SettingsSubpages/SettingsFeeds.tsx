@@ -106,7 +106,7 @@ function FeedAddModal ({lang, changeFeedsParentState}) {
             const feed:Feed = await Feed.New(await Feed.GuessRSSLink(inputValue));
             snackbarRef.current.showSnack((lang.added_feed).replace('%feed%', ("\"" + feed.name + "\"")));
             changeFeedsParentState(Backend.UserSettings.FeedList, true);
-            globalStateRef.current.resetCache();
+            globalStateRef.current.reloadFeed(true);
         } catch(err) {
             console.error('Can\'t add RSS feed',err);
             snackbarRef.current.showSnack(lang.add_feed_fail);
@@ -146,7 +146,7 @@ function FeedRemoveModal ({feed, lang, changeFeedsParentState}) {
         
         changeFeedsParentState(Backend.UserSettings.FeedList);
         modalRef.current.hideModal();
-        globalStateRef.current.resetCache();
+        globalStateRef.current.reloadFeed(true);
     }
 
     return(
@@ -183,7 +183,7 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
         await Feed.Save(feed);
 
         changeFeedsParentState(Backend.UserSettings.FeedList);
-        globalStateRef.current.resetCache();
+        globalStateRef.current.reloadFeed(false);
         
         setInputValue('');
         setLoading(false);
@@ -197,7 +197,7 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
         await Feed.Save(feed);
 
         changeFeedsParentState(Backend.UserSettings.FeedList);
-        globalStateRef.current.resetCache();
+        globalStateRef.current.reloadFeed(false);
     }
 
     const changeFeedTag = async (tag: Tag) => {
@@ -211,7 +211,7 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
         forceUpdate(!forceValue);
 
         changeFeedsParentState(Backend.UserSettings.FeedList);
-        globalStateRef.current.resetCache();
+        globalStateRef.current.reloadFeed(false);
     }
 
     return(

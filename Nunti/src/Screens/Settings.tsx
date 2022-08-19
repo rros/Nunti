@@ -178,7 +178,7 @@ function SettingsMain (props) {
             globalStateRef.current.updateLanguage(Backend.UserSettings.Language);
             globalStateRef.current.updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
 
-            globalStateRef.current.resetCache();
+            globalStateRef.current.reloadFeed(true);
         } else {
             snackbarRef.current.showSnack(props.lang.import_fail_invalid);
         }

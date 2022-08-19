@@ -201,7 +201,9 @@ export const English = {
     open_filter: 'Open filters',
     goto_settings: 'View settings',
     learn_more: 'Learn more',
-    complete_wizard_first: 'Complete the wizard first'
+    complete_wizard_first: 'Complete the wizard first',
+    sort_date: 'By date',
+    sort_learning: 'By preferences'
 };
 
 export const Czech = {
@@ -405,7 +407,9 @@ export const Czech = {
     goto_settings: 'Zobrazit nastavení',
     remove_tag: 'Odstranit štítek?', 
     learn_more: 'Zjistit více',
-    complete_wizard_first: 'Nejprve dokončete průvodce'
+    complete_wizard_first: 'Nejprve dokončete průvodce',
+    sort_date: 'Podle data',
+    sort_learning: 'Podle preferencí'
 };
 
 export const Japanese = {
@@ -609,7 +613,9 @@ export const Japanese = {
     goto_settings: '設定を見る',
     remove_tag: 'タグを外す？', 
     learn_more: '詳細はこちら',
-    complete_wizard_first: 'ウィザードを先に完了させる'
+    complete_wizard_first: 'ウィザードを先に完了させる',
+    sort_date: '日付別',
+    sort_learning: 'プリファレンス別'
 };
 
 export const Italian = {
@@ -813,7 +819,9 @@ export const Italian = {
     goto_settings: 'Vai alle impostazioni',
     remove_tag: 'Rimuovere il tag?',
     learn_more: 'Per saperne di più',
-    complete_wizard_first: 'Completare prima la procedura guidata'
+    complete_wizard_first: 'Completare prima la procedura guidata',
+    sort_date: 'Per data',
+    sort_learning: 'Per preferenze'
 };
 
 export const Polish = {
@@ -1017,7 +1025,9 @@ export const Polish = {
     goto_settings: 'Zobacz ustawienia',
     remove_tag: 'Usunąć tag?', 
     learn_more: 'Czytaj więcej',
-    complete_wizard_first: 'Najpierw należy ukończyć kreatora'
+    complete_wizard_first: 'Najpierw należy ukończyć kreatora',
+    sort_date: 'Według daty',
+    sort_learning: 'Według preferencji'
 };
 
 export const German = {
@@ -1221,7 +1231,9 @@ export const German = {
     goto_settings: 'Einstellungen anzeigen',
     remove_tag: 'Tag entfernen?',
     learn_more: 'Mehr erfahren',
-    complete_wizard_first: 'Schließe zuerst den Assistenten ab'
+    complete_wizard_first: 'Schließe zuerst den Assistenten ab',
+    sort_date: 'Nach Datum',
+    sort_learning: 'Nach Vorlieben'
 };
 
 export const French = {
@@ -1425,7 +1437,9 @@ export const French = {
     goto_settings: 'Afficher les paramètres',
     remove_tag: 'Supprimer le tag?', 
     learn_more: 'En savoir plus',
-    complete_wizard_first: 'Complétez d\'abord l\'assistant'
+    complete_wizard_first: 'Complétez d\'abord l\'assistant',
+    sort_date: 'Par date',
+    sort_learning: 'Par préférences'
 };
 
 export const BrazilianPortuguese = {
@@ -1629,5 +1643,7 @@ export const BrazilianPortuguese = {
     goto_settings: 'Ver configurações',
     remove_tag: 'Remover a tag?', 
     learn_more: 'Saiba mais',
-    complete_wizard_first: 'Complete primeiro o assistente'
+    complete_wizard_first: 'Complete primeiro o assistente',
+    sort_date: 'Por data',
+    sort_learning: 'Por preferências'
 };

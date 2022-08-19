@@ -46,16 +46,20 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
 
                 Backend.UserSettings.MaxArticleAgeDays = newValueNumber;
                 setMaxArtAge(newValueNumber);
+                
+                globalStateRef.current.reloadFeed(false);
                 break;
             case 'discovery':
-                if(newValueNumber < 0) {
+                if(newValueNumber < 0 || newValueNumber > 100) {
                     snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
-                    modalRef.current.hideModal();
+                    modalRef.current.hideModal(false);
                     return;
                 }
 
                 Backend.UserSettings.DiscoverRatio = newValueNumber / 100;
                 setDiscovery(newValueNumber);
+                
+                globalStateRef.current.reloadFeed(true);
                 break;
             case 'cache_time':
                 if(newValueNumber < 0) {
@@ -66,9 +70,11 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
 
                 Backend.UserSettings.ArticleCacheTime = newValueNumber;
                 setCacheTime(newValueNumber);
+                
+                globalStateRef.current.reloadFeed(false);
                 break;
             case 'art_history':
-                if(newValueNumber < 0) {
+                if(newValueNumber < 1) {
                     snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
                     modalRef.current.hideModal();
                     return;
@@ -76,6 +82,7 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
 
                 Backend.UserSettings.ArticleHistory = newValueNumber;
                 setArtHistory(newValueNumber);
+ 
                 break;
             case 'page_size':
                 if(newValueNumber < 1) {
@@ -86,6 +93,8 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
 
                 Backend.UserSettings.FeedPageSize = newValueNumber;
                 setPageSize(newValueNumber);
+                
+                globalStateRef.current.reloadFeed(false);
                 break;
             case 'max_art_feed':
                 if(newValueNumber < 1) {
@@ -96,6 +105,8 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
 
                 Backend.UserSettings.MaxArticlesPerChannel = newValueNumber;
                 setMaxArtFeed(newValueNumber);
+                
+                globalStateRef.current.reloadFeed(true);
                 break;
             default: 
                 console.error('Advanced settings change was not applied');
@@ -107,7 +118,6 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
         
         snackbarRef.current.showSnack(props.lang['change_' + type + '_success']);
         modalRef.current.hideModal();
-        globalStateRef.current.resetCache();
     }
 
     return(
@@ -220,7 +230,7 @@ function ResetCacheModal ({lang, theme}) {
         snackbarRef.current.showSnack(lang.reset_art_cache);
         modalRef.current.hideModal();
         
-        globalStateRef.current.resetCache();
+        globalStateRef.current.reloadFeed(true);
     }
 
     return(

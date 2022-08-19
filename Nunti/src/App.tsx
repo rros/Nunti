@@ -82,7 +82,7 @@ export default function App (props) {
     const [prefsLoaded, setPrefsLoaded] = useState(false);
     const [forceValue, forceUpdate] = useState(false);
     
-    const cacheWasReset = useRef(false);
+    const shouldFeedReload = useRef(false);
     
     // animations
     const snackAnim = useSharedValue(0);
@@ -465,9 +465,12 @@ export default function App (props) {
         }
     }
 
-    const resetCache = () => {
-        cacheWasReset.current = true;
-        Backend.ResetCache();
+    const reloadFeed = (resetCache: boolean = true) => {
+        shouldFeedReload.current = true;
+
+        if(resetCache) {
+            Backend.ResetCache();
+        }
     }
 
     const resetApp = async () => {
@@ -488,7 +491,7 @@ export default function App (props) {
     useImperativeHandle(snackbarRef, () => ({ showSnack }));
     useImperativeHandle(browserRef, () => ({ openBrowser }));
     useImperativeHandle(globalStateRef, () => ({ updateLanguage, updateTheme, resetApp, 
-        resetCache, cacheWasReset }));
+        reloadFeed, shouldFeedReload }));
 
     if(prefsLoaded == false){
         return null;
@@ -555,13 +558,15 @@ export default function App (props) {
                     </View>
                 </View> : null}
                 
-                { snackVisible ? <Animated.View style={[Styles.snackBarWrapper, snackAnimStyle, {backgroundColor: theme.colors.inverseSurface, overflow: 'hidden'}]}>
+                { snackVisible ? <View style={Styles.snackBarWrapper}>
+                <Animated.View style={[Styles.snackBarBase, snackAnimStyle, {backgroundColor: theme.colors.inverseSurface}]}>
                     <View style={[Styles.snackBar, {backgroundColor: theme.colors.inverseElevation.level2}]}>
-                        <Text style={{color: theme.colors.inverseOnSurface, flexShrink: 1}}>{snackMessage}</Text>
+                        <Text style={{color: theme.colors.inverseOnSurface, flexShrink: 1, marginRight: 8}}>{snackMessage}</Text>
                         <Button textColor={theme.colors.inversePrimary}
                             onPress={hideSnack}>{language.dismiss}</Button>
                     </View>
-                </Animated.View> : null }
+                </Animated.View>
+                </View> : null }
             </Portal>
         </PaperProvider>
         </GestureHandlerRootView>

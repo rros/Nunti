@@ -18,7 +18,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
-import { modalRef, snackbarRef } from '../../App';
+import { modalRef, snackbarRef, globalStateRef } from '../../App';
 import { Backend, Tag } from '../../Backend';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 
@@ -137,6 +137,7 @@ function TagRemoveModal ({tag, lang, changeTagsParentState}) {
         modalRef.current.hideModal();
         snackbarRef.current.showSnack((lang.removed_tag).replace('%tag%',
             ("\"" + tag.name + "\"")));
+        globalStateRef.current.reloadFeed(false);
     }
 
     return(
