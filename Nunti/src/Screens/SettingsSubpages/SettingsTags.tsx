@@ -39,11 +39,13 @@ function SettingsTags (props) {
             (index == 0) ? Styles.flatListCardTop : undefined,
             (index == tags.length - 1) ? Styles.flatListCardBottom : undefined]}>
             <View style={[Styles.settingsRowContainer, Styles.settingsButton]}>
-                <Icon style={Styles.settingsIcon} name="tag" 
-                    size={24} color={props.theme.colors.secondary} />
-                <Text variant="titleMedium" style={{flexShrink: 1}}>{item.name}</Text>
+                <View style={[Styles.settingsLeftContent, Styles.settingsRowContainer]}>
+                    <Icon style={Styles.settingsIcon} name="tag" 
+                        size={24} color={props.theme.colors.secondary} />
+                    <Text variant="titleMedium" style={{flexShrink: 1, color: props.theme.colors.onSurfaceVariant}}>{item.name}</Text>
+                </View>
                     
-                <View style={Styles.settingsRightContent}>
+                <View>
                     <TouchableNativeFeedback
                         background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                         onPress={() => modalRef.current.showModal(() => <TagRemoveModal lang={props.lang}

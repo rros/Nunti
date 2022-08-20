@@ -28,7 +28,7 @@ function About (props) {
                 {props.lang.app_info}</Text>
             <Card mode={'contained'} style={Styles.card}>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{version}</Text>
+                    <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{version}</Text>
                 </View>
             </Card>
 
@@ -36,10 +36,10 @@ function About (props) {
                 {props.lang.made_by}</Text>
             <Card mode={'contained'} style={Styles.card}>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{'Richard Klapáč'}</Text>
+                    <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{'Richard Klapáč'}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{'Ondřej Foltýn'}</Text>
+                    <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{'Ondřej Foltýn'}</Text>
                 </View>
             </Card>
 
@@ -51,7 +51,7 @@ function About (props) {
                     onPress={() => browserRef.current.openBrowser(
                         'https://gitlab.com/ondrejfoltyn/nunti/-/issues')}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.issue_tracker}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.issue_tracker}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>

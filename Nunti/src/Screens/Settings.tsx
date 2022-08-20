@@ -29,6 +29,7 @@ const Stack = createNativeStackNavigator();
 import SettingsTags from './SettingsSubpages/SettingsTags';
 import SettingsFeeds from './SettingsSubpages/SettingsFeeds';
 import SettingsAdvanced from './SettingsSubpages/SettingsAdvanced';
+import SettingsBackground from './SettingsSubpages/SettingsBackground';
 import SettingsLearning from './SettingsSubpages/SettingsLearning';
 
 // use a class wrapper to stop rerenders caused by global snack/modal
@@ -70,20 +71,24 @@ class Settings extends Component {
                     theme={this.props.theme} screenType={this.props.screenType} />, animation: 'fade' 
                         /* animation slide in from right is too laggy and the default one is very very weird */}}>
                 <Stack.Screen name="settings">
-                    {props => <SettingsMain {...props} lang={this.props.lang} resetApp={this.props.resetApp}
+                    {props => <SettingsMain {...props} lang={this.props.lang}
                         Languages={this.props.Languages} theme={this.props.theme} />}
                 </Stack.Screen>
                 <Stack.Screen name="tags">
                     {props => <SettingsTags {...props} isLargeScreen={this.props.isLargeScreen}
-                        lang={this.props.lang} cacheReset={this.props.cacheReset} />}
+                        lang={this.props.lang} />}
                 </Stack.Screen>
                 <Stack.Screen name="feeds">
                     {props => <SettingsFeeds {...props} isLargeScreen={this.props.isLargeScreen}
-                        lang={this.props.lang} cacheReset={this.props.cacheReset} />}
+                        lang={this.props.lang} />}
+                </Stack.Screen>
+                <Stack.Screen name="background">
+                    {props => <SettingsBackground {...props}
+                        lang={this.props.lang} />}
                 </Stack.Screen>
                 <Stack.Screen name="advanced">
                     {props => <SettingsAdvanced {...props}
-                        lang={this.props.lang} cacheReset={this.props.cacheReset} />}
+                        lang={this.props.lang} />}
                 </Stack.Screen>
                 <Stack.Screen name="learning">
                     {props => <SettingsLearning {...props}
@@ -208,8 +213,8 @@ function SettingsMain (props) {
                         lang={props.lang} Languages={props.Languages} theme={props.theme} 
                         changeLanguageParentState={setLanguage} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.language}</Text>
-                        <Text variant="labelSmall">{props.lang[language]}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.language}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang[language]}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback 
@@ -218,26 +223,30 @@ function SettingsMain (props) {
                         lang={props.lang} theme={props.theme} 
                         changeBrowserModeParentState={setBrowserMode} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.browser_mode}</Text>
-                        <Text variant="labelSmall">{props.lang[browserMode]}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.browser_mode}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang[browserMode]}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback 
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => changeWifiOnly()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
-                        <Text variant="titleMedium">{props.lang.wifi_only}</Text>
-                        <Switch value={wifiOnly} style={Styles.settingsRightContent}
-                            onValueChange={() => changeWifiOnly()} />
+                        <View style={Styles.settingsLeftContent}>
+                            <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.wifi_only}</Text>
+                            <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.wifi_only_description}</Text>
+                        </View>
+                        <Switch value={wifiOnly} />
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => changeDisableImages()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
-                        <Text variant="titleMedium">{props.lang.no_images}</Text>
-                        <Switch value={disableImages} style={Styles.settingsRightContent}
-                            onValueChange={() => changeDisableImages()} />
+                        <View style={Styles.settingsLeftContent}>
+                            <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.no_images}</Text>
+                            <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.no_images_description}</Text>
+                        </View>
+                        <Switch value={disableImages} />
                     </View>
                 </TouchableNativeFeedback>
             </Card>
@@ -249,8 +258,8 @@ function SettingsMain (props) {
                         lang={props.lang} theme={props.theme} 
                         changeThemeParentState={setTheme} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.theme}</Text>
-                        <Text variant="labelSmall">{props.lang[theme]}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.theme}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang[theme]}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
@@ -259,8 +268,8 @@ function SettingsMain (props) {
                         lang={props.lang} theme={props.theme} 
                         changeAccentParentState={setAccent} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.accent}</Text>
-                        <Text variant="labelSmall">{props.lang[accent]}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.accent}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang[accent]}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
@@ -270,14 +279,14 @@ function SettingsMain (props) {
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={importBackup}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.import}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.import}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={exportBackup}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.export}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.export}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
@@ -287,16 +296,16 @@ function SettingsMain (props) {
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => props.navigation.navigate('feeds')}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.feeds}</Text>
-                        <Text variant="labelSmall">{feeds.length}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.feeds}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{feeds.length}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback 
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => props.navigation.navigate('tags')}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.tags}</Text>
-                        <Text variant="labelSmall">{tags.length}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.tags}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{tags.length}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
@@ -306,18 +315,28 @@ function SettingsMain (props) {
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => props.navigation.navigate('learning')}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.learning}</Text>
-                        <Text variant="labelSmall">{learningStatus?.SortingEnabled ? 
-                            props.lang.learning_enabled : (props.lang.rate_more).replace('%articles%',
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.learning}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{learningStatus?.SortingEnabled ? 
+                            props.lang.enabled : (props.lang.rate_more).replace('%articles%',
                                 learningStatus?.SortingEnabledIn)}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => props.navigation.navigate('background')}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.background}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{(Backend.UserSettings.EnableNotifications ||
+                            Backend.UserSettings.EnableBackgroundSync) ? 
+                            props.lang.enabled : props.lang.disabled}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback 
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => props.navigation.navigate('advanced')}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.advanced}</Text>
-                        <Text variant="labelSmall">{props.lang.advanced_description}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.advanced}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.advanced_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
@@ -527,10 +546,10 @@ function ResetDataModal ({lang, theme}) {
 function ModalRadioButton({lang, theme, value, changeValue, disabled}) {
     return(
         <TouchableNativeFeedback disabled={disabled}
-            background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+            background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}
             onPress={() => changeValue(value)}>
             <View style={[Styles.modalRadioButton, Styles.settingsRowContainer,
-                {backgroundColor: disabled ? theme.colors.pressedState : 'transparent'}]}>
+                {backgroundColor: disabled ? theme.colors.disabledState : 'transparent'}]}>
                 <RadioButton.Android value={value} disabled={disabled} />
                 <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
                     {lang[value]}</Text>

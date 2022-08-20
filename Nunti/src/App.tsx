@@ -390,6 +390,11 @@ export default function App (props) {
         theme.colors.errorContainer = palette.errorContainer;
         theme.colors.onErrorContainer = palette.onErrorContainer;
         
+        theme.colors.warn = palette.warn;
+        theme.colors.onWarn = palette.onWarn;
+        theme.colors.warnContainer = palette.warnContainer;
+        theme.colors.onWarnContainer = palette.onWarnContainer;
+        
         theme.colors.positive = palette.positive;
         theme.colors.onPositive = palette.onPositive;
         theme.colors.positiveContainer = palette.positiveContainer;
@@ -415,6 +420,7 @@ export default function App (props) {
         //theme.colors.elevation.level5 = Color(palette.primary).alpha(0.14).toString();
 
         theme.colors.pressedState = Color(palette.onSurface).alpha(0.12).toString();
+        theme.colors.disabledState = Color(palette.onSurfaceVariant).alpha(0.12).toString();
         theme.colors.backdrop = Color(palette.onSurface).alpha(0.20).toString(); // recommended value is 0.32
 
         return theme;

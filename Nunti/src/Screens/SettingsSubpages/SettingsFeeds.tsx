@@ -15,7 +15,6 @@ import {
     withTheme
 } from 'react-native-paper';
 
-import * as ScopedStorage from 'react-native-scoped-storage';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
@@ -45,12 +44,15 @@ function SettingsFeeds (props) {
             background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
             onPress={() => modalRef.current.showModal(() => <FeedDetailsModal lang={props.lang}
                 feed={item} theme={props.theme} changeFeedsParentState={changeFeedsParentState} />)}>
-        <View style={[Styles.settingsRowContainer, Styles.settingsButton]}>
-            <Icon style={Styles.settingsIcon} name="rss" 
-                size={24} color={props.theme.colors.secondary} />
-            <Text variant="titleMedium" style={{flexShrink: 1}}>{item.name}</Text>
+        <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+            <View style={[Styles.settingsLeftContent, Styles.settingsRowContainer]}>
+                <Icon style={Styles.settingsIcon} name={item.status == 0 ? 'rss' : (item.status >= 5 ? 'close-circle' : 'alert')}
+                    size={24} color={item.status == 0 ? props.theme.colors.secondary : (item.status >= 5 ? props.theme.colors.error : 
+                        props.theme.colors.warn )} />
+                <Text variant="titleMedium" style={{flexShrink: 1, color: props.theme.onSurfaceVariant}}>{item.name}</Text>
+            </View>
             
-            <View style={Styles.settingsRightContent}>
+            <View>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => modalRef.current.showModal(() => <FeedRemoveModal lang={props.lang}
@@ -217,11 +219,22 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
     return(
         <>
         <Dialog.Icon icon="rss" />
-        <Dialog.Title style={Styles.centeredText}>{lang.feed_status}</Dialog.Title>
+        <Dialog.Title style={Styles.centeredText}>{lang.feed_details}</Dialog.Title>
         <View style={[Styles.modalScrollArea, {borderTopColor: theme.colors.outline, 
             borderBottomColor: theme.colors.outline}]}>
             <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={Styles.settingsModalButton}>
+                <View style={[Styles.settingsModalButton, Styles.settingsRowContainer]}>
+                    <View style={Styles.settingsLeftContent}>
+                        <Text variant="titleMedium">{lang.feed_status}</Text>
+                        <Text variant="labelSmall">{feed.status == 0 ? lang.feed_status_ok : 
+                            (feed.status >= 5 ? lang.feed_status_error : lang.feed_status_warn)}</Text>
+                    </View>
+
+                    <Icon name={feed.status == 0 ? 'check-circle' : (feed.status >= 5 ? 'close-circle' : 'alert')}
+                        size={24} color={feed.status == 0 ? theme.colors.secondary : (feed.status >= 5 ? theme.colors.error : 
+                            theme.colors.warn )} />
+                </View>
+                <View style={[Styles.settingsModalButton, {paddingTop: 0}]}>
                     <Text variant="titleMedium">{'URL'}</Text>
                     <Text variant="labelSmall">{feed.url}</Text>
                 </View>
@@ -244,18 +257,22 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
                         background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
                         onPress={() => changeFeedOption('noImages')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer, {paddingHorizontal: 0}]}>
-                            <Text variant="titleMedium">{lang.no_images}</Text>
-                            <Switch value={noImages} style={Styles.settingsRightContent}
-                                onValueChange={() => changeFeedOption('noImages')} />
+                            <View style={Styles.settingsLeftContent}>
+                                <Text variant="titleMedium">{lang.no_images}</Text>
+                                <Text variant="labelSmall">{lang.no_images_description}</Text>
+                            </View>
+                            <Switch value={noImages} />
                         </View>
                     </TouchableNativeFeedback>
                     <TouchableNativeFeedback
                         background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
                         onPress={() => changeFeedOption('enabled')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer, {paddingHorizontal: 0}]}>
-                            <Text variant="titleMedium">{lang.hide_feed}</Text>
-                            <Switch value={enabled} style={Styles.settingsRightContent}
-                                onValueChange={() => changeFeedOption('enabled')} />
+                            <View style={Styles.settingsLeftContent}>
+                                <Text variant="titleMedium">{lang.hide_feed}</Text>
+                                <Text variant="labelSmall">{lang.hide_feed_description}</Text>
+                            </View>
+                            <Switch value={enabled} />
                         </View>
                     </TouchableNativeFeedback>
                 </View>

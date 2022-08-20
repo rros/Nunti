@@ -12,17 +12,15 @@ import {
     Card,
 } from 'react-native-paper';
 
-import * as ScopedStorage from 'react-native-scoped-storage';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
 import { modalRef, snackbarRef, globalStateRef } from '../../App';
 import { Backend } from '../../Backend';
-import { Accents } from '../../Styles';
 
-function SettingsAdvanced (props) { // not using purecomponent as it doesn't rerender array map
+function SettingsAdvanced (props) {
     const [maxArtAge, setMaxArtAge] = useState(Backend.UserSettings.MaxArticleAgeDays);
     const [discovery, setDiscovery] = useState(Backend.UserSettings.DiscoverRatio * 100);
-    const [cacheTime, setCacheTime] = useState(Backend.UserSettings.ArticleCacheTime);
+    const [cacheTime, setCacheTime] = useState(Backend.UserSettings.ArticleCacheTime / 60);
     const [pageSize, setPageSize] = useState(Backend.UserSettings.FeedPageSize);
     const [maxArtFeed, setMaxArtFeed] = useState(Backend.UserSettings.MaxArticlesPerChannel);
     const [artHistory, setArtHistory] = useState(Backend.UserSettings.ArticleHistory);
@@ -62,13 +60,13 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
                 globalStateRef.current.reloadFeed(true);
                 break;
             case 'cache_time':
-                if(newValueNumber < 0) {
+                if(newValueNumber < 1) {
                     snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
                     modalRef.current.hideModal();
                     return;
                 }
 
-                Backend.UserSettings.ArticleCacheTime = newValueNumber;
+                Backend.UserSettings.ArticleCacheTime = newValueNumber * 60;
                 setCacheTime(newValueNumber);
                 
                 globalStateRef.current.reloadFeed(false);
@@ -129,28 +127,28 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
                         lang={props.lang} title={'max_art_age'} icon={'clock-outline'} suffix={props.lang.days}
                         currentValue={maxArtAge} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.max_art_age}</Text>
-                        <Text variant="labelSmall">{props.lang.max_art_age_description}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.max_art_age}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{props.lang.max_art_age_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => modalRef.current.showModal(() => <ChangeAdvancedModal 
-                        lang={props.lang} title={'discovery'} icon={'book-search'} suffix={' %'} 
+                        lang={props.lang} title={'discovery'} icon={'book-search'} suffix={'%'} 
                         currentValue={discovery} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.discovery}</Text>
-                        <Text variant="labelSmall">{props.lang.discovery_description}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.discovery}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{props.lang.discovery_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => modalRef.current.showModal(() => <ChangeAdvancedModal 
-                        lang={props.lang} title={'cache_time'} icon={'timer-off'} suffix={props.lang.minutes} 
+                        lang={props.lang} title={'cache_time'} icon={'timer-off'} suffix={props.lang.hours} 
                         currentValue={cacheTime} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.cache_time}</Text>
-                        <Text variant="labelSmall">{props.lang.cache_time_description}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.cache_time}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{props.lang.cache_time_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
@@ -159,8 +157,8 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
                         lang={props.lang} title={'art_history'} icon={'history'} 
                         currentValue={artHistory} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.art_history}</Text>
-                        <Text variant="labelSmall">{props.lang.art_history_description}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.art_history}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{props.lang.art_history_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
@@ -169,8 +167,8 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
                         lang={props.lang} title={'page_size'} icon={'arrow-collapse-up'} 
                         currentValue={pageSize} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.page_size}</Text>
-                        <Text variant="labelSmall">{props.lang.page_size_description}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.page_size}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{props.lang.page_size_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
@@ -179,8 +177,8 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
                         lang={props.lang} title={'max_art_feed'} icon={'arrow-collapse-up'} 
                         currentValue={maxArtFeed} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">{props.lang.max_art_feed}</Text>
-                        <Text variant="labelSmall">{props.lang.max_art_feed_description}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.max_art_feed}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{props.lang.max_art_feed_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
@@ -191,7 +189,7 @@ function SettingsAdvanced (props) { // not using purecomponent as it doesn't rer
                     onPress={() => modalRef.current.showModal(() => <ResetCacheModal lang={props.lang}
                         theme={props.theme} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium">
+                        <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>
                             {props.lang.wipe_cache}</Text>
                     </View>
                 </TouchableNativeFeedback>

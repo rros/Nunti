@@ -18,6 +18,8 @@ export class Feed {
     public noImages = false;
     public tags: Tag[] = [];
 
+    public status: number = 0;
+
     constructor(url: string) {
         this.url = url;
         const r = url.match(/^(?:https?:\/\/)?(?:www\.)?(?:rss\.)?([^/]+\.[^/]+)(?:\/|$)/i);
@@ -253,8 +255,9 @@ class UserSettings {
 
     public EnableBackgroundSync = true; //synchronizes articles in background before cache expires
 
+    public EnableNotifications = true;
     /* "daily" notif. with recommended article;
-     * period in minutes, use -1 to disable
+     * period in minutes
      * !minimum is 15 minutes! */
     public NewArticlesNotificationPeriod = 12*60;
 
@@ -468,7 +471,7 @@ export class Backend {
     public static async RunBackgroundTask(taskId: string, isHeadless: boolean): Promise<void> {
         console.info(`Backed: Gained control over backgroundTask, id:${taskId}, isHeadless:${isHeadless}`);
         await this.Init();
-        if (!this.UserSettings.EnableBackgroundSync && this.UserSettings.NewArticlesNotificationPeriod <= 0) {
+        if (!this.UserSettings.EnableBackgroundSync && !this.UserSettings.EnableNotifications) {
             console.info('Backend: BackgroundSync and notifications disabled, exiting..');
             return;
         }
@@ -484,7 +487,7 @@ export class Backend {
                 }
             }
             const arts = await this.GetArticles('feed');
-            if (this.UserSettings.NewArticlesNotificationPeriod > 0) {
+            if (this.UserSettings.EnableNotifications) {
                 const notifcache = await this.StorageGet('notifications-cache');
                 const lastNotificationBeforeMins = (Date.now() - parseInt(notifcache.timestamp.toString())) / 60000;
                 if (lastNotificationBeforeMins >= this.UserSettings.NewArticlesNotificationPeriod) {

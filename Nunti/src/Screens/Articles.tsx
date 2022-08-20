@@ -95,7 +95,7 @@ function ArticlesPage (props) {
                 sourceFilter.current.search = '';
 
                 globalStateRef.current.shouldFeedReload.current = false;
-                refresh();
+                refresh(true);
             }
             setShowImages(!Backend.UserSettings.DisableImages);
         });
@@ -397,7 +397,7 @@ function SortingSegmentedButton({ theme, lang, sourceFilter, applySorting }) {
                 background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
                 onPress={() => changesortType('learning')}>
                 <View style={[Styles.segmentedButton, {borderRightColor: theme.colors.outline, backgroundColor: (!learningDisabled ? 
-                    (sortType == 'learning' ? theme.colors.secondaryContainer : theme.colors.surface) : theme.colors.pressedState)}]}>
+                    (sortType == 'learning' ? theme.colors.secondaryContainer : theme.colors.surface) : theme.colors.disabledState)}]}>
                     { sortType == 'learning' ? <Icon size={18} name="check" color={theme.colors.onSecondaryContainer} 
                         style={Styles.segmentedButtonIcon}/> : null }
                     <Text variant="labelLarge" style={{color: (sortType == 'learning' ? 
@@ -624,7 +624,7 @@ function ArticleCard ({ item, showImages, getDateCaption, screenType,
             <Animated.View style={[Styles.cardSwipeLeft, {backgroundColor: (buttonType == 'delete') ? 
                 theme.colors.negativeContainer : theme.colors.positiveContainer}, swipeComponentAnimStyle]}>
                 <Icon name={buttonType == 'delete' ? 'delete' : 'thumb-up'}
-                    size={24} color={theme.colors.onSurface} style={Styles.cardSwipeIcon}/>
+                    size={24} color={theme.colors.onPositiveContainer} style={Styles.cardSwipeIcon}/>
             </Animated.View>
         );}
     
@@ -633,7 +633,7 @@ function ArticleCard ({ item, showImages, getDateCaption, screenType,
             <Animated.View style={[Styles.cardSwipeRight, 
                 {backgroundColor: theme.colors.negativeContainer}, swipeComponentAnimStyle]}>
                 <Icon name={buttonType == 'delete' ? 'delete' : 'thumb-down'} 
-                    size={24} color={theme.colors.onSurface} style={Styles.cardSwipeIcon}/>
+                    size={24} color={theme.colors.onNegativeContainer} style={Styles.cardSwipeIcon}/>
             </Animated.View>
         );}
 
@@ -655,12 +655,13 @@ function ArticleCard ({ item, showImages, getDateCaption, screenType,
                         {(item.cover !== undefined && showImages) ? 
                             <Card.Cover style={[Styles.cardCover, Styles.cardCoverSide]} source={{ uri: item.cover }}/> : null }
                         <View style={[Styles.cardContent, {flex: 1}]}>
-                            <Text variant="titleLarge" numberOfLines={3}>{item.title}</Text>
-                            <Text variant="bodyMedium" numberOfLines={7} style={[{flexGrow: 1, 
+                            <Text variant="titleLarge" style={{color: theme.colors.onSecondaryContainer}} numberOfLines={3}>{item.title}</Text>
+                            <Text variant="bodyMedium" numberOfLines={7} style={[{flexGrow: 1,
+                                color: theme.colors.onSecondaryContainer,
                                 flex: ((item.cover !== undefined && showImages) ? 1 : undefined),
                                 marginTop: (item.description.length != 0 ? 8 : 0)}]}
                                 >{item.description.length != 0 ? item.description : ''}</Text>
-                        <Text style={Styles.captionText} variant="labelSmall">
+                        <Text style={[Styles.captionText, {color: theme.colors.onSecondaryContainer}]} variant="labelSmall">
                             {getDateCaption(item.date) === undefined ?
                                 item.source :
                                 getDateCaption(item.date) + ' • ' + item.source}</Text>
@@ -690,11 +691,11 @@ function ArticleCard ({ item, showImages, getDateCaption, screenType,
                         {(item.cover !== undefined && showImages) ? 
                             <Card.Cover style={Styles.cardCover} source={{ uri: item.cover }}/> : null }
                         <View style={Styles.cardContent}>
-                            <Text variant="titleLarge" numberOfLines={3}>{item.title}</Text>
+                            <Text variant="titleLarge" style={{color: theme.colors.onSecondaryContainer}} numberOfLines={3}>{item.title}</Text>
                             { ((item.description.length != 0 && !showImages) || item.cover === undefined) ?
-                                <Text variant="bodyMedium" style={Styles.bodyText} 
+                                <Text variant="bodyMedium" style={[Styles.bodyText, {color: theme.colors.onSecondaryContainer}]}  
                                     numberOfLines={7}>{item.description}</Text> : null }
-                        <Text style={Styles.captionText} variant="labelSmall">
+                        <Text style={[Styles.captionText, {color: theme.colors.onSecondaryContainer}]} variant="labelSmall">
                             {getDateCaption(item.date) === undefined ?
                                 item.source :
                                 getDateCaption(item.date) + ' • ' + item.source}</Text>

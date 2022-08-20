@@ -106,8 +106,10 @@ function Step1Welcome (props) {
             <View style={Styles.wizardCardWithButtonContainer}>
                 <Card mode={'contained'} style={[Styles.wizardCardWithButton, Styles.card]}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1}]}>{props.lang.welcome}</Text>
-                        <Text variant="bodyMedium" style={Styles.bodyText}>{props.lang.enjoy}</Text>
+                        <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1, 
+                            color: props.theme.colors.onSurfaceVariant}]}>{props.lang.welcome}</Text>
+                        <Text variant="bodyMedium" style={[Styles.bodyText, 
+                            {color: props.theme.colors.onSurfaceVariant}]}>{props.lang.enjoy}</Text>
                         <Button icon="application-import" style={Styles.bodyText}
                             onPress={importBackup}>{props.lang.import}</Button>
                     </View>
@@ -136,7 +138,8 @@ function Step2Language (props) {
                         onPress={() => changeLanguage('system')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'system'} />
-                            <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
                                 {props.lang.system}</Text>
                         </View>
                     </TouchableNativeFeedback>
@@ -148,13 +151,12 @@ function Step2Language (props) {
                                 onPress={() => changeLanguage(props.Languages[language].code)}>
                                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                     <RadioButton.Android value={props.Languages[language].code} />
-                                    <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                                    <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                        {color: props.theme.colors.onSurfaceVariant}]}>
                                         {props.Languages[language].this_language}</Text>
                                 </View>
                             </TouchableNativeFeedback>
                         );
-                            //<RadioButton.Item label={props.Languages[language].this_language} 
-                                //value={props.Languages[language].code} position="leading" />
                     })}
                 </RadioButton.Group>
             </Card>
@@ -187,7 +189,8 @@ function Step3Theme (props) {
                         onPress={() => changeTheme('system')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'system'} />
-                            <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
                                 {props.lang.system}</Text>
                         </View>
                     </TouchableNativeFeedback>
@@ -196,7 +199,8 @@ function Step3Theme (props) {
                         onPress={() => changeTheme('light')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'light'} />
-                            <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
                                 {props.lang.light}</Text>
                         </View>
                     </TouchableNativeFeedback>
@@ -205,7 +209,8 @@ function Step3Theme (props) {
                         onPress={() => changeTheme('dark')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'dark'} />
-                            <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
                                 {props.lang.dark}</Text>
                         </View>
                     </TouchableNativeFeedback>
@@ -214,14 +219,16 @@ function Step3Theme (props) {
                         onPress={() => changeTheme('black')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'black'} />
-                            <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
                                 {props.lang.black}</Text>
                         </View>
                     </TouchableNativeFeedback>
                 </RadioButton.Group>
             </Card>
 
-            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, 
+                {color: props.theme.colors.onSurfaceVariant}]}>
                 {props.lang.accent}</Text>
             <Card mode={'contained'} style={Styles.card}>
                 <RadioButton.Group value={accent}>
@@ -232,7 +239,8 @@ function Step3Theme (props) {
                                 onPress={() => changeAccent(accentName)}>
                                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                     <RadioButton.Android value={accentName} />
-                                    <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                                    <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                        {color: props.theme.colors.onSurfaceVariant}]}>
                                         {props.lang[accentName]}</Text>
                                 </View>
                             </TouchableNativeFeedback>
@@ -242,9 +250,10 @@ function Step3Theme (props) {
                         background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                         onPress={() => changeAccent('material_you')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer,
-                            {backgroundColor: (Platform.Version < 31 ? props.theme.colors.pressedState : 'transparent')}]}>
+                            {backgroundColor: (Platform.Version < 31 ? props.theme.colors.disabledState : 'transparent')}]}>
                             <RadioButton.Android value={'material_you'} disabled={Platform.Version < 31} />
-                            <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
                                 {props.lang.material_you}</Text>
                         </View>
                     </TouchableNativeFeedback>
@@ -288,7 +297,8 @@ function Step4Topics (props) {
 
     return(
         <ScrollView showsVerticalScrollIndicator={false}>
-            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, 
+                {color: props.theme.colors.onSurfaceVariant}]}>
                 {props.lang.topics}</Text>
             <Card mode={'contained'} style={Styles.card}>
                 { topics.map((topic) => {
@@ -303,7 +313,8 @@ function Step4Topics (props) {
                             <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                 <Checkbox.Android position="leading"
                                     status={topic.value ? 'checked' : 'unchecked'} />
-                                <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                                <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                    {color: props.theme.colors.onSurfaceVariant}]}>
                                     {props.lang[topic.name]}</Text>
                             </View>
                         </TouchableNativeFeedback>
@@ -326,7 +337,8 @@ function Step4Topics (props) {
                             <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                 <Checkbox.Android position="leading"
                                     status={topic.value ? 'checked' : 'unchecked'} />
-                                <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
+                                <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                    {color: props.theme.colors.onSurfaceVariant}]}>
                                     {props.lang[topic.name]}</Text>
                             </View>
                         </TouchableNativeFeedback>
@@ -355,8 +367,10 @@ function Step5Learning (props) {
             <View style={Styles.wizardCardWithButtonContainer}>
                 <Card mode={'contained'} style={[Styles.wizardCardWithButton, Styles.card]}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1}]}>{props.lang.adapt}</Text>
-                        <Text variant="bodyMedium" style={Styles.bodyText}>{(props.lang.wizard_learning).replace(
+                        <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1, 
+                            color: props.theme.colors.onSurfaceVariant}]}>{props.lang.adapt}</Text>
+                        <Text variant="bodyMedium" style={[Styles.bodyText, 
+                            {color: props.theme.colors.onSurfaceVariant}]}>{(props.lang.wizard_learning).replace(
                             '%noSort%', Backend.UserSettings.NoSortUntil)}</Text>
                         <Button icon="book" style={Styles.bodyText} mode="contained"
                             onPress={exitWizard}>{props.lang.start}</Button>
