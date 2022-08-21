@@ -45,7 +45,7 @@ function Wizard (props) {
                 }
             }}>
             <NavigationTabs.Screen name="Welcome">
-                { props => <Step1Welcome {...props} lang={_props.lang} />}
+                { props => <Step1Welcome {...props} lang={_props.lang} theme={_props.theme} />}
             </NavigationTabs.Screen>
             <NavigationTabs.Screen name="Language">
                 { props => <Step2Language {...props} lang={_props.lang} 
@@ -60,7 +60,8 @@ function Wizard (props) {
                     theme={_props.theme}/>}
             </NavigationTabs.Screen>
             <NavigationTabs.Screen name="Learning">
-                { props => <Step5Learning {...props} lang={_props.lang} />}
+                { props => <Step5Learning {...props} lang={_props.lang}
+                    theme={_props.theme}/>}
             </NavigationTabs.Screen>
         </NavigationTabs.Navigator>
     );
