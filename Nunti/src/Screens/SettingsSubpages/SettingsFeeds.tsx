@@ -226,12 +226,12 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
                 <View style={[Styles.settingsModalButton, Styles.settingsRowContainer]}>
                     <View style={Styles.settingsLeftContent}>
                         <Text variant="titleMedium">{lang.feed_status}</Text>
-                        <Text variant="labelSmall">{feed.status == 0 ? lang.feed_status_ok : 
-                            (feed.status >= 5 ? lang.feed_status_error : lang.feed_status_warn)}</Text>
+                        <Text variant="labelSmall">{feed.failedAttempts == 0 ? lang.feed_status_ok : 
+                            (feed.failedAttempts >= 5 ? lang.feed_status_error : lang.feed_status_warn)}</Text>
                     </View>
 
-                    <Icon name={feed.status == 0 ? 'check-circle' : (feed.status >= 5 ? 'close-circle' : 'alert')}
-                        size={24} color={feed.status == 0 ? theme.colors.secondary : (feed.status >= 5 ? theme.colors.error : 
+                    <Icon name={feed.failedAttemps == 0 ? 'check-circle' : (feed.failedAttempts >= 5 ? 'close-circle' : 'alert')}
+                        size={24} color={feed.failedAttemps == 0 ? theme.colors.secondary : (feed.failedAttemps >= 5 ? theme.colors.error : 
                             theme.colors.warn )} />
                 </View>
                 <View style={[Styles.settingsModalButton, {paddingTop: 0}]}>

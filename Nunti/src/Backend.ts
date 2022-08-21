@@ -18,7 +18,7 @@ export class Feed {
     public noImages = false;
     public tags: Tag[] = [];
 
-    public status: number = 0;
+    public failedAttempts = 0; //failed attemps counter, reset to 0 on success
 
     constructor(url: string) {
         this.url = url;
