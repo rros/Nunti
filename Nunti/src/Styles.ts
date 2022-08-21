@@ -1095,6 +1095,7 @@ export default Styles = StyleSheet.create ({
 
     settingsCheckboxLabel: {
         marginLeft: 12,
+        marginRight: 24,
     },
 
     settingsTextInputRow: {

@@ -62,8 +62,8 @@ function SettingsBackground (props) {
                     onPress={() => toggleBackgroundSync()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
-                            <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.background_sync}</Text>
-                            <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{props.lang.background_sync_description}</Text>
+                            <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.background_sync}</Text>
+                            <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.background_sync_description}</Text>
                         </View>
                         <Switch value={backgroundSync} />
                     </View>
@@ -76,8 +76,8 @@ function SettingsBackground (props) {
                     onPress={() => toggleNotifications()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
-                            <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.notifications}</Text>
-                            <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{props.lang.notifications_description}</Text>
+                            <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.notifications}</Text>
+                            <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.notifications_description}</Text>
                         </View>
                         <Switch value={notifications} />
                     </View>
@@ -89,8 +89,8 @@ function SettingsBackground (props) {
                         changeNotificationInterval={changeNotificationInterval} />)}>
                     <View style={[Styles.settingsButton,
                         {backgroundColor: !notifications ? props.theme.colors.disabledState : 'transparent'}]}>
-                        <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.notification_interval}</Text>
-                        <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.notification_interval}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>
                             {(props.lang.notification_interval_description).replace('%interval%', notificationInterval)}</Text>
                     </View>
                 </TouchableNativeFeedback>

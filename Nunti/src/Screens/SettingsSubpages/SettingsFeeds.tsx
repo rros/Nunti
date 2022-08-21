@@ -46,10 +46,10 @@ function SettingsFeeds (props) {
                 feed={item} theme={props.theme} changeFeedsParentState={changeFeedsParentState} />)}>
         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
             <View style={[Styles.settingsLeftContent, Styles.settingsRowContainer]}>
-                <Icon style={Styles.settingsIcon} name={item.status == 0 ? 'rss' : (item.status >= 5 ? 'close-circle' : 'alert')}
-                    size={24} color={item.status == 0 ? props.theme.colors.secondary : (item.status >= 5 ? props.theme.colors.error : 
+                <Icon style={Styles.settingsIcon} name={item.failedAttempts == 0 ? 'rss' : (item.failedAttempts >= 5 ? 'close-circle' : 'alert')}
+                    size={24} color={item.failedAttempts == 0 ? props.theme.colors.secondary : (item.failedAttempts >= 5 ? props.theme.colors.error : 
                         props.theme.colors.warn )} />
-                <Text variant="titleMedium" style={{flexShrink: 1, color: props.theme.onSurfaceVariant}}>{item.name}</Text>
+                <Text variant="titleMedium" style={{flexShrink: 1, color: props.theme.colors.onSurfaceVariant}}>{item.name}</Text>
             </View>
             
             <View>
@@ -230,8 +230,8 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
                             (feed.failedAttempts >= 5 ? lang.feed_status_error : lang.feed_status_warn)}</Text>
                     </View>
 
-                    <Icon name={feed.failedAttemps == 0 ? 'check-circle' : (feed.failedAttempts >= 5 ? 'close-circle' : 'alert')}
-                        size={24} color={feed.failedAttemps == 0 ? theme.colors.secondary : (feed.failedAttemps >= 5 ? theme.colors.error : 
+                    <Icon name={feed.failedAttempts == 0 ? 'check-circle' : (feed.failedAttempts >= 5 ? 'close-circle' : 'alert')}
+                        size={24} color={feed.failedAttempts == 0 ? theme.colors.secondary : (feed.failedAttempts >= 5 ? theme.colors.error : 
                             theme.colors.warn )} />
                 </View>
                 <View style={[Styles.settingsModalButton, {paddingTop: 0}]}>

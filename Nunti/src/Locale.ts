@@ -221,7 +221,6 @@ export const English = {
     change_notification_interval_success: 'Notification interval changed',
     change_notification_interval_fail: 'Failed to change notification interval',
 };
-
 export const Czech = {
     code: 'cs',
     wizard: 'Průvodce',
@@ -445,7 +444,6 @@ export const Czech = {
     change_notification_interval_success: 'Interval notifikací změněn',
     change_notification_interval_fail: 'Nezdařilo se změnit interval notifikací',
 };
-
 export const Japanese = {
     code: 'ja',
     wizard: 'ウィザード',
@@ -669,7 +667,6 @@ export const Japanese = {
     change_notification_interval_success: 'お知らせの間隔を変更しました',
     change_notification_interval_fail: 'お知らせ間隔の変更に失敗しました',
 };
-
 export const Italian = {
     code: 'it',
     wizard: 'Procedura guidata',
@@ -893,7 +890,6 @@ export const Italian = {
     change_notification_interval_success: 'Intervallo di notifica modificato',
     change_notification_interval_fail: 'Impossibile modificare l\'intervallo di notifica',
 };
-
 export const Polish = {
     code: 'pl',
     wizard: 'Kreator',
@@ -1117,7 +1113,6 @@ export const Polish = {
     change_notification_interval_success: 'Zmiana odstępu między powiadomieniami',
     change_notification_interval_fail: 'Nie udało się zmienić interwału powiadomień',
 };
-
 export const German = {
     code: 'de',
     wizard: 'Assistent',
@@ -1341,7 +1336,6 @@ export const German = {
     change_notification_interval_success: 'Benachrichtigungsintervall geändert',
     change_notification_interval_fail: 'Benachrichtigungsintervall konnte nicht geändert werden',
 };
-
 export const French = {
     code: 'fr',
     wizard: 'Assistant',
@@ -1565,7 +1559,6 @@ export const French = {
     change_notification_interval_success: 'Modification de l\'intervalle de notification',
     change_notification_interval_fail: 'Échec de la modification de l\'intervalle de notification',
 };
-
 export const BrazilianPortuguese = {
     code: 'pt_BR',
     wizard: 'Assistente',
@@ -1789,4 +1782,3 @@ export const BrazilianPortuguese = {
     change_notification_interval_success: 'Intervalo de notificação alterado',
     change_notification_interval_fail: 'Falha no intervalo de notificação de mudança',
 };
-

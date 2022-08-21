@@ -34,14 +34,14 @@ function SettingsLearning (props) {
         <ScrollView showsVerticalScrollIndicator={false}>
             <Card mode={'contained'} style={Styles.card}>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.sorting_status}</Text>
-                    <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{learningStatus?.SortingEnabled ? 
+                    <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.sorting_status}</Text>
+                    <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{learningStatus?.SortingEnabled ? 
                         props.lang.enabled : (props.lang.rate_more).replace(
                             '%articles%', learningStatus?.SortingEnabledIn)}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.rated_articles}</Text>
-                    <Text variant="labelSmall" style={{color: props.theme.onSurfaceVariant}}>{learningStatus?.TotalUpvotes
+                    <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.rated_articles}</Text>
+                    <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{learningStatus?.TotalUpvotes
                         + learningStatus?.TotalDownvotes}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
@@ -56,7 +56,7 @@ function SettingsLearning (props) {
                     onPress={() => browserRef.current.openBrowser(
                         'https://gitlab.com/ondrejfoltyn/nunti/-/issues/28')}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium" style={{color: props.theme.onSurfaceVariant}}>{props.lang.learn_more}</Text>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.learn_more}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
