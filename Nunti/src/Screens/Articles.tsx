@@ -624,7 +624,8 @@ function ArticleCard ({ item, showImages, getDateCaption, screenType,
             <Animated.View style={[Styles.cardSwipeLeft, {backgroundColor: (buttonType == 'delete') ? 
                 theme.colors.negativeContainer : theme.colors.positiveContainer}, swipeComponentAnimStyle]}>
                 <Icon name={buttonType == 'delete' ? 'delete' : 'thumb-up'}
-                    size={24} color={theme.colors.onPositiveContainer} style={Styles.cardSwipeIcon}/>
+                    size={24} color={buttonType == 'delete' ? theme.colors.onNegativeContainer :
+                        theme.colors.onPositiveContainer} style={Styles.cardSwipeIcon}/>
             </Animated.View>
         );}
     

@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "PXLPVq1brquL/boHd0qhGh6+mSmgI/87HAdFQMmS23dx9aDdbEbV85MBur09vs9W2t3OPtpD2lX2TqtNeOqjbg==",
+  "success": true,
+  "projectFilePath": "/home/richard/Projects/nunti/Scripts/LocalisationCleanup/LocalisationCleanup.csproj",
+  "expectedPackageFiles": [
+    "/home/richard/.nuget/packages/microsoft.aspnetcore.app.ref/6.0.8/microsoft.aspnetcore.app.ref.6.0.8.nupkg.sha512"
+  ],
+  "logs": []
+}
