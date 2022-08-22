@@ -219,7 +219,7 @@ export const English = {
     notification_interval: 'Notification interval',
     notification_interval_description: 'Every %interval%h',
     change_notification_interval_success: 'Notification interval changed',
-    change_notification_interval_fail: 'Failed to change notification interval',
+    change_notification_interval_fail: 'Failed to change notification interval'
 };
 export const Czech = {
     code: 'cs',
@@ -442,7 +442,7 @@ export const Czech = {
     notification_interval: 'Interval notifikací',
     notification_interval_description: 'Každých %interval%h',
     change_notification_interval_success: 'Interval notifikací změněn',
-    change_notification_interval_fail: 'Nezdařilo se změnit interval notifikací',
+    change_notification_interval_fail: 'Nezdařilo se změnit interval notifikací'
 };
 export const Japanese = {
     code: 'ja',
@@ -665,7 +665,7 @@ export const Japanese = {
     notification_interval: 'お知らせの間隔',
     notification_interval_description: '%interval%時間ごと',
     change_notification_interval_success: 'お知らせの間隔を変更しました',
-    change_notification_interval_fail: 'お知らせ間隔の変更に失敗しました',
+    change_notification_interval_fail: 'お知らせ間隔の変更に失敗しました'
 };
 export const Italian = {
     code: 'it',
@@ -888,7 +888,7 @@ export const Italian = {
     notification_interval: 'Intervallo di notifica',
     notification_interval_description: 'Ogni %interval%h',
     change_notification_interval_success: 'Intervallo di notifica modificato',
-    change_notification_interval_fail: 'Impossibile modificare l\'intervallo di notifica',
+    change_notification_interval_fail: 'Impossibile modificare l\'intervallo di notifica'
 };
 export const Polish = {
     code: 'pl',
@@ -1111,7 +1111,7 @@ export const Polish = {
     notification_interval: 'Przerwa w powiadamianiu',
     notification_interval_description: 'Co %interval%h',
     change_notification_interval_success: 'Zmiana odstępu między powiadomieniami',
-    change_notification_interval_fail: 'Nie udało się zmienić interwału powiadomień',
+    change_notification_interval_fail: 'Nie udało się zmienić interwału powiadomień'
 };
 export const German = {
     code: 'de',
@@ -1127,20 +1127,20 @@ export const German = {
     adapt: 'Nunti passt sich an deine Vorlieben an!',
     wizard_learning: 'Nunti lernt, welche Themen dich interessieren, wenn du Artikel bewertest. Im Laufe der Zeit wird es immer besser diejenigen Artikel zeigen, die zu Themen passen, welche dich interessieren. Bitte beachte, dass Nunti Artikel erst dann nach deinen Vorlieben filtert, wenn du mindestens %noSort% Artikel bewertet hast.',
     complete_wizard_first: 'Schließe zuerst den Assistenten ab',
-    article_from: 'Artikel von %source%',
+    article_from: '%source%',
     just_now: 'Jetzt',
-    hours_ago: 'Vor %time%h',
-    days_ago: 'Vor %time%d',
+    hours_ago: 'Vor %time% Stunden',
+    days_ago: 'Vor %time% Tagen',
     article_saved: 'Der Artikel wurde gespeichert',
     article_already_saved: 'Der Artikel wurde bereits gespeichert',
     removed_saved: 'Der gespeicherte Artikel wurde gelöscht',
     enabled: 'Aktiviert',
-    disabled: 'Behinderte',
+    disabled: 'Deaktiviert',
     sort_date: 'Nach Datum',
     sort_learning: 'Nach Vorlieben',
-    minutes: ' Min.',
-    hours: 'h',
-    days: 'd',
+    minutes: ' Minuten',
+    hours: ' Stunden',
+    days: ' Tage',
     dismiss: 'Schließen',
     save: 'Speichern',
     share: 'Teilen',
@@ -1209,7 +1209,7 @@ export const German = {
     no_images: 'Keine Bilder anzeigen',
     hide_feed: 'Feed ausblenden',
     wifi_only: 'Nur über WLAN aktualisieren',
-    wifi_only_description: 'Artikel nur über Wi-Fi herunterladen',
+    wifi_only_description: 'Artikel nur über WLAN herunterladen',
     hide_feed_description: 'Artikel aus diesem Feed ausblenden',
     no_images_description: 'Artikel ohne Bilder laden',
     browser_mode: 'Artikel öffnen',
@@ -1269,7 +1269,7 @@ export const German = {
     change_discovery_success: 'Entdeckungsrate wurde geändert',
     change_discovery_fail: 'Entdeckungsrate konnte nicht geändert werden',
     cache_time: 'Artikel speichern',
-    cache_time_description: 'Artikel werden für die angegebene Zeit in Minuten zwischengespeichert',
+    cache_time_description: 'Artikel werden für die angegebene Zeit zwischengespeichert',
     change_cache_time: 'Speicherdauer ändern',
     change_cache_time_success: 'Speicherdauer wurde geändert',
     change_cache_time_fail: 'Speicherdauer konnte nicht geändert werden',
@@ -1329,12 +1329,12 @@ export const German = {
     background: 'Aufgaben im Hintergrund',
     background_sync: 'Hintergrund-Synchronisation',
     background_sync_description: 'Artikel im Hintergrund herunterladen',
-    notifications: 'Notifikationen',
+    notifications: 'Benachrichtigungen',
     notifications_description: 'Benachrichtigungen über empfohlene Artikel senden',
     notification_interval: 'Benachrichtigungsintervall',
-    notification_interval_description: 'Alle %interval%h',
+    notification_interval_description: 'Alle %interval% Stunden',
     change_notification_interval_success: 'Benachrichtigungsintervall geändert',
-    change_notification_interval_fail: 'Benachrichtigungsintervall konnte nicht geändert werden',
+    change_notification_interval_fail: 'Benachrichtigungsintervall konnte nicht geändert werden'
 };
 export const French = {
     code: 'fr',
@@ -1557,7 +1557,7 @@ export const French = {
     notification_interval: 'Intervalle de notification',
     notification_interval_description: 'Toutes les %interval%h',
     change_notification_interval_success: 'Modification de l\'intervalle de notification',
-    change_notification_interval_fail: 'Échec de la modification de l\'intervalle de notification',
+    change_notification_interval_fail: 'Échec de la modification de l\'intervalle de notification'
 };
 export const BrazilianPortuguese = {
     code: 'pt_BR',
@@ -1780,5 +1780,5 @@ export const BrazilianPortuguese = {
     notification_interval: 'Intervalo de notificação',
     notification_interval_description: 'A cada %interval%h',
     change_notification_interval_success: 'Intervalo de notificação alterado',
-    change_notification_interval_fail: 'Falha no intervalo de notificação de mudança',
+    change_notification_interval_fail: 'Falha no intervalo de notificação de mudança'
 };
