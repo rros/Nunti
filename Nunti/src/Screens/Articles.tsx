@@ -366,23 +366,31 @@ function SortingSegmentedButton({ theme, lang, sourceFilter, applySorting }) {
     const [sortType, setSortType] = useState();
     const [learningDisabled, setLearningDisabled] = useState();
 
+    const learningStatus = useRef();
+
     // on component mount
     useEffect(() => {
         (async () => {
-            const learningStatus = await Backend.GetLearningStatus();
-            setLearningDisabled(!learningStatus.SortingEnabled);
-            setSortType(learningStatus.SortingEnabled ? 'learning' : 'date');
+            learningStatus.current = await Backend.GetLearningStatus();
+            setLearningDisabled(!learningStatus.current.SortingEnabled);
+            setSortType(learningStatus.current.SortingEnabled ? 'learning' : 'date');
         })();
     }, []);
 
     useEffect(() => {
         (async () => {
-            const learningStatus = await Backend.GetLearningStatus();
-            setLearningDisabled(!learningStatus.SortingEnabled);
+            learningStatus.current = await Backend.GetLearningStatus();
+            setLearningDisabled(!learningStatus.current.SortingEnabled);
         })();
     });
 
     const changesortType = (newSortType) => {
+        if(learningDisabled && newSortType == 'learning') {
+            snackbarRef.current.showSnack((lang.rate_more).replace('%articles%',
+                learningStatus.current?.SortingEnabledIn));
+            return;
+        }
+
         if(sortType != newSortType) {
             setSortType(newSortType);
             applySorting(newSortType);
@@ -393,7 +401,7 @@ function SortingSegmentedButton({ theme, lang, sourceFilter, applySorting }) {
         <View style={[Styles.segmentedButtonContainerOutline, {backgroundColor: theme.colors.outline}]}>
         <View style={Styles.segmentedButtonContainer}>
             <View style={{flex: 1}}>
-            <TouchableNativeFeedback disabled={learningDisabled} style={{backgroundColor: theme.colors.surface}}
+            <TouchableNativeFeedback style={{backgroundColor: theme.colors.surface}}
                 background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
                 onPress={() => changesortType('learning')}>
                 <View style={[Styles.segmentedButton, {borderRightColor: theme.colors.outline, backgroundColor: (!learningDisabled ? 
