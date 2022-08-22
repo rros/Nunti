@@ -203,13 +203,16 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
     }
 
     const changeFeedTag = async (tag: Tag) => {
+        const newTags = feed.tags;
         if(!feed.tags.some(pickedTag => pickedTag.name == tag.name)){
-            feed = await Feed.AddTag(feed, tag);
+            newTags.push(tag);
+            Feed.AddTag(feed, tag);
         } else {
-            feed = await Feed.RemoveTag(feed, tag);
+            newTags.splice(newTags.indexOf(tag), 1);
+            Feed.RemoveTag(feed, tag);
         }
         
-        setTags(feed.tags);
+        setTags(newTags);
         forceUpdate(!forceValue);
 
         changeFeedsParentState(Backend.UserSettings.FeedList);

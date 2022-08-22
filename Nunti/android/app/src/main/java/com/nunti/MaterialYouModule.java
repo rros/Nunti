@@ -64,6 +64,11 @@ public class MaterialYouModule extends ReactContextBaseJavaModule {
                 colors.putString("onError", "#690005");
                 colors.putString("errorContainer", "#93000a");
                 colors.putString("onErrorContainer", "#ffdad6");
+            
+                colors.putString("warn", "#f1c100");
+                colors.putString("onWarn", "#3d2f00");
+                colors.putString("warnContainer", "#584400");
+                colors.putString("onWarnContainer", "#ffe08b");
                 
                 colors.putString("positive", "#8fd88a");
                 colors.putString("onPositive", "#00390b");
@@ -107,6 +112,11 @@ public class MaterialYouModule extends ReactContextBaseJavaModule {
                 colors.putString("onError", "#ffffff");
                 colors.putString("errorContainer", "#ffdad6");
                 colors.putString("onErrorContainer", "#410002");
+            
+                colors.putString("warn", "#745b00");
+                colors.putString("onWarn", "#ffffff");
+                colors.putString("warnContainer", "#ffe08b");
+                colors.putString("onWarnContainer", "#241a00");
                 
                 colors.putString("positive", "#266c2b");
                 colors.putString("onPositive", "#ffffff");

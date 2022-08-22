@@ -45,8 +45,8 @@ function SettingsLearning (props) {
                         + learningStatus?.TotalDownvotes}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{props.lang.rating_ratio}</Text>
-                    <Text variant="labelSmall">{learningStatus?.VoteRatio}</Text>
+                    <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.rating_ratio}</Text>
+                    <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{learningStatus?.VoteRatio}</Text>
                 </View>
             </Card>
             

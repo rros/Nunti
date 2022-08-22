@@ -13,66 +13,58 @@ Finally a smart RSS reader which doesn't suck ass or your data.
 
 <a href="https://f-droid.org/en/packages/com.nunti/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="75"></a>
 
-Or alternatively you can download the apk for any version over at our [releases page](https://gitlab.com/ondrejfoltyn/nunti/-/releases).
+Alternatively you can download the apk for any version on the [releases page](https://gitlab.com/ondrejfoltyn/nunti/-/releases).
 
 ## For developers
 
 1. clone the repository
 2. enter the `Nunti` directory
 3. run `npm install --no-optional` to install dependencies
-4. connect your phone and make sure adb can find your device
-5. run `npx react-native start` in one terminal
-6. run `npx react-native run-android` in the second terminal to build
+4. connect your phone (or run an emulator) and make sure adb can find your device
+5. run `npx react-native start` in one terminal window
+6. run `npx react-native run-android` in the second terminal window to build
 
 # Features
 
 ### Adaptive learning
 
-Nunti allows you to rate articles and then uses an advanced algorithm to sort new articles depending on which topics interest you the most. Learn more about the adaptive learning [here](https://gitlab.com/ondrejfoltyn/nunti/-/issues/28).
+Nunti lets you rate articles and then uses an advanced algorithm to sort new articles based on your preferences. Learn more about the adaptive learning [here](https://gitlab.com/ondrejfoltyn/nunti/-/issues/28).
 
 ### Modern material design
 
-Nunti implements all the best practices of material design to finally create an open-source app that doesn't just feel right, but also looks right.
+Nunti implements [Material Design V3](https://m3.material.io/) to finally create an open-source app that doesn't just feel right, but also looks right.
+
 
 <img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/04.jpg" alt="Nunti feed" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/07.jpg" alt="Nunti rate" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/12.jpg" alt="Nunti settings" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/06.jpg" alt="Nunti web" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/06.jpg" alt="Nunti rate" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" alt="Nunti settings" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/05.jpg" alt="Nunti web" width="20%" height="20%">
 
 ### Theming options
 
-Nunti allows you to customise the look of the app to make it unique to you. Now with Material You support for devices running android 12 and newer.
+Nunti lets you customise the look of the app with a range of predefined accent colours, as well as your system [Material You](https://m3.material.io/styles/color/dynamic-color/overview) colour when running Android 12 and newer.
 
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/14.jpg" alt="Nunti theme" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Nunti accent" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" alt="Nunti changed" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpg" alt="Nunti changed 2" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/12.jpg" alt="Nunti theme" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/13.jpg" alt="Nunti accent" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/14.jpg" alt="Nunti changed" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Nunti changed 2" width="20%" height="20%">
 
 ### Import and export functions
 
-Since Nunti never sends your data out of your device, you can easily export and then import your data including your rating preferences to your device.
+Since your data never leaves Nunti, you can easily export and then import your data to your device.
 
 ### Absolute privacy
 
-Nunti has been built with the firm belief that there is no reason to process or store any personal data in the cloud. As such Nunti never sends any of your data anywhere, and the only internet connections it makes are `GET` requests to your rss feeds. 
-
-# Development
-
-(Maintainers only) When creating a new version of the app (update fdroid) you must do these things:
-
-1. change the version in `Nunti/package.json` (used to display the app version in the about page of the app)
-2. change the version code and name in `Nunti/android/app/build.gradle`
-3. add changelogs into the fastline structure named `{version code}.txt`
-4. add the same version code tag to the commit
+Nunti has been built with the firm belief that there is no reason to process or store any personal data in the cloud. As such Nunti never sends any of your data anywhere, and the only internet connections it makes are `GET` requests to your rss feeds, which are further anonymised by using a random common user-agent.
 
 # Credits and contributors
 
 - @stepano_, @qwrtln - Polish translation
 - Eliška Otčenášková, @ngnee - German translation
 - @AntoninCurtit - French translation
-- @marcomarcobello - help with Italian translation
+- @marcomarcobello - Italian translation
 - @vitorhcl, @marssaljr - Brazilian Portuguese translation
-- @vaf0 - help with Japanese translation
+- @vaf0 - Japanese translation
 
 # Licence, disclaimer or whatever
 
