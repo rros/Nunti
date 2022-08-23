@@ -9,12 +9,15 @@ import {
 
 import { WebView } from 'react-native-webview';
 
+import Log from '../Log';
+
 import Styles from '../Styles';
 
 function LegacyWebview (props) {
+    const log = Log.FE.context('LegacyWebview');
     // on component mount
     useEffect(() => {
-        console.log(props.route.params.source)
+        log.debug(props.route.params.source)
         backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
             props.navigation.navigate(props.route.params.source);
             return true;

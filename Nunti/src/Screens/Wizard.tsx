@@ -21,6 +21,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 
 import { snackbarRef, globalStateRef } from '../App';
 import { Backend } from '../Backend';
+import Log from '../Log';
 import { Accents } from '../Styles';
 import DefaultTopics from '../DefaultTopics';
 
@@ -68,12 +69,14 @@ function Wizard (props) {
 }
 
 function Step1Welcome (props) {
+    const log = Log.FE.context('Step1Welcome');
+
     const importBackup = async () => {
         const file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, 'utf8');
         const allowed_mime = ['text/plain', 'application/octet-stream', 'application/json'];
 
         if(file == null){
-            console.log('Import cancelled by user')
+            log.info('Import cancelled by user')
             return; 
         }
 

@@ -20,6 +20,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 
 import { modalRef, snackbarRef, globalStateRef } from '../../App';
 import { Backend, Feed } from '../../Backend';
+import Log from '../../Log';
 import { Accents } from '../../Styles';
 import Switch from '../../Components/Switch';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
@@ -98,6 +99,7 @@ function SettingsFeeds (props) {
 }
 
 function FeedAddModal ({lang, changeFeedsParentState}) {
+    const log = Log.FE.context('FeedAddModal');
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -110,7 +112,7 @@ function FeedAddModal ({lang, changeFeedsParentState}) {
             changeFeedsParentState(Backend.UserSettings.FeedList, true);
             globalStateRef.current.reloadFeed(true);
         } catch(err) {
-            console.error('Can\'t add RSS feed',err);
+            log.error('Can\'t add RSS feed',err);
             snackbarRef.current.showSnack(lang.add_feed_fail);
         }
 

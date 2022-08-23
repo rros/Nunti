@@ -47,6 +47,7 @@ import Settings from './Screens/Settings';
 import About from './Screens/About';
 import LegacyWebview from './Screens/LegacyWebview';
 import Backend from './Backend';
+import Log from './Log';
 
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { NavigationContainer, useNavigationContainerRef, CommonActions } from '@react-navigation/native';
@@ -157,12 +158,12 @@ export default function App (props) {
 
             /* set up background task */
             const onEvent = async (taskId: string) => {
-                console.info('[BackgroundFetch] task: ', taskId);
+                Log.context('BackgroundFetch').info('task: ', taskId);
                 await Backend.RunBackgroundTask(taskId, false);
                 BackgroundFetch.finish(taskId);
             }
             const onTimeout = async (taskId: string) => {
-                console.warn('[BackgroundFetch] TIMEOUT task: ', taskId);
+                Log.context('BackgroundFetch').warn('TIMEOUT task: ', taskId);
                 BackgroundFetch.finish(taskId);
             }
             // Initialize BackgroundFetch only once when component mounts.
@@ -173,7 +174,7 @@ export default function App (props) {
                 startOnBoot: true,
                 requiresBatteryNotLow: true,
             }, onEvent, onTimeout);
-            console.info('[BackgroundFetch] configure status: ', status);
+            Log.context('BackgroundFetch').debug('configure status: ', status);
             BackgroundFetch.scheduleTask({
                 taskId: 'com.nunti.backgroundTaskSecondary',
                 periodic: true,

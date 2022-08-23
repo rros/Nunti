@@ -20,6 +20,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 
 import { modalRef, snackbarRef, globalStateRef } from '../App';
 import { Backend } from '../Backend';
+import Log from '../Log';
 import { Accents } from '../Styles';
 import Switch from '../Components/Switch';
 
@@ -111,6 +112,8 @@ function CustomHeader ({ navigation, route, lang, theme, screenType }) {
 }
 
 function SettingsMain (props) {
+    const log = Log.FE.context('SettingsMain');
+
     const [language, setLanguage] = useState(Backend.UserSettings.Language);
     const [browserMode, setBrowserMode] = useState(Backend.UserSettings.BrowserMode);
     const [disableImages, setDisableImages] = useState(Backend.UserSettings.DisableImages);
@@ -159,7 +162,7 @@ function SettingsMain (props) {
         const allowed_mime = ['text/plain', 'application/octet-stream', 'application/json'];
 
         if(file == null){
-            console.log('Import cancelled by user')
+            log.info('Import cancelled by user')
             return; 
         }
 
@@ -200,7 +203,7 @@ function SettingsMain (props) {
             }
         } catch (err) {
             snackbarRef.current.showSnack(props.lang.export_fail);
-            console.log('Failed to export backup. ' + err);
+            log.info('Failed to export backup. ' + err);
         }
     }
 

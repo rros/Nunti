@@ -20,6 +20,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 
 import { modalRef, snackbarRef, globalStateRef } from '../../App';
 import { Backend, Tag } from '../../Backend';
+import Log from '../../Log';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 
 function SettingsTags (props) {
@@ -90,6 +91,8 @@ function SettingsTags (props) {
 }
 
 function TagAddModal ({lang, changeTagsParentState}) {
+    const log = Log.FE.context('TagAddModal');
+
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -101,7 +104,7 @@ function TagAddModal ({lang, changeTagsParentState}) {
             snackbarRef.current.showSnack((lang.added_tag).replace('%tag%', ("\"" + tag.name + "\"")));
             changeTagsParentState(Backend.UserSettings.Tags, true);
         } catch(err) {
-            console.error('Can\'t add tag',err);
+            log.error('Can\'t add tag',err);
             snackbarRef.current.showSnack(lang.add_tag_fail);
         }
 

@@ -16,8 +16,11 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 
 import { modalRef, snackbarRef, globalStateRef } from '../../App';
 import { Backend } from '../../Backend';
+import Log from '../../Log';
 
 function SettingsAdvanced (props) {
+    const log = Log.FE.context('SettingsAdvanced');
+
     const [maxArtAge, setMaxArtAge] = useState(Backend.UserSettings.MaxArticleAgeDays);
     const [discovery, setDiscovery] = useState(Backend.UserSettings.DiscoverRatio * 100);
     const [cacheTime, setCacheTime] = useState(Backend.UserSettings.ArticleCacheTime / 60);
@@ -107,7 +110,7 @@ function SettingsAdvanced (props) {
                 globalStateRef.current.reloadFeed(true);
                 break;
             default: 
-                console.error('Advanced settings change was not applied');
+                log.error('Advanced settings change was not applied');
                 break;
         }
 

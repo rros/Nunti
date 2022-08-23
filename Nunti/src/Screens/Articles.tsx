@@ -29,6 +29,7 @@ import Animated, {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { Backend, Article } from '../Backend';
+import Log from '../Log';
 import { modalRef, snackbarRef, browserRef, globalStateRef } from '../App';
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
 
@@ -57,6 +58,8 @@ class ArticlesPageOptimisedWrapper extends Component {
 }
 
 function ArticlesPage (props) {
+    const log = Log.FE.context('ArticlesPage');
+
     const [refreshing, setRefreshing] = useState(false);
     const [articlePage, setArticlePage] = useState([]);
     const [showImages, setShowImages] = useState(!Backend.UserSettings.DisableImages);
@@ -89,7 +92,7 @@ function ArticlesPage (props) {
             if(props.route.name != 'feed') { 
                 refresh(false); // reload bookmarks/history on each access
             } else if (globalStateRef.current.shouldFeedReload.current) {
-                console.log("Cache was reset, reloading articles, resetting filter");
+                log.info("Cache was reset, reloading articles, resetting filter");
 
                 sourceFilter.current.tags = [];
                 sourceFilter.current.search = '';
@@ -185,7 +188,7 @@ function ArticlesPage (props) {
         sourceFilter.current.sortType = sortType;
         refresh(true);
     
-        console.log(sourceFilter)
+        log.info(sourceFilter)
     }
 
     const applyFilter = (search: string, tags: []) => {
@@ -197,7 +200,7 @@ function ArticlesPage (props) {
         modalRef.current.hideModal();
         refresh(true);
         
-        console.log(sourceFilter)
+        log.info(sourceFilter)
     }
 
     const modifyArticle = async (article: Article, direction: string) => {
@@ -228,7 +231,7 @@ function ArticlesPage (props) {
                 articlesFromBackend.current = Backend.CurrentHistory;
                 break;
             default: 
-                console.error('Bad source, cannot update articles from backend');
+                log.error('Bad source, cannot update articles from backend');
                 break;
         }
 

@@ -12,6 +12,7 @@ import { NativeModules } from 'react-native';
 import * as Languages from './Locale';
 const NotificationsModule = NativeModules.Notifications;
 const I18nManager = NativeModules.I18nManager;
+import Log from './Log';
 
 export class Feed {
     public name: string;
@@ -106,7 +107,7 @@ export class Feed {
         feed.tags.push(tag);
         let cache = await FSStore.getItem('cache');
         if (cache != null) {
-            console.debug(`Updating cache, adding tag '${tag.name}' to articles from '${feed.name}'.`);
+            Log.BE.context('Feed:'+feed.url).context('AddTag').debug(`adding tag '${tag.name}' to articles.`);
             cache = JSON.parse(cache);
             cache.articles.forEach((art: Article) => {
                 if (art.sourceUrl == feed.url)
@@ -122,7 +123,7 @@ export class Feed {
         feed.tags.splice(feed.tags.indexOf(tag), 1);
         let cache = await FSStore.getItem('cache');
         if (cache != null) {
-            console.debug(`Updating cache, removing tag '${tag.name}' from articles from '${feed.name}'.`);
+            Log.BE.context('Feed:'+feed.url).context('RemoveTag').debug(`Updating cache, removing tag '${tag.name}' from articles.`);
             cache = JSON.parse(cache);
             cache.articles.forEach((art: Article) => {
                 if (art.sourceUrl == feed.url) {
@@ -222,7 +223,7 @@ export class Tag {
                 i = y;
         }
         if (i < 0)
-            console.error(`Cannot remove tag ${tag.name} from UserSettings.`);
+            Log.BE.context('Tag:'+tag.name).context('Remove').error(`Cannot remove tag from UserSettings.`);
         else
             Backend.UserSettings.Tags.splice(i, 1);
 
@@ -305,6 +306,7 @@ class Backup {
 }
 
 export class Backend {
+    public static log = Log.BE;
     public static DB_VERSION = '3.1';
     public static UserSettings: UserSettings;
     public static CurrentArticles: {[source: string]: Article[][]} = {
@@ -333,13 +335,13 @@ export class Backend {
     
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
-        console.info('Backend init.');
+        this.log.info('Init.');
         await this.RefreshUserSettings();
     }
     /* Re-load and recheck UserSettings from storage. (unsaved changes will be lost) */
     public static async RefreshUserSettings(): Promise<void> {
         await this.CheckDB();
-        console.debug('Backend: Refreshing UserSettings.');
+        this.log.context('RefreshUserSettings').debug('Refreshing...');
         this.UserSettings = Object.assign(new UserSettings(), await this.StorageGet('user_settings'));
         this.UserSettings.FeedList.sort((a: Feed, b: Feed) => {
             if ((a.name ?? undefined) !== undefined && (b.name ?? undefined) !== undefined)
@@ -355,7 +357,7 @@ export class Backend {
         });
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(articleSource: string, filters: string[] = []): Promise<Article[][]> {
+    public static async GetArticlesPaginated(articleSource: string, filters = {sortType: 'learning', search: '', tags: []}): Promise<Article[][]> {
         const arts = await this.GetArticles(articleSource, filters);
         const timeBegin = Date.now();
 
@@ -363,12 +365,13 @@ export class Backend {
         this.CurrentArticles[articleSource] = pages;
 
         const timeEnd = Date.now();
-        console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms`);
+        this.log.context('Pagination').debug(`Finished in ${timeEnd - timeBegin} ms`);
         return pages;
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
     public static async GetArticles(articleSource: string, filters = {sortType: 'learning', search: '', tags: []}): Promise<Article[]> {
-        console.info(`Backend: GetArticles('${articleSource}') called.`);
+        const log = this.log.context('GetArticles');
+        log.info(`called with source: '${articleSource}'`);
 
         let articles: Article[];
         switch (articleSource) {
@@ -417,7 +420,7 @@ export class Backend {
                     newarts.push(art);
             });
             const filterEndTime = Date.now();
-            console.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
+            log.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
             articles = newarts;
         }
 
@@ -429,6 +432,7 @@ export class Backend {
     }
     /* Sends push notification to user, returns true on success, false on fail. */
     public static async SendNotification(message: string, channel: string): Promise<boolean> {
+        const log = this.log.context('SendNotification');
         let channelName: string;
         let channelDescription: string;
         const locale = this.GetLocale();
@@ -442,40 +446,41 @@ export class Backend {
             channelDescription = 'Other notifications';
             break;
         default:
-            console.error(`Backend: Failed attempt to send notification by channel '${channel}' - channel not allowed.`);
+            log.error(`Failed attempt, '${channel}' - channel not allowed.`);
             return false;
         }
         const title = channelName;
         const summary = null;
         const result: true | string = await NotificationsModule.notify(title, message, summary, channelName, channelDescription);
         if (result === true) {
-            console.info(`Backend: Notification via channel ${channel} successfully sent. ('${message}')`);
+            log.info(`succesfully sent via channel ${channel} ('${message}')`);
             return true;
         } else {
-            console.error(`Backend: Failed to send notification '${message}', reason: ${result}`);
+            log.error(`Failed to send '${message}', reason: ${result}`);
             return false;
         }
     }
     /* Does background task work, can be even called before Backend.Init() */
     /* Is run for ALL background tasks (both sync and notification) */
     public static async RunBackgroundTask(taskId: string, isHeadless: boolean): Promise<void> {
-        console.info(`Backend: Gained control over backgroundTask, id:${taskId}, isHeadless:${isHeadless}`);
+        const log = this.log.context('BackgroundTask');
+        log.info(`Gained control over backgroundTask, id:${taskId}, isHeadless:${isHeadless}`);
         if (AppState.currentState != 'background') {
-            console.info('Backend: App is not in background, exiting background task.');
+            log.info('App is not in background, exiting background task.');
             return;
         }
         await this.Init();
         if (!this.UserSettings.EnableBackgroundSync && !this.UserSettings.EnableNotifications) {
-            console.info('Backend: [BackgroundTask] BackgroundSync and notifications disabled, exiting..');
+            log.info('BackgroundSync and notifications disabled, exiting..');
             return;
         }
         try {
             if (this.UserSettings.EnableBackgroundSync) {
-                console.debug('Backend: BackgroundSync is enabled, checking cache...');
+                log.debug('BackgroundSync is enabled, checking cache...');
                 const cache = await this.GetArticleCache();
                 const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
                 if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime * 0.75) {
-                    console.info('Backend: BackgroundSync - cache will expire soon, invalidating cache to force re-sync...');
+                    log.info('Cache will expire soon, invalidating cache to force re-sync...');
                     cache.timestamp = 0;
                     await FSStore.setItem('cache',JSON.stringify(cache));
                 }
@@ -496,25 +501,26 @@ export class Backend {
                         }
                     }
                     if (art == null)
-                        console.warn('Backend: BackgroundSync notifications - no available article to show.');
+                        log.context('Notifications').warn('No available article to show.');
                     else {
                         if(!await this.SendNotification(art.title, 'new_articles'))
                             throw new Error('Failed to send notification.');
                     }
                     await this.StorageSave('notifications-cache', notifcache);
                 } else
-                    console.info(`Backend: Will not show notification, time remaining: ${this.UserSettings.NewArticlesNotificationPeriod - lastNotificationBeforeMins} mins.`);
+                    log.info(`Will not show notification, time remaining: ${this.UserSettings.NewArticlesNotificationPeriod - lastNotificationBeforeMins} mins.`);
             } else
-                console.info('Backend: Notifications disabled.');
+                log.info('Notifications disabled.');
         } catch (err) {
-            console.error(`Backend: Exception on backgroundTask, id:${taskId}, error:`, err);
+            log.error(`Exception on backgroundTask, id:${taskId}, error:`, err);
         } finally {
-            console.info(`Backed: Exiting backgroundTask, id:${taskId}`);
+            log.info(`Exiting backgroundTask, id:${taskId}`);
         }
     }
     /* Retrieves sorted articles to show in feed. */
     public static async GetFeedArticles(overrides = {sortType: 'learning'}): Promise<Article[]> {
-        console.log('Backend: Loading new articles..');
+        const log = this.log.context('GetFeedArticles');
+        log.info('Loading new articles..');
         const timeBegin: number = Date.now();
         await this.CheckDB();
         
@@ -524,14 +530,14 @@ export class Backend {
         const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
 
         if(await this.IsDoNotDownloadEnabled()) {
-            console.log('Backend: We are on cellular data and wifiOnly mode is enabled. Will use cache.');
+            log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
             arts = await this.DownloadArticles();
             if (arts.length > 0)
                 await FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
         } else {
-            console.log(`Backend: Using cached articles. (${cacheAgeMinutes} minutes old)`);
+            log.info(`Using cached articles. (${cacheAgeMinutes} minutes old)`);
             arts = cache.articles;
         }
         
@@ -539,24 +545,25 @@ export class Backend {
         arts = await this.CleanArticles(arts);
 
         const timeEnd = Date.now();
-        console.log(`Backend: Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
+        log.info(`Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
         return arts;
     }
     /* Tries to save an article, true on success, false on fail. */
     public static async TrySaveArticle(article: Article): Promise<boolean> {
+        const log = this.log.context('SaveArticle');
         try {
-            console.log('Backend: Saving article', article.url);
+            log.info('Saving', article.url);
             const saved = await this.StorageGet('saved');
             if (await this.FindArticleByUrl(article.url, saved) < 0) {
                 saved.push(article);
                 await this.StorageSave('saved',saved);
             } else {
-                console.warn('Backend: Article is already saved.');
+                log.warn('Article is already saved.');
                 return false;
             }
             return true;
         } catch(error) {
-            console.error('Backend: Cannot save article.',error);
+            log.error('Cannot save article.',error);
             return false;
         }
     }
@@ -573,7 +580,7 @@ export class Backend {
             } else
                 throw new Error('not found in saved');
         } catch(err) {
-            console.error('Backend: Cannot remove saved article.',err);
+            this.log.context('RemoveSavedArticle').error('Cannot remove saved article.',err);
             return false;
         }
     }
@@ -588,12 +595,12 @@ export class Backend {
     }
     /* Resets cache */
     public static async ResetCache(): Promise<void> {
-        console.info('Backend: Resetting cache..');
+        this.log.context('ResetCache').info('Resetting cache..');
         await FSStore.setItem('cache', JSON.stringify({'timestamp': 0, 'articles': []}));
     }
     /* Resets all data in the app storage. */
     public static async ResetAllData(): Promise<void> {
-        console.warn('Backend: Resetting all data.');
+        this.log.context('ResetAllData').warn('Resetting all data..');
         await AsyncStorage.clear();
         await this.ResetCache();
         await this.CheckDB();
@@ -601,6 +608,7 @@ export class Backend {
     }
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
     public static async RateArticle(art: Article, rating: number): Promise<void> {
+        const log = this.log.context('RateArticle');
         let learning_db = await this.StorageGet('learning_db');
         let learning_db_secondary = await this.StorageGet('learning_db_secondary');
 
@@ -643,18 +651,18 @@ export class Backend {
         if (learning_db_secondary['upvotes'] + learning_db_secondary['downvotes'] > this.UserSettings.RotateDBAfter) {
             learning_db = {...learning_db_secondary};
             learning_db_secondary = {upvotes: 0, downvotes: 0, keywords: {}};
-            console.warn('Backend: [OK] Rotating DB and wiping secondary DB now..');
+            log.info('Rotating DB and wiping secondary DB now..');
         }
 
         await this.StorageSave('learning_db', learning_db);
         await this.StorageSave('learning_db_secondary', learning_db_secondary);
-        console.info(`Backend: Saved rating for article '${art.title}'`);
+        log.info(`Saved rating for article '${art.title}'`);
         await this.CheckDB();
         this.CurrentFeed = this.PagesRemoveArticle(art, this.CurrentFeed);
     }
     /* Save data to storage. */
     public static async StorageSave(key: string, value: any): Promise<void> { //eslint-disable-line
-        console.debug(`Backend: Saving key '${key}'.`);
+        this.log.context('StorageSave').debug(`Saving key '${key}'.`);
         await AsyncStorage.setItem(key,JSON.stringify(value));
     }
     /* Get data from storage. */
@@ -666,12 +674,13 @@ export class Backend {
     }
     /* Perform checkDB, makes sure things are not null and stuff. */
     public static async CheckDB(): Promise<void> {
+        const log = this.log.context('CheckDB');
         if (await AsyncStorage.getItem('saved') === null) {
-            console.debug('Backend: CheckDB(): Init "saved" key in DB..');
+            log.debug('Init "saved" key in DB..');
             await AsyncStorage.setItem('saved',JSON.stringify([]));
         }
         if (await AsyncStorage.getItem('user_settings') === null) {
-            console.debug('Backend: CheckDB(): Init "user_settings" key in DB..');
+            log.debug('Init "user_settings" key in DB..');
             await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
         } else {
             const current = JSON.parse(await AsyncStorage.getItem('user_settings') ?? '{}');
@@ -679,18 +688,18 @@ export class Backend {
             await AsyncStorage.setItem('user_settings', JSON.stringify(await this.MergeUserSettings(current)));
         }
         if (await AsyncStorage.getItem('seen') === null) {
-            console.debug('Backend: CheckDB(): Init "seen" key in DB..');
+            log.debug('Init "seen" key in DB..');
             await AsyncStorage.setItem('seen',JSON.stringify([]));
         }
         if (await AsyncStorage.getItem('notifications-cache') === null) {
-            console.debug('Backend: CheckDB(): Init "notifications-cache" key in DB..');
+            log.debug('Init "notifications-cache" key in DB..');
             await AsyncStorage.setItem('notifications-cache',JSON.stringify({
                 seen_urls: [],
                 timestamp: 0,
             }));
         }
         if (await AsyncStorage.getItem('learning_db') === null) {
-            console.debug('Backend: CheckDB(): Init "learning_db" key in DB..');
+            log.debug('Init "learning_db" key in DB..');
             await AsyncStorage.setItem('learning_db',JSON.stringify({
                 upvotes:0, downvotes:0,
                 keywords:{}
@@ -698,7 +707,7 @@ export class Backend {
             await AsyncStorage.removeItem('learning_db_secondary');
         }
         if (await AsyncStorage.getItem('learning_db_secondary') === null) {
-            console.debug('Backend: CheckDB(): Init "learning_db_secondary" key in DB..');
+            log.debug('Init "learning_db_secondary" key in DB..');
             const prefs = JSON.parse(await AsyncStorage.getItem('user_settings') ?? JSON.stringify(new UserSettings()));
             await AsyncStorage.setItem('learning_db_secondary',JSON.stringify({
                 upvotes: -prefs.RotateDBAfter / 4, downvotes: -prefs.RotateDBAfter / 4,
@@ -709,20 +718,21 @@ export class Backend {
 
     /* Change RSS topics */
     public static async ChangeDefaultTopics(topicName: string, enable: boolean): Promise<void> {
-        console.info(`Backend: Changing default topics, ${topicName} - ${enable ? 'add' : 'remove'}`);
+        const log = this.log.context('ChangeDefaultTopics');
+        log.info(`${topicName} - ${enable ? 'add' : 'remove'}`);
 
         if (DefaultTopics.Topics[topicName] !== undefined) {
             for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
                 const topicFeed = DefaultTopics.Topics[topicName].sources[i];
                 if (enable) {
                     if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
-                        console.debug(`add feed ${topicFeed.name} to feedlist`);
+                        log.debug(`add feed ${topicFeed.name} to feedlist`);
                         this.UserSettings.FeedList.push(topicFeed);
                     }
                 } else {
                     const index = this.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList);
                     if (index >= 0) {
-                        console.debug(`remove feed ${topicFeed.name} from feedlist`);
+                        log.debug(`remove feed ${topicFeed.name} from feedlist`);
                         this.UserSettings.FeedList.splice(index, 1);
                     }
                 }
@@ -754,12 +764,13 @@ export class Backend {
     }
     /* Wipes current data and loads backup created by CreateBackup() method. */
     public static async TryLoadBackup(backupStr: string): Promise<boolean> {
+        const log = this.log.context('LoadBackup');
         try {
             const backup: Backup = JSON.parse(backupStr);
             if (backup.TimeStamp !== undefined)
-                console.info(`Backend: Loading backup from ${(new Date(backup.TimeStamp)).toISOString()}, ver.: ${backup.Version}`);
+                log.info(`Loading from ${(new Date(backup.TimeStamp)).toISOString()}, ver.: ${backup.Version}`);
             else
-                console.info('Backend: Loading backup from (unknown date)');
+                log.info('Backend: Loading from (unknown date)');
 
             if (backup.Version === undefined)
                 throw Error('Cannot determine backup version.');
@@ -774,10 +785,10 @@ export class Backend {
                 await this.StorageSave('learning_db', {... (await this.StorageGet('learning_db')), ...backup.LearningDB});
             if (backup.Saved !== undefined)
                 await this.StorageSave('saved', backup.Saved);
-            console.info('Backend: Backup loaded.');
+            log.info('Backup loaded.');
             return true;
         } catch (err) {
-            console.warn('Backend: Failed to load backup, will try OPML format parsing.',err);
+            log.warn('Failed to load backup, will try OPML format parsing.',err);
             try {
                 const parser = new DOMParser({
                     locator:{},
@@ -791,17 +802,17 @@ export class Backend {
                         feeds.push(new Feed(elems[i].getAttribute('xmlUrl')));
                     }  catch { /* dontcare */ }
                 }
-                console.info(`Backend: Importing OPML, imported ${feeds.length} feed(s).`);
+                log.info(`Importing OPML, imported ${feeds.length} feed(s).`);
                 
                 feeds.forEach(feed => {
                     this.UserSettings.FeedList.push(feed);
                 });
                 await this.UserSettings.Save();
 
-                console.info('Backend: Backup/Import (OPML) loaded.');
+                log.info('Backup/Import (OPML) loaded.');
                 return true;
             } catch (err) {
-                console.error('Backend: Failed to load backup both as JSON and OMPL.', err);
+                log.error('Failed to load backup both as JSON and OMPL.', err);
                 return false;
             }
         }
@@ -834,11 +845,12 @@ export class Backend {
         return status;
     }
     public static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, throwError = false): Promise<Article[]> {
+        const log = this.log.context('DownloadArticlesOneChannel').context('Feed:'+feed.url);
         if (!feed.enabled) {
-            console.debug('Backend: Downloading from ' + feed.name + ' (skipped, feed disabled)');
+            log.debug('(skipped, feed disabled)');
             return [];
         }
-        console.debug('Backend: Downloading from ' + feed.name);
+        log.debug('Downloading..');
         const startTime = Date.now();
         const arts: Article[] = [];
         let isTimeouted = false;
@@ -868,7 +880,7 @@ export class Backend {
                     };
                     request.onerror = () => {
                         isFinished = true;
-                        console.warn(`Backend: request errored, status '${JSON.stringify(request)}'`);
+                        log.warn(`request errored, status '${JSON.stringify(request)}'`);
                         if (request.timeout)
                             isTimeouted = true;
                         reject(new Error(request.statusText));
@@ -900,9 +912,9 @@ export class Backend {
                 });
             } catch(err) {
                 if (isTimeouted)
-                    console.error('Cannot read RSS (probably timeout)' + feed.name, err);
+                    log.error('Cannot read RSS (probably timeout)', err);
                 else
-                    console.error('Cannot read RSS ' + feed.name, err);
+                    log.error('Cannot read RSS', err);
                 if (throwError)
                     throw new Error('Cannot read RSS ' + err);
                 return [];
@@ -912,7 +924,7 @@ export class Backend {
                 errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e; }} //eslint-disable-line
             });
             const serializer = new XMLSerializer();
-            console.info(`Backend: Downloading from ${feed.name}, response in ${Date.now() - startTime} ms.`);
+            log.info(`Response in ${Date.now() - startTime} ms.`);
             try {
                 const xml = parser.parseFromString(response);
                 let items: any = null; //eslint-disable-line
@@ -1027,12 +1039,12 @@ export class Backend {
 
                         arts.push(art);
                     } catch(err) {
-                        console.error(`Cannot process article, channel: ${feed.url}, err: ${err}`);
+                        log.error(`Cannot process article, err: ${err}`);
                     }
                 }
-                console.info(`Backend: Finished download from ${feed.name}, got ${arts.length} articles, took ${Date.now() - startTime} ms`);
+                log.info(`Finished download, got ${arts.length} articles, took ${Date.now() - startTime} ms`);
             } catch(err) {
-                console.error(`Channel ${feed.name} faulty.`,err);
+                log.error('Channel faulty.',err);
                 if (throwError)
                     throw new Error('RSS channel faulty ' + err);
             }
@@ -1042,13 +1054,13 @@ export class Backend {
         } catch (err) {
             failed = true;
             feed.failedAttempts += 1;
-            console.info(`Backend: Feed ${feed.name} increased failedAttempts to ${feed.failedAttempts}`);
+            log.info(`increased failedAttempts to ${feed.failedAttempts}`);
             this.UserSettings.Save();
             throw new Error(err);
         } finally {
             if (failed && feed.failedAttempts != 0) {
                 feed.failedAttempts = 0;
-                console.info(`Backend: Feed ${feed.name} reset failedAttempts to ${feed.failedAttempts}`);
+                log.info(`reset failedAttempts to ${feed.failedAttempts}`);
                 this.UserSettings.Save();
             }
         }
@@ -1072,8 +1084,9 @@ export class Backend {
     /* Private methods */
     private static async DownloadArticles(): Promise<Article[]> {
         const THREADS = 6;
+        const log = this.log.context('DownloadArticles');
 
-        console.info('Backend: Downloading articles..');
+        log.info('Downloading articles..');
         const timeBegin = Date.now();
         const feedList = this.UserSettings.FeedList.slice();
 
@@ -1094,12 +1107,13 @@ export class Backend {
         }
 
         const timeEnd = Date.now();
-        console.info(`Backend: Download finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
+        log.info(`Finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
         await this.ExtractKeywords(arts);
         return arts;
     }
     /* Removes seen (already rated) articles and any duplicates from article list. */
     private static async CleanArticles(arts: Article[]): Promise<Article[]> {
+        const log = this.log.context('CleanArticles');
         const startTime = Date.now();
         const startCount = arts.length;
         const seen = await this.StorageGet('seen');
@@ -1114,7 +1128,7 @@ export class Backend {
         const newarts: Article[] = [];
         for (let i = 0; i < arts.length; i++) {
             if (arts[i] == undefined) {
-                console.warn('Backend: [CleanArticles] expected an article, got undefined.');
+                log.warn('expected an article, got undefined.');
                 continue;
             }
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
@@ -1126,10 +1140,11 @@ export class Backend {
             }
         }
         const endTime = Date.now()
-        console.debug(`Backend: [CleanArticles] finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles.`);
+        log.debug(`Finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles.`);
         return newarts;
     }
     private static async SortArticles(articles: Article[], overrides = {sortType: 'learning'}): Promise<Article[]> {
+        const log = this.log.context('SortArticles');
         function shuffle(a: any) { //eslint-disable-line
             let j, x, i;
             for (i = a.length - 1; i > 0; i--) {
@@ -1148,9 +1163,9 @@ export class Backend {
         const learning_db = await this.StorageGet('learning_db');
         if (overrides.sortType == 'date' || learning_db['upvotes'] + learning_db['downvotes'] <= this.UserSettings.NoSortUntil) {
             if (overrides.sortType == 'date')
-                console.info(`Backend: Sort: Won't sort because of overrides: ${overrides}`);
+                log.info('Won\'t sort because of overrides:',overrides);
             else
-                console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${this.UserSettings.NoSortUntil} required)`);
+                log.info(`Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${this.UserSettings.NoSortUntil} required)`);
             articles.sort((a, b) => {
                 if ((a.date ?? undefined) !== undefined && (b.date ?? undefined) !== undefined)
                     return b.date.getTime() - a.date.getTime();
@@ -1169,7 +1184,7 @@ export class Backend {
         });
 
         const arts: Article[] = [];
-        console.debug(`discover feature set to: ${this.UserSettings.DiscoverRatio*100} %`);
+        log.debug(`discover feature set to: ${this.UserSettings.DiscoverRatio*100} %`);
         for(let i = 0; i < scores.length; i++) {
             if (i > 5 && parseInt(`${Math.random() * (1/this.UserSettings.DiscoverRatio)}`) == 0) {
                 // Throw in a random article instead
@@ -1187,7 +1202,7 @@ export class Backend {
         }
 
         const timeEnd = Date.now();
-        console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms (${arts.length} articles processed)`);
+        log.info(`Finished in ${(timeEnd - timeBegin)} ms (${arts.length} articles processed)`);
         return arts;
     }
     private static async GetArticleScore(art: Article): Promise<number> {
@@ -1202,10 +1217,11 @@ export class Backend {
         return score;
     }
     private static async GetArticleCache(): Promise<{timestamp: number | string, articles: Article[]}> {
+        const log = this.log.context('GetArticleCache');
         const startTime = Date.now()
         let cache = await FSStore.getItem('cache');
         if (cache == null) {
-            console.debug('Cache is null, initializing it.');
+            log.debug('Cache is null, initializing it.');
             cache = {'timestamp': 0, 'articles': []};
             await FSStore.setItem('cache',JSON.stringify(cache));
         } else {
@@ -1213,13 +1229,14 @@ export class Backend {
         }
         cache.articles.forEach((art: Article) => { Article.Fix(art); });
         const endTime = Date.now();
-        console.debug(`Backend: Retrieved article cache in ${endTime - startTime} ms.`);
+        log.debug(`Retrieved in ${endTime - startTime} ms.`);
         return cache;
     }
     /* Fills in article.keywords property, does all the TF-IDF magic. */
     private static ExtractKeywords(arts: Article[]) {
+        const log = this.log.context('ExtractKeywords');
         const timeBegin = Date.now();
-        console.info('Backend: Extracting keywords..');
+        log.info('Extracting keywords..');
         // TF-IDF: tf * idf
         // TF = term count in document / sum of all counts of all terms
         // IDF = log (Total Documents in Corpus/(1+Total Documents containing the term)) + 1
@@ -1259,11 +1276,11 @@ export class Backend {
                 }
             }
         }
-        console.info('Backend: Extracting keywords (pass 1 finished)');
+        log.info('pass 1 finished');
 
         //pass 2 - calculate tf-idf, get keywords
         for(const feedName in sorted) {
-            console.debug(`Backend: Extracting keywords (pass 2 - ${feedName})`);
+            log.debug(`pass 2 - ${feedName}`);
             const artsInFeed = sorted[feedName];
             for (let i = 0; i < artsInFeed.length; i++) {
                 const art = artsInFeed[i];
@@ -1314,9 +1331,9 @@ export class Backend {
                 }
             }
         }
-        console.info('Backend: Extracting keywords (pass 2 finished)');
+        log.info('pass 2 finished');
         const timeEnd = Date.now();
-        console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
+        log.info(`Finished in ${(timeEnd - timeBegin)} ms`);
     }
     private static async MergeUserSettings(old: UserSettings): Promise<UserSettings> {
         const prefs = Object.assign(await this.StorageGet('user_settings'), old);
@@ -1325,7 +1342,7 @@ export class Backend {
             try {
                 prefs.FeedList[i] = Object.assign(new Feed(prefs.FeedList[i].url), prefs.FeedList[i]);
             } catch {
-                console.warn(`backup restore: failed to merge feed ${prefs.FeedList[i].url}`);
+                this.log.context('MergeUserSettings').warn(`failed to merge feed ${prefs.FeedList[i].url}`);
             }
         }
         return prefs;
