@@ -405,11 +405,11 @@ function SortingSegmentedButton({ theme, lang, sourceFilter, applySorting }) {
                 background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
                 onPress={() => changesortType('learning')}>
                 <View style={[Styles.segmentedButton, {borderRightColor: theme.colors.outline, backgroundColor: (!learningDisabled ? 
-                    (sortType == 'learning' ? theme.colors.secondaryContainer : theme.colors.surface) : theme.colors.disabledState)}]}>
+                    (sortType == 'learning' ? theme.colors.secondaryContainer : theme.colors.surface) : theme.colors.disabledContainer)}]}>
                     { sortType == 'learning' ? <Icon size={18} name="check" color={theme.colors.onSecondaryContainer} 
                         style={Styles.segmentedButtonIcon}/> : null }
-                    <Text variant="labelLarge" style={{color: (sortType == 'learning' ? 
-                        theme.colors.onSecondaryContainer : theme.colors.onSurface)}}>{lang.sort_learning}</Text>
+                    <Text variant="labelLarge" style={{color: (!learningDisabled ? (sortType == 'learning' ? 
+                        theme.colors.onSecondaryContainer : theme.colors.onSurface) : theme.colors.disabledContent)}}>{lang.sort_learning}</Text>
                 </View>
             </TouchableNativeFeedback>
             </View>

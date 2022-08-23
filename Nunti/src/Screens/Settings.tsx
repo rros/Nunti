@@ -548,11 +548,11 @@ function ModalRadioButton({lang, theme, value, changeValue, disabled}) {
         <TouchableNativeFeedback disabled={disabled}
             background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}
             onPress={() => changeValue(value)}>
-            <View style={[Styles.modalRadioButton, Styles.settingsRowContainer,
-                {backgroundColor: disabled ? theme.colors.disabledState : 'transparent'}]}>
+            <View style={[Styles.modalRadioButton, Styles.settingsRowContainer]}>
                 <RadioButton.Android value={value} disabled={disabled} />
-                <Text variant="bodyLarge" style={Styles.settingsCheckboxLabel}>
-                    {lang[value]}</Text>
+                <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel,
+                    {color: (disabled ? theme.colors.disabledContent : theme.colors.onSurface)}]}>
+                        {lang[value]}</Text>
             </View>
         </TouchableNativeFeedback>
     );
