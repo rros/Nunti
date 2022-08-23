@@ -1,4 +1,4 @@
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, AppState } from 'react-native';
 const DOMParser = require('xmldom').DOMParser; //eslint-disable-line
 const XMLSerializer = require('xmldom').XMLSerializer; //eslint-disable-line
 import NetInfo from '@react-native-community/netinfo';
@@ -9,7 +9,9 @@ const FSStore = new Store('store1');
 import iconv from 'iconv-lite';
 import { Buffer } from 'buffer';
 import { NativeModules } from 'react-native';
-const NotificationsModule = NativeModules.Notifications
+import * as Languages from './Locale';
+const NotificationsModule = NativeModules.Notifications;
+const I18nManager = NativeModules.I18nManager;
 
 export class Feed {
     public name: string;
@@ -365,13 +367,13 @@ export class Backend {
         return pages;
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
-    public static async GetArticles(articleSource: string, filters: string[] = []): Promise<Article[]> {
+    public static async GetArticles(articleSource: string, filters = {sortType: 'learning', search: '', tags: []}): Promise<Article[]> {
         console.info(`Backend: GetArticles('${articleSource}') called.`);
 
         let articles: Article[];
         switch (articleSource) {
         case 'feed':
-            articles = await this.GetFeedArticles();
+            articles = await this.GetFeedArticles({sortType: filters.sortType});
             break;
         case 'bookmarks':
             articles = (await this.GetSavedArticles()).reverse();
@@ -385,50 +387,35 @@ export class Backend {
         articles.forEach((art: Article) => { Article.Fix(art); });
 
         // apply filters
-        if (filters.length !== 0) {
+        if (filters.search != '' || (filters.tags != null && filters.tags.length > 0)) {
             const filterStartTime = Date.now();
             const newarts: Article[] = [];
-            const filterTags = filters.slice(1);
-
-            for (let i = 0; i < articles.length; i++) {
-                const art = articles[i];
-                let passed = false;
-                // test tags
-                for (let tag_i = 0; tag_i < art.tags.length; tag_i++) {
-                    if (filterTags.indexOf(art.tags[tag_i].name) >= 0) {
-                        passed = true;
-                        break;
-                    }
-                }
-                if (passed || filterTags.length == 0) {
-                    //text search
+            articles.forEach((art: Article) => {
+                //search
+                let passedSearch = false;
+                if (filters.search != '' && filters.search != null) {
                     const words = (art.title + ' ' + art.description).toLowerCase().split(' ');
-                    const searchWords = filters[0].toLowerCase().split(' ');
-                    if (filters.length == 1 && searchWords.length == 1 && searchWords[0].trim() == '') {
-                        passed = true;
-                    } else {
-                        for (let word_i = 0; word_i < words.length; word_i++) {
-                            if (passed)
-                                break;
-                            const word = words[word_i].trim();
-                            if (word == '')
-                                continue;
-                            for (let search_i = 0; search_i < searchWords.length; search_i++) {
-                                const searchWord = searchWords[search_i].trim();
-                                if (searchWord == '')
-                                    continue;
-                                if (word.indexOf(searchWord) >= 0) {
-                                    passed = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (passed)
-                    newarts.push(art);
-            }
+                    const searchWords = filters.search.toLowerCase().split(' ');
+                    searchWords.forEach((word: string) => {
+                        if (words.indexOf(word) >= 0)
+                            passedSearch = true;
+                    });
+                } else
+                    passedSearch = true;
 
+                //tags
+                let passedTags = false;
+                if (filters.tags != null && filters.tags.length > 0) {
+                    art.tags.forEach((tag: Tag) => {
+                        if (filters.tags.indexOf(tag.name) >= 0)
+                            passedTags = true;
+                    });
+                } else
+                    passedTags = true;
+
+                if (passedSearch && passedTags)
+                    newarts.push(art);
+            });
             const filterEndTime = Date.now();
             console.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
             articles = newarts;
@@ -444,10 +431,11 @@ export class Backend {
     public static async SendNotification(message: string, channel: string): Promise<boolean> {
         let channelName: string;
         let channelDescription: string;
+        const locale = this.GetLocale();
         switch (channel) {
         case 'new_articles':
-            channelName = 'New articles';
-            channelDescription = 'Best recommended article notifications.';
+            channelName = locale.notifications_new_articles;
+            channelDescription = locale.notifications_new_articles_description;
             break;
         case 'other':
             channelName = 'Other';
@@ -457,7 +445,9 @@ export class Backend {
             console.error(`Backend: Failed attempt to send notification by channel '${channel}' - channel not allowed.`);
             return false;
         }
-        const result: true | string = await NotificationsModule.notify('Nunti', message, channelName, channelDescription);
+        const title = channelName;
+        const summary = null;
+        const result: true | string = await NotificationsModule.notify(title, message, summary, channelName, channelDescription);
         if (result === true) {
             console.info(`Backend: Notification via channel ${channel} successfully sent. ('${message}')`);
             return true;
@@ -469,10 +459,14 @@ export class Backend {
     /* Does background task work, can be even called before Backend.Init() */
     /* Is run for ALL background tasks (both sync and notification) */
     public static async RunBackgroundTask(taskId: string, isHeadless: boolean): Promise<void> {
-        console.info(`Backed: Gained control over backgroundTask, id:${taskId}, isHeadless:${isHeadless}`);
+        console.info(`Backend: Gained control over backgroundTask, id:${taskId}, isHeadless:${isHeadless}`);
+        if (AppState.currentState != 'background') {
+            console.info('Backend: App is not in background, exiting background task.');
+            return;
+        }
         await this.Init();
         if (!this.UserSettings.EnableBackgroundSync && !this.UserSettings.EnableNotifications) {
-            console.info('Backend: BackgroundSync and notifications disabled, exiting..');
+            console.info('Backend: [BackgroundTask] BackgroundSync and notifications disabled, exiting..');
             return;
         }
         try {
@@ -508,8 +502,10 @@ export class Backend {
                             throw new Error('Failed to send notification.');
                     }
                     await this.StorageSave('notifications-cache', notifcache);
-                }
-            }
+                } else
+                    console.info(`Backend: Will not show notification, time remaining: ${this.UserSettings.NewArticlesNotificationPeriod - lastNotificationBeforeMins} mins.`);
+            } else
+                console.info('Backend: Notifications disabled.');
         } catch (err) {
             console.error(`Backend: Exception on backgroundTask, id:${taskId}, error:`, err);
         } finally {
@@ -517,7 +513,7 @@ export class Backend {
         }
     }
     /* Retrieves sorted articles to show in feed. */
-    public static async GetFeedArticles(): Promise<Article[]> {
+    public static async GetFeedArticles(overrides = {sortType: 'learning'}): Promise<Article[]> {
         console.log('Backend: Loading new articles..');
         const timeBegin: number = Date.now();
         await this.CheckDB();
@@ -538,8 +534,8 @@ export class Backend {
             console.log(`Backend: Using cached articles. (${cacheAgeMinutes} minutes old)`);
             arts = cache.articles;
         }
-
-        arts = await this.SortArticles(arts);
+        
+        arts = await this.SortArticles(arts, overrides);
         arts = await this.CleanArticles(arts);
 
         const timeEnd = Date.now();
@@ -1133,7 +1129,7 @@ export class Backend {
         console.debug(`Backend: [CleanArticles] finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles.`);
         return newarts;
     }
-    private static async SortArticles(articles: Article[]): Promise<Article[]> {
+    private static async SortArticles(articles: Article[], overrides = {sortType: 'learning'}): Promise<Article[]> {
         function shuffle(a: any) { //eslint-disable-line
             let j, x, i;
             for (i = a.length - 1; i > 0; i--) {
@@ -1149,10 +1145,12 @@ export class Backend {
         articles = shuffle(articles);
         const originalShuffledArts = articles.slice();
 
-
         const learning_db = await this.StorageGet('learning_db');
-        if (learning_db['upvotes'] + learning_db['downvotes'] <= this.UserSettings.NoSortUntil) {
-            console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${this.UserSettings.NoSortUntil} required)`);
+        if (overrides.sortType == 'date' || learning_db['upvotes'] + learning_db['downvotes'] <= this.UserSettings.NoSortUntil) {
+            if (overrides.sortType == 'date')
+                console.info(`Backend: Sort: Won't sort because of overrides: ${overrides}`);
+            else
+                console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${this.UserSettings.NoSortUntil} required)`);
             articles.sort((a, b) => {
                 if ((a.date ?? undefined) !== undefined && (b.date ?? undefined) !== undefined)
                     return b.date.getTime() - a.date.getTime();
@@ -1356,6 +1354,20 @@ export class Backend {
             }
         }
         return pages;
+    }
+    private static GetLocale(): {[key: string]: string} {
+        let locale;
+        if (this.UserSettings.Language == 'system') {
+            locale = I18nManager.localeIdentifier;
+        } else {
+            locale = this.UserSettings.Language;
+        }
+        for (const language in Languages) {
+            if (locale.includes(Languages[language].code)) { //eslint-disable-line
+                return Languages[language]; //eslint-disable-line
+            }
+        }
+        return Languages['English'];
     }
 }
 export default Backend;

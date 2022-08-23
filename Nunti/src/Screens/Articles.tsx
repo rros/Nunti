@@ -129,12 +129,8 @@ function ArticlesPage (props) {
         if(refreshIndicator) {
             setRefreshing(true);
         }
-        
-        // TODO BACKEND: uncomment this line and remove the next one when backend implements new filter object
-        // sourceFilter.current => {sortType: '', search: '', tags: []}
 
-        //articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, sourceFilter.current);
-        articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, []);
+        articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, sourceFilter.current);
 
         // create one animation value for each article (row)
         let numberOfArticles = 0;
@@ -457,7 +453,7 @@ function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {
     }
 
     const clearFilter = () => {
-        if(sourceFilter.tags.length == 0 ** sourceFilter.search == '') {
+        if(sourceFilter.tags.length == 0 && sourceFilter.search == '') {
             modalRef.current.hideModal();
         } else {
             applyFilter('', []);

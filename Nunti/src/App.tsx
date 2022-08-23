@@ -171,6 +171,7 @@ export default function App (props) {
                 enableHeadless: true,
                 stopOnTerminate: false,
                 startOnBoot: true,
+                requiresBatteryNotLow: true,
             }, onEvent, onTimeout);
             console.info('[BackgroundFetch] configure status: ', status);
             BackgroundFetch.scheduleTask({
@@ -180,6 +181,7 @@ export default function App (props) {
                 enableHeadless: true,
                 stopOnTerminate: false,
                 startOnBoot: true,
+                requiresBatteryNotLow: true,
             });
             /* ----- */
             await reloadGlobalStates();

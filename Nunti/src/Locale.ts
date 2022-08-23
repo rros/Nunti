@@ -219,7 +219,9 @@ export const English = {
     notification_interval: 'Notification interval',
     notification_interval_description: 'Every %interval%h',
     change_notification_interval_success: 'Notification interval changed',
-    change_notification_interval_fail: 'Failed to change notification interval'
+    change_notification_interval_fail: 'Failed to change notification interval',
+    notifications_new_articles: 'Recommended article',
+    notifications_new_articles_description: 'Recommended article notifications',
 };
 export const Czech = {
     code: 'cs',
@@ -442,7 +444,9 @@ export const Czech = {
     notification_interval: 'Interval notifikací',
     notification_interval_description: 'Každých %interval%h',
     change_notification_interval_success: 'Interval notifikací změněn',
-    change_notification_interval_fail: 'Nezdařilo se změnit interval notifikací'
+    change_notification_interval_fail: 'Nezdařilo se změnit interval notifikací',
+    notifications_new_articles: 'Doporučený článek',
+    notifications_new_articles_description: 'Notifikace s doporučenými články',
 };
 export const Japanese = {
     code: 'ja',
@@ -665,7 +669,9 @@ export const Japanese = {
     notification_interval: 'お知らせの間隔',
     notification_interval_description: '%interval%時間ごと',
     change_notification_interval_success: 'お知らせの間隔を変更しました',
-    change_notification_interval_fail: 'お知らせ間隔の変更に失敗しました'
+    change_notification_interval_fail: 'お知らせ間隔の変更に失敗しました',
+    notifications_new_articles: 'おすすめ記事',
+    notifications_new_articles_description: 'おすすめ記事の通知',
 };
 export const Italian = {
     code: 'it',
@@ -888,7 +894,9 @@ export const Italian = {
     notification_interval: 'Intervallo di notifica',
     notification_interval_description: 'Ogni %interval%h',
     change_notification_interval_success: 'Intervallo di notifica modificato',
-    change_notification_interval_fail: 'Impossibile modificare l\'intervallo di notifica'
+    change_notification_interval_fail: 'Impossibile modificare l\'intervallo di notifica',
+    notifications_new_articles: 'Articolo consigliato',
+    notifications_new_articles_description: 'Notifiche di articoli consigliati',
 };
 export const Polish = {
     code: 'pl',
@@ -1111,7 +1119,9 @@ export const Polish = {
     notification_interval: 'Przerwa w powiadamianiu',
     notification_interval_description: 'Co %interval%h',
     change_notification_interval_success: 'Zmiana odstępu między powiadomieniami',
-    change_notification_interval_fail: 'Nie udało się zmienić interwału powiadomień'
+    change_notification_interval_fail: 'Nie udało się zmienić interwału powiadomień',
+    notifications_new_articles: 'Polecane artykuły',
+    notifications_new_articles_description: 'Powiadomienia o polecanych artykułach',
 };
 export const German = {
     code: 'de',
@@ -1334,7 +1344,9 @@ export const German = {
     notification_interval: 'Benachrichtigungsintervall',
     notification_interval_description: 'Alle %interval% Stunden',
     change_notification_interval_success: 'Benachrichtigungsintervall geändert',
-    change_notification_interval_fail: 'Benachrichtigungsintervall konnte nicht geändert werden'
+    change_notification_interval_fail: 'Benachrichtigungsintervall konnte nicht geändert werden',
+    notifications_new_articles: 'Empfohlener Artikel',
+    notifications_new_articles_description: 'Benachrichtigungen über empfohlene Artikel',
 };
 export const French = {
     code: 'fr',
@@ -1557,7 +1569,9 @@ export const French = {
     notification_interval: 'Intervalle de notification',
     notification_interval_description: 'Toutes les %interval%h',
     change_notification_interval_success: 'Modification de l\'intervalle de notification',
-    change_notification_interval_fail: 'Échec de la modification de l\'intervalle de notification'
+    change_notification_interval_fail: 'Échec de la modification de l\'intervalle de notification',
+    notifications_new_articles : 'Article recommandé',
+    notifications_new_articles_description : 'Notifications d\'articles recommandés',
 };
 export const BrazilianPortuguese = {
     code: 'pt_BR',
@@ -1780,5 +1794,7 @@ export const BrazilianPortuguese = {
     notification_interval: 'Intervalo de notificação',
     notification_interval_description: 'A cada %interval%h',
     change_notification_interval_success: 'Intervalo de notificação alterado',
-    change_notification_interval_fail: 'Falha no intervalo de notificação de mudança'
+    change_notification_interval_fail: 'Falha no intervalo de notificação de mudança',
+    notifications_new_articles: 'Artigo recomendado',
+    notifications_new_articles_description: 'Notificações de artigos recomendados',
 };

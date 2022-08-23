@@ -39,6 +39,7 @@ public class NotificationsModule extends ReactContextBaseJavaModule {
     public void notify(
             String title,
             String message,
+            String summary,
             String _channelName,
             String channelDescription,
             Promise promise
@@ -50,7 +51,7 @@ public class NotificationsModule extends ReactContextBaseJavaModule {
             builder.setSmallIcon( R.drawable.icon_notifications );
             builder.setContentTitle( title );
             builder.setContentText( message );
-            builder.setStyle( new NotificationCompat.BigTextStyle().bigText(message).setSummaryText(title) );
+            builder.setStyle( new NotificationCompat.BigTextStyle().bigText(message).setSummaryText(summary) );
             builder.setPriority( NotificationCompat.PRIORITY_HIGH );
             Intent notifyIntent = new Intent(moduleContext, MainActivity.class);
             notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -71,7 +72,7 @@ public class NotificationsModule extends ReactContextBaseJavaModule {
             notificationManagerCompat.notify(notificationId,builder.build());
             promise.resolve(true);
         } catch(Exception e) {
-            promise.resolve("Test failed. " + e);
+            promise.resolve("Notification attempt failed. " + e);
         }
     }
 }
