@@ -150,12 +150,12 @@ function ArticlesPage (props) {
             if(Backend.UserSettings.FeedList.length == 0) {
                 bannerMessage.current = 'no_feed_banner';
                 bannerAction.current = 'goto_settings';
-            } else if(Backend.IsDoNotDownloadEnabled && Backend.UserSettings.WifiOnly) {
-                bannerMessage.current = 'wifi_only_banner';
-                bannerAction.current = 'goto_settings';
-            } else if(sourceFilter.current.tags.length != 0 && sourceFilter.current.search == '') {
+            } else if(sourceFilter.current.tags.length != 0 || sourceFilter.current.search != '') {
                 bannerMessage.current = 'filter_nothing_found_banner';
                 bannerAction.current = 'open_filter';
+            } else if((Backend.IsDoNotDownloadEnabled && Backend.UserSettings.WifiOnly) ) {
+                bannerMessage.current = 'wifi_only_banner';
+                bannerAction.current = 'goto_settings';
             } else {
                 break banner;
             }
