@@ -1,296 +1,392 @@
-import React, { Component } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-    ScrollView,
     Image,
-    Platform
+    Platform,
+    View,
 } from 'react-native';
 
 import { 
-    Title,
-    Paragraph,
+    Text,
     RadioButton,
     Button,
     Switch,
-    List,
-    withTheme
+    withTheme,
+    Checkbox,
+    Card,
 } from 'react-native-paper';
 
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import * as ScopedStorage from 'react-native-scoped-storage';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
+import { snackbarRef, globalStateRef, logRef } from '../App';
 import { Backend } from '../Backend';
+import Log from '../Log';
 import { Accents } from '../Styles';
 import DefaultTopics from '../DefaultTopics';
-
-import * as ScopedStorage from 'react-native-scoped-storage';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 const NavigationTabs = createMaterialTopTabNavigator();
 
-class Wizard extends Component {
-    constructor(props: any) {
-        super(props);
-    }
-
-    render() {
-        return(
-            <NavigationTabs.Navigator tabBarPosition="bottom" 
-                screenOptions={{ tabBarStyle: { backgroundColor: this.props.theme.colors.background },
-                    tabBarIndicatorStyle: { backgroundColor: 'transparent'},
-                    tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => { 
-                        if(focused)
-                            return <Icon style={Styles.wizardNavigationIcon} name="circle" 
-                                size={15} color={this.props.theme.colors.accent} />;
-                        else
-                            return <Icon style={Styles.wizardNavigationIcon} name="radio-button-off"
-                                size={15} color={this.props.theme.colors.disabled} />;}
-                }}>
-                <NavigationTabs.Screen name="Welcome">
-                    { props => <Step1Welcome {...props} lang={this.props.lang}
-                        toggleSnack={this.props.toggleSnack} reloadGlobalStates={this.props.reloadGlobalStates} />}
-                </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="Language">
-                    { props => <Step2Language {...props} lang={this.props.lang} 
-                        Languages={this.props.Languages} updateLanguage={this.props.updateLanguage} />}
-                </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="Theming">
-                    { props => <Step3Theme {...props} lang={this.props.lang} 
-                        updateTheme={this.props.updateTheme} 
-                        updateAccent={this.props.updateAccent} />}
-                </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="Topics">
-                    { props => <Step4Topics {...props} lang={this.props.lang} 
-                        reloadGlobalStates={this.props.reloadGlobalStates}/>}
-                </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="Learning">
-                    { props => <Step5Learning {...props} lang={this.props.lang} />}
-                </NavigationTabs.Screen>
-            </NavigationTabs.Navigator>
-        );
-    }
+function Wizard (props) {
+    const log = useRef(logRef.current.globalLog.current.context('Wizard'));
+    const _props = props; // props are undefined in navigator???
+    
+    return(
+        <NavigationTabs.Navigator tabBarPosition="bottom" 
+            screenOptions={{ tabBarStyle: { backgroundColor: _props.theme.colors.surface, elevation: 0 },
+                tabBarIndicatorStyle: { backgroundColor: 'transparent'},
+                tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => { 
+                    return(
+                        <View style={Styles.wizardTabContainer}>
+                            <Icon style={{alignSelf: 'center'}} name={focused ? 'circle' : 'radiobox-blank'} 
+                                size={16} color={focused ? _props.theme.colors.primary :
+                                    _props.theme.colors.outline} />
+                        </View>
+                    );
+                }
+            }}>
+            <NavigationTabs.Screen name="Welcome">
+                { props => <Step1Welcome {...props} parentLog={log.current} 
+                    lang={_props.lang} theme={_props.theme} />}
+            </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="Language">
+                { props => <Step2Language {...props} lang={_props.lang}
+                    Languages={_props.Languages} theme={_props.theme} />}
+            </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="Theming">
+                { props => <Step3Theme {...props} lang={_props.lang}
+                    theme={_props.theme} />}
+            </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="Topics">
+                { props => <Step4Topics {...props} lang={_props.lang}
+                    theme={_props.theme}/>}
+            </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="Learning">
+                { props => <Step5Learning {...props} lang={_props.lang}
+                    theme={_props.theme}/>}
+            </NavigationTabs.Screen>
+        </NavigationTabs.Navigator>
+    );
 }
 
-class Step1Welcome extends Component {
-    constructor(props: any) {
-        super(props);
+function Step1Welcome (props) {
+    const log = props.parentLog.context('Step1Welcome');
 
-        this.import = this.import.bind(this);
-    }    
-
-    private async import() {
+    const importBackup = async () => {
         const file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, 'utf8');
         const allowed_mime = ['text/plain', 'application/octet-stream', 'application/json'];
+
+        if(file == null){
+            log.warn('Import cancelled by user')
+            return; 
+        }
+
         if(allowed_mime.indexOf(file.mime) < 0) {
-            this.props.toggleSnack(this.props.lang.import_fail_format, true);
+            log.error('Import failed, wrong format')
+            snackbarRef.current.showSnack(props.lang.import_fail_format);
             return;
         }
 
-        if(await Backend.TryLoadBackup(file.data)) {
-            await this.props.reloadGlobalStates();
-
+        if(await Backend.TryLoadBackup(file.data)){
+            globalStateRef.current.updateLanguage(Backend.UserSettings.Language);
+            globalStateRef.current.updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
+            
             // when importing OPML files from other apps, we need to set first launch to false to leave the wizard
             Backend.UserSettings.FirstLaunch = false;
             Backend.UserSettings.Save();
-
-            this.props.toggleSnack(this.props.lang.import_ok, true);
-            this.props.navigation.navigate('feed');
+            
+            snackbarRef.current.showSnack(props.lang.import_ok);
+            props.navigation.navigate('feed');
         } else {
-            this.props.toggleSnack(this.props.lang.import_fail_invalid, true);
+            snackbarRef.current.showSnack(props.lang.import_fail_invalid);
+            log.error('Import failed')
         }
     }
 
-    render() {
-        return(
-            <ScrollView contentContainerStyle={Styles.centerView}>
+    return(
+        <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={Styles.centeredImageContainer}>
                 <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Title style={Styles.largerText}>{this.props.lang.welcome}</Title>
-                <Paragraph style={Styles.largerText}>{this.props.lang.enjoy}</Paragraph>
-                <Button icon="application-import" style={Styles.startReadingButton}
-                    onPress={this.import}>{this.props.lang.import}</Button>
-            </ScrollView>
-        );
-    }
+            </View>
+
+            <View style={Styles.wizardCardWithButtonContainer}>
+                <Card mode={'contained'} style={[Styles.wizardCardWithButton, Styles.card]}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1, 
+                            color: props.theme.colors.onSurfaceVariant}]}>{props.lang.welcome}</Text>
+                        <Text variant="bodyMedium" style={[Styles.bodyText, 
+                            {color: props.theme.colors.onSurfaceVariant}]}>{props.lang.enjoy}</Text>
+                        <Button icon="application-import" style={Styles.bodyText}
+                            onPress={importBackup}>{props.lang.import}</Button>
+                    </View>
+                </Card>
+            </View>
+        </ScrollView>
+    );
 }
 
-class Step2Language extends Component {
-    constructor(props: any){
-        super(props);
-        
-        this.state = {
-            language: Backend.UserSettings.Language,
-        };
-    }
-    
-    private changeLanguage(newLanguage: string) {
-        Backend.UserSettings.Language = newLanguage;
-        Backend.UserSettings.Save();
-        
-        this.setState({ language: newLanguage });
+function Step2Language (props) {
+    const [selectedLang, setSelectedLang] = useState(Backend.UserSettings.Language);
 
-        this.props.updateLanguage(newLanguage);
+    const changeLanguage = (newLanguage: string) => {
+        setSelectedLang(newLanguage);
+        globalStateRef.current.updateLanguage(newLanguage);
     }
 
-    render() {
-        return(
-            <ScrollView>
-                <RadioButton.Group onValueChange={newValue => this.changeLanguage(newValue)} value={this.state.language}>
-                    <List.Section title={this.props.lang.language}>
-                        <List.Item title={this.props.lang.system}
-                            right={() => <RadioButton.Item value="system" />} />
-                        { Object.keys(this.props.Languages).map((language) => {
-                            return(
-                                <List.Item title={this.props.Languages[language].this_language}
-                                    right={() => <RadioButton.Item value={this.props.Languages[language].code} />} />
-                            );
-                        })}
-                    </List.Section>
+    return(
+        <ScrollView showsVerticalScrollIndicator={false}>
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.language}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                <RadioButton.Group value={selectedLang}>
+                    <TouchableNativeFeedback 
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                        onPress={() => changeLanguage('system')}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                            <RadioButton.Android value={'system'} />
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
+                                {props.lang.system}</Text>
+                        </View>
+                    </TouchableNativeFeedback>
+
+                    { Object.keys(props.Languages).map((language) => {
+                        return(
+                            <TouchableNativeFeedback 
+                                background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                                onPress={() => changeLanguage(props.Languages[language].code)}>
+                                <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                                    <RadioButton.Android value={props.Languages[language].code} />
+                                    <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                        {color: props.theme.colors.onSurfaceVariant}]}>
+                                        {props.Languages[language].this_language}</Text>
+                                </View>
+                            </TouchableNativeFeedback>
+                        );
+                    })}
                 </RadioButton.Group>
-            </ScrollView>
-        );
-    }
+            </Card>
+        </ScrollView>
+    );
 }
 
-class Step3Theme extends Component {
-    constructor(props: any){
-        super(props);
-        
-        this.state = {
-            theme: Backend.UserSettings.Theme,
-            accent: Backend.UserSettings.Accent,
-        };
+function Step3Theme (props) {
+    const [theme, setTheme] = useState(Backend.UserSettings.Theme);
+    const [accent, setAccent] = useState(Backend.UserSettings.Accent);
+    
+    const changeTheme = (newTheme: string) => {
+        setTheme(newTheme);
+        globalStateRef.current.updateTheme(newTheme, accent);
     }
     
-    private async changeTheme(newTheme: string) {
-        Backend.UserSettings.Theme = newTheme;
-        Backend.UserSettings.Save();
-        
-        this.setState({ theme: newTheme });
-        this.props.updateTheme(newTheme);
-    }
-    
-    private async changeAccent(newAccent: string) {
-        Backend.UserSettings.Accent = newAccent;
-        Backend.UserSettings.Save();
-        
-        this.setState({ accent: newAccent });
-        this.props.updateAccent(newAccent);
+    const changeAccent = (newAccent: string) => {
+        setAccent(newAccent);
+        globalStateRef.current.updateTheme(theme, newAccent);
     }
 
-    render() {
-        return(
-            <ScrollView>
-                <RadioButton.Group onValueChange={newValue => this.changeTheme(newValue)} value={this.state.theme}>
-                    <List.Section title={this.props.lang.theme}>
-                        <List.Item title={this.props.lang.system}
-                            right={() => <RadioButton.Item value="system" />} />
-                        <List.Item title={this.props.lang.light}
-                            right={() => <RadioButton.Item value="light" />} />
-                        <List.Item title={this.props.lang.dark}
-                            right={() => <RadioButton.Item value="dark" />} />
-                    </List.Section>
+    return(
+        <ScrollView showsVerticalScrollIndicator={false}>
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.theme}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                <RadioButton.Group value={theme}>
+                    <TouchableNativeFeedback 
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                        onPress={() => changeTheme('system')}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                            <RadioButton.Android value={'system'} />
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
+                                {props.lang.system}</Text>
+                        </View>
+                    </TouchableNativeFeedback>
+                    <TouchableNativeFeedback 
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                        onPress={() => changeTheme('light')}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                            <RadioButton.Android value={'light'} />
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
+                                {props.lang.light}</Text>
+                        </View>
+                    </TouchableNativeFeedback>
+                    <TouchableNativeFeedback 
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                        onPress={() => changeTheme('dark')}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                            <RadioButton.Android value={'dark'} />
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
+                                {props.lang.dark}</Text>
+                        </View>
+                    </TouchableNativeFeedback>
+                    <TouchableNativeFeedback 
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                        onPress={() => changeTheme('black')}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                            <RadioButton.Android value={'black'} />
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: props.theme.colors.onSurfaceVariant}]}>
+                                {props.lang.black}</Text>
+                        </View>
+                    </TouchableNativeFeedback>
                 </RadioButton.Group>
-                <RadioButton.Group onValueChange={newValue => this.changeAccent(newValue)} value={this.state.accent}>
-                    <List.Section title={this.props.lang.accent}>
-                        { Object.keys(Accents).map((accentName) => {
-                            return (
-                                <List.Item title={this.props.lang[accentName]}
-                                    right={() => <RadioButton.Item value={accentName} />} />
-                            );
-                        })}
-                        <List.Item title={this.props.lang.material_you}
-                            right={() => <RadioButton.Item disabled={Platform.Version < 31} 
-                                value="material_you" />} />
-                    </List.Section>
+            </Card>
+
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, 
+                {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.accent}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                <RadioButton.Group value={accent}>
+                    { Object.keys(Accents).map((accentName) => {
+                        return (
+                            <TouchableNativeFeedback 
+                                background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                                onPress={() => changeAccent(accentName)}>
+                                <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                                    <RadioButton.Android value={accentName} />
+                                    <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                        {color: props.theme.colors.onSurfaceVariant}]}>
+                                        {props.lang[accentName]}</Text>
+                                </View>
+                            </TouchableNativeFeedback>
+                        );
+                    })}
+                    <TouchableNativeFeedback disabled={Platform.Version < 31}
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                        onPress={() => changeAccent('material_you')}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer,
+                            {backgroundColor: (Platform.Version < 31 ? props.theme.colors.disabledContainer : 'transparent')}]}>
+                            <RadioButton.Android value={'material_you'} disabled={Platform.Version < 31} />
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: (Platform.Version < 31 ? props.theme.colors.disabledContent : 
+                                    props.theme.colors.onSurfaceVariant)}]}>{props.lang.material_you}</Text>
+                        </View>
+                    </TouchableNativeFeedback>
                 </RadioButton.Group>
-            </ScrollView>
-        );
-    }
+            </Card>
+        </ScrollView>
+    );
 }
 
-class Step4Topics extends Component {
-    constructor(props: any){
-        super(props);
-        
-        this.state = {};
-    }
+function Step4Topics (props) {
+    const [topics, setTopics] = useState([]);
+    const [forceValue, forceUpdate] = useState(false);
     
-    componentDidMount(){
-        Object.keys(DefaultTopics.Topics).forEach((topicName) => {
-            // dynamically create states for each topic
-            if(this.state[topicName] === undefined) {
-                this.setState({[topicName]: Backend.IsTopicEnabled(topicName)});
+    // on component mount
+    useEffect(() => {
+        const newTopics = [];
+        
+        Object.keys(DefaultTopics.Topics).forEach((topicName) => {    
+            newTopics.push({name: topicName, 
+                value: Backend.IsTopicEnabled(topicName), 
+                icon: (DefaultTopics.Topics[topicName].icon)});
+        });
+
+        setTopics(newTopics);
+    }, []);
+
+    const changeDefaultTopics = (topic: {}) => {
+        const newTopics = topics;
+
+        topics.some(pickedTopic => {
+            if(pickedTopic.name == topic.name) {
+                pickedTopic.value = !pickedTopic.value;
             }
         });
+
+        setTopics(newTopics);
+        forceUpdate(!forceValue);
+
+        Backend.ChangeDefaultTopics(topic.name, topic.value);
     }
 
-    private changeDefaultTopics(topicName: string) {
-        this.setState({[topicName]: !this.state[topicName]});
-        Backend.ChangeDefaultTopics(topicName, !this.state[topicName]);
-    }
+    return(
+        <ScrollView showsVerticalScrollIndicator={false}>
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, 
+                {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.topics}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                { topics.map((topic) => {
+                    if(topic.icon == 'earth') {
+                        return null;
+                    }
 
-    render() {
-        return(
-            <ScrollView>
-                <List.Section title={this.props.lang.topics}>
-                    { Object.keys(DefaultTopics.Topics).map((topicName) => {
-                        if(DefaultTopics.Topics[topicName].icon == 'earth'){
-                            return null;
-                        }
+                    return(
+                        <TouchableNativeFeedback
+                            background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                            onPress={() => changeDefaultTopics(topic)}>
+                            <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                                <Checkbox.Android position="leading"
+                                    status={topic.value ? 'checked' : 'unchecked'} />
+                                <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                    {color: props.theme.colors.onSurfaceVariant}]}>
+                                    {props.lang[topic.name]}</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                    );
+                })}
+            </Card>
+            
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.diff_language_news}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                { topics.map((topic) => {
+                    if(topic.icon != 'earth') {
+                        return null;
+                    }
 
-                        return (
-                            <List.Item title={this.props.lang[topicName]}
-                                left={() => <List.Icon icon={DefaultTopics.Topics[topicName].icon} />}
-                                right={() => <Switch value={this.state[topicName]} 
-                                    onValueChange={() => this.changeDefaultTopics(topicName)} />} />
-                        );
-                    })}
-                </List.Section>
-                <List.Section title={this.props.lang.diff_language_news}>
-                    { Object.keys(DefaultTopics.Topics).map((topicName) => {
-                        if(DefaultTopics.Topics[topicName].icon != 'earth'){
-                            return null;
-                        }
-
-                        return (
-                            <List.Item title={this.props.lang[topicName]}
-                                left={() => <List.Icon icon={DefaultTopics.Topics[topicName].icon} />}
-                                right={() => <Switch value={this.state[topicName]} 
-                                    onValueChange={() => this.changeDefaultTopics(topicName)} />} />
-                        );
-                    })}
-                </List.Section>
-            </ScrollView>
-        );
-    }
+                    return(
+                        <TouchableNativeFeedback
+                            background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                            onPress={() => changeDefaultTopics(topic)}>
+                            <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                                <Checkbox.Android position="leading"
+                                    status={topic.value ? 'checked' : 'unchecked'} />
+                                <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                    {color: props.theme.colors.onSurfaceVariant}]}>
+                                    {props.lang[topic.name]}</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                    );
+                })}
+            </Card>
+        </ScrollView>
+    );
 }
 
-class Step5Learning extends Component {
-    constructor(props: any){
-        super(props);
-
-        this.exitWizard = this.exitWizard.bind(this);
-    }
-
-    private async exitWizard() {
+function Step5Learning (props) {
+    const exitWizard = () => {
         Backend.UserSettings.FirstLaunch = false;
         Backend.UserSettings.Save();
-
-        this.props.navigation.navigate('feed');
+        
+        props.navigation.navigate('feed');
     }
 
-    render() {
-        return(
-            <ScrollView contentContainerStyle={Styles.centerView}>
+    return(
+        <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={Styles.centeredImageContainer}>
                 <Image source={require('../../Resources/FullNunti.png')} 
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
-                <Title style={Styles.largerText}>{this.props.lang.adapt}</Title>
-                <Paragraph style={Styles.largerText}>
-                    {(this.props.lang.wizard_learning).replace('%noSort%', Backend.UserSettings.NoSortUntil)}</Paragraph>
-                <Button icon="book" style={Styles.startReadingButton}
-                    onPress={this.exitWizard}>{this.props.lang.start}</Button>
-            </ScrollView>
-        );
-    }
+            </View>
+
+            <View style={Styles.wizardCardWithButtonContainer}>
+                <Card mode={'contained'} style={[Styles.wizardCardWithButton, Styles.card]}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1, 
+                            color: props.theme.colors.onSurfaceVariant}]}>{props.lang.adapt}</Text>
+                        <Text variant="bodyMedium" style={[Styles.bodyText, 
+                            {color: props.theme.colors.onSurfaceVariant}]}>{(props.lang.wizard_learning).replace(
+                            '%noSort%', Backend.UserSettings.NoSortUntil)}</Text>
+                        <Button icon="book" style={Styles.bodyText} mode="contained"
+                            onPress={exitWizard}>{props.lang.start}</Button>
+                    </View>
+                </Card>
+            </View>
+        </ScrollView>
+    );
 }
 
 export default withTheme(Wizard);

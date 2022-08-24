@@ -1,4 +1,4 @@
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, AppState } from 'react-native';
 const DOMParser = require('xmldom').DOMParser; //eslint-disable-line
 const XMLSerializer = require('xmldom').XMLSerializer; //eslint-disable-line
 import NetInfo from '@react-native-community/netinfo';
@@ -8,6 +8,11 @@ import Store from 'react-native-fs-store';
 const FSStore = new Store('store1');
 import iconv from 'iconv-lite';
 import { Buffer } from 'buffer';
+import { NativeModules } from 'react-native';
+import * as Languages from './Locale';
+const NotificationsModule = NativeModules.Notifications;
+const I18nManager = NativeModules.I18nManager;
+import Log from './Log';
 
 export class Feed {
     public name: string;
@@ -15,6 +20,8 @@ export class Feed {
     public enabled = true;
     public noImages = false;
     public tags: Tag[] = [];
+
+    public failedAttempts = 0; //failed attemps counter, reset to 0 on success
 
     constructor(url: string) {
         this.url = url;
@@ -96,11 +103,13 @@ export class Feed {
     }
     
     /* Adds a tag to feed and also updates all articles in cache */
-    public static async AddTag(feed: Feed, tag: Tag): Promise<void> {
-        feed.tags.push(tag);
+    public static async AddTag(feed: Feed, tag: Tag): Promise<Tag> {
+        //feed.tags.push(tag); // done in frontend to update ui immediately
+        await Feed.Save(feed);
+
         let cache = await FSStore.getItem('cache');
         if (cache != null) {
-            console.debug(`Updating cache, adding tag '${tag.name}' to articles from '${feed.name}'.`);
+            Log.BE.context('Feed:'+feed.url).context('AddTag').debug(`adding tag '${tag.name}' to articles.`);
             cache = JSON.parse(cache);
             cache.articles.forEach((art: Article) => {
                 if (art.sourceUrl == feed.url)
@@ -108,14 +117,15 @@ export class Feed {
             });
             await FSStore.setItem('cache', JSON.stringify(cache));
         }
-        await Feed.Save(feed);
     }
     /* Removes a tag from feed and also updates all articles in cache */
-    public static async RemoveTag(feed: Feed, tag: Tag): Promise<void> {
-        feed.tags.splice(feed.tags.indexOf(tag), 1);
+    public static async RemoveTag(feed: Feed, tag: Tag): Promise<Tag> {
+        //feed.tags.splice(feed.tags.indexOf(tag), 1); // done in frontend to update ui immediately
+        await Feed.Save(feed);
+
         let cache = await FSStore.getItem('cache');
         if (cache != null) {
-            console.debug(`Updating cache, removing tag '${tag.name}' from articles from '${feed.name}'.`);
+            Log.BE.context('Feed:'+feed.url).context('RemoveTag').debug(`Updating cache, removing tag '${tag.name}' from articles.`);
             cache = JSON.parse(cache);
             cache.articles.forEach((art: Article) => {
                 if (art.sourceUrl == feed.url) {
@@ -124,7 +134,6 @@ export class Feed {
             });
             await FSStore.setItem('cache', JSON.stringify(cache));
         }
-        await Feed.Save(feed);
     }
     public static HasTag(feed: Feed, tag: Tag): boolean {
         let has = false;
@@ -214,7 +223,7 @@ export class Tag {
                 i = y;
         }
         if (i < 0)
-            console.error(`Cannot remove tag ${tag.name} from UserSettings.`);
+            Log.BE.context('Tag:'+tag.name).context('Remove').error(`Cannot remove tag from UserSettings.`);
         else
             Backend.UserSettings.Tags.splice(i, 1);
 
@@ -236,7 +245,7 @@ class UserSettings {
     public Tags: Tag[] = [];
 
     public DisableImages = false;
-    public LargeImages = false;
+    public LargeImages = true;
     public WifiOnly = false;
     public BrowserMode = 'webview';
     public MaxArticleAgeDays = 7;
@@ -246,6 +255,14 @@ class UserSettings {
     public Accent = 'default';
 
     public FirstLaunch = true;
+
+    public EnableBackgroundSync = true; //synchronizes articles in background before cache expires
+
+    public EnableNotifications = true;
+    /* "daily" notif. with recommended article;
+     * period in minutes
+     * !minimum is 15 minutes! */
+    public NewArticlesNotificationPeriod = 12*60;
 
     /* Advanced */
     public DiscoverRatio = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)
@@ -289,6 +306,7 @@ class Backup {
 }
 
 export class Backend {
+    public static log = Log.BE;
     public static DB_VERSION = '3.1';
     public static UserSettings: UserSettings;
     public static CurrentArticles: {[source: string]: Article[][]} = {
@@ -317,13 +335,13 @@ export class Backend {
     
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
-        console.info('Backend init.');
-        await this.CheckDB();
+        this.log.info('Init.');
         await this.RefreshUserSettings();
     }
+    /* Re-load and recheck UserSettings from storage. (unsaved changes will be lost) */
     public static async RefreshUserSettings(): Promise<void> {
         await this.CheckDB();
-        console.debug('Backend: Refreshing UserSettings.');
+        this.log.context('RefreshUserSettings').debug('Refreshing...');
         this.UserSettings = Object.assign(new UserSettings(), await this.StorageGet('user_settings'));
         this.UserSettings.FeedList.sort((a: Feed, b: Feed) => {
             if ((a.name ?? undefined) !== undefined && (b.name ?? undefined) !== undefined)
@@ -339,7 +357,7 @@ export class Backend {
         });
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(articleSource: string, filters: string[] = []): Promise<Article[][]> {
+    public static async GetArticlesPaginated(articleSource: string, filters = {sortType: 'learning', search: '', tags: []}): Promise<Article[][]> {
         const arts = await this.GetArticles(articleSource, filters);
         const timeBegin = Date.now();
 
@@ -347,17 +365,18 @@ export class Backend {
         this.CurrentArticles[articleSource] = pages;
 
         const timeEnd = Date.now();
-        console.debug(`Backend: Pagination done in ${timeEnd - timeBegin} ms`);
+        this.log.context('Pagination').debug(`Finished in ${timeEnd - timeBegin} ms`);
         return pages;
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
-    public static async GetArticles(articleSource: string, filters: string[] = []): Promise<Article[]> {
-        console.info(`Backend: GetArticles('${articleSource}') called.`);
+    public static async GetArticles(articleSource: string, filters = {sortType: 'learning', search: '', tags: []}): Promise<Article[]> {
+        const log = this.log.context('GetArticles');
+        log.info(`called with source: '${articleSource}'`);
 
         let articles: Article[];
         switch (articleSource) {
         case 'feed':
-            articles = await this.GetFeedArticles();
+            articles = await this.GetFeedArticles({sortType: filters.sortType});
             break;
         case 'bookmarks':
             articles = (await this.GetSavedArticles()).reverse();
@@ -371,52 +390,37 @@ export class Backend {
         articles.forEach((art: Article) => { Article.Fix(art); });
 
         // apply filters
-        if (filters.length !== 0) {
+        if (filters.search != '' || (filters.tags != null && filters.tags.length > 0)) {
             const filterStartTime = Date.now();
             const newarts: Article[] = [];
-            const filterTags = filters.slice(1);
-
-            for (let i = 0; i < articles.length; i++) {
-                const art = articles[i];
-                let passed = false;
-                // test tags
-                for (let tag_i = 0; tag_i < art.tags.length; tag_i++) {
-                    if (filterTags.indexOf(art.tags[tag_i].name) >= 0) {
-                        passed = true;
-                        break;
-                    }
-                }
-                if (passed || filterTags.length == 0) {
-                    //text search
+            articles.forEach((art: Article) => {
+                //search
+                let passedSearch = false;
+                if (filters.search != '' && filters.search != null) {
                     const words = (art.title + ' ' + art.description).toLowerCase().split(' ');
-                    const searchWords = filters[0].toLowerCase().split(' ');
-                    if (filters.length == 1 && searchWords.length == 1 && searchWords[0].trim() == '') {
-                        passed = true;
-                    } else {
-                        for (let word_i = 0; word_i < words.length; word_i++) {
-                            if (passed)
-                                break;
-                            const word = words[word_i].trim();
-                            if (word == '')
-                                continue;
-                            for (let search_i = 0; search_i < searchWords.length; search_i++) {
-                                const searchWord = searchWords[search_i].trim();
-                                if (searchWord == '')
-                                    continue;
-                                if (word.indexOf(searchWord) >= 0) {
-                                    passed = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (passed)
-                    newarts.push(art);
-            }
+                    const searchWords = filters.search.toLowerCase().split(' ');
+                    searchWords.forEach((word: string) => {
+                        if (words.indexOf(word) >= 0)
+                            passedSearch = true;
+                    });
+                } else
+                    passedSearch = true;
 
+                //tags
+                let passedTags = false;
+                if (filters.tags != null && filters.tags.length > 0) {
+                    art.tags.forEach((tag: Tag) => {
+                        if (filters.tags.indexOf(tag.name) >= 0)
+                            passedTags = true;
+                    });
+                } else
+                    passedTags = true;
+
+                if (passedSearch && passedTags)
+                    newarts.push(art);
+            });
             const filterEndTime = Date.now();
-            console.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
+            log.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
             articles = newarts;
         }
 
@@ -426,59 +430,140 @@ export class Backend {
     
         return articles;
     }
+    /* Sends push notification to user, returns true on success, false on fail. */
+    public static async SendNotification(message: string, channel: string): Promise<boolean> {
+        const log = this.log.context('SendNotification');
+        let channelName: string;
+        let channelDescription: string;
+        const locale = this.GetLocale();
+        switch (channel) {
+        case 'new_articles':
+            channelName = locale.notifications_new_articles;
+            channelDescription = locale.notifications_new_articles_description;
+            break;
+        case 'other':
+            channelName = 'Other';
+            channelDescription = 'Other notifications';
+            break;
+        default:
+            log.error(`Failed attempt, '${channel}' - channel not allowed.`);
+            return false;
+        }
+        const title = channelName;
+        const summary = null;
+        const result: true | string = await NotificationsModule.notify(title, message, summary, channelName, channelDescription);
+        if (result === true) {
+            log.info(`succesfully sent via channel ${channel} ('${message}')`);
+            return true;
+        } else {
+            log.error(`Failed to send '${message}', reason: ${result}`);
+            return false;
+        }
+    }
+    /* Does background task work, can be even called before Backend.Init() */
+    /* Is run for ALL background tasks (both sync and notification) */
+    public static async RunBackgroundTask(taskId: string, isHeadless: boolean): Promise<void> {
+        const log = this.log.context('BackgroundTask');
+        log.info(`Gained control over backgroundTask, id:${taskId}, isHeadless:${isHeadless}`);
+        if (AppState.currentState != 'background') {
+            log.info('App is not in background, exiting background task.');
+            return;
+        }
+        await this.Init();
+        if (!this.UserSettings.EnableBackgroundSync && !this.UserSettings.EnableNotifications) {
+            log.info('BackgroundSync and notifications disabled, exiting..');
+            return;
+        }
+        try {
+            if (this.UserSettings.EnableBackgroundSync) {
+                log.debug('BackgroundSync is enabled, checking cache...');
+                const cache = await this.GetArticleCache();
+                const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
+                if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime * 0.75) {
+                    log.info('Cache will expire soon, invalidating cache to force re-sync...');
+                    cache.timestamp = 0;
+                    await FSStore.setItem('cache',JSON.stringify(cache));
+                }
+            }
+            const arts = await this.GetArticles('feed');
+            if (this.UserSettings.EnableNotifications) {
+                const notifcache = await this.StorageGet('notifications-cache');
+                const lastNotificationBeforeMins = (Date.now() - parseInt(notifcache.timestamp.toString())) / 60000;
+                if (lastNotificationBeforeMins >= this.UserSettings.NewArticlesNotificationPeriod) {
+                    notifcache.timestamp = Date.now();
+                    let art: Article | null = null;
+                    for (let i = 0; i < arts.length; i++) {
+                        if (notifcache.seen_urls.indexOf(arts[i].url) < 0) {
+                            art = arts[i];
+                            notifcache.seen_urls.push(art.url);
+                            notifcache.seen_urls.splice(0, notifcache.seen_urls.length - 20); //keep only last 20
+                            break;
+                        }
+                    }
+                    if (art == null)
+                        log.context('Notifications').warn('No available article to show.');
+                    else {
+                        if(!await this.SendNotification(art.title, 'new_articles'))
+                            throw new Error('Failed to send notification.');
+                    }
+                    await this.StorageSave('notifications-cache', notifcache);
+                } else
+                    log.info(`Will not show notification, time remaining: ${this.UserSettings.NewArticlesNotificationPeriod - lastNotificationBeforeMins} mins.`);
+            } else
+                log.info('Notifications disabled.');
+        } catch (err) {
+            log.error(`Exception on backgroundTask, id:${taskId}, error:`, err);
+        } finally {
+            log.info(`Exiting backgroundTask, id:${taskId}`);
+        }
+    }
     /* Retrieves sorted articles to show in feed. */
-    public static async GetFeedArticles(): Promise<Article[]> {
-        console.log('Backend: Loading new articles..');
+    public static async GetFeedArticles(overrides = {sortType: 'learning'}): Promise<Article[]> {
+        const log = this.log.context('GetFeedArticles');
+        log.info('Loading new articles..');
         const timeBegin: number = Date.now();
         await this.CheckDB();
-
-        let cache = await FSStore.getItem('cache');
-        if (cache == null) {
-            console.debug('Cache is null, initializing it.');
-            await FSStore.setItem('cache',JSON.stringify({'timestamp':0,'articles':[]}));
-            cache = {'timestamp': 0, 'articles': []};
-        } else
-            cache = JSON.parse(cache);
-
-        cache.articles.forEach((art: Article) => { Article.Fix(art); });
+        
+        const cache = await this.GetArticleCache();
         let arts: Article[];
 
-        const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp)) / 60000;
+        const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
 
         if(await this.IsDoNotDownloadEnabled()) {
-            console.log('Backend: We are on cellular data and wifiOnly mode is enabled. Will use cache.');
+            log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
             arts = await this.DownloadArticles();
             if (arts.length > 0)
                 await FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
         } else {
-            console.log(`Backend: Using cached articles. (${cacheAgeMinutes} minutes old)`);
+            log.info(`Using cached articles. (${cacheAgeMinutes} minutes old)`);
             arts = cache.articles;
         }
-
-        arts = await this.SortArticles(arts);
+        
+        arts = await this.SortArticles(arts, overrides);
         arts = await this.CleanArticles(arts);
 
         const timeEnd = Date.now();
-        console.log(`Backend: Loaded in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
+        log.info(`Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
         return arts;
     }
     /* Tries to save an article, true on success, false on fail. */
     public static async TrySaveArticle(article: Article): Promise<boolean> {
+        const log = this.log.context('SaveArticle');
         try {
-            console.log('Backend: Saving article', article.url);
+            log.info('Saving', article.url);
             const saved = await this.StorageGet('saved');
             if (await this.FindArticleByUrl(article.url, saved) < 0) {
                 saved.push(article);
                 await this.StorageSave('saved',saved);
             } else {
-                console.warn('Backend: Article is already saved.');
+                log.warn('Article is already saved.');
                 return false;
             }
             return true;
         } catch(error) {
-            console.error('Backend: Cannot save article.',error);
+            log.error('Cannot save article.',error);
             return false;
         }
     }
@@ -495,7 +580,7 @@ export class Backend {
             } else
                 throw new Error('not found in saved');
         } catch(err) {
-            console.error('Backend: Cannot remove saved article.',err);
+            this.log.context('RemoveSavedArticle').error('Cannot remove saved article.',err);
             return false;
         }
     }
@@ -510,12 +595,12 @@ export class Backend {
     }
     /* Resets cache */
     public static async ResetCache(): Promise<void> {
-        console.info('Backend: Resetting cache..');
+        this.log.context('ResetCache').info('Resetting cache..');
         await FSStore.setItem('cache', JSON.stringify({'timestamp': 0, 'articles': []}));
     }
     /* Resets all data in the app storage. */
     public static async ResetAllData(): Promise<void> {
-        console.warn('Backend: Resetting all data.');
+        this.log.context('ResetAllData').warn('Resetting all data..');
         await AsyncStorage.clear();
         await this.ResetCache();
         await this.CheckDB();
@@ -523,6 +608,7 @@ export class Backend {
     }
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
     public static async RateArticle(art: Article, rating: number): Promise<void> {
+        const log = this.log.context('RateArticle');
         let learning_db = await this.StorageGet('learning_db');
         let learning_db_secondary = await this.StorageGet('learning_db_secondary');
 
@@ -565,18 +651,18 @@ export class Backend {
         if (learning_db_secondary['upvotes'] + learning_db_secondary['downvotes'] > this.UserSettings.RotateDBAfter) {
             learning_db = {...learning_db_secondary};
             learning_db_secondary = {upvotes: 0, downvotes: 0, keywords: {}};
-            console.warn('Backend: [OK] Rotating DB and wiping secondary DB now..');
+            log.info('Rotating DB and wiping secondary DB now..');
         }
 
         await this.StorageSave('learning_db', learning_db);
         await this.StorageSave('learning_db_secondary', learning_db_secondary);
-        console.info(`Backend: Saved rating for article '${art.title}'`);
+        log.info(`Saved rating for article '${art.title}'`);
         await this.CheckDB();
         this.CurrentFeed = this.PagesRemoveArticle(art, this.CurrentFeed);
     }
     /* Save data to storage. */
     public static async StorageSave(key: string, value: any): Promise<void> { //eslint-disable-line
-        console.debug(`Backend: Saving key '${key}'.`);
+        this.log.context('StorageSave').debug(`Saving key '${key}'.`);
         await AsyncStorage.setItem(key,JSON.stringify(value));
     }
     /* Get data from storage. */
@@ -588,12 +674,13 @@ export class Backend {
     }
     /* Perform checkDB, makes sure things are not null and stuff. */
     public static async CheckDB(): Promise<void> {
+        const log = this.log.context('CheckDB');
         if (await AsyncStorage.getItem('saved') === null) {
-            console.debug('Backend: CheckDB(): Init "saved" key in DB..');
+            log.debug('Init "saved" key in DB..');
             await AsyncStorage.setItem('saved',JSON.stringify([]));
         }
         if (await AsyncStorage.getItem('user_settings') === null) {
-            console.debug('Backend: CheckDB(): Init "user_settings" key in DB..');
+            log.debug('Init "user_settings" key in DB..');
             await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
         } else {
             const current = JSON.parse(await AsyncStorage.getItem('user_settings') ?? '{}');
@@ -601,11 +688,18 @@ export class Backend {
             await AsyncStorage.setItem('user_settings', JSON.stringify(await this.MergeUserSettings(current)));
         }
         if (await AsyncStorage.getItem('seen') === null) {
-            console.debug('Backend: CheckDB(): Init "seen" key in DB..');
+            log.debug('Init "seen" key in DB..');
             await AsyncStorage.setItem('seen',JSON.stringify([]));
         }
+        if (await AsyncStorage.getItem('notifications-cache') === null) {
+            log.debug('Init "notifications-cache" key in DB..');
+            await AsyncStorage.setItem('notifications-cache',JSON.stringify({
+                seen_urls: [],
+                timestamp: 0,
+            }));
+        }
         if (await AsyncStorage.getItem('learning_db') === null) {
-            console.debug('Backend: CheckDB(): Init "learning_db" key in DB..');
+            log.debug('Init "learning_db" key in DB..');
             await AsyncStorage.setItem('learning_db',JSON.stringify({
                 upvotes:0, downvotes:0,
                 keywords:{}
@@ -613,7 +707,7 @@ export class Backend {
             await AsyncStorage.removeItem('learning_db_secondary');
         }
         if (await AsyncStorage.getItem('learning_db_secondary') === null) {
-            console.debug('Backend: CheckDB(): Init "learning_db_secondary" key in DB..');
+            log.debug('Init "learning_db_secondary" key in DB..');
             const prefs = JSON.parse(await AsyncStorage.getItem('user_settings') ?? JSON.stringify(new UserSettings()));
             await AsyncStorage.setItem('learning_db_secondary',JSON.stringify({
                 upvotes: -prefs.RotateDBAfter / 4, downvotes: -prefs.RotateDBAfter / 4,
@@ -624,20 +718,21 @@ export class Backend {
 
     /* Change RSS topics */
     public static async ChangeDefaultTopics(topicName: string, enable: boolean): Promise<void> {
-        console.info(`Backend: Changing default topics, ${topicName} - ${enable ? 'add' : 'remove'}`);
+        const log = this.log.context('ChangeDefaultTopics');
+        log.info(`${topicName} - ${enable ? 'add' : 'remove'}`);
 
         if (DefaultTopics.Topics[topicName] !== undefined) {
             for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
                 const topicFeed = DefaultTopics.Topics[topicName].sources[i];
                 if (enable) {
                     if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
-                        console.debug(`add feed ${topicFeed.name} to feedlist`);
+                        log.debug(`add feed ${topicFeed.name} to feedlist`);
                         this.UserSettings.FeedList.push(topicFeed);
                     }
                 } else {
                     const index = this.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList);
                     if (index >= 0) {
-                        console.debug(`remove feed ${topicFeed.name} from feedlist`);
+                        log.debug(`remove feed ${topicFeed.name} from feedlist`);
                         this.UserSettings.FeedList.splice(index, 1);
                     }
                 }
@@ -669,12 +764,13 @@ export class Backend {
     }
     /* Wipes current data and loads backup created by CreateBackup() method. */
     public static async TryLoadBackup(backupStr: string): Promise<boolean> {
+        const log = this.log.context('LoadBackup');
         try {
             const backup: Backup = JSON.parse(backupStr);
             if (backup.TimeStamp !== undefined)
-                console.info(`Backend: Loading backup from ${(new Date(backup.TimeStamp)).toISOString()}, ver.: ${backup.Version}`);
+                log.info(`Loading from ${(new Date(backup.TimeStamp)).toISOString()}, ver.: ${backup.Version}`);
             else
-                console.info('Backend: Loading backup from (unknown date)');
+                log.info('Backend: Loading from (unknown date)');
 
             if (backup.Version === undefined)
                 throw Error('Cannot determine backup version.');
@@ -689,10 +785,10 @@ export class Backend {
                 await this.StorageSave('learning_db', {... (await this.StorageGet('learning_db')), ...backup.LearningDB});
             if (backup.Saved !== undefined)
                 await this.StorageSave('saved', backup.Saved);
-            console.info('Backend: Backup loaded.');
+            log.info('Backup loaded.');
             return true;
         } catch (err) {
-            console.warn('Backend: Failed to load backup, will try OPML format parsing.',err);
+            log.warn('Failed to load backup, will try OPML format parsing.',err);
             try {
                 const parser = new DOMParser({
                     locator:{},
@@ -706,17 +802,17 @@ export class Backend {
                         feeds.push(new Feed(elems[i].getAttribute('xmlUrl')));
                     }  catch { /* dontcare */ }
                 }
-                console.info(`Backend: Importing OPML, imported ${feeds.length} feed(s).`);
+                log.info(`Importing OPML, imported ${feeds.length} feed(s).`);
                 
                 feeds.forEach(feed => {
                     this.UserSettings.FeedList.push(feed);
                 });
                 await this.UserSettings.Save();
 
-                console.info('Backend: Backup/Import (OPML) loaded.');
+                log.info('Backup/Import (OPML) loaded.');
                 return true;
             } catch (err) {
-                console.error('Backend: Failed to load backup both as JSON and OMPL.', err);
+                log.error('Failed to load backup both as JSON and OMPL.', err);
                 return false;
             }
         }
@@ -749,209 +845,225 @@ export class Backend {
         return status;
     }
     public static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, throwError = false): Promise<Article[]> {
+        const log = this.log.context('DownloadArticlesOneChannel').context('Feed:'+feed.url);
         if (!feed.enabled) {
-            console.debug('Backend: Downloading from ' + feed.name + ' (skipped, feed disabled)');
+            log.debug('(skipped, feed disabled)');
             return [];
         }
-        console.debug('Backend: Downloading from ' + feed.name);
+        log.debug('Downloading..');
         const startTime = Date.now();
         const arts: Article[] = [];
         let isTimeouted = false;
         let response: string;
+        let failed = false;
         try {
-            response = await new Promise((resolve, reject) => {
-                const request = new XMLHttpRequest();
-                let isFinished = false;
+            try {
+                response = await new Promise((resolve, reject) => {
+                    const request = new XMLHttpRequest();
+                    let isFinished = false;
 
-                request.onload = () => {
-                    isFinished = true;
-                    if (request.status === 200) {
-                        let text = iconv.decode(Buffer.from(request.response), 'utf-8');
-                        if (text.indexOf('\uFFFD') >= 0) //detect replacement character
-                            text = iconv.decode(Buffer.from(request.response), 'iso-8859-1');
-                        resolve(text);
-                    } else {
+                    request.onload = () => {
+                        isFinished = true;
+                        if (request.status === 200) {
+                            let text = iconv.decode(Buffer.from(request.response), 'utf-8');
+                            if (text.indexOf('\uFFFD') >= 0) //detect replacement character
+                                text = iconv.decode(Buffer.from(request.response), 'iso-8859-1');
+                            resolve(text);
+                        } else {
+                            reject(new Error(request.statusText));
+                        }
+                    };
+                    request.ontimeout = () => {
+                        isFinished = true;
+                        isTimeouted = true;
                         reject(new Error(request.statusText));
-                    }
-                };
-                request.ontimeout = () => {
-                    isFinished = true;
-                    isTimeouted = true;
-                    reject(new Error(request.statusText));
-                };
-                request.onerror = () => {
-                    isFinished = true;
-                    console.warn(`Backend: request errored, status '${JSON.stringify(request)}'`);
-                    if (request.timeout)
-                        isTimeouted = true;
-                    reject(new Error(request.statusText));
-                };
+                    };
+                    request.onerror = () => {
+                        isFinished = true;
+                        log.warn(`request errored, status '${JSON.stringify(request)}'`);
+                        if (request.timeout)
+                            isTimeouted = true;
+                        reject(new Error(request.statusText));
+                    };
 
-                request.responseType = 'arraybuffer';
-                request.timeout = 5000;
-                setTimeout(() => {
-                    /* 10s max-timeout because sometimes feeds connect SSL but then hang for a long time,
-                     * which "cheats" the request.timeout.*/
-                    if (!isFinished) {
-                        isTimeouted = true;
-                        reject(new Error('Timeout: answer took too long'));
-                    }
-                }, 10000);
-                request.open('GET', feed.url);
-                request.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-                const agents = [
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0',
-                    'Mozilla/5.0 (X11; Linux x86_64; rv:103.0) Gecko/20100101 Firefox/103.0',
-                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
-                    'Mozilla/5.0 (Windows NT 10.0; rv:103.0) Gecko/20100101 Firefox/103.0',
-                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15',
-                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:103.0) Gecko/20100101 Firefox/103.0'
-                ];
-                request.setRequestHeader('User-Agent', agents[parseInt(`${Math.random() * agents.length}`)]);
-                request.send();
+                    request.responseType = 'arraybuffer';
+                    request.timeout = 5000;
+                    setTimeout(() => {
+                        /* 10s max-timeout because sometimes feeds connect SSL but then hang for a long time,
+                         * which "cheats" the request.timeout.*/
+                        if (!isFinished) {
+                            isTimeouted = true;
+                            reject(new Error('Timeout: answer took too long'));
+                        }
+                    }, 10000);
+                    request.open('GET', feed.url);
+                    request.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+                    const agents = [
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0',
+                        'Mozilla/5.0 (X11; Linux x86_64; rv:103.0) Gecko/20100101 Firefox/103.0',
+                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
+                        'Mozilla/5.0 (Windows NT 10.0; rv:103.0) Gecko/20100101 Firefox/103.0',
+                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15',
+                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:103.0) Gecko/20100101 Firefox/103.0'
+                    ];
+                    request.setRequestHeader('User-Agent', agents[parseInt(`${Math.random() * agents.length}`)]);
+                    request.send();
+                });
+            } catch(err) {
+                if (isTimeouted)
+                    log.error('Cannot read RSS (probably timeout)', err);
+                else
+                    log.error('Cannot read RSS', err);
+                if (throwError)
+                    throw new Error('Cannot read RSS ' + err);
+                return [];
+            }
+            const parser = new DOMParser({
+                locator:{},
+                errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e; }} //eslint-disable-line
             });
-        } catch(err) {
-            if (isTimeouted)
-                console.error('Cannot read RSS (probably timeout)' + feed.name, err);
-            else
-                console.error('Cannot read RSS ' + feed.name, err);
-            if (throwError)
-                throw new Error('Cannot read RSS ' + err);
-            return [];
-        }
-        const parser = new DOMParser({
-            locator:{},
-            errorHandler:{warning:() => {},error:() => {},fatalError:(e:any) => { throw e; }} //eslint-disable-line
-        });
-        const serializer = new XMLSerializer();
-        console.info(`Backend: Downloading from ${feed.name}, response in ${Date.now() - startTime} ms.`);
-        try {
-            const xml = parser.parseFromString(response);
-            let items: any = null; //eslint-disable-line
-            try { if (items === null || items.length == 0) items = xml.getElementsByTagName('channel')[0].getElementsByTagName('item'); } catch { /* dontcare */ } //traditional RSS
-            try { if (items === null || items.length == 0) items = xml.getElementsByTagName('feed')[0].getElementsByTagName('entry'); } catch { /* dontcare */ } //atom feeds
-            try { if (items === null || items.length == 0) items = xml.getElementsByTagName('item'); } catch { /* dontcare */ } //RDF feeds (https://validator.w3.org/feed/docs/rss1.html)
-            
-            if (items === null)
-                throw new Error('Cannot parse feed, don\'t know where to find articles. (unsupported feed format?)');
+            const serializer = new XMLSerializer();
+            log.info(`Response in ${Date.now() - startTime} ms.`);
+            try {
+                const xml = parser.parseFromString(response);
+                let items: any = null; //eslint-disable-line
+                try { if (items === null || items.length == 0) items = xml.getElementsByTagName('channel')[0].getElementsByTagName('item'); } catch { /* dontcare */ } //traditional RSS
+                try { if (items === null || items.length == 0) items = xml.getElementsByTagName('feed')[0].getElementsByTagName('entry'); } catch { /* dontcare */ } //atom feeds
+                try { if (items === null || items.length == 0) items = xml.getElementsByTagName('item'); } catch { /* dontcare */ } //RDF feeds (https://validator.w3.org/feed/docs/rss1.html)
+                
+                if (items === null)
+                    throw new Error('Cannot parse feed, don\'t know where to find articles. (unsupported feed format?)');
 
-            for (let y = 0; y < items.length; y++) {
-                if (y >= maxperchannel)
-                    break;
-                const item = items[y];
-                try {
-                    const art = new Article(Math.floor(Math.random() * 1e16));
-                    art.source = feed.name;
-                    art.sourceUrl = feed.url;
-                    art.title = item.getElementsByTagName('title')[0].childNodes[0].nodeValue.substr(0,256);
-                    art.title = decode(art.title, {scope: 'strict'});
-
-                    // fallback for CDATA retards
-                    if (art.title.trim() === '') {
-                        art.title = serializer.serializeToString(item).match(/title>.*CDATA\[(.*)\]\].*\/title/s)[1].trim();
-                        if (art.title.trim() == '')
-                            throw new Error(`Got empty title. ${item}`);
-                    }
-                    try { art.description = item.getElementsByTagName('description')[0].childNodes[0].nodeValue; } catch { /* dontcare */ } 
-                    try { art.description = item.getElementsByTagName('content')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
+                for (let y = 0; y < items.length; y++) {
+                    if (y >= maxperchannel)
+                        break;
+                    const item = items[y];
                     try {
-                        //fallback for CDATA retards
-                        if (art.description.trim() === '')
-                            art.description = serializer.serializeToString(item).match(/description>.*CDATA\[(.*)\]\].*<\/description/s)[1];
-                    } catch { /* dontcare */ }
+                        const art = new Article(Math.floor(Math.random() * 1e16));
+                        art.source = feed.name;
+                        art.sourceUrl = feed.url;
+                        art.title = item.getElementsByTagName('title')[0].childNodes[0].nodeValue.substr(0,256);
+                        art.title = decode(art.title, {scope: 'strict'});
 
-                    art.description = decode(art.description, {scope: 'strict'});
-                    art.description = art.description.trim();
+                        // fallback for CDATA retards
+                        if (art.title.trim() === '') {
+                            art.title = serializer.serializeToString(item).match(/title>.*CDATA\[(.*)\]\].*\/title/s)[1].trim();
+                            if (art.title.trim() == '')
+                                throw new Error(`Got empty title. ${item}`);
+                        }
+                        try { art.description = item.getElementsByTagName('description')[0].childNodes[0].nodeValue; } catch { /* dontcare */ } 
+                        try { art.description = item.getElementsByTagName('content')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
+                        try {
+                            //fallback for CDATA retards
+                            if (art.description.trim() === '')
+                                art.description = serializer.serializeToString(item).match(/description>.*CDATA\[(.*)\]\].*<\/description/s)[1];
+                        } catch { /* dontcare */ }
 
-                    try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); } catch { /* dontcare */ }
-                    try { art.description = art.description.substr(0,1024); } catch { /* dontcare */ }
-                    try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); } catch { /* dontcare */ }
-                    
-                    if (!feed.noImages) {
-                        if (art.cover === undefined)
+                        art.description = decode(art.description, {scope: 'strict'});
+                        art.description = art.description.trim();
+
+                        try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); } catch { /* dontcare */ }
+                        try { art.description = art.description.substr(0,1024); } catch { /* dontcare */ }
+                        try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); } catch { /* dontcare */ }
+                        
+                        if (!feed.noImages) {
+                            if (art.cover === undefined)
+                                try {
+                                    const imagecontent =
+                                        item.getElementsByTagName('enclosure')[0] ||
+                                        item.getElementsByTagName('media:content')[0] ||
+                                        item.getElementsByTagName('media:thumbnail')[0];
+                                    if (
+                                        imagecontent &&
+                                        ((imagecontent.hasAttribute('type') && imagecontent.getAttribute('type').includes('image')) ||
+                                        (imagecontent.hasAttribute('medium') && imagecontent.getAttribute('medium') === 'image') ||
+                                        imagecontent.getAttribute('url').match(/\.(?:(?:jpe?g)|(?:png))/i))
+                                    ) {
+                                        art.cover = imagecontent.getAttribute('url');
+                                    }
+                                    // If this first approach did not find an image, try to check the whole 'content:encoded' or if it does not exist the whole 'item'.
+                                    // Checking 'content:encoded' first is necessary, because there are feeds that contain advertisement images outside of 'content:encoded' which would be detected if only the 'item' was checked.
+                                    if (art.cover === undefined) {
+                                        const content = item.getElementsByTagName('content:encoded')[0]
+                                            ? serializer.serializeToString(item.getElementsByTagName('content:encoded')[0])
+                                            : serializer.serializeToString(item);
+                                        // Try to match an <img...> tag or &lt;img...&gt; tag. For some reason even with &lt; in the content string, a &gt; is converted to >,
+                                        // perhaps because of the serializer?
+                                        // It needs to be done this way, otherwise feeds with mixed tags and entities cannot be matched properly.
+                                        // And it's also not possible to decode the content already here, because of feeds with mixed tags and entities (they exist...).
+                                        art.cover = content.match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)
+                                            ? content
+                                                .match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)[0]
+                                                .match(/(src=[\w\W]+?)[/]?(?:>|&gt;)/i)[1]
+                                                .match(/(https?:\/\/[^<>"']+?)[\n"'<]/i)[1]
+                                            : serializer
+                                                .serializeToString(item)
+                                                .match(/(https?:\/\/[^<>"'/]+\/+[^<>"':]+?\.(?:(?:jpe?g)|(?:png)).*?)[\n"'<]/i)[1];
+                                    }
+                                    if (art.cover !== undefined) {
+                                        art.cover = decode(art.cover, { scope: 'strict' }).replace('http://', 'https://');
+                                    }
+                                } catch { /* dontcare */ }
+                        } else
+                            art.cover = undefined;
+
+                        if (art.url == 'about:blank') {
+                            try { art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
+                        }
+                        if (art.url == 'about:blank') {
                             try {
-                                const imagecontent =
-                                    item.getElementsByTagName('enclosure')[0] ||
-                                    item.getElementsByTagName('media:content')[0] ||
-                                    item.getElementsByTagName('media:thumbnail')[0];
-                                if (
-                                    imagecontent &&
-                                    ((imagecontent.hasAttribute('type') && imagecontent.getAttribute('type').includes('image')) ||
-                                    (imagecontent.hasAttribute('medium') && imagecontent.getAttribute('medium') === 'image') ||
-                                    imagecontent.getAttribute('url').match(/\.(?:(?:jpe?g)|(?:png))/i))
-                                ) {
-                                    art.cover = imagecontent.getAttribute('url');
-                                }
-                                // If this first approach did not find an image, try to check the whole 'content:encoded' or if it does not exist the whole 'item'.
-                                // Checking 'content:encoded' first is necessary, because there are feeds that contain advertisement images outside of 'content:encoded' which would be detected if only the 'item' was checked.
-                                if (art.cover === undefined) {
-                                    const content = item.getElementsByTagName('content:encoded')[0]
-                                        ? serializer.serializeToString(item.getElementsByTagName('content:encoded')[0])
-                                        : serializer.serializeToString(item);
-                                    // Try to match an <img...> tag or &lt;img...&gt; tag. For some reason even with &lt; in the content string, a &gt; is converted to >,
-                                    // perhaps because of the serializer?
-                                    // It needs to be done this way, otherwise feeds with mixed tags and entities cannot be matched properly.
-                                    // And it's also not possible to decode the content already here, because of feeds with mixed tags and entities (they exist...).
-                                    art.cover = content.match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)
-                                        ? content
-                                            .match(/(<img[\w\W]+?)[/]?(?:>)|(&lt;img[\w\W]+?)[/]?(?:>|&gt;)/i)[0]
-                                            .match(/(src=[\w\W]+?)[/]?(?:>|&gt;)/i)[1]
-                                            .match(/(https?:\/\/[^<>"']+?)[\n"'<]/i)[1]
-                                        : serializer
-                                            .serializeToString(item)
-                                            .match(/(https?:\/\/[^<>"'/]+\/+[^<>"':]+?\.(?:(?:jpe?g)|(?:png)).*?)[\n"'<]/i)[1];
-                                }
-                                if (art.cover !== undefined) {
-                                    art.cover = decode(art.cover, { scope: 'strict' }).replace('http://', 'https://');
+                                const linkElements = item.getElementsByTagName('link');
+                                if (linkElements.length == 1)
+                                    art.url = item.getElementsByTagName('link')[0].getAttribute('href');
+                                else {
+                                    // Needed for Atom feeds which provide multiple <link>, i.e.: Blogspot
+                                    // see gitlab issue #53
+                                    for (let i = 0; i < linkElements.length; i++) {
+                                        if (linkElements[i].getAttribute('rel') == 'alternate')
+                                            art.url = linkElements[i].getAttribute('href');
+                                    }
                                 }
                             } catch { /* dontcare */ }
-                    } else
-                        art.cover = undefined;
+                        }
+                        if (!art.url?.trim() || art.url == 'about:blank') {
+                            throw new Error(`Could not find any link to article (title: '${art.title}')`);
+                        }
 
-                    if (!art.url?.trim()) {
-                        try { art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
+                        try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+                        try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+
+                        feed.tags.forEach((tag) => {
+                            art.tags.push(tag);
+                        });
+
+                        arts.push(art);
+                    } catch(err) {
+                        log.error(`Cannot process article, err: ${err}`);
                     }
-                    if (!art.url?.trim()) {
-                        try {
-                            const linkElements = item.getElementsByTagName('link');
-                            if (linkElements.length == 1)
-                                art.url = item.getElementsByTagName('link')[0].getAttribute('href');
-                            else {
-                                // Needed for Atom feeds which provide multiple <link>, i.e.: Blogspot
-                                // see gitlab issue #53
-                                for (let i = 0; i < linkElements.length; i++) {
-                                    if (linkElements[i].getAttribute('rel') == 'alternate')
-                                        art.url = linkElements[i].getAttribute('href');
-                                }
-                            }
-                        } catch { /* dontcare */ }
-                    }
-                    if (!art.url?.trim()) {
-                        throw new Error(`Could not find any link to article (title: '${art.title}')`);
-                    }
-
-                    try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
-                    try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
-
-                    feed.tags.forEach((tag) => {
-                        art.tags.push(tag);
-                    });
-
-                    arts.push(art);
-                } catch(err) {
-                    console.error(`Cannot process article, channel: ${feed.url}, err: ${err}`);
                 }
+                log.info(`Finished download, got ${arts.length} articles, took ${Date.now() - startTime} ms`);
+            } catch(err) {
+                log.error('Channel faulty.',err);
+                if (throwError)
+                    throw new Error('RSS channel faulty ' + err);
             }
-            console.info(`Backend: Finished download from ${feed.name}, got ${arts.length} articles, took ${Date.now() - startTime} ms`);
-        } catch(err) {
-            console.error(`Channel ${feed.name} faulty.`,err);
-            if (throwError)
-                throw new Error('RSS channel faulty ' + err);
+            if (arts.length == 0 && throwError)
+                throw new Error('Got 0 articles from this feed.');
+            return arts;
+        } catch (err) {
+            failed = true;
+            feed.failedAttempts += 1;
+            log.info(`increased failedAttempts to ${feed.failedAttempts}`);
+            this.UserSettings.Save();
+            throw new Error(err);
+        } finally {
+            if (failed && feed.failedAttempts != 0) {
+                feed.failedAttempts = 0;
+                log.info(`reset failedAttempts to ${feed.failedAttempts}`);
+                this.UserSettings.Save();
+            }
         }
-        if (arts.length == 0 && throwError)
-            throw new Error('Got 0 articles from this feed.');
-        return arts;
     }
     public static FindArticleByUrl(url: string, haystack: Article[]): number {
         for(let i = 0; i < haystack.length; i++) {
@@ -972,8 +1084,9 @@ export class Backend {
     /* Private methods */
     private static async DownloadArticles(): Promise<Article[]> {
         const THREADS = 6;
+        const log = this.log.context('DownloadArticles');
 
-        console.info('Backend: Downloading articles..');
+        log.info('Downloading articles..');
         const timeBegin = Date.now();
         const feedList = this.UserSettings.FeedList.slice();
 
@@ -994,14 +1107,17 @@ export class Backend {
         }
 
         const timeEnd = Date.now();
-        console.info(`Backend: Download finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
+        log.info(`Finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
         await this.ExtractKeywords(arts);
         return arts;
     }
     /* Removes seen (already rated) articles and any duplicates from article list. */
     private static async CleanArticles(arts: Article[]): Promise<Article[]> {
+        const log = this.log.context('CleanArticles');
+        const startTime = Date.now();
+        const startCount = arts.length;
         const seen = await this.StorageGet('seen');
-        for(let i = 0; i < seen.length; i++) {
+        for (let i = 0; i < seen.length; i++) {
             let index = this.FindArticleByUrl(seen[i].url,arts);
             while(index >= 0) {
                 arts.splice(index,1);
@@ -1012,7 +1128,7 @@ export class Backend {
         const newarts: Article[] = [];
         for (let i = 0; i < arts.length; i++) {
             if (arts[i] == undefined) {
-                console.warn('Backend, cleanarticles: expected article, got undefined.');
+                log.warn('expected an article, got undefined.');
                 continue;
             }
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
@@ -1023,9 +1139,12 @@ export class Backend {
                     newarts.push(arts[i]);
             }
         }
+        const endTime = Date.now()
+        log.debug(`Finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles.`);
         return newarts;
     }
-    private static async SortArticles(articles: Article[]): Promise<Article[]> {
+    private static async SortArticles(articles: Article[], overrides = {sortType: 'learning'}): Promise<Article[]> {
+        const log = this.log.context('SortArticles');
         function shuffle(a: any) { //eslint-disable-line
             let j, x, i;
             for (i = a.length - 1; i > 0; i--) {
@@ -1041,10 +1160,12 @@ export class Backend {
         articles = shuffle(articles);
         const originalShuffledArts = articles.slice();
 
-
         const learning_db = await this.StorageGet('learning_db');
-        if (learning_db['upvotes'] + learning_db['downvotes'] <= this.UserSettings.NoSortUntil) {
-            console.info(`Backend: Sort: Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${this.UserSettings.NoSortUntil} required)`);
+        if (overrides.sortType == 'date' || learning_db['upvotes'] + learning_db['downvotes'] <= this.UserSettings.NoSortUntil) {
+            if (overrides.sortType == 'date')
+                log.info('Won\'t sort because of overrides:',overrides);
+            else
+                log.info(`Won't sort because not enough articles have been rated (only ${(learning_db['upvotes'] + learning_db['downvotes'])} out of ${this.UserSettings.NoSortUntil} required)`);
             articles.sort((a, b) => {
                 if ((a.date ?? undefined) !== undefined && (b.date ?? undefined) !== undefined)
                     return b.date.getTime() - a.date.getTime();
@@ -1063,7 +1184,7 @@ export class Backend {
         });
 
         const arts: Article[] = [];
-        console.debug(`discover feature set to: ${this.UserSettings.DiscoverRatio*100} %`);
+        log.debug(`discover feature set to: ${this.UserSettings.DiscoverRatio*100} %`);
         for(let i = 0; i < scores.length; i++) {
             if (i > 5 && parseInt(`${Math.random() * (1/this.UserSettings.DiscoverRatio)}`) == 0) {
                 // Throw in a random article instead
@@ -1081,7 +1202,7 @@ export class Backend {
         }
 
         const timeEnd = Date.now();
-        console.info(`Backend: Sort finished in ${(timeEnd - timeBegin)} ms (${arts.length} articles processed)`);
+        log.info(`Finished in ${(timeEnd - timeBegin)} ms (${arts.length} articles processed)`);
         return arts;
     }
     private static async GetArticleScore(art: Article): Promise<number> {
@@ -1095,10 +1216,27 @@ export class Backend {
         art.score = score;
         return score;
     }
+    private static async GetArticleCache(): Promise<{timestamp: number | string, articles: Article[]}> {
+        const log = this.log.context('GetArticleCache');
+        const startTime = Date.now()
+        let cache = await FSStore.getItem('cache');
+        if (cache == null) {
+            log.debug('Cache is null, initializing it.');
+            cache = {'timestamp': 0, 'articles': []};
+            await FSStore.setItem('cache',JSON.stringify(cache));
+        } else {
+            cache = JSON.parse(cache);
+        }
+        cache.articles.forEach((art: Article) => { Article.Fix(art); });
+        const endTime = Date.now();
+        log.debug(`Retrieved in ${endTime - startTime} ms.`);
+        return cache;
+    }
     /* Fills in article.keywords property, does all the TF-IDF magic. */
     private static ExtractKeywords(arts: Article[]) {
+        const log = this.log.context('ExtractKeywords');
         const timeBegin = Date.now();
-        console.info('Backend: Extracting keywords..');
+        log.info('Extracting keywords..');
         // TF-IDF: tf * idf
         // TF = term count in document / sum of all counts of all terms
         // IDF = log (Total Documents in Corpus/(1+Total Documents containing the term)) + 1
@@ -1138,11 +1276,11 @@ export class Backend {
                 }
             }
         }
-        console.info('Backend: Extracting keywords (pass 1 finished)');
+        log.info('pass 1 finished');
 
         //pass 2 - calculate tf-idf, get keywords
         for(const feedName in sorted) {
-            console.debug(`Backend: Extracting keywords (pass 2 - ${feedName})`);
+            log.debug(`pass 2 - ${feedName}`);
             const artsInFeed = sorted[feedName];
             for (let i = 0; i < artsInFeed.length; i++) {
                 const art = artsInFeed[i];
@@ -1193,9 +1331,9 @@ export class Backend {
                 }
             }
         }
-        console.info('Backend: Extracting keywords (pass 2 finished)');
+        log.info('pass 2 finished');
         const timeEnd = Date.now();
-        console.info(`Backend: Keyword extraction finished in ${(timeEnd - timeBegin)} ms`);
+        log.info(`Finished in ${(timeEnd - timeBegin)} ms`);
     }
     private static async MergeUserSettings(old: UserSettings): Promise<UserSettings> {
         const prefs = Object.assign(await this.StorageGet('user_settings'), old);
@@ -1204,7 +1342,7 @@ export class Backend {
             try {
                 prefs.FeedList[i] = Object.assign(new Feed(prefs.FeedList[i].url), prefs.FeedList[i]);
             } catch {
-                console.warn(`backup restore: failed to merge feed ${prefs.FeedList[i].url}`);
+                this.log.context('MergeUserSettings').warn(`failed to merge feed ${prefs.FeedList[i].url}`);
             }
         }
         return prefs;
@@ -1233,6 +1371,20 @@ export class Backend {
             }
         }
         return pages;
+    }
+    private static GetLocale(): {[key: string]: string} {
+        let locale;
+        if (this.UserSettings.Language == 'system') {
+            locale = I18nManager.localeIdentifier;
+        } else {
+            locale = this.UserSettings.Language;
+        }
+        for (const language in Languages) {
+            if (locale.includes(Languages[language].code)) { //eslint-disable-line
+                return Languages[language]; //eslint-disable-line
+            }
+        }
+        return Languages['English'];
     }
 }
 export default Backend;

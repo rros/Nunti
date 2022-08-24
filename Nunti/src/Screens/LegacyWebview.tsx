@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { useEffect } from 'react';
 import {
     BackHandler
 } from 'react-native';
@@ -9,30 +9,29 @@ import {
 
 import { WebView } from 'react-native-webview';
 
+import Log from '../Log';
+
 import Styles from '../Styles';
 
-class LegacyWebview extends PureComponent {
-    constructor(props:any){
-        super(props);
-    }
-
-    componentDidMount() {
-        this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-            this.props.navigation.navigate(this.props.route.params.source);
+function LegacyWebview (props) {
+    const log = Log.FE.context('LegacyWebview');
+    // on component mount
+    useEffect(() => {
+        log.debug(props.route.params.source)
+        backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+            props.navigation.navigate(props.route.params.source);
             return true;
         });
-    }
+        
+        return () => { 
+            backHandler.remove();
+        }
+    }, []);
 
-    componentWillUnmount() {
-        this.backHandler.remove();
-    }
 
-
-    render() {
-        return (
-            <WebView source={{ uri: this.props.route.params.uri }} />
-        );
-    }
+    return (
+        <WebView source={{ uri: props.route.params.uri }} />
+    );
 }
 
 export default withTheme(LegacyWebview);

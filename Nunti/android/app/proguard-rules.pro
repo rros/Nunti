@@ -9,8 +9,14 @@
 
 # Add any project specific keep options here:
 
+-keep class com.swmansion.reanimated.** { *; }
+-keep class com.facebook.react.turbomodule.** { *; }
+
 -keepattributes *Annotation*
 -keepclassmembers class ** {
   @org.greenrobot.eventbus.Subscribe <methods>;
 }
 -keep enum org.greenrobot.eventbus.ThreadMode { *; }
+
+# [react-native-background-fetch]
+-keep class com.transistorsoft.rnbackgroundfetch.HeadlessTask { *; }

@@ -26,7 +26,7 @@ export default class DefaultTopics {
                 new Feed('http://feeds.ign.com/ign/all'),
             ]
         },
-        'history': {
+        'history_news': {
             icon: 'book-open',
             sources: [
                 new Feed('https://americanhistory.si.edu/blog/feed'),

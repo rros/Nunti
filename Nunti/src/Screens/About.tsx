@@ -1,77 +1,88 @@
-import React, { PureComponent } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
-    ScrollView,
     Image,
-    Linking
 } from 'react-native';
 
 import { 
-    List,
-    Button,
-    withTheme
+    Text,
+    withTheme,
+    Card
 } from 'react-native-paper';
 
-import { InAppBrowser } from 'react-native-inappbrowser-reborn';
+import * as ScopedStorage from 'react-native-scoped-storage';
+import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 import { version } from '../../package.json';
 
+import { browserRef, snackbarRef, logRef } from '../App';
 import { Backend } from '../Backend';
-import Styles from '../Styles';
+import Log from '../Log';
 
-class About extends PureComponent {
-    constructor(props:any){
-        super(props);
-        
-        this.openIssues = this.openIssues.bind(this);
-    }
+function About (props) {
+    const log = useRef(logRef.current.globalLog.current.context('About'));
 
-    private async openIssues() {
-        const url = 'https://gitlab.com/ondrejfoltyn/nunti/-/issues';
-        if(Backend.UserSettings.BrowserMode == 'webview'){
-            await InAppBrowser.open(url, {
-                forceCloseOnRedirection: false, showInRecents: true,
-                toolbarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
-                navigationBarColor: Backend.UserSettings.ThemeBrowser ? this.props.theme.colors.accent : null,
-            });
-        } else if(Backend.UserSettings.BrowserMode == 'legacy_webview') {
-            this.props.navigation.navigate('legacyWebview', { uri: url, source: 'about' });
-        } else { // == 'external_browser'
-            Linking.openURL(url);
+    const exportLogs = async() => {
+        const logs: string = await Log.exportLogs();
+
+        try {
+            if(await ScopedStorage.createDocument('NuntiLogs.txt', 'application/txt', logs, 'utf8') == null){
+                return;
+            } else{
+                snackbarRef.current.showSnack(props.lang.export_logs_success);
+            }
+        } catch (err) {
+            snackbarRef.current.showSnack(props.lang.export_logs_fail);
+            log.error('Failed to export logs. ' + err);
         }
     }
 
-    render() {
-        return (
-            <ScrollView style={Styles.topView}>
-                <View style={[Styles.centerView, Styles.wizardStatusOffset]}>
-                    <Image source={require('../../Resources/HeartNunti.png')} 
-                        resizeMode="contain" style={Styles.fullscreenImage}></Image>
+    return (
+        <ScrollView>
+            <View style={Styles.centeredImageContainer}>
+                <Image source={require('../../Resources/HeartNunti.png')} 
+                    resizeMode="contain" style={Styles.fullscreenImage}></Image>
+            </View>
+
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.app_info}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                <View style={Styles.settingsButton}>
+                    <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{version}</Text>
                 </View>
+            </Card>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.app_info}</List.Subheader>
-                    <List.Item title={version}
-                        left={() => <List.Icon icon="check-decagram" />} />
-                </List.Section>
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.made_by}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                <View style={Styles.settingsButton}>
+                    <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{'Richard Klapáč'}</Text>
+                </View>
+                <View style={Styles.settingsButton}>
+                    <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{'Ondřej Foltýn'}</Text>
+                </View>
+            </Card>
 
-                <List.Section>
-                    <List.Subheader>{this.props.lang.made_by}</List.Subheader>
-                    <List.Item title="Richard Klapáč"
-                        left={() => <List.Icon icon="human-greeting" />} />
-                    <List.Item title="Ondřej Foltýn"
-                        left={() => <List.Icon icon="human-greeting" />} />
-                </List.Section>
-
-                <List.Section>
-                    <List.Subheader>{this.props.lang.report_at}</List.Subheader>
-                    <List.Item title={this.props.lang.issue_tracker}
-                        left={() => <List.Icon icon="bug" />}
-                        right={() => <Button color={this.props.theme.colors.error} style={Styles.settingsButton} 
-                            onPress={this.openIssues}>{this.props.lang.report}</Button>} />
-                </List.Section>
-            </ScrollView>
-        );
-    }
+            <Text variant="labelLarge" style={[Styles.settingsSectionTitle, {color: props.theme.colors.onSurfaceVariant}]}>
+                {props.lang.report_at}</Text>
+            <Card mode={'contained'} style={Styles.card}>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => browserRef.current.openBrowser(
+                        'https://gitlab.com/ondrejfoltyn/nunti/-/issues')}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.issue_tracker}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={exportLogs}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.export_logs}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+            </Card>
+        </ScrollView>
+    );
 }
 
 export default withTheme(About);

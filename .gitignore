@@ -1,1 +1,3 @@
 *.swp
+Scripts/LocalisationCleanup/obj/*
+Scripts/LocalisationCleanup/bin/*
