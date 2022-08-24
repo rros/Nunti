@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Image,
@@ -10,13 +10,31 @@ import {
     Card
 } from 'react-native-paper';
 
+import * as ScopedStorage from 'react-native-scoped-storage';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 import { version } from '../../package.json';
 
-import { browserRef } from '../App';
+import { browserRef, snackbarRef, logRef } from '../App';
 import { Backend } from '../Backend';
 
 function About (props) {
+    const log = useRef(logRef.current.globalLog.current.context('About'));
+
+    const exportLogs = async() => {
+        const logs: string = await Backend.CreateBackup(); // TODO CreateLogs();
+
+        try {
+            if(await ScopedStorage.createDocument('NuntiLogs.json', 'application/json', logs, 'utf8') == null){
+                return;
+            } else{
+                snackbarRef.current.showSnack(props.lang.export_ok);
+            }
+        } catch (err) {
+            snackbarRef.current.showSnack(props.lang.export_fail);
+            log.error('Failed to export backup. ' + err);
+        }
+    }
+
     return (
         <ScrollView>
             <View style={Styles.centeredImageContainer}>
@@ -52,6 +70,13 @@ function About (props) {
                         'https://gitlab.com/ondrejfoltyn/nunti/-/issues')}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.issue_tracker}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={exportLogs}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.export_logs}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>

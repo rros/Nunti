@@ -507,6 +507,8 @@ export default function App (props) {
     }
 
     const resetApp = async () => {
+        log.current.debug('Resetting all data in FE, navigating to Wizard');
+
         await Backend.ResetAllData();
         await reloadGlobalStates();
         

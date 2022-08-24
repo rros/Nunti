@@ -84,8 +84,6 @@
 
                     a++;
                 }
-
-                Console.WriteLine(a);
                 return (language, a);
             }
         }
