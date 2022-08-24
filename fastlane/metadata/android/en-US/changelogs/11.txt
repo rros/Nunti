@@ -1,0 +1,6 @@
+- full app redesign to implement Material Design V3
+- added black (OLED) theme
+- added background syncing
+- added background notifications
+- improved anonymity when downloading from feeds
+- a lot of minor fixes
