@@ -68,7 +68,7 @@ Nunti has been built with the firm belief that there is no reason to process or 
 
 # Licence, disclaimer or whatever
 
-Nunti Copyright &copy; 2021  Ondřej Foltýn & Richard Klapáč
+Nunti Copyright &copy; 2021 - 2022  Ondřej Foltýn & Richard Klapáč
 
 > This program is free software: you can redistribute it and/or modify
 > it under the terms of the **GNU General Public License** as published by
