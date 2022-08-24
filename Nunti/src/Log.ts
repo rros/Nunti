@@ -120,7 +120,12 @@ class LogStorage {
             await this.flush();
             this.lockQueue = true;
             const current = (await RNFS.readFile(RNFS.DocumentDirectoryPath + '/current.log', 'utf8')).split('\n');
-            const last = (await RNFS.readFile(RNFS.DocumentDirectoryPath + '/last.log', 'utf8')).split('\n');
+            let last: string[];
+            try {
+                last = (await RNFS.readFile(RNFS.DocumentDirectoryPath + '/last.log', 'utf8')).split('\n');
+            } catch {
+                last = [''];
+            }
             this.lockQueue = false;
             current.sort((a: string, b:string) => {
                 if (a == '' || b == '')
