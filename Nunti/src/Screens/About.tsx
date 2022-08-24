@@ -28,11 +28,11 @@ function About (props) {
             if(await ScopedStorage.createDocument('NuntiLogs.txt', 'application/txt', logs, 'utf8') == null){
                 return;
             } else{
-                snackbarRef.current.showSnack(props.lang.export_ok);
+                snackbarRef.current.showSnack(props.lang.export_logs_success);
             }
         } catch (err) {
-            snackbarRef.current.showSnack(props.lang.export_fail);
-            log.error('Failed to export backup. ' + err);
+            snackbarRef.current.showSnack(props.lang.export_logs_fail);
+            log.error('Failed to export logs. ' + err);
         }
     }
 
