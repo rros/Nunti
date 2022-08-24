@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component } from 'react';
+import React, { useState, useRef, useEffect, Component } from 'react';
 import {
     View,
     Platform,
@@ -18,9 +18,8 @@ import {
 import * as ScopedStorage from 'react-native-scoped-storage';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
-import { modalRef, snackbarRef, globalStateRef } from '../App';
+import { modalRef, snackbarRef, globalStateRef, logRef } from '../App';
 import { Backend } from '../Backend';
-import Log from '../Log';
 import { Accents } from '../Styles';
 import Switch from '../Components/Switch';
 
@@ -112,8 +111,6 @@ function CustomHeader ({ navigation, route, lang, theme, screenType }) {
 }
 
 function SettingsMain (props) {
-    const log = Log.FE.context('SettingsMain');
-
     const [language, setLanguage] = useState(Backend.UserSettings.Language);
     const [browserMode, setBrowserMode] = useState(Backend.UserSettings.BrowserMode);
     const [disableImages, setDisableImages] = useState(Backend.UserSettings.DisableImages);
@@ -125,6 +122,7 @@ function SettingsMain (props) {
     const [tags, setTags] = useState(Backend.UserSettings.Tags);
 
     const [learningStatus, setLearningStatus] = useState(null);
+    const log = useRef(logRef.current.globalLog.current.context('Settings'));
     
     // on component mount
     useEffect(() => {
@@ -162,7 +160,7 @@ function SettingsMain (props) {
         const allowed_mime = ['text/plain', 'application/octet-stream', 'application/json'];
 
         if(file == null){
-            log.info('Import cancelled by user')
+            log.current.warn('Import cancelled by user');
             return; 
         }
 
@@ -189,6 +187,7 @@ function SettingsMain (props) {
             globalStateRef.current.reloadFeed(true);
         } else {
             snackbarRef.current.showSnack(props.lang.import_fail_invalid);
+            log.current.error('Import failed');
         }
     }
 
@@ -203,7 +202,7 @@ function SettingsMain (props) {
             }
         } catch (err) {
             snackbarRef.current.showSnack(props.lang.export_fail);
-            log.info('Failed to export backup. ' + err);
+            log.error('Failed to export backup. ' + err);
         }
     }
 

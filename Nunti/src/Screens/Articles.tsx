@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useImperativeHandle, Component } from 'react';
+import React, { useState, useRef, useEffect, Component } from 'react';
 import {
     View,
     Share,
@@ -29,8 +29,7 @@ import Animated, {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { Backend, Article } from '../Backend';
-import Log from '../Log';
-import { modalRef, snackbarRef, browserRef, globalStateRef } from '../App';
+import { modalRef, snackbarRef, browserRef, globalStateRef, logRef } from '../App';
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
 
 // use a class wrapper to stop rerenders caused by global snack/modal
@@ -58,8 +57,6 @@ class ArticlesPageOptimisedWrapper extends Component {
 }
 
 function ArticlesPage (props) {
-    const log = Log.FE.context('ArticlesPage');
-
     const [refreshing, setRefreshing] = useState(false);
     const [articlePage, setArticlePage] = useState([]);
     const [showImages, setShowImages] = useState(!Backend.UserSettings.DisableImages);
@@ -79,6 +76,8 @@ function ArticlesPage (props) {
     const sourceFilter = useRef({sortType: '', search: '', tags: []});
     const flatListRef = useAnimatedRef(); //scrollTo from reanimated doesn't work, use old .scrollToOffset
     
+    const log = useRef(logRef.current.globalLog.current.context('ArticlePage_' + props.route.name));
+    
     // on component mount
     useEffect(() => {
         (async () => {
@@ -92,7 +91,7 @@ function ArticlesPage (props) {
             if(props.route.name != 'feed') { 
                 refresh(false); // reload bookmarks/history on each access
             } else if (globalStateRef.current.shouldFeedReload.current) {
-                log.info("Cache was reset, reloading articles, resetting filter");
+                log.current.debug('Reload feed requested, reloading articles and resetting filter');
 
                 sourceFilter.current.tags = [];
                 sourceFilter.current.search = '';
@@ -107,6 +106,7 @@ function ArticlesPage (props) {
         const onState = props.navigation.addListener('state', (parentState) => {
             parentState.data.state.routes.some(pickedRoute => {
                 if(pickedRoute.name == props.route.name && pickedRoute.params.showFilterModal) {
+                    log.current.debug('Showing filter modal, appbar button pressed');
                     props.navigation.setParams({showFilterModal: false})
                     modalRef.current.showModal(() => <FilterModalContent theme={props.theme}
                         applyFilter={applyFilter} lang={lang.current}
@@ -126,6 +126,8 @@ function ArticlesPage (props) {
     });
 
     const refresh = async (refreshIndicator: boolean = true) => {
+        log.current.info('Refreshing articles with filter params: ', sourceFilter.current);
+        
         flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
         currentPageIndex.current = 0;
 
@@ -183,12 +185,11 @@ function ArticlesPage (props) {
     }
 
     const applySorting = (sortType: string) => {
+        log.current.debug('Applying sorting:', sortType);
         setRefreshing(true);
 
         sourceFilter.current.sortType = sortType;
         refresh(true);
-    
-        log.info(sourceFilter)
     }
 
     const applyFilter = (search: string, tags: []) => {
@@ -200,7 +201,7 @@ function ArticlesPage (props) {
         modalRef.current.hideModal();
         refresh(true);
         
-        log.info(sourceFilter)
+        log.current.debug('Applying filtering:', sourceFilter.current);
     }
 
     const modifyArticle = async (article: Article, direction: string) => {
@@ -231,7 +232,7 @@ function ArticlesPage (props) {
                 articlesFromBackend.current = Backend.CurrentHistory;
                 break;
             default: 
-                log.error('Bad source, cannot update articles from backend');
+                log.current.error('Bad source, cannot update articles from backend');
                 break;
         }
 

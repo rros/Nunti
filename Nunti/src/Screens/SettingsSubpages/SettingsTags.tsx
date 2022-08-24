@@ -18,14 +18,14 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
-import { modalRef, snackbarRef, globalStateRef } from '../../App';
+import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
 import { Backend, Tag } from '../../Backend';
-import Log from '../../Log';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 
 function SettingsTags (props) {
     const [tags, setTags] = useState(Backend.UserSettings.Tags);
     const flatListRef = useRef();
+    const log = useRef(logRef.current.globalLog.current.context('SettingsTags'));
     
     const changeTagsParentState = (newTags: [], scrollToEnd: boolean = false) => {
         setTags(newTags);
@@ -50,7 +50,7 @@ function SettingsTags (props) {
                     <TouchableNativeFeedback
                         background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                         onPress={() => modalRef.current.showModal(() => <TagRemoveModal lang={props.lang}
-                            tag={item} changeTagsParentState={changeTagsParentState} />)}>
+                            tag={item} changeTagsParentState={changeTagsParentState} parentLog={log.current} />)}>
                         <View style={[{borderLeftWidth: 1, borderLeftColor: props.theme.colors.outline}]}>
                             <Icon name="close" style={{margin: 12}}
                                 size={24} color={props.theme.colors.onSurface} />
@@ -83,15 +83,15 @@ function SettingsTags (props) {
                 icon={'plus'}
                 size={'large'}
                 onPress={() => modalRef.current.showModal(() => <TagAddModal lang={props.lang} 
-                    changeTagsParentState={changeTagsParentState} />)}
+                    changeTagsParentState={changeTagsParentState} parentLog={log.current} />)}
                 style={Styles.fab}
             />
         </View>
     );
 }
 
-function TagAddModal ({lang, changeTagsParentState}) {
-    const log = Log.FE.context('TagAddModal');
+function TagAddModal ({lang, changeTagsParentState, parentLog}) {
+    const log = useRef(parentLog.context('TagAddModal'));
 
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
@@ -100,11 +100,12 @@ function TagAddModal ({lang, changeTagsParentState}) {
         setLoading(true);
 
         try{
+            log.current.debug('Adding tag:', inputValue);
             const tag:Tag = await Tag.New(inputValue);
             snackbarRef.current.showSnack((lang.added_tag).replace('%tag%', ("\"" + tag.name + "\"")));
             changeTagsParentState(Backend.UserSettings.Tags, true);
         } catch(err) {
-            log.error('Can\'t add tag',err);
+            log.current.error('Can\'t add tag',err);
             snackbarRef.current.showSnack(lang.add_tag_fail);
         }
 
@@ -129,10 +130,12 @@ function TagAddModal ({lang, changeTagsParentState}) {
     );
 }
 
-function TagRemoveModal ({tag, lang, changeTagsParentState}) {
+function TagRemoveModal ({tag, lang, changeTagsParentState, parentLog}) {
+    const log = useRef(parentLog.context('TagAddModal'));
     const [loading, setLoading] = useState(false);
     
     const removeTag = async () => {
+        log.current.debug('Removing tag:', tag.name);
         setLoading(true);
 
         await Tag.Remove(tag);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     Image,
     Platform,
@@ -19,7 +19,7 @@ import * as ScopedStorage from 'react-native-scoped-storage';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
-import { snackbarRef, globalStateRef } from '../App';
+import { snackbarRef, globalStateRef, logRef } from '../App';
 import { Backend } from '../Backend';
 import Log from '../Log';
 import { Accents } from '../Styles';
@@ -29,6 +29,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 const NavigationTabs = createMaterialTopTabNavigator();
 
 function Wizard (props) {
+    const log = useRef(logRef.current.globalLog.current.context('Wizard'));
     const _props = props; // props are undefined in navigator???
     
     return(
@@ -46,18 +47,19 @@ function Wizard (props) {
                 }
             }}>
             <NavigationTabs.Screen name="Welcome">
-                { props => <Step1Welcome {...props} lang={_props.lang} theme={_props.theme} />}
+                { props => <Step1Welcome {...props} parentLog={log.current} 
+                    lang={_props.lang} theme={_props.theme} />}
             </NavigationTabs.Screen>
             <NavigationTabs.Screen name="Language">
-                { props => <Step2Language {...props} lang={_props.lang} 
+                { props => <Step2Language {...props} lang={_props.lang}
                     Languages={_props.Languages} theme={_props.theme} />}
             </NavigationTabs.Screen>
             <NavigationTabs.Screen name="Theming">
-                { props => <Step3Theme {...props} lang={_props.lang} 
+                { props => <Step3Theme {...props} lang={_props.lang}
                     theme={_props.theme} />}
             </NavigationTabs.Screen>
             <NavigationTabs.Screen name="Topics">
-                { props => <Step4Topics {...props} lang={_props.lang} 
+                { props => <Step4Topics {...props} lang={_props.lang}
                     theme={_props.theme}/>}
             </NavigationTabs.Screen>
             <NavigationTabs.Screen name="Learning">
@@ -69,18 +71,19 @@ function Wizard (props) {
 }
 
 function Step1Welcome (props) {
-    const log = Log.FE.context('Step1Welcome');
+    const log = props.parentLog.context('Step1Welcome');
 
     const importBackup = async () => {
         const file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, 'utf8');
         const allowed_mime = ['text/plain', 'application/octet-stream', 'application/json'];
 
         if(file == null){
-            log.info('Import cancelled by user')
+            log.warn('Import cancelled by user')
             return; 
         }
 
         if(allowed_mime.indexOf(file.mime) < 0) {
+            log.error('Import failed, wrong format')
             snackbarRef.current.showSnack(props.lang.import_fail_format);
             return;
         }
@@ -97,6 +100,7 @@ function Step1Welcome (props) {
             props.navigation.navigate('feed');
         } else {
             snackbarRef.current.showSnack(props.lang.import_fail_invalid);
+            log.error('Import failed')
         }
     }
 

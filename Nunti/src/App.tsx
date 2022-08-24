@@ -63,6 +63,7 @@ export const modalRef = React.createRef();
 export const snackbarRef = React.createRef();
 export const browserRef = React.createRef();
 export const globalStateRef = React.createRef();
+export const logRef = React.createRef();
 
 export default function App (props) {
     const [theme, setTheme] = useState(DarkTheme);
@@ -84,6 +85,10 @@ export default function App (props) {
     const [forceValue, forceUpdate] = useState(false);
     
     const shouldFeedReload = useRef(false);
+    const globalLog = useRef(Log.FE);
+    const log = useRef(globalLog.current.context('App.tsx'));
+    const snackLog = useRef(log.current.context('Snackbar'));
+    const modalLog = useRef(log.current.context('Modal'));
     
     // animations
     const snackAnim = useSharedValue(0);
@@ -97,6 +102,7 @@ export default function App (props) {
     
     const snackHideAnimationEnd = () => {
         if(snackVisible == true) {
+            snackLog.current.debug('Snack set to invisible');
             setSnackVisible(false);
         }
     }
@@ -129,14 +135,17 @@ export default function App (props) {
     // makes sure the modal gets hidden after the full animation has run
     useEffect(() => {
         if(modalContent != null) {
+            modalLog.current.debug('Starting modal appear animation');
             modalAnim.value = 1;
         } else {
+            modalLog.current.debug('Modal set to invisible');
             setModalVisible(false);
         }
     }, [modalContent]);
     
     useEffect(() => {
         if(snackVisible) {
+            snackLog.current.debug('Starting snack appear animation');
             snackAnim.value = 1;
 
             snackTimerDuration.current = 4;
@@ -144,6 +153,8 @@ export default function App (props) {
                 snackTimerDuration.current -= 1;
                 
                 if (snackTimerDuration.current <= 0) {
+                    snackLog.current.debug('Hiding snack after a 4 second interval');
+                    
                     clearInterval(snackTimer.current);
                     hideSnack();
                 }
@@ -158,12 +169,12 @@ export default function App (props) {
 
             /* set up background task */
             const onEvent = async (taskId: string) => {
-                Log.context('BackgroundFetch').info('task: ', taskId);
+                log.current.context('BackgroundFetch').debug('Task: ', taskId);
                 await Backend.RunBackgroundTask(taskId, false);
                 BackgroundFetch.finish(taskId);
             }
             const onTimeout = async (taskId: string) => {
-                Log.context('BackgroundFetch').warn('TIMEOUT task: ', taskId);
+                log.current.context('BackgroundFetch').warn('TIMEOUT task: ', taskId);
                 BackgroundFetch.finish(taskId);
             }
             // Initialize BackgroundFetch only once when component mounts.
@@ -174,7 +185,7 @@ export default function App (props) {
                 startOnBoot: true,
                 requiresBatteryNotLow: true,
             }, onEvent, onTimeout);
-            Log.context('BackgroundFetch').debug('configure status: ', status);
+            log.current.context('BackgroundFetch').debug('Configure status: ', status);
             BackgroundFetch.scheduleTask({
                 taskId: 'com.nunti.backgroundTaskSecondary',
                 periodic: true,
@@ -235,6 +246,7 @@ export default function App (props) {
             newScreenType += 1; // landscape modes of the breakpoints
         }
 
+        log.current.debug('Screen orientation change:', screenType, '->', newScreenType);
         setScreenType(newScreenType);
     }
 
@@ -245,6 +257,7 @@ export default function App (props) {
         await updateLanguage(Backend.UserSettings.Language);
         await updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
         
+        log.current.info('FE is ready, hiding splashscreen');
         setPrefsLoaded(true);
     }
 
@@ -263,6 +276,7 @@ export default function App (props) {
         for(let language in Languages){
             if(locale.includes(Languages[language].code)){
                 setLanguage(Languages[language]);
+                log.current.debug('language set to', Languages[language].code)
                 return Languages[language]; // for updating the modal
             }
         }
@@ -324,6 +338,7 @@ export default function App (props) {
 
         StatusBar.setBackgroundColor(newTheme.colors.surface);
 
+        log.current.debug('Theme set to ' + newTheme.themeName + ' with ' + newTheme.accentName + ' accent.');
         return newTheme; // for updating the modal
     }
 
@@ -347,6 +362,7 @@ export default function App (props) {
         } catch {
             // fallback
             if(palette === undefined) {
+                log.current.warn('Accent not found, falling back to default accent')
                 accentName = 'default';
 
                 Backend.UserSettings.Accent = accentName;
@@ -432,13 +448,16 @@ export default function App (props) {
 
     // global component controls
     const showSnack = async (message: string) => {
+        snackLog.current.debug('Show snack called');
         if(snackVisible == true){ // hide the previous snack and show the new one
+            snackLog.current.debug('Closing previous snack');
             hideSnack();
 
             // not ideal, but wait to let the previous snack hide
             await new Promise(r => setTimeout(r, 300));
         }
         
+        snackLog.current.debug('Snack set to visible');
         setSnackMessage(message);
         setSnackVisible(true);
 
@@ -446,18 +465,21 @@ export default function App (props) {
     }
 
     const hideSnack = () => {
+        snackLog.current.debug('Starting snack hide animation');
         clearInterval(snackTimer.current);
         snackAnim.value = 0;
         // snack gets hidden after animation finishes
     }
     
     const showModal = (newModalContent: ModalChildren) => {
+        modalLog.current.debug('Modal set to visible');
         setModalVisible(true);
         setModalContent(newModalContent);
         // animation starts running after content gets loaded (useEffect)
     }
 
     const hideModal = () => {
+        modalLog.current.debug('Starting modal hide animation');
         modalAnim.value = 0;
         // modal gets hidden after animation finishes
     }
@@ -476,6 +498,7 @@ export default function App (props) {
     }
 
     const reloadFeed = (resetCache: boolean = true) => {
+        log.current.debug('Feed reload requested')
         shouldFeedReload.current = true;
 
         if(resetCache) {
@@ -502,6 +525,7 @@ export default function App (props) {
     useImperativeHandle(browserRef, () => ({ openBrowser }));
     useImperativeHandle(globalStateRef, () => ({ updateLanguage, updateTheme, resetApp, 
         reloadFeed, shouldFeedReload }));
+    useImperativeHandle(logRef, () => ({ globalLog }));
 
     if(prefsLoaded == false){
         return null;

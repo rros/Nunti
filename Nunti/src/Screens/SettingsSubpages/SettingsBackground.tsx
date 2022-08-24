@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
 } from 'react-native';
@@ -14,7 +14,7 @@ import {
 
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
-import { modalRef, snackbarRef } from '../../App';
+import { modalRef, snackbarRef, logRef } from '../../App';
 import { Backend } from '../../Backend';
 import Switch from '../../Components/Switch';
 
@@ -22,6 +22,8 @@ function SettingsBackground (props) {
     const [backgroundSync, setBackgroundSync] = useState(Backend.UserSettings.EnableBackgroundSync);
     const [notifications, setNotifications] = useState(Backend.UserSettings.EnableNotifications);
     const [notificationInterval, setNotificationInterval] = useState(Backend.UserSettings.NewArticlesNotificationPeriod / 60);
+    
+    const log = useRef(logRef.current.globalLog.current.context('SetttingsBackground'));
 
     const toggleBackgroundSync = () => {
         setBackgroundSync(!backgroundSync);
@@ -41,6 +43,7 @@ function SettingsBackground (props) {
         const newIntervalNumber = Number(newInterval);
 
         if(Object.is(newIntervalNumber, NaN) || newIntervalNumber < 1){
+            log.current.warn("Changing notification interval failed");
             snackbarRef.current.showSnack(props.lang.change_notification_interval_fail);
             modalRef.current.hideModal();
 

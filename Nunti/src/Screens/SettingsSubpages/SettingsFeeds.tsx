@@ -18,9 +18,8 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
-import { modalRef, snackbarRef, globalStateRef } from '../../App';
+import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
 import { Backend, Feed } from '../../Backend';
-import Log from '../../Log';
 import { Accents } from '../../Styles';
 import Switch from '../../Components/Switch';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
@@ -28,6 +27,7 @@ import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 function SettingsFeeds (props) {
     const [feeds, setFeeds] = useState(Backend.UserSettings.FeedList);
     const flatListRef = useRef();
+    const log = useRef(logRef.current.globalLog.current.context('SettingsFeeds'));
 
     const changeFeedsParentState = (newFeeds: [], scrollToEnd: boolean = false) => {
         setFeeds(newFeeds)
@@ -43,7 +43,7 @@ function SettingsFeeds (props) {
             (index == feeds.length - 1) ? Styles.flatListCardBottom : undefined]}>
         <TouchableNativeFeedback
             background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
-            onPress={() => modalRef.current.showModal(() => <FeedDetailsModal lang={props.lang}
+            onPress={() => modalRef.current.showModal(() => <FeedDetailsModal lang={props.lang} parentLog={log.current}
                 feed={item} theme={props.theme} changeFeedsParentState={changeFeedsParentState} />)}>
         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
             <View style={[Styles.settingsLeftContent, Styles.settingsRowContainer]}>
@@ -57,7 +57,7 @@ function SettingsFeeds (props) {
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                     onPress={() => modalRef.current.showModal(() => <FeedRemoveModal lang={props.lang}
-                        feed={item} changeFeedsParentState={changeFeedsParentState} />)}>
+                        feed={item} changeFeedsParentState={changeFeedsParentState} parentLog={log.current} />)}>
                     <View style={{borderLeftWidth: 1, borderLeftColor: props.theme.colors.outline}}>
                         <Icon name="close" style={Styles.settingsIcon} style={{margin: 12}}
                             size={24} color={props.theme.colors.onSurface} />
@@ -91,19 +91,20 @@ function SettingsFeeds (props) {
                 icon={'plus'}
                 size={'large'}
                 onPress={() => modalRef.current.showModal(() => <FeedAddModal lang={props.lang} 
-                    changeFeedsParentState={changeFeedsParentState} />)}
+                    changeFeedsParentState={changeFeedsParentState} parentLog={log.current} />)}
                 style={Styles.fab}
             />
         </View>
     );
 }
 
-function FeedAddModal ({lang, changeFeedsParentState}) {
-    const log = Log.FE.context('FeedAddModal');
+function FeedAddModal ({lang, changeFeedsParentState, parentLog}) {
+    const log = useRef(parentLog.context('FeedAddModal'));
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
     const addFeed = async () => {
+        log.current.debug('Adding feed:', inputValue);
         setLoading(true);
 
         try {
@@ -112,7 +113,7 @@ function FeedAddModal ({lang, changeFeedsParentState}) {
             changeFeedsParentState(Backend.UserSettings.FeedList, true);
             globalStateRef.current.reloadFeed(true);
         } catch(err) {
-            log.error('Can\'t add RSS feed',err);
+            log.current.error('Can\'t add RSS feed',err);
             snackbarRef.current.showSnack(lang.add_feed_fail);
         }
 
@@ -137,10 +138,12 @@ function FeedAddModal ({lang, changeFeedsParentState}) {
     );
 }
 
-function FeedRemoveModal ({feed, lang, changeFeedsParentState}) {
+function FeedRemoveModal ({feed, lang, changeFeedsParentState, parentLog}) {
+    const log = useRef(parentLog.context('FeedRemoveModal'));
     const [loading, setLoading] = useState(false);
     
     const removeFeed = async () => {
+        log.current.debug('Removing feed:', feed.url);
         setLoading(true);
 
         await Feed.Remove(feed);
@@ -171,7 +174,8 @@ function FeedRemoveModal ({feed, lang, changeFeedsParentState}) {
     );
 }
 
-function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
+function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState, parentLog}) {
+    const log = useRef(parentLog.context('FeedStatusModal_' + feed.url));
     const [noImages, setNoImages] = useState(feed['noImages']);
     const [enabled, setEnabled] = useState(!feed['enabled']);
     const [tags, setTags] = useState(feed.tags);
@@ -181,6 +185,7 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
     const [forceValue, forceUpdate] = useState(false);
     
     const changeFeedName = async () => {
+        log.current.debug('Changing feed name:', feed.name, '->', inputValue);
         setLoading(true);
 
         feed.name = inputValue;
@@ -194,6 +199,8 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
     }
     
     const changeFeedOption = async (optionName: string) => {
+        log.current.debug('Changing feed option:', optionName, '->', !feed[optionName]);
+        
         feed[optionName] = !feed[optionName];
         setNoImages(feed['noImages']);
         setEnabled(!feed['enabled']);
@@ -205,16 +212,17 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState}) {
     }
 
     const changeFeedTag = async (tag: Tag) => {
-        const newTags = feed.tags;
         if(!feed.tags.some(pickedTag => pickedTag.name == tag.name)){
-            newTags.push(tag);
+            feed.tags.push(tag);
             Feed.AddTag(feed, tag);
         } else {
-            newTags.splice(newTags.indexOf(tag), 1);
+            feed.tags.splice(feed.tags.indexOf(tag), 1);
             Feed.RemoveTag(feed, tag);
         }
         
-        setTags(newTags);
+        log.current.debug('Changing feed tags:', feed.tags);
+        
+        setTags(feed.tags);
         forceUpdate(!forceValue);
 
         changeFeedsParentState(Backend.UserSettings.FeedList);

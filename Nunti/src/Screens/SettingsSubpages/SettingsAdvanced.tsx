@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
 } from 'react-native';
@@ -14,13 +14,10 @@ import {
 
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
-import { modalRef, snackbarRef, globalStateRef } from '../../App';
+import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
 import { Backend } from '../../Backend';
-import Log from '../../Log';
 
 function SettingsAdvanced (props) {
-    const log = Log.FE.context('SettingsAdvanced');
-
     const [maxArtAge, setMaxArtAge] = useState(Backend.UserSettings.MaxArticleAgeDays);
     const [discovery, setDiscovery] = useState(Backend.UserSettings.DiscoverRatio * 100);
     const [cacheTime, setCacheTime] = useState(Backend.UserSettings.ArticleCacheTime / 60);
@@ -28,10 +25,15 @@ function SettingsAdvanced (props) {
     const [maxArtFeed, setMaxArtFeed] = useState(Backend.UserSettings.MaxArticlesPerChannel);
     const [artHistory, setArtHistory] = useState(Backend.UserSettings.ArticleHistory);
     
+    const log = useRef(logRef.current.globalLog.current.context('SettingsAdvanced'));
+    
     const changeAdvanced = (newValue: string, type: string) => {
+        log.current.debug('Changing', type, 'to', newValue);
         const newValueNumber = Number(newValue);
 
         if(Object.is(newValueNumber, NaN)){
+            log.current.warn('Input value not a number');
+            
             snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
             modalRef.current.hideModal();
             return;
@@ -40,6 +42,8 @@ function SettingsAdvanced (props) {
         switch ( type ) {
             case 'max_art_age':
                 if(newValueNumber < 1) {
+                    log.current.warn('Input value not allowed');
+                    
                     snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
                     modalRef.current.hideModal();
                     return;
@@ -52,6 +56,8 @@ function SettingsAdvanced (props) {
                 break;
             case 'discovery':
                 if(newValueNumber < 0 || newValueNumber > 100) {
+                    log.current.warn('Input value not allowed');
+                    
                     snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
                     modalRef.current.hideModal(false);
                     return;
@@ -64,6 +70,8 @@ function SettingsAdvanced (props) {
                 break;
             case 'cache_time':
                 if(newValueNumber < 1) {
+                    log.current.warn('Input value not allowed');
+                    
                     snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
                     modalRef.current.hideModal();
                     return;
@@ -76,6 +84,8 @@ function SettingsAdvanced (props) {
                 break;
             case 'art_history':
                 if(newValueNumber < 1) {
+                    log.current.warn('Input value not allowed');
+                    
                     snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
                     modalRef.current.hideModal();
                     return;
@@ -87,6 +97,8 @@ function SettingsAdvanced (props) {
                 break;
             case 'page_size':
                 if(newValueNumber < 1) {
+                    log.current.warn('Input value not allowed');
+                    
                     snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
                     modalRef.current.hideModal();
                     return;
@@ -99,6 +111,8 @@ function SettingsAdvanced (props) {
                 break;
             case 'max_art_feed':
                 if(newValueNumber < 1) {
+                    log.current.warn('Input value not allowed');
+                    
                     snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
                     modalRef.current.hideModal();
                     return;
@@ -110,7 +124,7 @@ function SettingsAdvanced (props) {
                 globalStateRef.current.reloadFeed(true);
                 break;
             default: 
-                log.error('Advanced settings change was not applied');
+                log.current.error('Advanced setting type doesn\'t exist');
                 break;
         }
 

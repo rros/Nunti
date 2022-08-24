@@ -104,7 +104,9 @@ export class Feed {
     
     /* Adds a tag to feed and also updates all articles in cache */
     public static async AddTag(feed: Feed, tag: Tag): Promise<Tag> {
-        feed.tags.push(tag);
+        //feed.tags.push(tag); // done in frontend to update ui immediately
+        await Feed.Save(feed);
+
         let cache = await FSStore.getItem('cache');
         if (cache != null) {
             Log.BE.context('Feed:'+feed.url).context('AddTag').debug(`adding tag '${tag.name}' to articles.`);
@@ -115,12 +117,12 @@ export class Feed {
             });
             await FSStore.setItem('cache', JSON.stringify(cache));
         }
-        await Feed.Save(feed);
-        return feed;
     }
     /* Removes a tag from feed and also updates all articles in cache */
     public static async RemoveTag(feed: Feed, tag: Tag): Promise<Tag> {
-        feed.tags.splice(feed.tags.indexOf(tag), 1);
+        //feed.tags.splice(feed.tags.indexOf(tag), 1); // done in frontend to update ui immediately
+        await Feed.Save(feed);
+
         let cache = await FSStore.getItem('cache');
         if (cache != null) {
             Log.BE.context('Feed:'+feed.url).context('RemoveTag').debug(`Updating cache, removing tag '${tag.name}' from articles.`);
@@ -132,8 +134,6 @@ export class Feed {
             });
             await FSStore.setItem('cache', JSON.stringify(cache));
         }
-        await Feed.Save(feed);
-        return feed;
     }
     public static HasTag(feed: Feed, tag: Tag): boolean {
         let has = false;
