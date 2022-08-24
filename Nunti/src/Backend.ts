@@ -239,6 +239,11 @@ export class Tag {
         Backend.UserSettings.Save();
     }
 }
+class Filter {
+    public sortType: string | undefined; //either 'learning' or 'date'
+    public search: string | undefined;
+    public tags: Tag[] | undefined;
+}
 
 class UserSettings {
     public FeedList: Feed[] = [];
@@ -357,7 +362,7 @@ export class Backend {
         });
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(articleSource: string, filters = {sortType: 'learning', search: '', tags: []}): Promise<Article[][]> {
+    public static async GetArticlesPaginated(articleSource: string, filters: Filter = {sortType: undefined, search: undefined, tags: undefined}): Promise<Article[][]> {
         const arts = await this.GetArticles(articleSource, filters);
         const timeBegin = Date.now();
 
@@ -369,7 +374,7 @@ export class Backend {
         return pages;
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
-    public static async GetArticles(articleSource: string, filters = {sortType: 'learning', search: '', tags: []}): Promise<Article[]> {
+    public static async GetArticles(articleSource: string, filters: Filter = {sortType: undefined, search: undefined, tags: undefined}): Promise<Article[]> {
         const log = this.log.context('GetArticles');
         log.info(`called with source: '${articleSource}'`);
 
@@ -396,7 +401,7 @@ export class Backend {
             articles.forEach((art: Article) => {
                 //search
                 let passedSearch = false;
-                if (filters.search != '' && filters.search != null) {
+                if (filters.search != undefined && filters.search != '' && filters.search != null) {
                     const words = (art.title + ' ' + art.description).toLowerCase().split(' ');
                     const searchWords = filters.search.toLowerCase().split(' ');
                     searchWords.forEach((word: string) => {
@@ -408,10 +413,14 @@ export class Backend {
 
                 //tags
                 let passedTags = false;
-                if (filters.tags != null && filters.tags.length > 0) {
+                if (filters.tags != undefined && filters.tags != null && filters.tags.length > 0) {
                     art.tags.forEach((tag: Tag) => {
-                        if (filters.tags.indexOf(tag.name) >= 0)
-                            passedTags = true;
+                        if (filters.tags == undefined)
+                            return;
+                        filters.tags.forEach((filterTag: Tag) => {
+                            if (filterTag.name == tag.name)
+                                passedTags = true;
+                        });
                     });
                 } else
                     passedTags = true;
@@ -518,7 +527,7 @@ export class Backend {
         }
     }
     /* Retrieves sorted articles to show in feed. */
-    public static async GetFeedArticles(overrides = {sortType: 'learning'}): Promise<Article[]> {
+    public static async GetFeedArticles(overrides: {sortType: string | undefined } = {sortType: undefined}): Promise<Article[]> {
         const log = this.log.context('GetFeedArticles');
         log.info('Loading new articles..');
         const timeBegin: number = Date.now();
@@ -1143,7 +1152,7 @@ export class Backend {
         log.debug(`Finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles.`);
         return newarts;
     }
-    private static async SortArticles(articles: Article[], overrides = {sortType: 'learning'}): Promise<Article[]> {
+    private static async SortArticles(articles: Article[], overrides: {sortType: undefined | string} = {sortType: undefined}): Promise<Article[]> {
         const log = this.log.context('SortArticles');
         function shuffle(a: any) { //eslint-disable-line
             let j, x, i;
