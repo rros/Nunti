@@ -178,7 +178,7 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState, parentLog
     const log = useRef(parentLog.context('FeedStatusModal_' + feed.url));
     const [noImages, setNoImages] = useState(feed['noImages']);
     const [enabled, setEnabled] = useState(!feed['enabled']);
-    const [tags, setTags] = useState(feed.tags);
+    const [tags, setTags] = useState([...feed.tags]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
     
@@ -212,17 +212,18 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState, parentLog
     }
 
     const changeFeedTag = async (tag: Tag) => {
-        if(!feed.tags.some(pickedTag => pickedTag.name == tag.name)){
-            feed.tags.push(tag);
+        const newTags = tags;
+        if(!tags.some(pickedTag => pickedTag.name == tag.name)){
+            newTags.push(tag);
             Feed.AddTag(feed, tag);
         } else {
-            feed.tags.splice(feed.tags.indexOf(tag), 1);
+            newTags.splice(feed.tags.indexOf(tag), 1);
             Feed.RemoveTag(feed, tag);
         }
         
-        log.current.debug('Changing feed tags:', feed.tags);
+        log.current.debug('Changing feed tags:', newTags);
         
-        setTags(feed.tags);
+        setTags([...newTags]);
         forceUpdate(!forceValue);
 
         changeFeedsParentState(Backend.UserSettings.FeedList);

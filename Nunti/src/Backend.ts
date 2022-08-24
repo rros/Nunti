@@ -104,7 +104,7 @@ export class Feed {
     
     /* Adds a tag to feed and also updates all articles in cache */
     public static async AddTag(feed: Feed, tag: Tag): Promise<Tag> {
-        //feed.tags.push(tag); // done in frontend to update ui immediately
+        feed.tags.push(tag);
         await Feed.Save(feed);
 
         let cache = await FSStore.getItem('cache');
@@ -120,7 +120,7 @@ export class Feed {
     }
     /* Removes a tag from feed and also updates all articles in cache */
     public static async RemoveTag(feed: Feed, tag: Tag): Promise<Tag> {
-        //feed.tags.splice(feed.tags.indexOf(tag), 1); // done in frontend to update ui immediately
+        feed.tags.splice(feed.tags.indexOf(tag), 1);
         await Feed.Save(feed);
 
         let cache = await FSStore.getItem('cache');
