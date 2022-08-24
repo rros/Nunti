@@ -16,15 +16,16 @@ import { version } from '../../package.json';
 
 import { browserRef, snackbarRef, logRef } from '../App';
 import { Backend } from '../Backend';
+import Log from '../Log';
 
 function About (props) {
     const log = useRef(logRef.current.globalLog.current.context('About'));
 
     const exportLogs = async() => {
-        const logs: string = await Backend.CreateBackup(); // TODO CreateLogs();
+        const logs: string = await Log.exportLogs();
 
         try {
-            if(await ScopedStorage.createDocument('NuntiLogs.json', 'application/json', logs, 'utf8') == null){
+            if(await ScopedStorage.createDocument('NuntiLogs.txt', 'application/txt', logs, 'utf8') == null){
                 return;
             } else{
                 snackbarRef.current.showSnack(props.lang.export_ok);

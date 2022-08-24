@@ -1579,9 +1579,9 @@ export const French = {
     change_notification_interval_fail: 'Échec de la modification de l\'intervalle de notification',
     notifications_new_articles: 'Recommended article',
     notifications_new_articles_description: 'Recommended article notifications',
-};
     notifications_new_articles : 'Article recommandé',
     notifications_new_articles_description : 'Notifications d\'articles recommandés',
+};
 export const BrazilianPortuguese = {
     code: 'pt_BR',
     wizard: 'Assistente',

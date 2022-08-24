@@ -7,6 +7,8 @@ import {AppRegistry} from 'react-native';
 import App from './src/App';
 import {name as appName} from './app.json';
 
+import Log from './src/Log';
+
 if (!__DEV__) {
         global.console = { ...global.console, ...{
     //          info: () => {},
@@ -19,13 +21,13 @@ if (!__DEV__) {
     //          timeEnd: () => {},
             }
         };
+    Log.isRelease = true;
     }
 
 AppRegistry.registerComponent(appName, () => App);
 
 import BackgroundFetch from 'react-native-background-fetch';
 import Backend from './src/Backend';
-import Log from './src/Log';
 
 let MyHeadlessTask = async (event) => {
     const log = Log.context('BackgroundFetch').context('Headless');
