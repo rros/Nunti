@@ -192,7 +192,7 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState, parentLog
         await Feed.Save(feed);
 
         changeFeedsParentState(Backend.UserSettings.FeedList);
-        globalStateRef.current.reloadFeed(false);
+        globalStateRef.current.reloadFeed(true);
         
         setInputValue('');
         setLoading(false);
@@ -208,7 +208,7 @@ function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState, parentLog
         await Feed.Save(feed);
 
         changeFeedsParentState(Backend.UserSettings.FeedList);
-        globalStateRef.current.reloadFeed(false);
+        globalStateRef.current.reloadFeed(true);
     }
 
     const changeFeedTag = async (tag: Tag) => {
