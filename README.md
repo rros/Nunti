@@ -66,6 +66,15 @@ Nunti has been built with the firm belief that there is no reason to process or 
 - @vitorhcl, @marssaljr - Brazilian Portuguese translation
 - @vaf0 - Japanese translation
 
+### Contribute a translation
+
+The preferred way to contribute is to create a public fork of the project and create a merge request. A short guide on how to provide a new translation: 
+1. Fork the project. Make sure the repo is public, so that we can access your merge request later.
+2. Open up `Nunti/src/Locale.ts`. This is where all the languages are stored in json format.
+3. Copy and paste the language you are going to be translating from.
+4. Change the object name to your the new language name (`const English` to `const x`).
+5. After you finish the translation, create a merge request. :tada: 
+
 # Licence, disclaimer or whatever
 
 Nunti Copyright &copy; 2021 - 2022  Ondřej Foltýn & Richard Klapáč
