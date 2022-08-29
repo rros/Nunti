@@ -3,6 +3,7 @@ import {
     View,
     Share,
     FlatList,
+    RefreshControl,
 } from 'react-native';
 
 import {
@@ -313,13 +314,20 @@ function ArticlesPage (props) {
 
                 data={articlePage}
                 keyExtractor={item => item.id}
-                refreshing={refreshing}
-                onRefresh={refresh}
 
                 showsVerticalScrollIndicator={false}
                 removeClippedSubviews={true}
 
                 contentContainerStyle={{ flexGrow: 1 }}
+
+                refreshControl={
+                    <RefreshControl
+                         refreshing={refreshing}
+                         onRefresh={refresh}
+                         colors={[props.theme.colors.inversePrimary]}
+                         progressBackgroundColor={props.theme.colors.inverseSurface}
+                      />
+                   }
 
                 renderItem={renderItem}
                 ListHeaderComponent={props.source == 'feed' ? <SortingSegmentedButton applySorting={applySorting}
