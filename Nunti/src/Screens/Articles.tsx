@@ -445,8 +445,6 @@ function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {
     const [tags, setTags] = useState([...sourceFilter.tags]);
     const [forceValue, forceUpdate] = useState(false);
 
-    console.log(sourceFilter)
-
     const tagClick = (tag: Tag) => {
         const newTags = tags;
 

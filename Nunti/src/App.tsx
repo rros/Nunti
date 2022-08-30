@@ -305,6 +305,7 @@ export default function App (props) {
 
             // live update
             appearanceSubscription.current = Appearance.addChangeListener(() => {
+                hideModal();
                 updateTheme('system', newTheme.accentName);
             });
         } else if (themeName == 'light'){
