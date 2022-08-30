@@ -1045,9 +1045,15 @@ export class Backend {
                         if (!art.url?.trim() || art.url == 'about:blank') {
                             throw new Error(`Could not find any link to article (title: '${art.title}')`);
                         }
-
-                        try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
-                        try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+                        
+                        if (art.date == undefined)
+                            try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+                        if (art.date == undefined)
+                            try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+                        if (art.date == undefined)
+                            try { art.date = new Date(item.getElementsByTagName('published')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
+                        if (art.date == undefined)
+                            try { art.date = new Date(item.getElementsByTagName('updated')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
 
                         feed.tags.forEach((tag) => {
                             art.tags.push(tag);
