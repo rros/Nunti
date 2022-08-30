@@ -54,7 +54,7 @@ import { NavigationContainer, useNavigationContainerRef, CommonActions } from '@
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import RNBootSplash from 'react-native-bootsplash';
-import BackgroundFetch from 'react-native-background-fetch';
+import BackgroundFetch from './BackgroundFetch';
 
 const NavigationDrawer = createDrawerNavigator();
 const { MaterialYouModule } = NativeModules;
@@ -172,11 +172,11 @@ export default function App (props) {
                 log.current.context('BackgroundFetch').debug('Task: ', taskId);
                 await Backend.RunBackgroundTask(taskId, false);
                 BackgroundFetch.finish(taskId);
-            }
+            };
             const onTimeout = async (taskId: string) => {
                 log.current.context('BackgroundFetch').warn('TIMEOUT task: ', taskId);
                 BackgroundFetch.finish(taskId);
-            }
+            };
             // Initialize BackgroundFetch only once when component mounts.
             const status = await BackgroundFetch.configure({
                 minimumFetchInterval: Backend.UserSettings.NewArticlesNotificationPeriod,

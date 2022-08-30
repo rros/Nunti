@@ -26,7 +26,7 @@ if (!__DEV__) {
 
 AppRegistry.registerComponent(appName, () => App);
 
-import BackgroundFetch from 'react-native-background-fetch';
+import BackgroundFetch from './src/BackgroundFetch';
 import Backend from './src/Backend';
 
 let MyHeadlessTask = async (event) => {
