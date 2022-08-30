@@ -1179,7 +1179,7 @@ export default Styles = StyleSheet.create ({
 
     snackBarBase: {
         width: '100%',
-        borderRadius: 4,
+        borderRadius: 400, // random high number, must be heigher than maxHeight / 2
         elevation: 2,
     },
 

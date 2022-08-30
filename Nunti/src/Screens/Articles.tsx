@@ -40,11 +40,11 @@ class ArticlesPageOptimisedWrapper extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if(nextProps.theme.themeName != this.props.theme.themeName
-            || nextProps.theme.accentName != this.props.theme.accentName
+        if(nextProps.theme.accentName != this.props.theme.accentName
+            || nextProps.theme.dark != this.props.theme.dark
             || nextProps.lang.this_language != this.props.lang.this_language
             || nextProps.screenType != this.props.screenType){
-           return true;
+            return true;
         } else {
             return false;
         }
