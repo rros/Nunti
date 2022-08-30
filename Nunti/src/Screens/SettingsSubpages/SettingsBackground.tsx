@@ -116,7 +116,7 @@ function ChangeNotificationIntervalModal ({lang, currentValue, changeNotificatio
         <Dialog.Title style={Styles.centeredText}>{lang.notification_interval}</Dialog.Title>
         <View style={Styles.modalNonScrollArea}>
             <TextInput label={currentValue + lang.hours}
-                autoCapitalize="none" keyboardType="numeric"
+                autoCapitalize="none" keyboardType="numeric" disabled={loading}
             right={<TextInput.Affix text={lang.hours} />} onChangeText={text => setInputValue(text)}/>
         </View>
         <View style={Styles.modalButtonContainer}>

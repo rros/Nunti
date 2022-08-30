@@ -117,7 +117,7 @@ function TagAddModal ({lang, changeTagsParentState, parentLog}) {
         <Dialog.Icon icon="tag" />
         <Dialog.Title style={Styles.centeredText}>{lang.add_tags}</Dialog.Title>
         <View style={Styles.modalNonScrollArea}>
-            <TextInput label={lang.tag_name} autoCapitalize="none"
+            <TextInput label={lang.tag_name} autoCapitalize="none" disabled={loading}
                 onChangeText={text => setInputValue(text)}/>
         </View>
         <View style={Styles.modalButtonContainer}>

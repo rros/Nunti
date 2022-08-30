@@ -126,7 +126,7 @@ function FeedAddModal ({lang, changeFeedsParentState, parentLog}) {
         <Dialog.Title style={Styles.centeredText}>{lang.add_feeds}</Dialog.Title>
         <View style={Styles.modalNonScrollArea}>
             <TextInput label={"https://www.website.com/rss"} autoCapitalize="none"
-                onChangeText={text => setInputValue(text)}/>
+                onChangeText={text => setInputValue(text)} disabled={loading}/>
         </View>
         <View style={Styles.modalButtonContainer}>
             <Button onPress={addFeed} loading={loading} disabled={inputValue == '' || loading}

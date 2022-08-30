@@ -225,7 +225,7 @@ function ChangeAdvancedModal ({lang, icon, title, suffix, currentValue, changeAd
         <Dialog.Title style={Styles.centeredText}>{lang[title]}</Dialog.Title>
         <View style={Styles.modalNonScrollArea}>
             <TextInput label={(suffix !== undefined) ? (currentValue + suffix) : currentValue}
-                autoCapitalize="none" keyboardType="numeric"
+                autoCapitalize="none" keyboardType="numeric" disabled={loading}
             right={<TextInput.Affix text={suffix != '' ?
                 suffix : ''} />} onChangeText={text => setInputValue(text)}/>
         </View>

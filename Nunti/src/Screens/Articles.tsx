@@ -195,11 +195,11 @@ function ArticlesPage (props) {
 
     const applyFilter = (search: string, tags: []) => {
         setRefreshing(true);
+        modalRef.current.hideModal();
 
         sourceFilter.current.tags = tags;
         sourceFilter.current.search = search;
         
-        modalRef.current.hideModal();
         refresh(true);
         
         log.current.debug('Applying filtering:', sourceFilter.current);
