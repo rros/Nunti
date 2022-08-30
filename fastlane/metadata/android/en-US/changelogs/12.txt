@@ -1,0 +1,6 @@
+- fixed F-Droid startup crash
+- fixed tag filtering
+- fixed feed options not applying immediately
+- fixed issue with system theme listener
+- fixed text inputs not disabling when waiting for an action to finish
+- added m3 snackbar, m3 refresh indicator
