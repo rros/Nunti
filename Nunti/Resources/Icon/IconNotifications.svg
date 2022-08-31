@@ -8,8 +8,8 @@
    sodipodi:docname="IconNotifications.svg"
    inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
    inkscape:export-filename="IconMonochrometest.svg"
-   inkscape:export-xdpi="108"
-   inkscape:export-ydpi="108"
+   inkscape:export-xdpi="12.7"
+   inkscape:export-ydpi="12.7"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -28,9 +28,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.72553702"
-     inkscape:cx="203.29769"
-     inkscape:cy="305.98025"
+     inkscape:zoom="0.725537"
+     inkscape:cx="365.24671"
+     inkscape:cy="340.4375"
      inkscape:window-width="1279"
      inkscape:window-height="1371"
      inkscape:window-x="26"
@@ -56,7 +56,7 @@
      transform="translate(-9.1772177,-7.7384951)">
     <g
        id="g1322"
-       transform="matrix(0.79999857,0,0,0.79999857,16.278553,17.789228)">
+       transform="matrix(1.3088072,0,0,1.3088072,-40.262058,-36.875536)">
       <path
          id="path26"
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.355693;stroke-linecap:round;stroke-linejoin:round"

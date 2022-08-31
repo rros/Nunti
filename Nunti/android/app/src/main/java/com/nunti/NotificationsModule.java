@@ -11,6 +11,7 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import androidx.core.content.ContextCompat;
+//import android.graphics.BitmapFactory;
 
 import java.util.Random;
 import android.os.Build;
@@ -82,7 +83,8 @@ public class NotificationsModule extends ReactContextBaseJavaModule {
             int notificationId  = new Random().nextInt();
             String channelId  = "Messages";
             NotificationCompat.Builder builder = new NotificationCompat.Builder(moduleContext, channelId);
-            builder.setSmallIcon( R.drawable.icon_notifications );
+            builder.setSmallIcon( R.drawable.icon_notification_small );
+            //builder.setLargeIcon( BitmapFactory.decodeResource(moduleContext.getResources(), R.drawable.icon_notifications_large) );
             builder.setContentTitle( title );
             builder.setContentText( message );
             builder.setStyle( new NotificationCompat.BigTextStyle().bigText(message).setSummaryText(summary) );
