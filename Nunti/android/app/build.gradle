@@ -195,9 +195,9 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
+    implementation "androidx.activity:activity:1.5.1"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
-
-    implementation "androidx.core:core-splashscreen:1.0.0-alpha02" // Add this line
+    implementation "androidx.core:core-splashscreen:1.0.0" // Add this line
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
       exclude group:'com.facebook.fbjni'

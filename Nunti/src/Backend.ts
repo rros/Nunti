@@ -261,9 +261,9 @@ class UserSettings {
 
     public FirstLaunch = true;
 
-    public EnableBackgroundSync = true; //synchronizes articles in background before cache expires
+    public EnableBackgroundSync = false; //synchronizes articles in background before cache expires
 
-    public EnableNotifications = true;
+    public EnableNotifications = false;
     /* "daily" notif. with recommended article;
      * period in minutes
      * !minimum is 15 minutes! */

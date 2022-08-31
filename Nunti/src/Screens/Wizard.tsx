@@ -9,7 +9,6 @@ import {
     Text,
     RadioButton,
     Button,
-    Switch,
     withTheme,
     Checkbox,
     Card,
@@ -24,6 +23,7 @@ import { Backend } from '../Backend';
 import Log from '../Log';
 import { Accents } from '../Styles';
 import DefaultTopics from '../DefaultTopics';
+import SettingsBackground from '../Screens/SettingsSubpages/SettingsBackground';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 const NavigationTabs = createMaterialTopTabNavigator();
@@ -62,8 +62,12 @@ function Wizard (props) {
                 { props => <Step4Topics {...props} lang={_props.lang}
                     theme={_props.theme}/>}
             </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="Notifications">
+                { props => <Step5Notifications {...props} lang={_props.lang}
+                    theme={_props.theme}/>}
+            </NavigationTabs.Screen>
             <NavigationTabs.Screen name="Learning">
-                { props => <Step5Learning {...props} lang={_props.lang}
+                { props => <Step6Learning {...props} lang={_props.lang}
                     theme={_props.theme}/>}
             </NavigationTabs.Screen>
         </NavigationTabs.Navigator>
@@ -357,7 +361,18 @@ function Step4Topics (props) {
     );
 }
 
-function Step5Learning (props) {
+function Step5Notifications (props) {
+    return(
+        <>
+        <Text variant="labelLarge" style={[Styles.settingsSectionTitle, 
+            {color: props.theme.colors.onSurfaceVariant}]}>
+            {props.lang.background}</Text>
+        <SettingsBackground lang={props.lang} />
+        </>
+    );
+}
+
+function Step6Learning (props) {
     const exitWizard = () => {
         Backend.UserSettings.FirstLaunch = false;
         Backend.UserSettings.Save();

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
+    NativeModules,
 } from 'react-native';
 
 import {
@@ -13,6 +14,7 @@ import {
 } from 'react-native-paper';
 
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
+const NotificationsModule = NativeModules.Notifications;
 
 import { modalRef, snackbarRef, logRef } from '../../App';
 import { Backend } from '../../Backend';
@@ -30,6 +32,17 @@ function SettingsBackground (props) {
 
         Backend.UserSettings.EnableBackgroundSync = !backgroundSync;
         Backend.UserSettings.Save();
+    }
+
+    const toggleNotificationsPermissionHelper = async () => {
+        if(!(await NotificationsModule.areNotificationsEnabled()) && !notifications) {
+            // enabling notifications and permission disabled
+            // we pass a callback which gets called after user makes a choice
+            log.current.debug("Asking user for notification permission");
+            NotificationsModule.getNotificationPermission(toggleNotifications);
+        } else {
+            toggleNotifications();
+        }
     }
 
     const toggleNotifications = () => {
@@ -52,6 +65,7 @@ function SettingsBackground (props) {
         
         setNotificationInterval(newIntervalNumber);
         Backend.UserSettings.NewArticlesNotificationPeriod = newIntervalNumber * 60;
+        Backend.UserSettings.Save();
 
         snackbarRef.current.showSnack(props.lang.change_notification_interval_success);
         modalRef.current.hideModal();
@@ -76,7 +90,7 @@ function SettingsBackground (props) {
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
-                    onPress={() => toggleNotifications()}>
+                    onPress={() => toggleNotificationsPermissionHelper()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
                             <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>
