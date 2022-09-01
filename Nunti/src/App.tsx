@@ -309,12 +309,12 @@ export default function App (props) {
                 newTheme = LightTheme;
 
                 palette = await getPalette(accentName, newTheme.dark);
-                StatusBar.setBarStyle('dark-content');
+                //StatusBar.setBarStyle('dark-content');
             } else {
                 newTheme = DarkTheme;
 
                 palette = await getPalette(accentName, newTheme.dark);
-                StatusBar.setBarStyle('light-content');
+                //StatusBar.setBarStyle('light-content');
             }
 
             // live update
@@ -327,13 +327,13 @@ export default function App (props) {
             newTheme = LightTheme;
 
             palette = await getPalette(accentName, newTheme.dark);
-            StatusBar.setBarStyle('dark-content');
+            //StatusBar.setBarStyle('dark-content');
         } else { // dark and black themes
             appearanceSubscription.current?.remove();
             newTheme = DarkTheme;
 
             palette = await getPalette(accentName, newTheme.dark);
-            StatusBar.setBarStyle('light-content');
+            //StatusBar.setBarStyle('light-content');
         }
             
         newTheme = applyThemeColors(newTheme, palette);
@@ -350,11 +350,25 @@ export default function App (props) {
 
         setTheme(newTheme);
         forceUpdate(!forceValue) // react is retarded and doesn't refresh
-
-        StatusBar.setBackgroundColor(newTheme.colors.surface);
+        
+        setStatusBarColor(newTheme.colors.surface, newTheme.dark, prefsLoaded);
 
         log.current.debug('Theme set to ' + newTheme.themeName + ' with ' + newTheme.accentName + ' accent.');
         return newTheme; // for updating the modal
+    }
+
+    const setStatusBarColor = async (statusBarColor: string, darkTheme: boolean, prefsLoaded: boolean) => {
+        if(!prefsLoaded) { // setting statusbar on startup is bugged, so we wait a while
+            await new Promise(r => setTimeout(r, 1000));
+        }
+
+        if(darkTheme) {
+            StatusBar.setBarStyle('light-content');
+        } else {
+            StatusBar.setBarStyle('dark-content');
+        }
+
+        StatusBar.setBackgroundColor(statusBarColor);
     }
 
     const getPalette = async (accentName: string, isDarkTheme: boolean): any => {
