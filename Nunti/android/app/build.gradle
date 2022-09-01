@@ -124,7 +124,9 @@ def enableHermes = project.ext.react.get("enableHermes", true);
 /**
  * Architectures to build native code for in debug.
  */
-def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitectures")
+def reactNativeArchitectures() {
+    return ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -144,7 +146,7 @@ android {
             reset()
             enable enableSeparateBuildPerCPUArchitecture
             universalApk false  // If true, also generate a universal APK
-            include "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
+            include (*reactNativeArchitectures())
         }
     }
     signingConfigs {
@@ -158,11 +160,6 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            if (nativeArchitectures) {
-                ndk {
-                    abiFilters nativeArchitectures.split(',')
-                }
-            }
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
