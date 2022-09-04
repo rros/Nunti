@@ -124,7 +124,9 @@ def enableHermes = project.ext.react.get("enableHermes", true);
 /**
  * Architectures to build native code for in debug.
  */
-def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitectures")
+def reactNativeArchitectures() {
+    return ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -144,7 +146,7 @@ android {
             reset()
             enable enableSeparateBuildPerCPUArchitecture
             universalApk false  // If true, also generate a universal APK
-            include "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
+            include (*reactNativeArchitectures())
         }
     }
     signingConfigs {
@@ -158,11 +160,6 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            if (nativeArchitectures) {
-                ndk {
-                    abiFilters nativeArchitectures.split(',')
-                }
-            }
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -195,9 +192,9 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
+    implementation "androidx.activity:activity:1.5.1"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
-
-    implementation "androidx.core:core-splashscreen:1.0.0-alpha02" // Add this line
+    implementation "androidx.core:core-splashscreen:1.0.0" // Add this line
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
       exclude group:'com.facebook.fbjni'
@@ -213,9 +210,9 @@ dependencies {
     }
 
     if (enableHermes) {
-        def hermesPath = "../../node_modules/hermes-engine/android/";
-        debugImplementation files(hermesPath + "hermes-debug.aar")
-        releaseImplementation files(hermesPath + "hermes-release.aar")
+        implementation("com.facebook.react:hermes-engine:+") {
+            exclude group:'com.facebook.fbjni'
+        }
     } else {
         implementation jscFlavor
     }

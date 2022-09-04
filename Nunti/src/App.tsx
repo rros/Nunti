@@ -57,7 +57,8 @@ import RNBootSplash from 'react-native-bootsplash';
 import BackgroundFetch from './BackgroundFetch';
 
 const NavigationDrawer = createDrawerNavigator();
-const { MaterialYouModule } = NativeModules;
+const MaterialYouModule = NativeModules.MaterialYouModule;
+const NotificationsModule = NativeModules.Notifications;
 
 export const modalRef = React.createRef();
 export const snackbarRef = React.createRef();
@@ -196,6 +197,19 @@ export default function App (props) {
                 requiresBatteryNotLow: true,
             });
             /* ----- */
+
+            // check for notification permission
+            // if notifications are enabled but the permission isn't, turn off the setting as well
+            // this can happen when app is hibernated by the system and then leaves hibernation
+            // or if the user revoked the permission
+            // we turn off the setting instead of asking for the permission again because the revokal of the permission
+            // is a user choice that was made 
+            if(!(await NotificationsModule.areNotificationsEnabled()) && Backend.UserSettings.EnableNotifications) {
+                log.current.warn("Notification permission was revoked, turning off notifications");
+                Backend.UserSettings.EnableNotifications = false;
+                Backend.UserSettings.Save();
+            }
+
             await reloadGlobalStates();
         })();
 
@@ -295,30 +309,32 @@ export default function App (props) {
                 newTheme = LightTheme;
 
                 palette = await getPalette(accentName, newTheme.dark);
-                StatusBar.setBarStyle('dark-content');
+                //StatusBar.setBarStyle('dark-content');
             } else {
                 newTheme = DarkTheme;
 
                 palette = await getPalette(accentName, newTheme.dark);
-                StatusBar.setBarStyle('light-content');
+                //StatusBar.setBarStyle('light-content');
             }
 
             // live update
+            appearanceSubscription.current?.remove();
             appearanceSubscription.current = Appearance.addChangeListener(() => {
-                updateTheme('system', newTheme.accentName);
+                hideModal();
+                updateTheme('system', accentName);
             });
         } else if (themeName == 'light'){
             appearanceSubscription.current?.remove();
             newTheme = LightTheme;
 
             palette = await getPalette(accentName, newTheme.dark);
-            StatusBar.setBarStyle('dark-content');
+            //StatusBar.setBarStyle('dark-content');
         } else { // dark and black themes
             appearanceSubscription.current?.remove();
             newTheme = DarkTheme;
 
             palette = await getPalette(accentName, newTheme.dark);
-            StatusBar.setBarStyle('light-content');
+            //StatusBar.setBarStyle('light-content');
         }
             
         newTheme = applyThemeColors(newTheme, palette);
@@ -335,11 +351,25 @@ export default function App (props) {
 
         setTheme(newTheme);
         forceUpdate(!forceValue) // react is retarded and doesn't refresh
-
-        StatusBar.setBackgroundColor(newTheme.colors.surface);
+        
+        setStatusBarColor(newTheme.colors.surface, newTheme.dark, prefsLoaded);
 
         log.current.debug('Theme set to ' + newTheme.themeName + ' with ' + newTheme.accentName + ' accent.');
         return newTheme; // for updating the modal
+    }
+
+    const setStatusBarColor = async (statusBarColor: string, darkTheme: boolean, prefsLoaded: boolean) => {
+        if(!prefsLoaded) { // setting statusbar on startup is bugged, so we wait a while
+            await new Promise(r => setTimeout(r, 1000));
+        }
+
+        if(darkTheme) {
+            StatusBar.setBarStyle('light-content');
+        } else {
+            StatusBar.setBarStyle('dark-content');
+        }
+
+        StatusBar.setBackgroundColor(statusBarColor);
     }
 
     const getPalette = async (accentName: string, isDarkTheme: boolean): any => {

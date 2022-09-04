@@ -35,8 +35,7 @@ function EmptyScreenComponent (props) {
         <Animated.ScrollView style={emptyPageAnimStyle} contentContainerStyle={Styles.EmptyPageContainer}>
         <View style={[Styles.EmptyPageContent, {paddingBottom: (props.bottomOffset ? '15%' : '0%')}]}>
             <View style={Styles.EmptyPageImageContainer}>
-                <Image source={props.theme.dark ? 
-                    require('../../Resources/ConfusedNunti.png') : require('../../Resources/ConfusedNuntiLight.png')}
+                <Image source={require('../../Resources/ConfusedNunti.png')}
                     resizeMode="contain" style={Styles.fullscreenImage}></Image>
             </View>
             <View>

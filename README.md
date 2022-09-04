@@ -19,7 +19,7 @@ Alternatively you can download the apk for any version on the [releases page](ht
 
 1. clone the repository
 2. enter the `Nunti` directory
-3. run `npm install --omit=optional` to install dependencies
+3. run `npm install --omit=optional --legacy-peer-deps` to install dependencies
 4. connect your phone (or run an emulator) and make sure adb can find your device
 5. run `npx react-native start` in one terminal window
 6. run `npx react-native run-android` in the second terminal window to build
