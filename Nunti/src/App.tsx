@@ -318,6 +318,7 @@ export default function App (props) {
             }
 
             // live update
+            appearanceSubscription.current?.remove();
             appearanceSubscription.current = Appearance.addChangeListener(() => {
                 hideModal();
                 updateTheme('system', accentName);
