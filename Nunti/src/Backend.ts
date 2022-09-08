@@ -223,7 +223,7 @@ export class Tag {
                 i = y;
         }
         if (i < 0)
-            Log.BE.context('Tag:'+tag.name).context('Remove').error(`Cannot remove tag from UserSettings.`);
+            Log.BE.context('Tag:'+tag.name).context('Remove').error('Cannot remove tag from UserSettings.');
         else
             Backend.UserSettings.Tags.splice(i, 1);
 
@@ -928,12 +928,9 @@ export class Backend {
                 });
             } catch(err) {
                 if (isTimeouted)
-                    log.error('Cannot read RSS (probably timeout)', err);
+                    throw new Error('Cannot read RSS (probably timeout) ' + err);
                 else
-                    log.error('Cannot read RSS', err);
-                if (throwError)
                     throw new Error('Cannot read RSS ' + err);
-                return [];
             }
             const parser = new DOMParser({
                 locator:{},
@@ -1080,7 +1077,7 @@ export class Backend {
             this.UserSettings.Save();
             throw new Error(err);
         } finally {
-            if (failed && feed.failedAttempts != 0) {
+            if (!failed && feed.failedAttempts != 0) {
                 feed.failedAttempts = 0;
                 log.info(`reset failedAttempts to ${feed.failedAttempts}`);
                 this.UserSettings.Save();
