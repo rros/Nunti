@@ -5,7 +5,10 @@ Finally a smart RSS reader which doesn't suck ass or your data.
 ![F-Droid version](https://img.shields.io/f-droid/v/com.nunti)
 ![Gitlab release](https://img.shields.io/gitlab/v/release/24697319)
 
-<a href="https://www.patreon.com/nunti"><img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" height="40"></a>
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nunti)
+
+[![patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://ko-fi.com/nunti)  
+
 
 # Installation
 
@@ -34,20 +37,19 @@ Nunti lets you rate articles and then uses an advanced algorithm to sort new art
 
 Nunti implements [Material Design V3](https://m3.material.io/) to finally create an open-source app that doesn't just feel right, but also looks right.
 
-
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/04.jpg" alt="Nunti feed" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/06.jpg" alt="Nunti rate" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" alt="Nunti settings" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/05.jpg" alt="Nunti web" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/04.jpg" alt="Nunti feed" width="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/06.jpg" alt="Nunti rate" width="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" alt="Nunti settings" width="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/05.jpg" alt="Nunti web" width="20%">
 
 ### Theming options
 
 Nunti lets you customise the look of the app with a range of predefined accent colours, as well as your system [Material You](https://m3.material.io/styles/color/dynamic-color/overview) colour when running Android 12 and newer.
 
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/12.jpg" alt="Nunti theme" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/13.jpg" alt="Nunti accent" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/14.jpg" alt="Nunti changed" width="20%" height="20%">
-<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Nunti changed 2" width="20%" height="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/12.jpg" alt="Nunti theme" width="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/13.jpg" alt="Nunti accent" width="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/14.jpg" alt="Nunti changed" width="20%">
+<img src="https://gitlab.com/ondrejfoltyn/nunti/-/raw/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Nunti changed 2" width="20%">
 
 ### Import and export functions
 
