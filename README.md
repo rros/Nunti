@@ -7,8 +7,7 @@ Finally a smart RSS reader which doesn't suck ass or your data.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nunti)
 
-[![patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://ko-fi.com/nunti)  
-
+[![patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/nunti)  
 
 # Installation
 
