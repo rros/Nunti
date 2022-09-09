@@ -462,11 +462,11 @@ export default function App (props) {
         
         // snackbar
         theme.colors.inverseElevation = {};
-        //theme.colors.elevation.level1 = Color(palette.primary).alpha(0.05).toString();
+        //theme.colors.inverseElevation.level1 = Color(palette.inversePrimary).alpha(0.05).toString();
         theme.colors.inverseElevation.level2 = Color(palette.inversePrimary).alpha(0.08).toString();
-        //theme.colors.elevation.level3 = Color(palette.primary).alpha(0.11).toString();
-        //theme.colors.elevation.level4 = Color(palette.primary).alpha(0.12).toString();
-        //theme.colors.elevation.level5 = Color(palette.primary).alpha(0.14).toString();
+        //theme.colors.inverseElevation.level3 = Color(palette.inversePrimary).alpha(0.11).toString();
+        //theme.colors.inverseElevation.level4 = Color(palette.inversePrimary).alpha(0.12).toString();
+        //theme.colors.inverseElevation.level5 = Color(palette.inversePrimary).alpha(0.14).toString();
 
         theme.colors.pressedState = Color(palette.onSurface).alpha(0.12).toString();
         theme.colors.disabledContent = Color(palette.onSurfaceVariant).alpha(0.38).toString();

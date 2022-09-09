@@ -960,7 +960,7 @@ export default Styles = StyleSheet.create ({
 
     card: {
         marginVertical: 4,
-        marginHorizontal: 8,
+        marginHorizontal: 16,
         borderRadius: 12,
         overflow: 'hidden',
     },
@@ -1001,7 +1001,7 @@ export default Styles = StyleSheet.create ({
     cardSwipeLeft: {
         flex: 1,
         marginVertical: 4,
-        marginHorizontal: 8,
+        marginHorizontal: 16,
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'flex-start',
@@ -1010,7 +1010,7 @@ export default Styles = StyleSheet.create ({
     cardSwipeRight: {
         flex: 1,
         marginVertical: 4,
-        marginHorizontal: 8,
+        marginHorizontal: 16,
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'flex-end',
@@ -1117,7 +1117,7 @@ export default Styles = StyleSheet.create ({
 
     fabScrollView: {
         flexGrow: 1,
-        marginHorizontal: 8,
+        marginHorizontal: 16,
         marginVertical: 4,
         paddingBottom: 132,
     },
@@ -1175,6 +1175,7 @@ export default Styles = StyleSheet.create ({
         alignItems: 'center',
         maxWidth: 344,
         width: '100%',
+        paddingHorizontal: 16,
     },
 
     snackBarBase: {
@@ -1220,7 +1221,8 @@ export default Styles = StyleSheet.create ({
         height: 40,
         padding: 1,
         borderRadius: 20,
-        margin: 8,
+        marginVertical: 8,
+        marginHorizontal: 16,
         flex: 1,
     },
 
