@@ -1165,15 +1165,24 @@ export class Backend {
         const feedList = this.UserSettings.FeedList.slice();
 
         const arts: Article[] = [];
+        
+        let feeds_processed = 0;
+        const statusUpdateWrapper = async (feed: Feed, maxArts: number): Promise<Article[]> => {
+            const x = await this.DownloadArticlesOneChannel(feed, maxArts);
+            feeds_processed += 1;
+            const percentage = (feeds_processed / this.UserSettings.FeedList.length) * 0.6;
+            if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', percentage);
+            return x;
+        };
 
         while (feedList.length > 0) {
             const promises: Promise<Article[]>[] = [];
             for (let i = 0; i < THREADS; i++) {
-                if (feedList.length > 0)
-                    promises.push(this.DownloadArticlesOneChannel(feedList.splice(0,1)[0],this.UserSettings.MaxArticlesPerChannel));
+                if (feedList.length > 0) {
+                    promises.push(statusUpdateWrapper(feedList.splice(0,1)[0],this.UserSettings.MaxArticlesPerChannel));
+                }
             }
             const results: Article[][] = await Promise.all(promises);
-            if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', (this.UserSettings.FeedList.length - feedList.length) * (0.6 / this.UserSettings.FeedList.length));
             for (let i = 0; i < results.length; i++) {
                 for(let y = 0; y < results[i].length; y++) {
                     arts.push(results[i][y]);
@@ -1386,7 +1395,12 @@ export class Backend {
         if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.65);
 
         //pass 2 - calculate tf-idf, get keywords
+        let feeds = 0;
+        for (const feed in sorted)
+            feeds += 1;
+        let feedsProcessed = 0;
         for(const feedName in sorted) {
+            feedsProcessed += 1;
             log.debug(`pass 2 - ${feedName}`);
             const artsInFeed = sorted[feedName];
             for (let i = 0; i < artsInFeed.length; i++) {
@@ -1436,8 +1450,8 @@ export class Backend {
                         throw Error('Something real wrong.');
                     art.keywords[item[0]] = item[1];
                 }
-                if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', (0.8 - 0.65) * (i / artsInFeed.length));
             }
+            if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.65 + (0.8 - 0.65) * (feedsProcessed / feeds));
         }
         log.info('pass 2 finished');
         const timeEnd = Date.now();
