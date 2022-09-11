@@ -572,6 +572,22 @@ export class Backend {
         }
         
         arts = await this.SortArticles(arts, overrides);
+
+        if (!this.UserSettings.DisableBackgroundTasks && this.UserSettings.EnableNotifications) {
+            // force inject last notification's article to the top of the feed
+            const notifCache = await this.StorageGet('notifications-cache');
+            if (notifCache.seen_urls.length > 1) {
+                const lastArt: Article | null = notifCache.seen_urls[notifCache.seen_urls.length - 1];
+                if (lastArt?.url != null || lastArt?.url != undefined) {
+                    const i = this.FindArticleByUrl(lastArt.url, arts);
+                    if (i >= 0)
+                        arts.splice(i, 1);
+                    arts.unshift(lastArt);
+                    log.info(`Inserted '${lastArt.title}' (last notification) at the start of feed.`);
+                }
+            }
+        }
+
         arts = await this.CleanArticles(arts);
 
         const timeEnd = Date.now();
