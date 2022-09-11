@@ -959,7 +959,7 @@ export default Styles = StyleSheet.create ({
     }, 
 
     card: {
-        marginVertical: 4,
+        marginBottom: 8,
         marginHorizontal: 16,
         borderRadius: 12,
         overflow: 'hidden',
@@ -1000,7 +1000,7 @@ export default Styles = StyleSheet.create ({
     
     cardSwipeLeft: {
         flex: 1,
-        marginVertical: 4,
+        marginBottom: 8,
         marginHorizontal: 16,
         borderRadius: 12,
         justifyContent: 'center',
@@ -1009,7 +1009,7 @@ export default Styles = StyleSheet.create ({
     
     cardSwipeRight: {
         flex: 1,
-        marginVertical: 4,
+        marginBottom: 8,
         marginHorizontal: 16,
         borderRadius: 12,
         justifyContent: 'center',
@@ -1081,7 +1081,8 @@ export default Styles = StyleSheet.create ({
     
     settingsSectionTitle: { 
         paddingHorizontal: 20,
-        paddingTop: 12,
+        paddingTop: 8,
+        paddingBottom: 4
     },
 
     settingsRowContainer: {

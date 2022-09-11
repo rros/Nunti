@@ -33,6 +33,7 @@ import { Backend, Article } from '../Backend';
 import { modalRef, snackbarRef, browserRef, globalStateRef, logRef } from '../App';
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
 import SegmentedButton from '../Components/SegmentedButton';
+import LinearIndicator from '../Components/LinearIndicator';
 
 // use a class wrapper to stop rerenders caused by global snack/modal
 class ArticlesPageOptimisedWrapper extends Component {
@@ -61,6 +62,7 @@ class ArticlesPageOptimisedWrapper extends Component {
 
 function ArticlesPage (props) {
     const [refreshing, setRefreshing] = useState(false);
+    const [refreshingStatus, setRefreshingStatus] = useState(0);
     const [articlePage, setArticlePage] = useState([]);
     const [showImages, setShowImages] = useState(!Backend.UserSettings.DisableImages);
     const [bannerVisible, setBannerVisible] = useState(false);
@@ -131,11 +133,17 @@ function ArticlesPage (props) {
     const refresh = async (refreshIndicator: boolean = true) => {
         log.current.info('Refreshing articles with filter params: ', sourceFilter.current);
         
+        // TODO cancel running get articles if already refreshing
+        
         flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
         currentPageIndex.current = 0;
 
         if(refreshIndicator) {
             setRefreshing(true);
+        }
+
+        if(props.source == 'feed') {
+            Backend.StatusUpdateCallback = refreshStatusCallback;
         }
 
         articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, sourceFilter.current);
@@ -168,8 +176,14 @@ function ArticlesPage (props) {
             setBannerVisible(false);
         }
     
-        setRefreshing(false);
         setArticlePage(articlesFromBackend.current[currentPageIndex.current]);
+        setRefreshing(false);
+        setRefreshingStatus(0);
+    }
+
+    const refreshStatusCallback = (context: string, percentage: number) => {
+        setRefreshingStatus(percentage);
+        console.log(percentage);
     }
     
     // article functions
@@ -300,6 +314,8 @@ function ArticlesPage (props) {
     
     return (
         <View style={{flexGrow: 1}}>
+            { props.source == 'feed' ? <LinearIndicator show={refreshing}
+                value={refreshingStatus} /> : null }
             <Banner visible={bannerVisible} actions={[
                 {
                     label: props.lang.dismiss,
