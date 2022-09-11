@@ -316,6 +316,7 @@ export class Backend {
     private static DbLocked = false; //prevents running multiple CheckDB at the same time
     private static BackgroundLock = false; //prevents running multiple background task instances
     public static UserSettings: UserSettings;
+    public static StatusUpdateCallback: ((context: 'feed', percentageFloat: number) => void) | null = null;
     public static CurrentArticles: {[source: string]: Article[][]} = {
         'feed': [[]],
         'bookmarks': [[]],
@@ -550,6 +551,7 @@ export class Backend {
     /* Retrieves sorted articles to show in feed. */
     public static async GetFeedArticles(overrides: {sortType: string | undefined } = {sortType: undefined}): Promise<Article[]> {
         const log = this.log.context('GetFeedArticles');
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0);
         log.info('Loading new articles..');
         const timeBegin: number = Date.now();
         await this.CheckDB();
@@ -570,8 +572,10 @@ export class Backend {
             log.info(`Using cached articles. (${cacheAgeMinutes} minutes old)`);
             arts = cache.articles;
         }
-        
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.8);
+
         arts = await this.SortArticles(arts, overrides);
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.9);
 
         if (!this.UserSettings.DisableBackgroundTasks && this.UserSettings.EnableNotifications) {
             // force inject last notification's article to the top of the feed
@@ -588,7 +592,9 @@ export class Backend {
             }
         }
 
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.95);
         arts = await this.CleanArticles(arts);
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 1);
 
         const timeEnd = Date.now();
         log.info(`Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
@@ -1167,6 +1173,7 @@ export class Backend {
                     promises.push(this.DownloadArticlesOneChannel(feedList.splice(0,1)[0],this.UserSettings.MaxArticlesPerChannel));
             }
             const results: Article[][] = await Promise.all(promises);
+            if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', (this.UserSettings.FeedList.length - feedList.length) * (0.6 / this.UserSettings.FeedList.length));
             for (let i = 0; i < results.length; i++) {
                 for(let y = 0; y < results[i].length; y++) {
                     arts.push(results[i][y]);
@@ -1376,6 +1383,7 @@ export class Backend {
             }
         }
         log.info('pass 1 finished');
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.65);
 
         //pass 2 - calculate tf-idf, get keywords
         for(const feedName in sorted) {
@@ -1428,6 +1436,7 @@ export class Backend {
                         throw Error('Something real wrong.');
                     art.keywords[item[0]] = item[1];
                 }
+                if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', (0.8 - 0.65) * (i / artsInFeed.length));
             }
         }
         log.info('pass 2 finished');
