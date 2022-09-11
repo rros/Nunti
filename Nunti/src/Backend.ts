@@ -1185,6 +1185,8 @@ export class Backend {
         const startTime = Date.now();
         const startCount = arts.length;
         const seen = await this.StorageGet('seen');
+
+        // remove seen articles
         for (let i = 0; i < seen.length; i++) {
             let index = this.FindArticleByUrl(seen[i].url,arts);
             while(index >= 0) {
@@ -1192,13 +1194,15 @@ export class Backend {
                 index = this.FindArticleByUrl(seen[i].url,arts);
             }
         }
-
+        
+        // remove duplicate urls
         const newarts: Article[] = [];
         for (let i = 0; i < arts.length; i++) {
             if (arts[i] == undefined) {
                 log.warn('expected an article, got undefined.');
                 continue;
             }
+            // remove duplicate urls
             if (this.FindArticleByUrl(arts[i].url, newarts) < 0) {
                 if ((arts[i].date ?? undefined) !== undefined) {
                     if (Date.now() - arts[i].date.getTime() < this.UserSettings.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
@@ -1207,9 +1211,36 @@ export class Backend {
                     newarts.push(arts[i]);
             }
         }
+        arts = newarts;
+        
+        // remove duplicate titles
+        const titleDuplicates: {[title: string]: Article[]} = {};
+        for (let i = 0; i < arts.length; i++) {
+            const art: Article = arts[i];
+            const title = art.title.toLowerCase();
+            if (title in titleDuplicates)
+                titleDuplicates[title].push(art);
+            else
+                titleDuplicates[title] = [art];
+        }
+        for (const title in titleDuplicates) {
+            // choose one random article
+            const chosen_i = parseInt((Math.random() * titleDuplicates[title].length).toString());
+            // discard others
+            const indexesToDiscard: number[] = [];
+            for (let i = 0; i < titleDuplicates[title].length; i++) {
+                if (i == chosen_i)
+                    continue;
+                indexesToDiscard.push(this.FindArticleByUrl(titleDuplicates[title][i].url, arts));
+            }
+            for (let i = 0; i < indexesToDiscard.length; i++) {
+                arts.splice(indexesToDiscard[i], 1);
+            }
+        }
+
         const endTime = Date.now();
         log.debug(`Finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles.`);
-        return newarts;
+        return arts;
     }
     private static async SortArticles(articles: Article[], overrides: {sortType: undefined | string} = {sortType: undefined}): Promise<Article[]> {
         const log = this.log.context('SortArticles');
