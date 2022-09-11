@@ -73,6 +73,7 @@ function ArticlesPage (props) {
     const articlesFromBackend = useRef([]); // CurrentFeed/CurrentBookmarks/CurrentHistory
     const currentArticle = useRef(); // details modal
     const currentPageIndex = useRef(0);
+    const refreshAbortController = useRef(AbortController);
 
     const bannerAction = useRef('');
     const bannerMessage = useRef('');
@@ -133,10 +134,13 @@ function ArticlesPage (props) {
     const refresh = async (refreshIndicator: boolean = true) => {
         log.current.info('Refreshing articles with filter params: ', sourceFilter.current);
         
-        // TODO cancel running get articles if already refreshing
-        
         flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
         currentPageIndex.current = 0;
+
+        if(refreshing) {
+            log.current.warn("Get articles is already running, cancelling it");
+            refreshAbortController.current.abort();
+        }
 
         if(refreshIndicator) {
             setRefreshing(true);
@@ -145,15 +149,15 @@ function ArticlesPage (props) {
         if(props.source == 'feed') {
             Backend.StatusUpdateCallback = refreshStatusCallback;
         }
-        
-        /* ---------- */
-        //TODO: implement into frontend
-        const abortController = new AbortController();
-        articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, sourceFilter.current, abortController);
-        // cancel like this:
-        abortController.abort();
-        // note: exception will be thrown (at the original await Backend.GetArticlesPaginated)
-        /* ---------- */
+
+        try {
+            refreshAbortController.current = new AbortController();
+            articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, 
+                sourceFilter.current, refreshAbortController.current);
+        } catch {
+            log.current.warn("Get articles was cancelled");
+            return;
+        }
 
         // create one animation value for each article (row)
         let numberOfArticles = 0;
@@ -190,7 +194,6 @@ function ArticlesPage (props) {
 
     const refreshStatusCallback = (context: string, percentage: number) => {
         setRefreshingStatus(percentage);
-        console.log(percentage);
     }
     
     // article functions

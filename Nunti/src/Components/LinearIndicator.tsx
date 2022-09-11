@@ -41,9 +41,9 @@ function LinearIndicator (props) {
     
     useEffect(() => {
         indicatorValueAnim.value = props.value;
-        if(props.show == false) {
+        if(props.show == false && indicatorValueAnim.value == 1) {
             indicatorAnim.value = 0;
-        } else {
+        } else if(props.show) {
             indicatorAnim.value = 1;
         }
     });
