@@ -366,8 +366,8 @@ export class Backend {
         });
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(articleSource: string, filters: Filter = {sortType: undefined, search: undefined, tags: undefined}): Promise<Article[][]> {
-        const arts = await this.GetArticles(articleSource, filters);
+    public static async GetArticlesPaginated(articleSource: string, filters: Filter = {sortType: undefined, search: undefined, tags: undefined}, abort: AbortController | null = null): Promise<Article[][]> {
+        const arts = await this.GetArticles(articleSource, filters, abort);
         const timeBegin = Date.now();
 
         const pages = this.PaginateArticles(arts, this.UserSettings.FeedPageSize);
@@ -378,14 +378,14 @@ export class Backend {
         return pages;
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
-    public static async GetArticles(articleSource: string, filters: Filter = {sortType: undefined, search: undefined, tags: undefined}): Promise<Article[]> {
+    public static async GetArticles(articleSource: string, filters: Filter = {sortType: undefined, search: undefined, tags: undefined}, abort: AbortController | null = null): Promise<Article[]> {
         const log = this.log.context('GetArticles');
         log.info(`called with source: '${articleSource}'`);
 
         let articles: Article[];
         switch (articleSource) {
         case 'feed':
-            articles = await this.GetFeedArticles({sortType: filters.sortType});
+            articles = await this.GetFeedArticles({sortType: filters.sortType}, abort);
             break;
         case 'bookmarks':
             articles = (await this.GetSavedArticles()).reverse();
@@ -549,7 +549,7 @@ export class Backend {
         }
     }
     /* Retrieves sorted articles to show in feed. */
-    public static async GetFeedArticles(overrides: {sortType: string | undefined } = {sortType: undefined}): Promise<Article[]> {
+    public static async GetFeedArticles(overrides: {sortType: string | undefined } = {sortType: undefined}, abort: AbortController | null = null): Promise<Article[]> {
         const log = this.log.context('GetFeedArticles');
         if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0);
         log.info('Loading new articles..');
@@ -565,16 +565,20 @@ export class Backend {
             log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
-            arts = await this.DownloadArticles();
+            arts = await this.DownloadArticles(abort);
             if (arts.length > 0)
                 await FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
         } else {
             log.info(`Using cached articles. (${cacheAgeMinutes} minutes old)`);
             arts = cache.articles;
         }
+        if (abort?.signal.aborted)
+            throw new Error('Aborted by AbortController.');
         if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.8);
 
         arts = await this.SortArticles(arts, overrides);
+        if (abort?.signal.aborted)
+            throw new Error('Aborted by AbortController.');
         if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.9);
 
         if (!this.UserSettings.DisableBackgroundTasks && this.UserSettings.EnableNotifications) {
@@ -592,12 +596,16 @@ export class Backend {
             }
         }
 
+        if (abort?.signal.aborted)
+            throw new Error('Aborted by AbortController.');
         if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.95);
         arts = await this.CleanArticles(arts);
         if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 1);
 
         const timeEnd = Date.now();
         log.info(`Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
+        if (abort?.signal.aborted)
+            throw new Error('Aborted by AbortController.');
         return arts;
     }
     /* Tries to save an article, true on success, false on fail. */
@@ -1156,7 +1164,7 @@ export class Backend {
 
 
     /* Private methods */
-    private static async DownloadArticles(): Promise<Article[]> {
+    private static async DownloadArticles(abort: AbortController | null = null): Promise<Article[]> {
         const THREADS = 6;
         const log = this.log.context('DownloadArticles');
 
@@ -1176,6 +1184,8 @@ export class Backend {
         };
 
         while (feedList.length > 0) {
+            if (abort?.signal.aborted)
+                throw new Error('Aborted by AbortController.');
             const promises: Promise<Article[]>[] = [];
             for (let i = 0; i < THREADS; i++) {
                 if (feedList.length > 0) {
@@ -1192,7 +1202,7 @@ export class Backend {
 
         const timeEnd = Date.now();
         log.info(`Finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
-        await this.ExtractKeywords(arts);
+        await this.ExtractKeywords(arts, abort);
         return arts;
     }
     /* Removes seen (already rated) articles and any duplicates from article list. */
@@ -1348,7 +1358,7 @@ export class Backend {
         return cache;
     }
     /* Fills in article.keywords property, does all the TF-IDF magic. */
-    private static ExtractKeywords(arts: Article[]) {
+    private static ExtractKeywords(arts: Article[], abort: AbortController | null = null) {
         const log = this.log.context('ExtractKeywords');
         const timeBegin = Date.now();
         log.info('Extracting keywords..');
@@ -1393,6 +1403,8 @@ export class Backend {
         }
         log.info('pass 1 finished');
         if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.65);
+        if (abort?.signal.aborted)
+            throw new Error('Aborted by AbortController.');
 
         //pass 2 - calculate tf-idf, get keywords
         let feeds = 0;
@@ -1451,6 +1463,8 @@ export class Backend {
                     art.keywords[item[0]] = item[1];
                 }
             }
+            if (abort?.signal.aborted)
+                throw new Error('Aborted by AbortController.');
             if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.65 + (0.8 - 0.65) * (feedsProcessed / feeds));
         }
         log.info('pass 2 finished');

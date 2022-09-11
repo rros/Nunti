@@ -145,8 +145,15 @@ function ArticlesPage (props) {
         if(props.source == 'feed') {
             Backend.StatusUpdateCallback = refreshStatusCallback;
         }
-
-        articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, sourceFilter.current);
+        
+        /* ---------- */
+        //TODO: implement into frontend
+        const abortController = new AbortController();
+        articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, sourceFilter.current, abortController);
+        // cancel like this:
+        abortController.abort();
+        // note: exception will be thrown (at the original await Backend.GetArticlesPaginated)
+        /* ---------- */
 
         // create one animation value for each article (row)
         let numberOfArticles = 0;
