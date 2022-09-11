@@ -260,9 +260,9 @@ class UserSettings {
     public Accent = 'default';
 
     public FirstLaunch = true;
-
+    
+    public DisableBackgroundTasks = false; //disables all background tasks
     public EnableBackgroundSync = false; //synchronizes articles in background before cache expires
-
     public EnableNotifications = false;
     /* "daily" notif. with recommended article;
      * period in minutes
@@ -492,6 +492,10 @@ export class Backend {
         log.info('BackgroundLock locked.');
         try {
             await this.Init();
+            if (this.UserSettings.DisableBackgroundTasks) {
+                log.info('DisableBackgroundTasks enabled, exiting...');
+                return;
+            }
             if (!this.UserSettings.EnableBackgroundSync && !this.UserSettings.EnableNotifications) {
                 log.info('BackgroundSync and notifications disabled, exiting..');
                 return;
