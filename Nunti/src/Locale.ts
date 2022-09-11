@@ -225,6 +225,12 @@ export const English = {
     change_notification_interval_fail: 'Failed to change notification interval',
     notifications_new_articles: 'Recommended article',
     notifications_new_articles_description: 'Recommended article notifications',
+    automatic_backups: 'Automatic backups',
+    automatic_backups_description: 'Backup app settings automatically',
+    automatic_backup_interval: 'Backup interval',
+    backup_interval_description: 'Every %interval%d',
+    change_backup_interval_success: 'Backup interval changed',
+    change_backup_interval_fail: 'Failed to change backup interval',
 };
 export const Czech = {
     code: 'cs',
@@ -453,6 +459,12 @@ export const Czech = {
     change_notification_interval_fail: 'Nezdařilo se změnit interval notifikací',
     notifications_new_articles: 'Doporučený článek',
     notifications_new_articles_description: 'Notifikace s doporučenými články',
+    automatic_backups: 'Automatické zálohování',
+    automatic_backups_description: 'Zálohovat nastavení aplikace automaticky',
+    automatic_backup_interval: 'Interval zálohování',
+    backup_interval_description: 'Každé %interval%d',
+    change_backup_interval_success: 'Interval zálohování změněn',
+    change_backup_interval_fail: 'Nepodařilo se změnit interval zálohování',
 };
 export const Japanese = {
     code: 'ja',
@@ -681,6 +693,12 @@ export const Japanese = {
     change_notification_interval_fail: 'お知らせ間隔の変更に失敗しました',
     notifications_new_articles: 'おすすめ記事',
     notifications_new_articles_description: 'おすすめ記事の通知',
+    automatic_backups: '自動バックアップ',
+    automatic_backups_description: 'アプリの設定を自動でバックアップ',
+    automatic_backup_interval: 'バックアップ間隔',
+    backup_interval_description: '%interval%日ごと',
+    change_backup_interval_success: 'バックアップの間隔を変更',
+    change_backup_interval_fail: 'バックアップ間隔の変更に失敗しました',
 };
 export const Italian = {
     code: 'it',
@@ -909,6 +927,12 @@ export const Italian = {
     change_notification_interval_fail: 'Impossibile modificare l\'intervallo di notifica',
     notifications_new_articles: 'Articolo consigliato',
     notifications_new_articles_description: 'Notifiche di articoli consigliati',
+    automatic_backups: 'Backup automatici',
+    automatic_backups_description: 'Backup automatico delle impostazioni dell\'app',
+    automatic_backup_interval: 'Intervallo di backup',
+    backup_interval_description: 'Ogni %interval%g',
+    change_backup_interval_success: 'Intervallo di backup modificato',
+    change_backup_interval_fail: 'Impossibile modificare l\'intervallo di backup',
 };
 export const Polish = {
     code: 'pl',
@@ -1137,6 +1161,12 @@ export const Polish = {
     change_notification_interval_fail: 'Nie udało się zmienić interwału powiadomień',
     notifications_new_articles: 'Polecane artykuły',
     notifications_new_articles_description: 'Powiadomienia o polecanych artykułach',
+    automatic_backups: 'Automatyczne kopie zapasowe',
+    automatic_backups_description: 'Automatyczne tworzenie kopii zapasowych ustawień aplikacji',
+    automatic_backup_interval: 'Odstęp czasu między kolejnymi kopiami zapasowymi',
+    backup_interval_description: 'Co %interval%d',
+    change_backup_interval_success: 'Zmieniony interwał tworzenia kopii zapasowych',
+    change_backup_interval_fail: 'Nie udało się zmienić interwału tworzenia kopii zapasowych',
 };
 export const German = {
     code: 'de',
@@ -1365,6 +1395,12 @@ export const German = {
     change_notification_interval_fail: 'Benachrichtigungsintervall konnte nicht geändert werden',
     notifications_new_articles: 'Empfohlener Artikel',
     notifications_new_articles_description: 'Benachrichtigungen über empfohlene Artikel',
+    automatic_backups: 'Automatische Backups',
+    automatic_backups_description: 'Einstellungen der Anwendung automatisch sichern',
+    automatic_backup_interval: 'Sicherungsintervall',
+    backup_interval_description: 'Alle %interval% Tage',
+    change_backup_interval_success: 'Sicherungsintervall geändert',
+    change_backup_interval_fail: 'Sicherungsintervall konnte nicht geändert werden',
 };
 export const French = {
     code: 'fr',
@@ -1593,6 +1629,12 @@ export const French = {
     change_notification_interval_fail: 'Échec de la modification de l\'intervalle de notification',
     notifications_new_articles: 'Article recommandé',
     notifications_new_articles_description: 'Notifications d\'articles recommandés',
+    automatic_backups: 'Sauvegardes automatiques',
+    automatic_backups_description: 'Sauvegarde automatique des paramètres de l\'application',
+    automatic_backup_interval: 'Intervalle de sauvegarde',
+    backup_interval_description: 'Tous les %interval%d',
+    change_backup_interval_success: 'Modification de l\'intervalle de sauvegarde',
+    change_backup_interval_fail: 'Échec de la modification de l\'intervalle de sauvegarde',
 };
 export const BrazilianPortuguese = {
     code: 'pt_BR',
@@ -1821,4 +1863,10 @@ export const BrazilianPortuguese = {
     change_notification_interval_fail: 'Falha no intervalo de notificação de mudança',
     notifications_new_articles: 'Artigo recomendado',
     notifications_new_articles_description: 'Notificações de artigos recomendados',
+    automatic_backups: 'Cópias de segurança automáticas',
+    automatic_backups_description: 'Configurações do aplicativo de backup automaticamente',
+    automatic_backup_interval: 'Intervalo de backup',
+    backup_interval_description: 'A cada %interval%d',
+    change_backup_interval_success: 'Intervalo de backup alterado',
+    change_backup_interval_fail: 'Falha em alterar o intervalo de backup',
 };

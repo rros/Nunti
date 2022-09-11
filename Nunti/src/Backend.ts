@@ -261,13 +261,16 @@ class UserSettings {
 
     public FirstLaunch = true;
     
-    public DisableBackgroundTasks = false; //disables all background tasks
+    public DisableBackgroundTasks = true; //disables all background tasks
     public EnableBackgroundSync = false; //synchronizes articles in background before cache expires
     public EnableNotifications = false;
     /* "daily" notif. with recommended article;
      * period in minutes
      * !minimum is 15 minutes! */
     public NewArticlesNotificationPeriod = 12*60;
+    public EnableAutomaticBackups = false;
+    public AutomaticBackupPeriod = 1*24;
+    public AutomaticBackupDir = '';
 
     /* Advanced */
     public DiscoverRatio = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)

@@ -328,9 +328,9 @@ function SettingsMain (props) {
                     onPress={() => props.navigation.navigate('background')}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.background}</Text>
-                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{(Backend.UserSettings.EnableNotifications ||
-                            Backend.UserSettings.EnableBackgroundSync) ? 
-                            props.lang.enabled : props.lang.disabled}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{
+                            Backend.UserSettings.DisableBackgroundTasks ? 
+                            props.lang.disabled : props.lang.enabled}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback 
