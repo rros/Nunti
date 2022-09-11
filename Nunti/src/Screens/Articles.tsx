@@ -32,6 +32,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Backend, Article } from '../Backend';
 import { modalRef, snackbarRef, browserRef, globalStateRef, logRef } from '../App';
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
+import SegmentedButton from '../Components/SegmentedButton';
 
 // use a class wrapper to stop rerenders caused by global snack/modal
 class ArticlesPageOptimisedWrapper extends Component {
@@ -41,6 +42,7 @@ class ArticlesPageOptimisedWrapper extends Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         if(nextProps.theme.accentName != this.props.theme.accentName
+            || nextProps.theme.themeName != this.props.theme.themeName
             || nextProps.theme.dark != this.props.theme.dark
             || nextProps.lang.this_language != this.props.lang.this_language
             || nextProps.screenType != this.props.screenType){
@@ -330,8 +332,9 @@ function ArticlesPage (props) {
                    }
 
                 renderItem={renderItem}
-                ListHeaderComponent={props.source == 'feed' ? <SortingSegmentedButton applySorting={applySorting}
-                    theme={props.theme} lang={props.lang} sourceFilter={sourceFilter.current} /> : null}
+                ListHeaderComponent={props.source == 'feed' ? <SegmentedButton applySorting={applySorting}
+                    theme={props.theme} lang={props.lang} sourceFilter={sourceFilter.current} 
+                    refreshing={refreshing} /> : null}
                 ListEmptyComponent={<ListEmptyComponent theme={props.theme} lang={props.lang} route={props.route} />}
                 ListFooterComponent={() => articlePage.length != 0 ? (
                     <View style={Styles.footerContainer}>
@@ -368,76 +371,6 @@ function ListEmptyComponent ({ theme, route, lang }) {
                     bottomOffset={true}/>
             );
     }
-}
-
-function SortingSegmentedButton({ theme, lang, sourceFilter, applySorting }) {
-    const [sortType, setSortType] = useState();
-    const [learningDisabled, setLearningDisabled] = useState();
-
-    const learningStatus = useRef();
-
-    // on component mount
-    useEffect(() => {
-        (async () => {
-            learningStatus.current = await Backend.GetLearningStatus();
-            setLearningDisabled(!learningStatus.current.SortingEnabled);
-            setSortType(learningStatus.current.SortingEnabled ? 'learning' : 'date');
-        })();
-    }, []);
-
-    useEffect(() => {
-        (async () => {
-            learningStatus.current = await Backend.GetLearningStatus();
-            setLearningDisabled(!learningStatus.current.SortingEnabled);
-        })();
-    });
-
-    const changesortType = (newSortType) => {
-        if(learningDisabled && newSortType == 'learning') {
-            snackbarRef.current.showSnack((lang.rate_more).replace('%articles%',
-                learningStatus.current?.SortingEnabledIn));
-            return;
-        }
-
-        if(sortType != newSortType) {
-            setSortType(newSortType);
-            applySorting(newSortType);
-        }
-    }
-    
-    return(
-        <View style={[Styles.segmentedButtonContainerOutline, {backgroundColor: theme.colors.outline}]}>
-        <View style={Styles.segmentedButtonContainer}>
-            <View style={{flex: 1}}>
-            <TouchableNativeFeedback style={{backgroundColor: theme.colors.surface}}
-                background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
-                onPress={() => changesortType('learning')}>
-                <View style={[Styles.segmentedButton, {borderRightColor: theme.colors.outline, backgroundColor: (!learningDisabled ? 
-                    (sortType == 'learning' ? theme.colors.secondaryContainer : theme.colors.surface) : theme.colors.disabledContainer)}]}>
-                    { sortType == 'learning' ? <Icon size={18} name="check" color={theme.colors.onSecondaryContainer} 
-                        style={Styles.segmentedButtonIcon}/> : null }
-                    <Text variant="labelLarge" style={{color: (!learningDisabled ? (sortType == 'learning' ? 
-                        theme.colors.onSecondaryContainer : theme.colors.onSurface) : theme.colors.disabledContent)}}>{lang.sort_learning}</Text>
-                </View>
-            </TouchableNativeFeedback>
-            </View>
-
-            <View style={{flex: 1}}>
-            <TouchableNativeFeedback
-                background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
-                onPress={() => changesortType('date')}>
-                <View style={[Styles.segmentedButton, {borderRightWidth: 0, backgroundColor: (sortType == 'date' ? 
-                    theme.colors.secondaryContainer : theme.colors.surface)}]}>
-                    { sortType == 'date' ? <Icon size={18} name="check" color={theme.colors.onSecondaryContainer} 
-                        style={Styles.segmentedButtonIcon}/> : null }
-                    <Text variant="labelLarge" style={{color: (sortType == 'date' ? 
-                        theme.colors.onSecondaryContainer : theme.colors.onSurface)}}>{lang.sort_date}</Text>
-                </View>
-            </TouchableNativeFeedback>
-            </View>
-        </View>
-        </View>
-    );
 }
 
 function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {

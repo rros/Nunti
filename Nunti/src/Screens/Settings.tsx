@@ -40,6 +40,7 @@ class Settings extends Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         if(nextProps.theme.accentName != this.props.theme.accentName
+            || nextProps.theme.themeName != this.props.theme.themeName
             || nextProps.theme.dark != this.props.theme.dark
             || nextProps.lang.this_language != this.props.lang.this_language
             || nextProps.screenType != this.props.screenType){

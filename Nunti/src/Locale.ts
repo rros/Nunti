@@ -367,7 +367,7 @@ export const Czech = {
     url: 'RSS url',
     feed_name: 'Název kanálu',
     advanced: 'Pokročilé',
-    advanced_description: 'Změna těchto nastavení může vést k horšímu fungování z aplikace',
+    advanced_description: 'Změna těchto nastavení může vést k horšímu fungování aplikace',
     learning: 'Adaptivní učení',
     rated_articles: 'Ohodnocené články',
     rating_ratio: 'Poměr hodnocení',

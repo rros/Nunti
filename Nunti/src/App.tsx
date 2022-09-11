@@ -307,14 +307,8 @@ export default function App (props) {
         if(themeName == 'system') {
             if(Appearance.getColorScheme() == 'light'){
                 newTheme = LightTheme;
-
-                palette = await getPalette(accentName, newTheme.dark);
-                //StatusBar.setBarStyle('dark-content');
             } else {
                 newTheme = DarkTheme;
-
-                palette = await getPalette(accentName, newTheme.dark);
-                //StatusBar.setBarStyle('light-content');
             }
 
             // live update
@@ -326,18 +320,13 @@ export default function App (props) {
         } else if (themeName == 'light'){
             appearanceSubscription.current?.remove();
             newTheme = LightTheme;
-
-            palette = await getPalette(accentName, newTheme.dark);
-            //StatusBar.setBarStyle('dark-content');
         } else { // dark and black themes
             appearanceSubscription.current?.remove();
             newTheme = DarkTheme;
-
-            palette = await getPalette(accentName, newTheme.dark);
-            //StatusBar.setBarStyle('light-content');
         }
             
-        newTheme = applyThemeColors(newTheme, palette);
+        palette = await getPalette(accentName, newTheme.dark);
+        newTheme = await applyPalette(newTheme, palette);
         
         newTheme.accentName = accentName;
         newTheme.themeName = themeName;
@@ -352,13 +341,13 @@ export default function App (props) {
         setTheme(newTheme);
         forceUpdate(!forceValue) // react is retarded and doesn't refresh
         
-        setStatusBarColor(newTheme.colors.surface, newTheme.dark, prefsLoaded);
+        setStatusBarColor(newTheme.colors.surface, newTheme.dark);
 
         log.current.debug('Theme set to ' + newTheme.themeName + ' with ' + newTheme.accentName + ' accent.');
         return newTheme; // for updating the modal
     }
 
-    const setStatusBarColor = async (statusBarColor: string, darkTheme: boolean, prefsLoaded: boolean) => {
+    const setStatusBarColor = async (statusBarColor: string, darkTheme: boolean) => {
         if(!prefsLoaded) { // setting statusbar on startup is bugged, so we wait a while
             await new Promise(r => setTimeout(r, 1000));
         }
@@ -372,7 +361,7 @@ export default function App (props) {
         StatusBar.setBackgroundColor(statusBarColor);
     }
 
-    const getPalette = async (accentName: string, isDarkTheme: boolean): any => {
+    const getPalette = async (accentName: string, isDarkTheme: boolean): {} => {
         let palette;
 
         try {
@@ -405,7 +394,7 @@ export default function App (props) {
         return palette;
     }
 
-    const applyThemeColors = (theme, palette): any => {
+    const applyPalette = (theme, palette): {} => {
         theme.colors.primary = palette.primary; 
         theme.colors.onPrimary = palette.onPrimary;
         theme.colors.primaryContainer = palette.primaryContainer;
