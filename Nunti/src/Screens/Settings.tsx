@@ -131,6 +131,9 @@ function SettingsMain (props) {
             (async () => {
                 setLearningStatus(await Backend.GetLearningStatus());
             })();
+
+            setFeeds(Backend.UserSettings.FeedList);
+            setTags(Backend.UserSettings.Tags);
         });
         
         return () => { 

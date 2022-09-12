@@ -1,0 +1,13 @@
+- Nunti now targets android 13
+- added a new donation page
+- added monochrome icon for android 13 users
+- added a loading indicator when loading articles
+- added a function to filter "duplicate" articles from multiple feeds
+- added an automatic backup function
+- improved icon contrast
+- improved atom feed data parsing
+- fixed incorrect m3 card margins
+- fixed a bug related to detecting feed malfunction
+- fixed a bug with notification article not being present in feed
+- fixed a bug which caused the user data to be deleted in some cases
+- fixed a bug on android 13 where the status bar icons were invisible

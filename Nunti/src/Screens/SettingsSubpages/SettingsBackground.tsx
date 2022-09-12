@@ -122,8 +122,8 @@ function SettingsBackground (props) {
                     onPress={() => toggleDisableBackground()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer, {backgroundColor: props.theme.colors.primaryContainer}]}>
                         <View style={Styles.settingsLeftContent}>
-                            <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{"Enable background tasks"}</Text>
-                            <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{"Lets the app run in the background"}</Text>
+                            <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.enable_background}</Text>
+                            <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.enable_background_description}</Text>
                         </View>
                         <Switch value={!disableBackground} />
                     </View>
