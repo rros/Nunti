@@ -42,7 +42,9 @@ import com.facebook.react.jstasks.HeadlessJsTaskEventListener;
 import com.transistorsoft.tsbackgroundfetch.BGTask;
 import com.transistorsoft.tsbackgroundfetch.BackgroundFetch;
 import com.facebook.react.common.LifecycleState;
+import androidx.annotation.Keep;
 
+@Keep
 public class HeadlessTask implements HeadlessJsTaskEventListener {
     private static String HEADLESS_TASK_NAME = "BackgroundFetch";
     private static Handler mHandler = new Handler();
