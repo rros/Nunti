@@ -218,7 +218,8 @@ export default function App (props) {
             if(modalAnim.value) {
                 hideModal();
                 return true;
-            } else if(drawerNavigationRef.getCurrentRoute().name != 'feed') {
+            } else if(drawerNavigationRef.getCurrentRoute().name != 'feed'
+                && !Backend.UserSettings.FirstLaunch) {
                 drawerNavigationRef.navigate('feed');
                 return true;
             } else {
