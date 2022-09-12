@@ -19,7 +19,7 @@
 (Paste any relevant logs - please use code blocks (```) to format console output, logs, and code, as
 it's very hard to read otherwise. If you can, you can also share your Nunti export file, since your rss feeds may be causing issues with the app.)
 
-## Android version and device info
+## Android version, Nunti version and device info
 
 (Please list you android version as well as your device model)
 
