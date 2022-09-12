@@ -72,7 +72,7 @@ function SettingsBackground (props) {
                 return;
             } else {
                 log.current.info(`Automatic backups enabled, storing in ${dir.uri}`);
-                Backend.UserSettings.AutomaticBackupDir = dir.uri;
+                Backend.UserSettings.AutomaticBackupDir = JSON.stringify(dir);
             }
         }
 
