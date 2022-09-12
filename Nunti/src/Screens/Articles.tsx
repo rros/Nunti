@@ -189,7 +189,6 @@ function ArticlesPage (props) {
     
         setArticlePage(articlesFromBackend.current[currentPageIndex.current]);
         setRefreshing(false);
-        setRefreshingStatus(0);
     }
 
     const refreshStatusCallback = (context: string, percentage: number) => {

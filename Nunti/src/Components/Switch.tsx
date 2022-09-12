@@ -25,7 +25,6 @@ function Switch (props) {
             thumbSelected: Color(props.theme.colors.surface).alpha(0.38).toString(),
     });
 
-    //const [switchState, setSwitchState] = useState(props.value);
     const switchAnim = useSharedValue(props.value);
     const switchOutlineAnimStyle = useAnimatedStyle(() => { return {
         backgroundColor: withTiming(interpolateColor(switchAnim.value, [0, 1], [
@@ -59,6 +58,9 @@ function Switch (props) {
             thumbUnselected: Color(props.theme.colors.onSurface).alpha(0.38).toString(),
             thumbSelected: Color(props.theme.colors.surface).alpha(0.38).toString(),
         }
+
+        console.log(switchDisabledValues.current.outlineSelected);
+        console.log(switchDisabledValues.current.trackSelected);
 
         if(props.value == false) {
             switchAnim.value = 0;
