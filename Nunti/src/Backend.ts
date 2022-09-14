@@ -16,6 +16,7 @@ import Log from './Log';
 import * as ScopedStorage from 'react-native-scoped-storage';
 
 export class Feed {
+    public static lastRemoved: Feed | null = null; //to allow "undo" function
     public name: string;
     public url: string;
     public enabled = true;
@@ -66,6 +67,7 @@ export class Feed {
             throw new Error(`Did not find feed with url '${feed.url} in feedlist.'`);
         else {
             Backend.UserSettings.FeedList.splice(i, 1);
+            Feed.lastRemoved = feed;
             await Backend.UserSettings.Save();
         }
     }
@@ -182,7 +184,10 @@ export class Article {
 }
 
 export class Tag {
+    public static lastRemoved: Tag | null = null;
     public name: string;
+
+    private feedUrlsAffected: string[] | null = null; //used rarely only for undo function
     
     constructor(name: string) {
         if (name.trim() == '')
@@ -227,17 +232,41 @@ export class Tag {
             Log.BE.context('Tag:'+tag.name).context('Remove').error('Cannot remove tag from UserSettings.');
         else
             Backend.UserSettings.Tags.splice(i, 1);
-
+        
+        tag.feedUrlsAffected = [];
         Backend.UserSettings.FeedList.forEach((feed: Feed) => {
             let feed_tag_index = -1;
             for (let y = 0; y < feed.tags.length; y++) {
                 if (feed.tags[i].name == tag.name)
                     feed_tag_index = y;
             }
-            if (feed_tag_index >= 0)
+            if (feed_tag_index >= 0) {
+                if (tag.feedUrlsAffected == null)
+                    tag.feedUrlsAffected = [];
+                tag.feedUrlsAffected.push(feed.url);
                 feed.tags.splice(feed_tag_index, 1);
+            }
         });
+        Tag.lastRemoved = tag;
         Backend.UserSettings.Save();
+    }
+
+    public static async UndoRemove(): Promise<boolean> {
+        if (this.lastRemoved == null)
+            return false;
+        const tag = this.lastRemoved;
+        const feedsAffected = tag.feedUrlsAffected;
+        tag.feedUrlsAffected = null;
+        Backend.UserSettings.Tags.push(tag);
+        if (feedsAffected != null) {
+            feedsAffected.forEach( (url: string) => {
+                const feedList = Backend.UserSettings.FeedList;
+                feedList[Backend.FindFeedByUrl(url, feedList)].tags.push(tag);
+            });
+        }
+        this.lastRemoved = null;
+        await Backend.UserSettings.Save();
+        return true;
     }
 }
 class Filter {
@@ -320,6 +349,7 @@ export class Backend {
     public static DB_VERSION = '3.1';
     private static DbLocked = false; //prevents running multiple CheckDB at the same time
     private static BackgroundLock = false; //prevents running multiple background task instances
+    public static LastRemovedBookmark: Article | null = null;
     public static UserSettings: UserSettings;
     public static StatusUpdateCallback: ((context: 'feed', percentageFloat: number) => void) | null = null;
     public static CurrentArticles: {[source: string]: Article[][]} = {
@@ -684,6 +714,7 @@ export class Backend {
                 saved.splice(index,1);
                 await this.StorageSave('saved',saved);
                 this.CurrentBookmarks = this.PagesRemoveArticle(article, this.CurrentBookmarks);
+                this.LastRemovedBookmark = article;
                 return true;
             } else
                 throw new Error('not found in saved');
