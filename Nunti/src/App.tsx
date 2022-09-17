@@ -72,6 +72,8 @@ export default function App (props) {
 
     const [snackVisible, setSnackVisible] = useState(false);
     const [snackMessage, setSnackMessage] = useState('');
+    const [snackButtonLabel, setSnackButtonLabel] = useState('');
+    const snackButton = React.useRef();
     const snackTimerDuration = React.useRef(4);
     const snackTimer = React.useRef();
     
@@ -467,7 +469,9 @@ export default function App (props) {
     }
 
     // global component controls
-    const showSnack = async (message: string) => {
+    const showSnack = async (message: string, buttonLabel: string = '',
+        callback: fun = () => { }) => {
+        
         snackLog.current.debug('Show snack called');
         if(snackVisible == true){ // hide the previous snack and show the new one
             snackLog.current.debug('Closing previous snack');
@@ -476,9 +480,16 @@ export default function App (props) {
             // not ideal, but wait to let the previous snack hide
             await new Promise(r => setTimeout(r, 300));
         }
+
+        if(buttonLabel == '') {
+            setSnackButtonLabel(language.dismiss);
+        } else {
+            setSnackButtonLabel(buttonLabel);
+        }
+        setSnackMessage(message);
+        snackButton.current = callback;
         
         snackLog.current.debug('Snack set to visible');
-        setSnackMessage(message);
         setSnackVisible(true);
 
         // animation starts running after message gets loaded (useEffect)
@@ -619,7 +630,7 @@ export default function App (props) {
                     <View style={[Styles.snackBar, {backgroundColor: theme.colors.inverseElevation.level2}]}>
                         <Text style={{color: theme.colors.inverseOnSurface, flexShrink: 1, marginRight: 8}}>{snackMessage}</Text>
                         <Button textColor={theme.colors.inversePrimary}
-                            onPress={hideSnack}>{language.dismiss}</Button>
+                            onPress={() => { snackButton.current(); hideSnack(); }}>{snackButtonLabel}</Button>
                     </View>
                 </Animated.View>
                 </View> : null }

@@ -189,6 +189,7 @@ function ArticlesPage (props) {
     
         setArticlePage(articlesFromBackend.current[currentPageIndex.current]);
         setRefreshing(false);
+
     }
 
     const refreshStatusCallback = (context: string, percentage: number) => {
@@ -198,9 +199,9 @@ function ArticlesPage (props) {
     // article functions
     const saveArticle = async (article: Article) => {
         if(await Backend.TrySaveArticle(article)) {
-            snackbarRef.current.showSnack(props.lang.article_saved, true);
+            snackbarRef.current.showSnack(props.lang.article_saved);
         } else {
-            snackbarRef.current.showSnack(props.lang.article_already_saved, true);
+            snackbarRef.current.showSnack(props.lang.article_already_saved);
         }
     }
 
@@ -230,14 +231,16 @@ function ArticlesPage (props) {
         log.current.debug('Applying filtering:', sourceFilter.current);
     }
 
-    const modifyArticle = async (article: Article, direction: string) => {
+    const modifyArticle = async (article: Article, direction: string = 'right') => {
         if(props.buttonType == 'delete'){
-            if(modalRef.current.modalVisible){
-                snackbarRef.current.showSnack(props.lang.removed_saved);
-                modalRef.current.hideModal();
-            }
-
+            modalRef.current.hideModal();
             await Backend.TryRemoveSavedArticle(article);
+            
+            snackbarRef.current.showSnack(props.lang.removed_saved, props.lang.undo,
+                async () => {
+                    await Backend.TrySaveArticle(article);
+                    refresh(false);
+                });
         } else {
             let rating = -1; // 'left'
             if(direction != 'right'){
@@ -496,6 +499,8 @@ function DetailsModalContent ({ showImages, currentArticle, lang, theme, screenT
                         onPress={() => { browserRef.current.openBrowser(currentArticle.current.url); }}>{lang.read_more}</Button>
                     { buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
                         onPress={() => { saveArticle(currentArticle.current); }} /> : null }
+                    { buttonType == 'delete' ? <IconButton icon="delete" size={24}
+                        onPress={() => { modifyArticle(currentArticle.current); }} /> : null }
                     <IconButton icon="share" size={24} style={{marginRight: 0}}
                         onPress={() => { shareArticle(currentArticle.current.url); }} />
                 </View>
@@ -528,6 +533,8 @@ function DetailsModalContent ({ showImages, currentArticle, lang, theme, screenT
                     onPress={() => { browserRef.current.openBrowser(currentArticle.current.url); }}>{lang.read_more}</Button>
                 { buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
                     onPress={() => { saveArticle(currentArticle.current); }} /> : null }
+                { buttonType == 'delete' ? <IconButton icon="delete" size={24}
+                    onPress={() => { modifyArticle(currentArticle.current); }} /> : null }
                 <IconButton icon="share" size={24} style={{marginRight: 0}}
                     onPress={() => { shareArticle(currentArticle.current.url); }} />
             </View>
@@ -557,6 +564,8 @@ function DetailsModalContent ({ showImages, currentArticle, lang, theme, screenT
                         onPress={() => { browserRef.current.openBrowser(currentArticle.current.url); }}>{lang.read_more}</Button>
                     { buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
                         onPress={() => { saveArticle(currentArticle.current); }} /> : null }
+                    { buttonType == 'delete' ? <IconButton icon="delete" size={24}
+                        onPress={() => { modifyArticle(currentArticle.current); }} /> : null }
                     <IconButton icon="share" size={24} style={{marginRight: 0}}
                         onPress={() => { shareArticle(currentArticle.current.url); }} />
                 </View>

@@ -148,8 +148,12 @@ function FeedRemoveModal ({feed, lang, changeFeedsParentState, parentLog}) {
 
         await Feed.Remove(feed);
 
+        // snack with undo functionality
         snackbarRef.current.showSnack((lang.removed_feed).replace('%feed%',
-            ("\"" + feed.name + "\"")));
+            ("\"" + feed.name + "\"")), lang.undo, () => {
+                Feed.UndoRemove();
+                changeFeedsParentState(Backend.UserSettings.FeedList, true);
+            });
         
         changeFeedsParentState(Backend.UserSettings.FeedList);
         modalRef.current.hideModal();

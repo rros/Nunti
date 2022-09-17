@@ -144,7 +144,10 @@ function TagRemoveModal ({tag, lang, changeTagsParentState, parentLog}) {
 
         modalRef.current.hideModal();
         snackbarRef.current.showSnack((lang.removed_tag).replace('%tag%',
-            ("\"" + tag.name + "\"")));
+            ("\"" + tag.name + "\"")), lang.undo, () => {
+                Tag.UndoRemove();
+                changeTagsParentState(Backend.UserSettings.Tags, true);
+            });
         globalStateRef.current.reloadFeed(false);
     }
 

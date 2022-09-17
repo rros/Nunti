@@ -146,6 +146,16 @@ export class Feed {
         });
         return has;
     }
+    
+    public static async UndoRemove(): Promise<boolean> {
+        if (this.lastRemoved == null)
+            return false;
+        const feed = this.lastRemoved;
+        Backend.UserSettings.FeedList.push(feed);
+        this.lastRemoved = null;
+        await Backend.UserSettings.Save();
+        return true;
+    }
 }
 
 export class Article {
