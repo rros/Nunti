@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
     BackHandler
 } from 'react-native';
@@ -14,10 +14,10 @@ import Log from '../Log';
 import Styles from '../Styles';
 
 function LegacyWebview (props) {
-    const log = Log.FE.context('LegacyWebview');
+    const log = useRef(Log.FE.context('LegacyWebview'));
     // on component mount
     useEffect(() => {
-        log.debug(props.route.params.source)
+        log.current.debug("Navigating from " + props.route.params.source)
         backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
             props.navigation.navigate(props.route.params.source);
             return true;

@@ -59,9 +59,6 @@ function Switch (props) {
             thumbSelected: Color(props.theme.colors.surface).alpha(0.38).toString(),
         }
 
-        console.log(switchDisabledValues.current.outlineSelected);
-        console.log(switchDisabledValues.current.trackSelected);
-
         if(props.value == false) {
             switchAnim.value = 0;
         } else {
