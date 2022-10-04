@@ -1,0 +1,2 @@
+- added a persian translation
+- added an undo button for destructive actions

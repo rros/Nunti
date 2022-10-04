@@ -135,8 +135,8 @@ android {
 
     defaultConfig {
         applicationId "com.nunti"
-        versionCode 13
-        versionName "v2.1.0"
+        versionCode 14
+        versionName "v2.2.0"
 
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
