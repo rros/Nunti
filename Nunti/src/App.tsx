@@ -642,10 +642,12 @@ export default function App (props) {
 
 function CustomHeader ({ navigation, route, lang, screenType, theme, showModal }) {
     return (
-        <Appbar.Header mode={screenType >= 2 ? 'small' : 'center-aligned'} elevated={false}> 
+        <Appbar.Header mode={'small'} elevated={false}> 
             { (route.name != 'wizard' && screenType <= 1) ? 
                 <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
+            { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
+                <Appbar.Action icon="rss" onPress={() => navigation.setParams({showRssModal: true}) } /> : null }
             { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
                 <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({showFilterModal: true}) } /> : null }
         </Appbar.Header> 

@@ -22,6 +22,7 @@ import { modalRef, snackbarRef, globalStateRef, logRef } from '../App';
 import { Backend } from '../Backend';
 import { Accents } from '../Styles';
 import Switch from '../Components/Switch';
+import ModalRadioButton from '../Components/ModalRadioButton';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 const Stack = createNativeStackNavigator();
@@ -102,7 +103,7 @@ class Settings extends Component {
 
 function CustomHeader ({ navigation, route, lang, theme, screenType }) {
     return (
-        <Appbar.Header mode={screenType >= 2 ? 'small' : 'center-aligned'} elevated={false}> 
+        <Appbar.Header mode={'small'} elevated={false}> 
             { (route.name == 'settings' && screenType <= 1) ? 
                 <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
             { route.name != 'settings' ? <Appbar.BackAction onPress={() => { navigation.goBack(); }} /> : null }
@@ -175,6 +176,8 @@ function SettingsMain (props) {
 
         if(await Backend.TryLoadBackup(file.data)){
             snackbarRef.current.showSnack(props.lang.import_ok);
+
+            setLearningStatus(await Backend.GetLearningStatus());
     
             setLanguage(Backend.UserSettings.Language);
             setBrowserMode(Backend.UserSettings.BrowserMode);
@@ -546,21 +549,6 @@ function ResetDataModal ({lang, theme}) {
                 style={Styles.modalButton}>{lang.cancel}</Button>
         </View>
         </>
-    );
-}
-
-function ModalRadioButton({lang, theme, value, changeValue, disabled}) {
-    return(
-        <TouchableNativeFeedback disabled={disabled}
-            background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}
-            onPress={() => changeValue(value)}>
-            <View style={[Styles.modalRadioButton, Styles.settingsRowContainer]}>
-                <RadioButton.Android value={value} disabled={disabled} />
-                <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel,
-                    {color: (disabled ? theme.colors.disabledContent : theme.colors.onSurface)}]}>
-                        {lang[value]}</Text>
-            </View>
-        </TouchableNativeFeedback>
     );
 }
 

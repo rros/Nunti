@@ -293,15 +293,13 @@ function Step4Topics (props) {
     }, []);
 
     const changeDefaultTopics = (topic: {}) => {
-        const newTopics = topics;
-
         topics.some(pickedTopic => {
             if(pickedTopic.name == topic.name) {
                 pickedTopic.value = !pickedTopic.value;
             }
         });
 
-        setTopics(newTopics);
+        setTopics(topics);
         forceUpdate(!forceValue);
 
         Backend.ChangeDefaultTopics(topic.name, topic.value);

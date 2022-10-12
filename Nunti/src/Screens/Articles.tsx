@@ -16,6 +16,7 @@ import {
     IconButton,
     withTheme,
     Banner,
+    Checkbox,
 } from 'react-native-paper';
 
 import { Swipeable, TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
@@ -79,6 +80,7 @@ function ArticlesPage (props) {
     const bannerMessage = useRef('');
 
     const lang = useRef(props.lang); // modal event cannot read updated props
+    const theme = useRef(props.theme); // modal event cannot read updated props
     const sourceFilter = useRef({sortType: '', search: '', tags: []});
     const flatListRef = useAnimatedRef(); //scrollTo from reanimated doesn't work, use old .scrollToOffset
     
@@ -89,6 +91,9 @@ function ArticlesPage (props) {
         (async () => {
             const learningStatus = await Backend.GetLearningStatus();
             sourceFilter.current.sortType = learningStatus.SortingEnabled ? 'learning' : 'date';
+            sourceFilter.current.feeds = ['all_rss'];
+            sourceFilter.current.tags = [];
+            sourceFilter.current.search = '';
 
             refresh(true);
         })();
@@ -99,6 +104,7 @@ function ArticlesPage (props) {
             } else if (globalStateRef.current.shouldFeedReload.current) {
                 log.current.debug('Reload feed requested, reloading articles and resetting filter');
 
+                sourceFilter.current.feeds = ['all_rss'];
                 sourceFilter.current.tags = [];
                 sourceFilter.current.search = '';
 
@@ -108,13 +114,19 @@ function ArticlesPage (props) {
             setShowImages(!Backend.UserSettings.DisableImages);
         });
         
-        // show filter modal on filter press in appbar header
+        // show filter and rss modal on button press in appbar header
         const onState = props.navigation.addListener('state', (parentState) => {
             parentState.data.state.routes.some(pickedRoute => {
                 if(pickedRoute.name == props.route.name && pickedRoute.params.showFilterModal) {
                     log.current.debug('Showing filter modal, appbar button pressed');
-                    props.navigation.setParams({showFilterModal: false})
-                    modalRef.current.showModal(() => <FilterModalContent theme={props.theme}
+                    props.navigation.setParams({showFilterModal: false});
+                    modalRef.current.showModal(() => <FilterModalContent theme={theme.current}
+                        applyFilter={applyFilter} lang={lang.current}
+                        sourceFilter={sourceFilter.current} />);
+                } else if(pickedRoute.name == props.route.name && pickedRoute.params.showRssModal) {
+                    log.current.debug('Showing rss modal, appbar button pressed');
+                    props.navigation.setParams({showRssModal: false});
+                    modalRef.current.showModal(() => <RssModalContent theme={theme.current}
                         applyFilter={applyFilter} lang={lang.current}
                         sourceFilter={sourceFilter.current} />);
                 }
@@ -128,7 +140,10 @@ function ArticlesPage (props) {
     }, []);
 
     useEffect(() => {
+        // modals don't update their language otherwise, because 
+        // on state listener does not update it's props
         lang.current = props.lang;
+        theme.current = props.theme;
     });
 
     const refresh = async (refreshIndicator: boolean = true) => {
@@ -219,10 +234,11 @@ function ArticlesPage (props) {
         refresh(true);
     }
 
-    const applyFilter = (search: string, tags: []) => {
+    const applyFilter = (feeds: string, search: string, tags: []) => {
         setRefreshing(true);
         modalRef.current.hideModal();
 
+        sourceFilter.current.feeds = feeds;
         sourceFilter.current.tags = tags;
         sourceFilter.current.search = search;
         
@@ -401,6 +417,98 @@ function ListEmptyComponent ({ theme, route, lang }) {
     }
 }
 
+// TODO LANG CHANGE IN MODAL
+function RssModalContent ({ lang, theme, applyFilter, sourceFilter }) {
+    const [selectedFeeds, setFeeds] = useState([...sourceFilter.feeds]);
+    const [forceValue, forceUpdate] = useState(false);
+
+    const changeSelectedFeeds = (feedUrl: string) => {
+        feedWasRemoved = selectedFeeds.some(pickedFeedUrl => {
+            if(pickedFeedUrl == feedUrl) {
+                selectedFeeds.splice(selectedFeeds.indexOf(feedUrl), 1);
+                return true;
+            }
+        });
+
+        if(!feedWasRemoved) {
+            if(feedUrl == 'all_rss') {
+                // unselect everything else
+                selectedFeeds.splice(0, selectedFeeds.length);
+            } else {
+                console.log(selectedFeeds.indexOf('all_rss'));
+                // remove all_rss if picking something specific
+                if(selectedFeeds.indexOf('all_rss') >= 0) {
+                    selectedFeeds.splice(selectedFeeds.indexOf('all_rss'), 1);
+                }
+            }
+            
+            selectedFeeds.push(feedUrl);
+        }
+        
+        setFeeds(selectedFeeds);
+        forceUpdate(!forceValue);
+    }
+    
+    const createFilter = () => {
+        applyFilter(selectedFeeds, sourceFilter.search, sourceFilter.tags);
+    }
+
+    return (
+        <>
+        <Dialog.Icon icon="rss" />
+        <Dialog.Title style={Styles.centeredText}>{lang.filter_rss}</Dialog.Title>
+        <View style={[Backend.UserSettings.FeedList.length > 0 ? 
+            Styles.modalScrollAreaNoPadding : Styles.modalScrollArea, 
+            {borderTopColor: theme.colors.outline, borderBottomColor: theme.colors.outline}]}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                { Backend.UserSettings.FeedList.length > 0 ? 
+                    <>
+                    <TouchableNativeFeedback
+                        background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+                        onPress={() => changeSelectedFeeds('all_rss')}>
+                        <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                            <Checkbox.Android position="leading"
+                                status={selectedFeeds.indexOf('all_rss') >= 0 ? 'checked' : 'unchecked'} />
+                            <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                {color: theme.colors.onSurfaceVariant}]}>
+                                {lang.all_rss}</Text>
+                        </View>
+                    </TouchableNativeFeedback>
+
+                    { Backend.UserSettings.FeedList.map((feed) => {
+                        return(
+                            <TouchableNativeFeedback
+                                background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
+                                onPress={() => changeSelectedFeeds(feed.url)}>
+                                <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                                    <Checkbox.Android position="leading"
+                                        status={selectedFeeds.indexOf(feed.url) >= 0 ? 'checked' : 'unchecked'} />
+                                    <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
+                                        {color: theme.colors.onSurfaceVariant}]}>
+                                        {feed.name}</Text>
+                                </View>
+                            </TouchableNativeFeedback>
+                        );
+                    })}
+                    </>
+                    : <View style={Styles.settingsModalButton}>
+                        <Text variant="titleMedium">{lang.no_feeds}</Text>
+                        <Text variant="labelSmall">{lang.no_feeds_description}</Text>
+                    </View>
+                }
+            </ScrollView>
+        </View>
+        <View style={Styles.modalButtonContainer}>
+            <Button style={Styles.modalButton}
+                disabled={selectedFeeds.length == 0}
+                onPress={createFilter}>{lang.apply}</Button>
+            <Button style={Styles.modalButton}
+                onPress={modalRef.current.hideModal}>{lang.cancel}</Button>
+        </View>
+        </>
+    );
+}
+
 function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {
     const [inputValue, setInputValue] = useState(sourceFilter.search);
     const [tags, setTags] = useState([...sourceFilter.tags]);
@@ -422,14 +530,14 @@ function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {
     const createFilter = () => {
         const newFilter = [];
 
-        applyFilter(inputValue, tags);
+        applyFilter(sourceFilter.feed, inputValue, tags);
     }
 
     const clearFilter = () => {
         if(sourceFilter.tags.length == 0 && sourceFilter.search == '') {
             modalRef.current.hideModal();
         } else {
-            applyFilter('', []);
+            applyFilter(sourceFilter.feed, '', []);
         }
     }
 
