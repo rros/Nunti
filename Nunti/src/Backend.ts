@@ -937,6 +937,22 @@ export class Backend {
     public static async CreateBackup(): Promise<string> {
         return JSON.stringify(await Backup.MakeBackup());
     }
+    /* Export feed urls into an OPML xml document. */
+    public static async ExportOPML(): Promise<string> {
+        const doc = new DOMParser().parseFromString('<opml version="1.0"></opml>');
+        const root = doc.getElementsByTagName('opml')[0];
+        const body = doc.createElement('body');
+        this.UserSettings.FeedList.forEach( (feed: Feed) => {
+            const outline = doc.createElement('outline');
+            outline.setAttribute('text', feed.name);
+            outline.setAttribute('xmlUrl', feed.url);
+            outline.setAttribute('type', 'rss');
+            body.appendChild(outline);
+        });
+        root.appendChild(body);
+        const serializer = new XMLSerializer();
+        return serializer.serializeToString(root);
+    }
     /* Wipes current data and loads backup created by CreateBackup() method. */
     public static async TryLoadBackup(backupStr: string): Promise<boolean> {
         const log = this.log.context('LoadBackup');
