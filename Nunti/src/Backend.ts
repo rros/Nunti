@@ -283,6 +283,7 @@ class Filter {
     public sortType: string | undefined; //either 'learning' or 'date'
     public search: string | undefined;
     public tags: Tag[] | undefined;
+    public feeds: string[] | undefined; //if not empty OR not ==['all_rss'] then only these feeds
 }
 
 class UserSettings {
@@ -411,7 +412,7 @@ export class Backend {
         });
     }
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(articleSource: string, filters: Filter = {sortType: undefined, search: undefined, tags: undefined}, abort: AbortController | null = null): Promise<Article[][]> {
+    public static async GetArticlesPaginated(articleSource: string, filters: Filter = {sortType: undefined, feeds: undefined, search: undefined, tags: undefined}, abort: AbortController | null = null): Promise<Article[][]> {
         const arts = await this.GetArticles(articleSource, filters, abort);
         const timeBegin = Date.now();
 
@@ -423,7 +424,7 @@ export class Backend {
         return pages;
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
-    public static async GetArticles(articleSource: string, filters: Filter = {sortType: undefined, search: undefined, tags: undefined}, abort: AbortController | null = null): Promise<Article[]> {
+    public static async GetArticles(articleSource: string, filters: Filter = {sortType: undefined, feeds: undefined, search: undefined, tags: undefined}, abort: AbortController | null = null): Promise<Article[]> {
         const log = this.log.context('GetArticles');
         log.info(`called with source: '${articleSource}'`);
 
@@ -444,43 +445,49 @@ export class Backend {
         articles.forEach((art: Article) => { Article.Fix(art); });
 
         // apply filters
-        if (filters.search != '' || (filters.tags != null && filters.tags.length > 0)) {
-            const filterStartTime = Date.now();
-            const newarts: Article[] = [];
-            articles.forEach((art: Article) => {
-                //search
-                let passedSearch = false;
-                if (filters.search != undefined && filters.search != '' && filters.search != null) {
-                    const words = (art.title + ' ' + art.description).toLowerCase().split(' ');
-                    const searchWords = filters.search.toLowerCase().split(' ');
-                    searchWords.forEach((word: string) => {
-                        if (words.indexOf(word) >= 0)
-                            passedSearch = true;
-                    });
-                } else
-                    passedSearch = true;
+        const filterStartTime = Date.now();
+        const newarts: Article[] = [];
+        articles.forEach((art: Article) => {
+            // feed urls
+            let passedFeeds = false;
+            if (filters.feeds != undefined && filters.feeds.length > 0 && filters.feeds != ['all_rss']) {
+                if (filters.feeds.indexOf(art.sourceUrl) > -1)
+                    passedFeeds = true;
+            } else
+                passedFeeds = true;
 
-                //tags
-                let passedTags = false;
-                if (filters.tags != undefined && filters.tags != null && filters.tags.length > 0) {
-                    art.tags.forEach((tag: Tag) => {
-                        if (filters.tags == undefined)
-                            return;
-                        filters.tags.forEach((filterTag: Tag) => {
-                            if (filterTag.name == tag.name)
-                                passedTags = true;
-                        });
-                    });
-                } else
-                    passedTags = true;
+            //search
+            let passedSearch = false;
+            if (filters.search != undefined && filters.search != '' && filters.search != null) {
+                const words = (art.title + ' ' + art.description).toLowerCase().split(' ');
+                const searchWords = filters.search.toLowerCase().split(' ');
+                searchWords.forEach((word: string) => {
+                    if (words.indexOf(word) >= 0)
+                        passedSearch = true;
+                });
+            } else
+                passedSearch = true;
 
-                if (passedSearch && passedTags)
-                    newarts.push(art);
-            });
-            const filterEndTime = Date.now();
-            log.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
-            articles = newarts;
-        }
+            //tags
+            let passedTags = false;
+            if (filters.tags != undefined && filters.tags != null && filters.tags.length > 0) {
+                art.tags.forEach((tag: Tag) => {
+                    if (filters.tags == undefined)
+                        return;
+                    filters.tags.forEach((filterTag: Tag) => {
+                        if (filterTag.name == tag.name)
+                            passedTags = true;
+                    });
+                });
+            } else
+                passedTags = true;
+
+            if (passedSearch && passedTags && passedFeeds)
+                newarts.push(art);
+        });
+        const filterEndTime = Date.now();
+        log.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
+        articles = newarts;
 
         // repair article ids, frontend will crash if index doesnt match up with id.
         for (let i = 0; i < articles.length; i++)
