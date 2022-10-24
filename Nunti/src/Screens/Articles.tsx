@@ -586,8 +586,8 @@ function DetailsModalContent ({ showImages, currentArticle, lang, theme, screenT
             <View style={{flexShrink: 1}}>
                 <View style={[Styles.cardContent, {borderBottomColor: theme.colors.outline,
                     borderBottomWidth: (currentArticle.current.description.length != 0 ? 0 : 1)}]}>
-                    <Text variant="titleLarge">{currentArticle.current.title}</Text>
-                    <Text variant="labelSmall" style={Styles.captionText}>
+                    <Text selectable={true} variant="titleLarge">{currentArticle.current.title}</Text>
+                    <Text selectable={true} variant="labelSmall" style={Styles.captionText}>
                         {getDateCaption(currentArticle.current.date) === undefined ?
                             currentArticle.current.source :
                             getDateCaption(currentArticle.current.date) + ' • ' + currentArticle.current.source}</Text>
@@ -597,8 +597,7 @@ function DetailsModalContent ({ showImages, currentArticle, lang, theme, screenT
                 <View style={[{flexShrink: 1, borderBottomColor: theme.colors.outline, borderBottomWidth: 1, 
                     borderTopColor: theme.colors.outline, borderTopWidth: 1 }]}>
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
-                                            <Text variant="bodyMedium">
-                            {currentArticle.current.description}</Text>
+                    <Text selectable={true} variant="bodyMedium">{currentArticle.current.description}</Text>
                 </ScrollView>
                 </View> : null }
 
@@ -624,13 +623,13 @@ function DetailsModalContent ({ showImages, currentArticle, lang, theme, screenT
 
                 <View style={{flex: 1, marginTop: 12}}>
                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
-                        <Text variant="titleLarge">{currentArticle.current.title}</Text>
-                        <Text style={Styles.captionText} variant="labelSmall">
+                        <Text selectable={true} variant="titleLarge">{currentArticle.current.title}</Text>
+                        <Text selectable={true} style={Styles.captionText} variant="labelSmall">
                             {getDateCaption(currentArticle.current.date) === undefined ?
                                 currentArticle.current.source :
                                 getDateCaption(currentArticle.current.date) + ' • ' + currentArticle.current.source}</Text>
                         { currentArticle.current.description.length != 0 ?
-                            <Text variant="bodyMedium" style={Styles.bodyText}>
+                            <Text selectable={true} variant="bodyMedium" style={Styles.bodyText}>
                                 {currentArticle.current.description}</Text> : null }
                     </ScrollView>
                 </View>
