@@ -530,7 +530,7 @@ function FilterModalContent ({ lang, theme, applyFilter, sourceFilter }) {
     const createFilter = () => {
         const newFilter = [];
 
-        applyFilter(sourceFilter.feed, inputValue, tags);
+        applyFilter(sourceFilter.feeds, inputValue, tags);
     }
 
     const clearFilter = () => {
