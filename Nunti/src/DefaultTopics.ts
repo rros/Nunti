@@ -30,7 +30,7 @@ export default class DefaultTopics {
             icon: 'book-open',
             sources: [
                 new Feed('https://americanhistory.si.edu/blog/feed'),
-                new Feed('http://www.historynet.com/feed'),
+                new Feed('https://www.historynet.com/feed'),
                 new Feed('https://www.historyisnowmagazine.com/blog?format=RSS'),
             ]
         },
@@ -46,14 +46,14 @@ export default class DefaultTopics {
             icon: 'music',
             sources: [
                 new Feed('https://songexploder.net/'),
-                new Feed('http://consequenceofsound.net/feed'),
+                new Feed('https://consequenceofsound.net/feed'),
                 new Feed('https://edm.com/.rss/full/'),
             ]
         },
         'science': {
             icon: 'beaker',
             sources: [
-                new Feed('http://feeds.bbci.co.uk/news/science_and_environment/rss.xml'),
+                new Feed('https://feeds.bbci.co.uk/news/science_and_environment/rss.xml'),
                 new Feed('https://www.sciencedaily.com/rss/all.xml'),
                 new Feed('http://rss.sciam.com/sciam/60secsciencepodcast'),
             ]
@@ -61,17 +61,17 @@ export default class DefaultTopics {
         'sport': {
             icon: 'basketball',
             sources: [
-                new Feed('http://feeds.bbci.co.uk/sport/rss.xml'),
+                new Feed('https://feeds.bbci.co.uk/sport/rss.xml'),
                 new Feed('https://www.reddit.com/r/sports.rss'),
-                new Feed('http://feeds.skynews.com/feeds/rss/sports.xml'),
+                new Feed('https://feeds.skynews.com/feeds/rss/sports.xml'),
             ]
         },
         'technology': {
             icon: 'cog',
             sources: [
-                new Feed('http://feeds.arstechnica.com/arstechnica/index'),
+                new Feed('https://feeds.arstechnica.com/arstechnica/index'),
                 new Feed('https://www.youtube.com/feeds/videos.xml?user=LinusTechTips'),
-                new Feed('http://feeds.feedburner.com/TechCrunch'),
+                new Feed('https://feeds.feedburner.com/TechCrunch'),
             ]
         },
         'travel': {
@@ -85,7 +85,7 @@ export default class DefaultTopics {
         'politics': {
             icon: 'flag',
             sources: [
-                new Feed('http://feeds.bbci.co.uk/news/world/rss.xml'),
+                new Feed('https://feeds.bbci.co.uk/news/world/rss.xml'),
                 new Feed('http://rss.cnn.com/rss/edition_world.rss'),
                 new Feed('https://www.reddit.com/r/worldnews/.rss'),
             ]
