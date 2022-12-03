@@ -1142,7 +1142,7 @@ export class Backend {
 
                     try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); } catch { /* dontcare */ }
                     try { art.description = art.description.substr(0,1024); } catch { /* dontcare */ }
-                    try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' '); } catch { /* dontcare */ }
+                    try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' ').replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/g, '\uFFFD'); } catch { /* dontcare */ }
                     
                     if (!feed.noImages) {
                         if (art.cover === undefined)
