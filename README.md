@@ -78,7 +78,7 @@ The preferred way to contribute is to create a public fork of the project and cr
 
 # Licence, disclaimer or whatever
 
-Nunti Copyright &copy; 2021 - 2022  Ondřej Foltýn & Richard Klapáč
+Nunti Copyright &copy; 2021 - 2023  Ondřej Foltýn & Richard Klapáč
 
 > This program is free software: you can redistribute it and/or modify
 > it under the terms of the **GNU General Public License** as published by
