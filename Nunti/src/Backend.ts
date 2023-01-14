@@ -996,7 +996,10 @@ export class Backend {
                 log.info(`Importing OPML, imported ${feeds.length} feed(s).`);
                 
                 feeds.forEach(feed => {
-                    this.UserSettings.FeedList.push(feed);
+                    if (this.FindFeedByUrl(feed.url, this.UserSettings.FeedList) < 0)
+                        this.UserSettings.FeedList.push(feed);
+                    else
+                        log.debug(`(opml) skipping (already in feedlist) '${feed.url}'`);
                 });
                 await this.UserSettings.Save();
 
