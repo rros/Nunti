@@ -198,11 +198,12 @@ function SettingsMain (props) {
         }
     }
 
-    const exportBackup = async() => {
-        const backup: string = await Backend.CreateBackup();
+    const exportBackup = async(exportSettings: boolean) => {
+        const backup: string = exportSettings ? await Backend.CreateBackup() : await Backend.ExportOPML();
+        const backupFormat: string = exportSettings ? "json" : "opml";
 
         try {
-            if(await ScopedStorage.createDocument('NuntiBackup.json', 'application/json', backup, 'utf8') == null){
+            if(await ScopedStorage.createDocument(`NuntiBackup.${backupFormat}`, `application/${backupFormat}`, backup, 'utf8') == null){
                 return;
             } else{
                 snackbarRef.current.showSnack(props.lang.export_ok);
@@ -306,10 +307,21 @@ function SettingsMain (props) {
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
-                    onPress={exportBackup}>
+                    onPress={() => exportBackup(true)}>
+                    <View style={Styles.settingsButton}>
+                        <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.export}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>
+                            {props.lang.export_desc}</Text>
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => exportBackup(false)}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>
-                            {props.lang.export}</Text>
+                            {props.lang.export_opml}</Text>
+                        <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>
+                            {props.lang.export_opml_desc}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
