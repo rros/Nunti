@@ -1,3 +1,8 @@
+import Log from "../Log";
+import { Storage } from "./Storage";
+import { Tag } from "./Tag";
+import { UserSettings } from "./UserSettings";
+
 export class Article {
     public id = 0;
     public title = '';
@@ -31,73 +36,26 @@ export class Article {
         if (art.date == null)
             art.date = undefined;
     }
-
-    /* Tries to save an article, true on success, false on fail. */
-    public static async TrySaveArticle(article: Article): Promise<boolean> {
-        const log = this.log.context('SaveArticle');
-        try {
-            log.info('Saving', article.url);
-            const saved = await this.StorageGet('saved');
-            if (await this.FindArticleByUrl(article.url, saved) < 0) {
-                saved.push(article);
-                await this.StorageSave('saved',saved);
-            } else {
-                log.warn('Article is already saved.');
-                return false;
-            }
-            return true;
-        } catch(error) {
-            log.error('Cannot save article.',error);
-            return false;
-        }
-    }
-    /* Tries to remove an article from saved, true on success, false on fail. */
-    public static async TryRemoveSavedArticle(article: Article): Promise<boolean> {
-        try {
-            const saved = await this.StorageGet('saved');
-            const index = await this.FindArticleByUrl(article.url, saved);
-            if (index >= 0) {
-                saved.splice(index,1);
-                await this.StorageSave('saved',saved);
-                this.CurrentBookmarks = this.PagesRemoveArticle(article, this.CurrentBookmarks);
-                this.LastRemovedBookmark = article;
-                return true;
-            } else
-                throw new Error('not found in saved');
-        } catch(err) {
-            this.log.context('RemoveSavedArticle').error('Cannot remove saved article.',err);
-            return false;
-        }
-    }
-    /* Returns list of saved articles. */
-    public static async GetSavedArticles(): Promise<Article[]> {
-        const arts = await this.StorageGet('saved');
-        for (let i = 0; i < arts.length; i++) {
-            arts[i].id = i;
-            Article.Fix(arts[i]);
-        }
-        return arts;
-    }
     /* Use this method to rate articles. (-1 is downvote, +1 is upvote) */
     public static async RateArticle(art: Article, rating: number): Promise<void> {
-        const log = this.log.context('RateArticle');
-        let learning_db = await this.StorageGet('learning_db');
-        let learning_db_secondary = await this.StorageGet('learning_db_secondary');
+        const log = Log.BE.context('RateArticle');
+        let learning_db = await Storage.StorageGet('learning_db');
+        let learning_db_secondary = await Storage.StorageGet('learning_db_secondary');
 
         if (rating > 0) {
             //upvote
-            this.UserSettings.TotalUpvotes += 1;
+            UserSettings.Instance.TotalUpvotes += 1;
             rating = rating * Math.abs(learning_db['downvotes'] + 1 / learning_db['upvotes'] + 1);
             learning_db['upvotes'] += 1;
             learning_db_secondary['upvotes'] += 1;
         } else if (rating < 0) {
             //downvote
-            this.UserSettings.TotalDownvotes += 1;
+            UserSettings.Instance.TotalDownvotes += 1;
             rating = rating * Math.abs(learning_db['upvotes'] + 1 / learning_db['downvotes'] + 1);
             learning_db['downvotes'] += 1;
             learning_db_secondary['downvotes'] += 1;
         }
-        await this.UserSettings.Save();
+        await UserSettings.Save();
 
         for(const keyword in art.keywords) {
             const wordRating = rating * art.keywords[keyword];
@@ -114,27 +72,27 @@ export class Article {
             }
         }
 
-        const seen = await this.StorageGet('seen');
+        const seen = await Storage.StorageGet('seen');
         seen.push(art);
-        seen.splice(0, seen.length - this.UserSettings.SeenHistoryLength); //To prevent flooding storage with seen arts.
-        await this.StorageSave('seen', seen);
+        seen.splice(0, seen.length - UserSettings.Instance.SeenHistoryLength); //To prevent flooding storage with seen arts.
+        await Storage.StorageSave('seen', seen);
 
         /* if secondary DB is ready, replace the main and create new secondary. */
-        if (learning_db_secondary['upvotes'] + learning_db_secondary['downvotes'] > this.UserSettings.RotateDBAfter) {
+        if (learning_db_secondary['upvotes'] + learning_db_secondary['downvotes'] > UserSettings.Instance.RotateDBAfter) {
             learning_db = {...learning_db_secondary};
             learning_db_secondary = {upvotes: 0, downvotes: 0, keywords: {}};
             log.info('Rotating DB and wiping secondary DB now..');
         }
 
-        await this.StorageSave('learning_db', learning_db);
-        await this.StorageSave('learning_db_secondary', learning_db_secondary);
+        await Storage.StorageSave('learning_db', learning_db);
+        await Storage.StorageSave('learning_db_secondary', learning_db_secondary);
         log.info(`Saved rating for article '${art.title}'`);
-        await this.CheckDB();
-        this.CurrentFeed = this.PagesRemoveArticle(art, this.CurrentFeed);
+        await Storage.CheckDB();
+        this.CurrentFeed = this.PagesRemoveArticle(art, this.CurrentFeed); //TODO
     }
     public static async GetArticleScore(art: Article): Promise<number> {
         let score = 0;
-        const db: {[term: string]: number} = (await this.StorageGet('learning_db'))['keywords'];
+        const db: {[term: string]: number} = (await Storage.StorageGet('learning_db'))['keywords'];
         for(const term in art.keywords) {
             if (db[term] === undefined)
                 continue;

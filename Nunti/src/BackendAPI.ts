@@ -1,34 +1,14 @@
-import { AsyncStorage, AppState } from 'react-native';
-const DOMParser = require('xmldom').DOMParser; //eslint-disable-line
-const XMLSerializer = require('xmldom').XMLSerializer; //eslint-disable-line
-import NetInfo from '@react-native-community/netinfo';
 import DefaultTopics from './DefaultTopics';
-import { decode } from 'html-entities';
-import Store from 'react-native-fs-store';
-const FSStore = new Store('store1');
-import iconv from 'iconv-lite';
-import { Buffer } from 'buffer';
 import { NativeModules } from 'react-native';
-import * as Languages from './Locale';
 const NotificationsModule = NativeModules.Notifications;
-const I18nManager = NativeModules.I18nManager;
 import Log from './Log';
-import * as ScopedStorage from 'react-native-scoped-storage';
-
 import { Article } from './Backend/Article';
-import { Backup } from './Backend/Backup';
 import { Downloader } from './Backend/Downloader';
-import { Feed } from './Backend/Feed';
-import { Tag } from './Backend/Tag';
 import { UserSettings } from './Backend/UserSettings';
-
-class Filter {
-    public sortType: string | undefined; //either 'learning' or 'date'
-    public search: string | undefined;
-    public tags: Tag[] | undefined;
-    public feeds: string[] | undefined; //if not empty OR not ==['all_rss'] then only these feeds
-}
-
+import { Utils } from './Backend/Utils';
+import { Storage } from './Backend/Storage';
+import { ArticlesUtils } from './Backend/ArticlesUtils';
+import { ArticlesFilter } from './Backend/ArticlesFilter';
 
 export class BackendAPI {
     public static log = Log.BE;
@@ -72,79 +52,50 @@ export class BackendAPI {
     }
     
     /* Wrapper around GetArticles(), returns articles in pages. */
-    public static async GetArticlesPaginated(articleSource: string, filters: Filter = {sortType: undefined, feeds: undefined, search: undefined, tags: undefined}, abort: AbortController | null = null): Promise<Article[][]> {
-        const arts = await this.GetArticles(articleSource, filters, abort);
+    public static async GetArticlesPaginated(
+        articleSource: string,
+        filter: ArticlesFilter = ArticlesFilter.Empty,
+        abort: AbortController | null = null
+    ): Promise<Article[][]> {
+
+        const arts = await this.GetArticles(articleSource, filter, abort);
+
         const timeBegin = Date.now();
-
-        const pages = this.PaginateArticles(arts, this.UserSettings.FeedPageSize);
+        const pages = Utils.PaginateArticles(arts, this.UserSettings.FeedPageSize);
         this.CurrentArticles[articleSource] = pages;
-
         const timeEnd = Date.now();
+
         this.log.context('Pagination').debug(`Finished in ${timeEnd - timeBegin} ms`);
         return pages;
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
-    public static async GetArticles(articleSource: string, filters: Filter = {sortType: undefined, feeds: undefined, search: undefined, tags: undefined}, abort: AbortController | null = null): Promise<Article[]> {
+    public static async GetArticles(
+        articleSource: string,
+        filter: ArticlesFilter = ArticlesFilter.Empty,
+        abort: AbortController | null = null
+    ): Promise<Article[]> {
+
         const log = this.log.context('GetArticles');
         log.info(`called with source: '${articleSource}'`);
 
         let articles: Article[];
         switch (articleSource) {
         case 'feed':
-            articles = await this.GetFeedArticles({sortType: filters.sortType}, abort);
+            articles = await this.GetFeedArticles({sortType: filter.sortType}, abort);
             break;
         case 'bookmarks':
-            articles = (await this.GetSavedArticles()).reverse();
+            articles = (await Storage.GetSavedArticles()).reverse();
             break;
         case 'history':
-            articles = (await this.StorageGet('seen')).reverse().slice(0, this.UserSettings.ArticleHistory);
+            articles = (await Storage.StorageGet('seen')).reverse().slice(0, this.UserSettings.ArticleHistory);
             break;
         default:
             throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
         }
-        articles.forEach((art: Article) => { Article.Fix(art); });
+        articles.forEach(Article.Fix);
 
-        // apply filters
         const filterStartTime = Date.now();
-        const newarts: Article[] = [];
-        articles.forEach((art: Article) => {
-            // feed urls
-            let passedFeeds = false;
-            if (filters.feeds != undefined && filters.feeds.length > 0 && filters.feeds != ['all_rss']) {
-                if (filters.feeds.indexOf(art.sourceUrl) > -1)
-                    passedFeeds = true;
-            } else
-                passedFeeds = true;
-
-            //search
-            let passedSearch = false;
-            if (filters.search != undefined && filters.search != '' && filters.search != null) {
-                const words = (art.title + ' ' + art.description).toLowerCase().split(' ');
-                const searchWords = filters.search.toLowerCase().split(' ');
-                searchWords.forEach((word: string) => {
-                    if (words.indexOf(word) >= 0)
-                        passedSearch = true;
-                });
-            } else
-                passedSearch = true;
-
-            //tags
-            let passedTags = false;
-            if (filters.tags != undefined && filters.tags != null && filters.tags.length > 0) {
-                art.tags.forEach((tag: Tag) => {
-                    if (filters.tags == undefined)
-                        return;
-                    filters.tags.forEach((filterTag: Tag) => {
-                        if (filterTag.name == tag.name)
-                            passedTags = true;
-                    });
-                });
-            } else
-                passedTags = true;
-
-            if (passedSearch && passedTags && passedFeeds)
-                newarts.push(art);
-        });
+        const newarts = ArticlesFilter.Apply(articles, filter);
         const filterEndTime = Date.now();
         log.info(`Filtering complete in ${(filterEndTime - filterStartTime)} ms, ${newarts.length}/${articles.length} passed.`);
         articles = newarts;
@@ -155,24 +106,89 @@ export class BackendAPI {
     
         return articles;
     }
+    /* Retrieves sorted articles to show in feed. */
+    public static async GetFeedArticles(
+        overrides: {sortType: string | undefined } = {sortType: undefined},
+        abort: AbortController | null = null
+    ): Promise<Article[]> {
+
+        const log = this.log.context('GetFeedArticles');
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0);
+        log.info('Loading new articles..');
+        const timeBegin: number = Date.now();
+
+        await Storage.CheckDB();
+        
+        const cache = await Storage.GetArticleCache();
+        let arts: Article[];
+
+        const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
+
+        if(await Utils.IsDoNotDownloadEnabled()) {
+            log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
+            arts = cache.articles;
+        } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
+            arts = await Downloader.DownloadArticles(abort);
+            if (arts.length > 0) //TODO: resolve issue #72 here
+                await Storage.FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
+        } else {
+            log.info(`Using cached articles. (${cacheAgeMinutes} minutes old)`);
+            arts = cache.articles;
+        }
+        if (abort?.signal.aborted)
+            throw new Error('Aborted by AbortController.');
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.8);
+
+        arts = await ArticlesUtils.SortArticles(arts, overrides);
+        if (abort?.signal.aborted)
+            throw new Error('Aborted by AbortController.');
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.9);
+
+        if (!this.UserSettings.DisableBackgroundTasks && this.UserSettings.EnableNotifications) {
+            // force inject last notification's article to the top of the feed
+            const notifCache = await Storage.StorageGet('notifications-cache');
+            if (notifCache.seen_urls.length > 1) {
+                const lastArt: Article | null = notifCache.seen_urls[notifCache.seen_urls.length - 1];
+                if (lastArt?.url != null || lastArt?.url != undefined) {
+                    const i = Utils.FindArticleByUrl(lastArt.url, arts);
+                    if (i >= 0)
+                        arts.splice(i, 1);
+                    arts.unshift(lastArt);
+                    log.info(`Inserted '${lastArt.title}' (last notification) at the start of feed.`);
+                }
+            }
+        }
+
+        if (abort?.signal.aborted)
+            throw new Error('Aborted by AbortController.');
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.95);
+        arts = await ArticlesUtils.CleanArticles(arts);
+        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 1);
+
+        const timeEnd = Date.now();
+        log.info(`Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
+        if (abort?.signal.aborted)
+            throw new Error('Aborted by AbortController.');
+        return arts;
+    }
     /* Sends push notification to user, returns true on success, false on fail. */
     public static async SendNotification(message: string, channel: string): Promise<boolean> {
         const log = this.log.context('SendNotification');
         let channelName: string;
         let channelDescription: string;
-        const locale = this.GetLocale();
+        const locale = Utils.GetLocale();
         switch (channel) {
-        case 'new_articles':
-            channelName = locale.notifications_new_articles;
-            channelDescription = locale.notifications_new_articles_description;
-            break;
-        case 'other':
-            channelName = 'Other';
-            channelDescription = 'Other notifications';
-            break;
-        default:
-            log.error(`Failed attempt, '${channel}' - channel not allowed.`);
-            return false;
+            case 'new_articles':
+                channelName = locale.notifications_new_articles;
+                channelDescription = locale.notifications_new_articles_description;
+                break;
+            case 'other':
+                channelName = 'Other';
+                channelDescription = 'Other notifications';
+                break;
+            default:
+                log.error(`Failed attempt, '${channel}' - channel not allowed.`);
+                return false;
         }
         const title = channelName;
         const summary = null;
@@ -200,7 +216,7 @@ export class BackendAPI {
                         this.UserSettings.FeedList.push(topicFeed);
                     }
                 } else {
-                    const index = this.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList);
+                    const index = Utils.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList);
                     if (index >= 0) {
                         log.debug(`remove feed ${topicFeed.name} from feedlist`);
                         this.UserSettings.FeedList.splice(index, 1);
@@ -218,7 +234,7 @@ export class BackendAPI {
             let enabledFeedsCount = 0;
             for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
                 const topicFeed = DefaultTopics.Topics[topicName].sources[i];
-                if (this.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList) >= 0)
+                if (Utils.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList) >= 0)
                     enabledFeedsCount++;
             }
             if (enabledFeedsCount / DefaultTopics.Topics[topicName].sources.length >= threshold)
@@ -229,10 +245,6 @@ export class BackendAPI {
             return false;
     }
     
-    /* returns true if user is on cellular data and wifionly mode is enabled */
-    public static async IsDoNotDownloadEnabled(): Promise<boolean> {
-        return (((await NetInfo.fetch()).details?.isConnectionExpensive ?? false) && this.UserSettings.WifiOnly);
-    }
     /* Returns basic info about the learning process to inform the user. */
     public static async GetLearningStatus(): Promise<{
         TotalUpvotes: number,
@@ -244,7 +256,7 @@ export class BackendAPI {
         LearningLifetimeRemaining: number
     }> {
         const prefs = this.UserSettings;
-        const learning_db = await this.StorageGet('learning_db');
+        const learning_db = await Storage.StorageGet('learning_db');
         const status = {
             TotalUpvotes: prefs.TotalUpvotes,
             TotalDownvotes: prefs.TotalDownvotes,
@@ -256,33 +268,5 @@ export class BackendAPI {
         };
         return status;
     }
-
-    public static async MergeUserSettings(old: UserSettings, override: UserSettings): Promise<UserSettings> {
-        const prefs = Object.assign(old, override);
-        // cycle through Feeds and merge them, otherwise new properties will be undefined in next update
-        for (let i = 0; i < prefs.FeedList.length; i++) {
-            try {
-                prefs.FeedList[i] = Object.assign(new Feed(prefs.FeedList[i].url), prefs.FeedList[i]);
-            } catch {
-                this.log.context('MergeUserSettings').warn(`failed to merge feed ${prefs.FeedList[i].url}`);
-            }
-        }
-        return prefs;
-    }
-    
-    private static GetLocale(): {[key: string]: string} {
-        let locale;
-        if (this.UserSettings.Language == 'system') {
-            locale = I18nManager.localeIdentifier;
-        } else {
-            locale = this.UserSettings.Language;
-        }
-        for (const language in Languages) {
-            if (locale.includes(Languages[language].code)) { //eslint-disable-line
-                return Languages[language]; //eslint-disable-line
-            }
-        }
-        return Languages['English'];
-    }
 }
-export default Backend;
+export default BackendAPI;

@@ -1,6 +1,17 @@
+import { AsyncStorage } from "react-native";
+import Log from "../Log";
+import { Article } from "./Article";
+import { Background } from "./Background";
+import { UserSettings } from "./UserSettings";
+import Store from 'react-native-fs-store';
+import { Utils } from "./Utils";
+const FSStore = new Store('store1');
+
 export class Storage {
     public static DB_VERSION = '3.1';
-    private static DbLocked = false; //prevents running multiple CheckDB at the same time
+    public static DbLocked = false; //prevents running multiple CheckDB at the same time
+    public static FSStore = FSStore;
+    private static log = Log.BE.context("Storage");
 
     /* Resets cache */
     public static async ResetCache(): Promise<void> {
@@ -13,7 +24,7 @@ export class Storage {
         await AsyncStorage.clear();
         await this.ResetCache();
         await this.CheckDB();
-        await this.RefreshUserSettings();
+        await UserSettings.RefreshUserSettings();
     }
 
     /* Save data to storage. */
@@ -33,7 +44,7 @@ export class Storage {
         const log = this.log.context('CheckDB').context(`chkdb:${parseInt((Math.random() * 100).toString())}`);
 
         // queue mechanism
-        if (!this.BackgroundLock) {
+        if (!Background.BackgroundLock) { //needed because setTimeout never finished when in background
             await new Promise(r => setTimeout(r,parseInt(`${Math.random() * 1000}`)));
             while (this.DbLocked) {
                 // failed queue, retry after random sleep
@@ -54,9 +65,9 @@ export class Storage {
                 await AsyncStorage.setItem('user_settings',JSON.stringify(new UserSettings()));
             } else {
                 const current = JSON.parse(await AsyncStorage.getItem('user_settings') ?? '{}');
-                const merged = await this.MergeUserSettings(new UserSettings(), current);
+                const merged = await UserSettings.MergeUserSettings(new UserSettings(), current);
                 await AsyncStorage.setItem('user_settings', JSON.stringify(merged));
-                await this.RefreshUserSettings(true);
+                await UserSettings.RefreshUserSettings(true);
             }
             if (await AsyncStorage.getItem('seen') === null) {
                 log.debug('Init "seen" key in DB..');
@@ -105,5 +116,51 @@ export class Storage {
         const endTime = Date.now();
         log.debug(`Retrieved in ${endTime - startTime} ms.`);
         return cache;
+    }
+    /* Tries to save an article, true on success, false on fail. */
+    public static async TrySaveArticle(article: Article): Promise<boolean> {
+        const log = this.log.context('SaveArticle');
+        try {
+            log.info('Saving', article.url);
+            const saved = await this.StorageGet('saved');
+            if (await Utils.FindArticleByUrl(article.url, saved) < 0) {
+                saved.push(article);
+                await this.StorageSave('saved',saved);
+            } else {
+                log.warn('Article is already saved.');
+                return false;
+            }
+            return true;
+        } catch(error) {
+            log.error('Cannot save article.',error);
+            return false;
+        }
+    }
+    /* Tries to remove an article from saved, true on success, false on fail. */
+    public static async TryRemoveSavedArticle(article: Article): Promise<boolean> {
+        try {
+            const saved = await this.StorageGet('saved');
+            const index = await Utils.FindArticleByUrl(article.url, saved);
+            if (index >= 0) {
+                saved.splice(index,1);
+                await this.StorageSave('saved',saved);
+                this.CurrentBookmarks = this.PagesRemoveArticle(article, this.CurrentBookmarks); //TODO
+                this.LastRemovedBookmark = article; //TODO
+                return true;
+            } else
+                throw new Error('not found in saved');
+        } catch(err) {
+            this.log.context('RemoveSavedArticle').error('Cannot remove saved article.',err);
+            return false;
+        }
+    }
+    /* Returns list of saved articles. */
+    public static async GetSavedArticles(): Promise<Article[]> {
+        const arts = await this.StorageGet('saved');
+        for (let i = 0; i < arts.length; i++) {
+            arts[i].id = i;
+            Article.Fix(arts[i]);
+        }
+        return arts;
     }
 }

@@ -1,5 +1,6 @@
 import Log from '../Log';
 import { Feed } from './Feed';
+import { Storage } from './Storage';
 import { Tag } from './Tag';
 
 export class UserSettings {
@@ -46,11 +47,11 @@ export class UserSettings {
     public TotalDownvotes = 0;
     public LastBackupTimestamp = 0;
 
-    public async Save(): Promise<void> {
-        await Backend.StorageSave('user_settings', this);
+    public static async Save(): Promise<void> {
+        await Storage.StorageSave('user_settings', UserSettings.Instance);
     }
-    public async Refresh(): Promise<void> {
-        await Backend.RefreshUserSettings();
+    public static async Refresh(): Promise<void> {
+        await UserSettings.RefreshUserSettings();
     }
 
     private static log: Log = Log.BE.context("UserSettings");
@@ -58,10 +59,10 @@ export class UserSettings {
     /* Re-load and recheck UserSettings from storage. (unsaved changes will be lost) */
     public static async RefreshUserSettings(noCheckDb = false): Promise<void> {
         if (!noCheckDb)
-            await this.CheckDB();
+            await Storage.CheckDB();
 
         this.log.context('RefreshUserSettings').debug('Refreshing...');
-        this.Instance = Object.assign(new UserSettings(), await this.StorageGet('user_settings'));
+        this.Instance = Object.assign(new UserSettings(), await Storage.StorageGet('user_settings'));
         this.Instance.FeedList.sort((a: Feed, b: Feed) => {
             if ((a.name ?? undefined) !== undefined && (b.name ?? undefined) !== undefined)
                 return b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1;
@@ -74,5 +75,17 @@ export class UserSettings {
             else
                 return -1;
         });
+    }
+    public static async MergeUserSettings(old: UserSettings, override: UserSettings): Promise<UserSettings> {
+        const prefs = Object.assign(old, override);
+        // cycle through Feeds and merge them, otherwise new properties will be undefined in next update
+        for (let i = 0; i < prefs.FeedList.length; i++) {
+            try {
+                prefs.FeedList[i] = Object.assign(new Feed(prefs.FeedList[i].url), prefs.FeedList[i]);
+            } catch {
+                this.log.context('MergeUserSettings').warn(`failed to merge feed ${prefs.FeedList[i].url}`);
+            }
+        }
+        return prefs;
     }
 }

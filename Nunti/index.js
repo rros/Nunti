@@ -40,7 +40,7 @@ let MyHeadlessTask = async (event) => {
         return;
     }
     log.info('start: ', taskId);
-    await Backend.RunBackgroundTask(taskId, true);
+    await Backend.RunBackgroundTask(taskId, true); //TODO
     log.info('finishing now: ', taskId);
     BackgroundFetch.finish(taskId);
 };

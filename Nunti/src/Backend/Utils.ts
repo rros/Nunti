@@ -1,5 +1,10 @@
 import { Article } from "./Article";
 import { Feed } from "./Feed";
+import { UserSettings } from "./UserSettings";
+import NetInfo from '@react-native-community/netinfo';
+import { NativeModules } from 'react-native';
+const I18nManager = NativeModules.I18nManager;
+import * as Languages from '../Locale';
 
 export class Utils {
     public static FindArticleByUrl(url: string, haystack: Article[]): number {
@@ -40,5 +45,23 @@ export class Utils {
             }
         }
         return pages;
+    }
+    /* returns true if user is on cellular data and wifionly mode is enabled */
+    public static async IsDoNotDownloadEnabled(): Promise<boolean> {
+        return (((await NetInfo.fetch()).details?.isConnectionExpensive ?? false) && UserSettings.Instance.WifiOnly);
+    }
+    public static GetLocale(): {[key: string]: string} {
+        let locale;
+        if (UserSettings.Instance.Language == 'system') {
+            locale = I18nManager.localeIdentifier;
+        } else {
+            locale = UserSettings.Instance.Language;
+        }
+        for (const language in Languages) {
+            if (locale.includes(Languages[language].code)) { //eslint-disable-line
+                return Languages[language]; //eslint-disable-line
+            }
+        }
+        return Languages['English'];
     }
 }
