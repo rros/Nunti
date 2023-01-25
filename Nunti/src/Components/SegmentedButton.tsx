@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { TouchableNativeFeedback } from 'react-native-gesture-handler';
 
 import { snackbarRef } from '../App';
-import { Backend, Article } from '../Backend';
+import { Backend } from '../Backend';
 
 function SegmentedButton({ theme, lang, sourceFilter, applySorting }) {
     const [sortType, setSortType] = useState();

@@ -32,6 +32,8 @@ import SettingsFeeds from './SettingsSubpages/SettingsFeeds';
 import SettingsAdvanced from './SettingsSubpages/SettingsAdvanced';
 import SettingsBackground from './SettingsSubpages/SettingsBackground';
 import SettingsLearning from './SettingsSubpages/SettingsLearning';
+import { Storage } from '../Backend/Storage';
+import { Backup } from '../Backend/Backup';
 
 // use a class wrapper to stop rerenders caused by global snack/modal
 class Settings extends Component {
@@ -174,7 +176,7 @@ function SettingsMain (props) {
             return;
         }
 
-        if(await Backend.TryLoadBackup(file.data)){
+        if(await Backup.TryLoadBackup(file.data)){
             snackbarRef.current.showSnack(props.lang.import_ok);
 
             setLearningStatus(await Backend.GetLearningStatus());
@@ -199,7 +201,7 @@ function SettingsMain (props) {
     }
 
     const exportBackup = async(exportSettings: boolean) => {
-        const backup: string = exportSettings ? await Backend.CreateBackup() : await Backend.ExportOPML();
+        const backup: string = exportSettings ? await Backup.CreateBackup() : await Backup.ExportOPML();
         const backupFormat: string = exportSettings ? "json" : "opml";
 
         try {

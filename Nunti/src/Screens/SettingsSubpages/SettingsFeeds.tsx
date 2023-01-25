@@ -19,7 +19,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
 import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
-import { Backend, Feed } from '../../Backend';
+import { Backend } from '../../Backend';
+import { Feed } from '../../Backend/Feed';
 import { Accents } from '../../Styles';
 import Switch from '../../Components/Switch';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'

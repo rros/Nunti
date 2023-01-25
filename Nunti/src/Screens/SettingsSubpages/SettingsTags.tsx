@@ -19,7 +19,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
 import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
-import { Backend, Tag } from '../../Backend';
+import { Backend } from '../../Backend';
+import { Tag } from '../../Backend/Tag'
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 
 function SettingsTags (props) {

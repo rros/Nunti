@@ -1,4 +1,4 @@
-import { Feed } from './Backend';
+import { Feed } from './Backend/Feed';
 
 export default class DefaultTopics {
     public static Topics: {[id: string]: {icon: string, sources: Feed[]}} = {
