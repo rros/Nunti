@@ -1,4 +1,10 @@
+import Log from '../Log';
+import { Article } from './Article';
+import { Downloader } from './Downloader';
+import { Storage } from './Storage';
 import { Tag } from './Tag';
+import { UserSettings } from './UserSettings';
+import { Utils } from './Utils';
 
 export class Feed {
     public static lastRemoved: Feed | null = null; //to allow "undo" function
@@ -24,53 +30,50 @@ export class Feed {
     public static async New(url: string): Promise<Feed> {
         const feed = new Feed(url);
         
-        const prefs = Backend.UserSettings;
-        if (Backend.FindFeedByUrl(feed.url, prefs.FeedList) >= 0)
+        if (Utils.FindFeedByUrl(feed.url, UserSettings.Instance.FeedList) >= 0)
             throw new Error('Feed already in feedlist.');
 
-        await Backend.DownloadArticlesOneChannel(feed, 5, true);
+        await Downloader.DownloadArticlesOneChannel(feed, 5, true);
 
-        prefs.FeedList.push(feed);
-        await prefs.Save();
+        UserSettings.Instance.FeedList.push(feed);
+        await UserSettings.Save();
 
         return feed;
     }
 
     public static async Save(feed: Feed): Promise<void> {
-        const prefs = Backend.UserSettings;
-        const i = Backend.FindFeedByUrl(feed.url, prefs.FeedList);
+        const i = Utils.FindFeedByUrl(feed.url, UserSettings.Instance.FeedList);
         if (i >= 0)
-            prefs.FeedList[i] = feed;
+            UserSettings.Instance.FeedList[i] = feed;
         else
-            prefs.FeedList.push(feed);
-        await prefs.Save();
+            UserSettings.Instance.FeedList.push(feed);
+        await UserSettings.Save();
     }
 
     public static async Remove(feed: Feed): Promise<void> {
-        const i = Backend.FindFeedByUrl(feed.url, Backend.UserSettings.FeedList);
+        const i = Utils.FindFeedByUrl(feed.url, UserSettings.Instance.FeedList);
         if (i < 0)
             throw new Error(`Did not find feed with url '${feed.url} in feedlist.'`);
         else {
-            Backend.UserSettings.FeedList.splice(i, 1);
+            UserSettings.Instance.FeedList.splice(i, 1);
             Feed.lastRemoved = feed;
-            await Backend.UserSettings.Save();
+            await UserSettings.Save();
         }
     }
 
     public static async Get(url: string): Promise<Feed> {
-        const prefs = Backend.UserSettings;
-        const i = Backend.FindFeedByUrl(url, prefs.FeedList);
+        const i = Utils.FindFeedByUrl(url, UserSettings.Instance.FeedList);
         if (i < 0)
             throw new Error(`Did not find feed with url '${url} in feedlist.'`);
         else
-            return prefs.FeedList[i];
+            return UserSettings.Instance.FeedList[i];
     }
 
     public static async GuessRSSLink(url: string): Promise<string|null> {
         // confirm that feed is working
         const isWorking = async (link: string): Promise<boolean> => {
             try {
-                await Backend.DownloadArticlesOneChannel(new Feed(link), 5, true);
+                await Downloader.DownloadArticlesOneChannel(new Feed(link), 5, true);
                 return true;
             } catch {
                 return false;
@@ -95,7 +98,7 @@ export class Feed {
         feed.tags.push(tag);
         await Feed.Save(feed);
 
-        let cache = await FSStore.getItem('cache');
+        let cache = await Storage.FSStore.getItem('cache');
         if (cache != null) {
             Log.BE.context('Feed:'+feed.url).context('AddTag').debug(`adding tag '${tag.name}' to articles.`);
             cache = JSON.parse(cache);
@@ -103,7 +106,7 @@ export class Feed {
                 if (art.sourceUrl == feed.url)
                     art.tags.push(tag);
             });
-            await FSStore.setItem('cache', JSON.stringify(cache));
+            await Storage.FSStore.setItem('cache', JSON.stringify(cache));
         }
     }
     /* Removes a tag from feed and also updates all articles in cache */
@@ -111,7 +114,7 @@ export class Feed {
         feed.tags.splice(feed.tags.indexOf(tag), 1);
         await Feed.Save(feed);
 
-        let cache = await FSStore.getItem('cache');
+        let cache = await Storage.FSStore.getItem('cache');
         if (cache != null) {
             Log.BE.context('Feed:'+feed.url).context('RemoveTag').debug(`Updating cache, removing tag '${tag.name}' from articles.`);
             cache = JSON.parse(cache);
@@ -120,7 +123,7 @@ export class Feed {
                     art.tags.splice(art.tags.indexOf(tag), 1);
                 }
             });
-            await FSStore.setItem('cache', JSON.stringify(cache));
+            await Storage.FSStore.setItem('cache', JSON.stringify(cache));
         }
     }
     public static HasTag(feed: Feed, tag: Tag): boolean {
@@ -136,9 +139,9 @@ export class Feed {
         if (this.lastRemoved == null)
             return false;
         const feed = this.lastRemoved;
-        Backend.UserSettings.FeedList.push(feed);
+        UserSettings.Instance.FeedList.push(feed);
         this.lastRemoved = null;
-        await Backend.UserSettings.Save();
+        await UserSettings.Save();
         return true;
     }
 }

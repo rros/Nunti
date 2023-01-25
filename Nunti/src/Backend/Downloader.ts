@@ -237,7 +237,11 @@ export class Downloader {
             return [];
         }
     }
-    public static async DownloadArticles(abort: AbortController | null = null, statusUpdateCallback: ((ctx: 'feed', perctFloat: number) => void) | null = null): Promise<Article[]> {
+    public static async DownloadArticles
+        (abort: AbortController | null = null,
+        statusUpdateCallback: ((ctx: 'feed', perctFloat: number) => void) | null = null
+    ): Promise<Article[]> {
+
         const THREADS = 6;
         const log = this.log.context('DownloadArticles');
 
@@ -248,10 +252,11 @@ export class Downloader {
         const arts: Article[] = [];
         
         let feeds_processed = 0;
+
         const statusUpdateWrapper = async (feed: Feed, maxArts: number): Promise<Article[]> => {
             const x = await this.DownloadArticlesOneChannel(feed, maxArts);
             feeds_processed += 1;
-            const percentage = (feeds_processed / UserSettings.Instance.FeedList.length) * 0.6;
+            const percentage = (feeds_processed / UserSettings.Instance.FeedList.length);
             if (statusUpdateCallback) statusUpdateCallback('feed', percentage);
             return x;
         };
@@ -275,7 +280,7 @@ export class Downloader {
 
         const timeEnd = Date.now();
         log.info(`Finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
-        await ArticlesUtils.ExtractKeywords(arts, statusUpdateCallback, abort);
+        ArticlesUtils.ExtractKeywords(arts, statusUpdateCallback, abort);
         return arts;
     }
 }

@@ -27,7 +27,7 @@ if (!__DEV__) {
 AppRegistry.registerComponent(appName, () => App);
 
 import BackgroundFetch from './src/BackgroundFetch';
-import Backend from './src/Backend';
+import { Background } from './src/Backend/Background';
 
 let MyHeadlessTask = async (event) => {
     const log = Log.context('BackgroundFetch').context('Headless');
@@ -40,7 +40,7 @@ let MyHeadlessTask = async (event) => {
         return;
     }
     log.info('start: ', taskId);
-    await Backend.RunBackgroundTask(taskId, true); //TODO
+    await Background.RunBackgroundTask(taskId, true);
     log.info('finishing now: ', taskId);
     BackgroundFetch.finish(taskId);
 };

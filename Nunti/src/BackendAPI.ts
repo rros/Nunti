@@ -9,41 +9,16 @@ import { Utils } from './Backend/Utils';
 import { Storage } from './Backend/Storage';
 import { ArticlesUtils } from './Backend/ArticlesUtils';
 import { ArticlesFilter } from './Backend/ArticlesFilter';
+import { Current } from './Backend/Current';
 
 export class BackendAPI {
     public static log = Log.BE;
-    
-    public static LastRemovedBookmark: Article | null = null;
-
+   
     public static get UserSettings(): UserSettings {
         return UserSettings.Instance;
     }
 
     public static StatusUpdateCallback: ((context: 'feed', percentageFloat: number) => void) | null = null;
-
-    public static CurrentArticles: {[source: string]: Article[][]} = {
-        'feed': [[]],
-        'bookmarks': [[]],
-        'history': [[]]
-    };
-    public static get CurrentFeed(): Article[][] {
-        return this.CurrentArticles['feed'];
-    }
-    public static set CurrentFeed(value: Article[][]) {
-        this.CurrentArticles['feed'] = value;
-    }
-    public static get CurrentBookmarks(): Article[][] {
-        return this.CurrentArticles['bookmarks'];
-    }
-    public static set CurrentBookmarks(value: Article[][]) {
-        this.CurrentArticles['bookmarks'] = value;
-    }
-    public static get CurrentHistory(): Article[][] {
-        return this.CurrentArticles['history'];
-    }
-    public static set CurrentHistory(value: Article[][]) {
-        this.CurrentArticles['history'] = value;
-    }
     
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
@@ -62,7 +37,7 @@ export class BackendAPI {
 
         const timeBegin = Date.now();
         const pages = Utils.PaginateArticles(arts, this.UserSettings.FeedPageSize);
-        this.CurrentArticles[articleSource] = pages;
+        Current.CurrentArticles[articleSource] = pages;
         const timeEnd = Date.now();
 
         this.log.context('Pagination').debug(`Finished in ${timeEnd - timeBegin} ms`);
@@ -128,7 +103,9 @@ export class BackendAPI {
             log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
-            arts = await Downloader.DownloadArticles(abort);
+            arts = await Downloader.DownloadArticles(abort, (ctx: "feed", percent: number) => {
+                this.StatusUpdateCallback ? this.StatusUpdateCallback(ctx, percent * 0.6) : null;
+            });
             if (arts.length > 0) //TODO: resolve issue #72 here
                 await Storage.FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
         } else {
@@ -223,7 +200,7 @@ export class BackendAPI {
                     }
                 }
             }
-            await this.UserSettings.Save();
+            await UserSettings.Save();
         }
     }
     // NOTE from frontend: leave this sync, I can't use await in componentDidMount when creating states with this

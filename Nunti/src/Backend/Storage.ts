@@ -5,6 +5,7 @@ import { Background } from "./Background";
 import { UserSettings } from "./UserSettings";
 import Store from 'react-native-fs-store';
 import { Utils } from "./Utils";
+import { Current } from "./Current";
 const FSStore = new Store('store1');
 
 export class Storage {
@@ -144,8 +145,8 @@ export class Storage {
             if (index >= 0) {
                 saved.splice(index,1);
                 await this.StorageSave('saved',saved);
-                this.CurrentBookmarks = this.PagesRemoveArticle(article, this.CurrentBookmarks); //TODO
-                this.LastRemovedBookmark = article; //TODO
+                Current.CurrentBookmarks = Utils.PagesRemoveArticle(article, Current.CurrentBookmarks);
+                Current.LastRemovedBookmark = article;
                 return true;
             } else
                 throw new Error('not found in saved');

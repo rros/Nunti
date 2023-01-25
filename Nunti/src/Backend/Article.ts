@@ -1,7 +1,9 @@
 import Log from "../Log";
+import { Current } from "./Current";
 import { Storage } from "./Storage";
 import { Tag } from "./Tag";
 import { UserSettings } from "./UserSettings";
+import { Utils } from "./Utils";
 
 export class Article {
     public id = 0;
@@ -88,7 +90,7 @@ export class Article {
         await Storage.StorageSave('learning_db_secondary', learning_db_secondary);
         log.info(`Saved rating for article '${art.title}'`);
         await Storage.CheckDB();
-        this.CurrentFeed = this.PagesRemoveArticle(art, this.CurrentFeed); //TODO
+        Current.CurrentFeed = Utils.PagesRemoveArticle(art, Current.CurrentFeed);
     }
     public static async GetArticleScore(art: Article): Promise<number> {
         let score = 0;

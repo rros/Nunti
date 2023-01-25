@@ -11,6 +11,7 @@ export class Background {
     private static log = Log.BE.context("Background");
 
     public static BackgroundLock = false; //prevents running multiple background task instances
+
     /* Does background task work, can be even called before Backend.Init() */
     /* Is run for ALL background tasks (both sync and notification) */
     public static async RunBackgroundTask(taskId: string, isHeadless: boolean): Promise<void> {
@@ -22,13 +23,13 @@ export class Background {
         }
         
         // lock mechanism
-        log.debug('Waiting for random amount of time..');
         if (this.BackgroundLock) {
             log.warn('Another background task already running, exiting now..');
             return;
         }
         this.BackgroundLock = true;
         log.info('BackgroundLock locked.');
+        
         try {
             await BackendAPI.Init();
             if (UserSettings.Instance.DisableBackgroundTasks) {
@@ -120,7 +121,7 @@ export class Background {
                         }
                     }
                     UserSettings.Instance.LastBackupTimestamp = Date.now();
-                    UserSettings.Instance.Save();
+                    await UserSettings.Save();
                 } else
                     log.info(`Remaining time until next auto-backup: ${-(remainingTime / (60*60*1000)).toFixed(2)} hrs.`);
             }
@@ -129,6 +130,4 @@ export class Background {
             this.BackgroundLock = false;
         }
     }
-    
-
 }
