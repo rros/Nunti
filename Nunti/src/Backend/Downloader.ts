@@ -1,15 +1,15 @@
-import { Feed } from "./Feed";
-import { Article } from "./Article"
-import Log from "../Log";
+import { Feed } from './Feed';
+import { Article } from './Article';
+import Log from '../Log';
 import iconv from 'iconv-lite';
-import { UserSettings } from "./UserSettings";
-import { ArticlesUtils } from "./ArticlesUtils";
+import { UserSettings } from './UserSettings';
+import { ArticlesUtils } from './ArticlesUtils';
 const DOMParser = require('xmldom').DOMParser; //eslint-disable-line
 const XMLSerializer = require('xmldom').XMLSerializer; //eslint-disable-line
 import { decode } from 'html-entities';
 
 export class Downloader {
-    private static log = Log.BE.context("Downloader");
+    private static log = Log.BE.context('Downloader');
 
     public static async DownloadArticlesOneChannel(feed: Feed, maxperchannel: number, throwError = false): Promise<Article[]> {
         const log = this.log.context('DownloadArticlesOneChannel').context('Feed:'+feed.url);
@@ -238,7 +238,7 @@ export class Downloader {
         }
     }
     public static async DownloadArticles
-        (abort: AbortController | null = null,
+    (abort: AbortController | null = null,
         statusUpdateCallback: ((ctx: 'feed', perctFloat: number) => void) | null = null
     ): Promise<Article[]> {
 

@@ -15,7 +15,6 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 import { version } from '../../package.json';
 
 import { browserRef, snackbarRef, logRef } from '../App';
-import { Backend } from '../Backend';
 import Log from '../Log';
 
 function About (props) {

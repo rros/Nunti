@@ -1,14 +1,14 @@
-import { AppState } from "react-native";
-import Log from "../Log";
-import { Storage } from "./Storage";
-import { UserSettings } from "./UserSettings";
-import BackendAPI from "../BackendAPI";
-import { Article } from "./Article";
+import { AppState } from 'react-native';
+import Log from '../Log';
+import { Storage } from './Storage';
+import { UserSettings } from './UserSettings';
+import BackendAPI from '../Backend';
+import { Article } from './Article';
 import * as ScopedStorage from 'react-native-scoped-storage';
-import { Backup } from "./Backup";
+import { Backup } from './Backup';
 
 export class Background {
-    private static log = Log.BE.context("Background");
+    private static log = Log.BE.context('Background');
 
     public static BackgroundLock = false; //prevents running multiple background task instances
 

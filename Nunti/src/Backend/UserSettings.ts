@@ -53,8 +53,14 @@ export class UserSettings {
     public static async Refresh(): Promise<void> {
         await UserSettings.RefreshUserSettings();
     }
+    public async Save(): Promise<void> {
+        await UserSettings.Save();
+    }
+    public async Refresh(): Promise<void> {
+        await UserSettings.Refresh();
+    }
 
-    private static log: Log = Log.BE.context("UserSettings");
+    private static log: Log = Log.BE.context('UserSettings');
 
     /* Re-load and recheck UserSettings from storage. (unsaved changes will be lost) */
     public static async RefreshUserSettings(noCheckDb = false): Promise<void> {

@@ -30,11 +30,15 @@ import Animated, {
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import { Backend, Article } from '../Backend';
+import { Backend } from '../Backend';
+import { Article } from '../Backend/Article';
 import { modalRef, snackbarRef, browserRef, globalStateRef, logRef } from '../App';
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
 import SegmentedButton from '../Components/SegmentedButton';
 import LinearIndicator from '../Components/LinearIndicator';
+import { Utils } from '../Backend/Utils';
+import { Storage } from '../Backend/Storage';
+import { Current } from '../Backend/Current';
 
 // use a class wrapper to stop rerenders caused by global snack/modal
 class ArticlesPageOptimisedWrapper extends Component {
@@ -190,7 +194,7 @@ function ArticlesPage (props) {
             } else if(sourceFilter.current.tags.length != 0 || sourceFilter.current.search != '') {
                 bannerMessage.current = 'filter_nothing_found_banner';
                 bannerAction.current = 'open_filter';
-            } else if(await Backend.IsDoNotDownloadEnabled() && Backend.UserSettings.WifiOnly) {
+            } else if(await Utils.IsDoNotDownloadEnabled() && Backend.UserSettings.WifiOnly) {
                 bannerMessage.current = 'wifi_only_banner';
                 bannerAction.current = 'goto_settings';
             } else {
@@ -213,7 +217,7 @@ function ArticlesPage (props) {
     
     // article functions
     const saveArticle = async (article: Article) => {
-        if(await Backend.TrySaveArticle(article)) {
+        if(await Storage.TrySaveArticle(article)) {
             snackbarRef.current.showSnack(props.lang.article_saved);
         } else {
             snackbarRef.current.showSnack(props.lang.article_already_saved);
@@ -250,11 +254,11 @@ function ArticlesPage (props) {
     const modifyArticle = async (article: Article, direction: string = 'right') => {
         if(props.buttonType == 'delete'){
             modalRef.current.hideModal();
-            await Backend.TryRemoveSavedArticle(article);
+            await Storage.TryRemoveSavedArticle(article);
             
             snackbarRef.current.showSnack(props.lang.removed_saved, props.lang.undo,
                 async () => {
-                    await Backend.TrySaveArticle(article);
+                    await Storage.TrySaveArticle(article);
                     refresh(false);
                 });
         } else {
@@ -263,18 +267,18 @@ function ArticlesPage (props) {
                 rating = 1;
             }
 
-            await Backend.RateArticle(article, rating);
+            await Article.RateArticle(article, rating);
         }
 
         switch (props.source) {
             case 'feed':
-                articlesFromBackend.current = Backend.CurrentFeed;
+                articlesFromBackend.current = Current.CurrentFeed;
                 break;
             case 'bookmarks':
-                articlesFromBackend.current = Backend.CurrentBookmarks;
+                articlesFromBackend.current = Current.CurrentBookmarks;
                 break;
             case 'history':
-                articlesFromBackend.current = Backend.CurrentHistory;
+                articlesFromBackend.current = Current.CurrentHistory;
                 break;
             default: 
                 log.current.error('Bad source, cannot update articles from backend');

@@ -1,9 +1,9 @@
-import Log from "../Log";
-import { Current } from "./Current";
-import { Storage } from "./Storage";
-import { Tag } from "./Tag";
-import { UserSettings } from "./UserSettings";
-import { Utils } from "./Utils";
+import Log from '../Log';
+import { Current } from './Current';
+import { Storage } from './Storage';
+import { Tag } from './Tag';
+import { UserSettings } from './UserSettings';
+import { Utils } from './Utils';
 
 export class Article {
     public id = 0;
@@ -34,7 +34,7 @@ export class Article {
     /* When deserializing cached/saved articles, date gets deserialized as a string, so it needs to be converted back to Date object. */
     public static Fix(art: Article): void {
         if (typeof(art.date) === 'string')
-            art.date = new Date(art.date?.toString() ?? Date.now());
+            art.date = new Date(art.date?.toString() ?? Date.now()); //eslint-disable-line
         if (art.date == null)
             art.date = undefined;
     }

@@ -26,6 +26,7 @@ import DefaultTopics from '../DefaultTopics';
 import SettingsBackground from '../Screens/SettingsSubpages/SettingsBackground';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { Storage } from '../Backend/Storage';
 const NavigationTabs = createMaterialTopTabNavigator();
 
 function Wizard (props) {
@@ -92,7 +93,7 @@ function Step1Welcome (props) {
             return;
         }
 
-        if(await Backend.TryLoadBackup(file.data)){
+        if(await Storage.TryLoadBackup(file.data)){
             globalStateRef.current.updateLanguage(Backend.UserSettings.Language);
             globalStateRef.current.updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
             

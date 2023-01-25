@@ -1,6 +1,6 @@
-import { Article } from "./Article";
-import { Feed } from "./Feed";
-import { UserSettings } from "./UserSettings";
+import { Article } from './Article';
+import { Feed } from './Feed';
+import { UserSettings } from './UserSettings';
 import NetInfo from '@react-native-community/netinfo';
 import { NativeModules } from 'react-native';
 const I18nManager = NativeModules.I18nManager;

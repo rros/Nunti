@@ -1,11 +1,11 @@
-import Log from "../Log";
-import { Article } from "./Article";
-import { Storage } from "./Storage";
-import { UserSettings } from "./UserSettings";
-import { Utils } from "./Utils";
+import Log from '../Log';
+import { Article } from './Article';
+import { Storage } from './Storage';
+import { UserSettings } from './UserSettings';
+import { Utils } from './Utils';
 
 export class ArticlesUtils {
-    private static log = Log.BE.context("ArticlesUtils");
+    private static log = Log.BE.context('ArticlesUtils');
 
     /* Removes seen (already rated) articles and any duplicates from article list. */
     public static async CleanArticles(arts: Article[]): Promise<Article[]> {
@@ -138,7 +138,7 @@ export class ArticlesUtils {
         arts: Article[],
         statusUpdateCallback: ((ctx: 'feed', perctFloat: number) => void) | null = null,
         abort: AbortController | null = null
-    ) {
+    ): void {
 
         const log = this.log.context('ExtractKeywords');
         const timeBegin = Date.now();
@@ -189,8 +189,9 @@ export class ArticlesUtils {
 
         //pass 2 - calculate tf-idf, get keywords
         let feeds = 0;
-        for (const feed in sorted)
+        sorted.keys.forEach(() => {
             feeds += 1;
+        });
         let feedsProcessed = 0;
         for(const feedName in sorted) {
             feedsProcessed += 1;

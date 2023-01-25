@@ -55,6 +55,8 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import RNBootSplash from 'react-native-bootsplash';
 import BackgroundFetch from './BackgroundFetch';
+import { Background } from './Backend/Background';
+import { Storage } from './Backend/Storage';
 
 const NavigationDrawer = createDrawerNavigator();
 const MaterialYouModule = NativeModules.MaterialYouModule;
@@ -173,7 +175,7 @@ export default function App (props) {
             /* set up background task */
             const onEvent = async (taskId: string) => {
                 log.current.context('BackgroundFetch').debug('Task: ', taskId);
-                await Backend.RunBackgroundTask(taskId, false);
+                await Background.RunBackgroundTask(taskId, false);
                 BackgroundFetch.finish(taskId);
             };
             const onTimeout = async (taskId: string) => {
@@ -533,14 +535,14 @@ export default function App (props) {
         shouldFeedReload.current = true;
 
         if(resetCache) {
-            Backend.ResetCache();
+            Storage.ResetCache();
         }
     }
 
     const resetApp = async () => {
         log.current.debug('Resetting all data in FE, navigating to Wizard');
 
-        await Backend.ResetAllData();
+        await Storage.ResetAllData();
         await reloadGlobalStates();
         
         drawerNavigationRef.resetRoot({

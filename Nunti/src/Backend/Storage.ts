@@ -1,18 +1,18 @@
-import { AsyncStorage } from "react-native";
-import Log from "../Log";
-import { Article } from "./Article";
-import { Background } from "./Background";
-import { UserSettings } from "./UserSettings";
+import { AsyncStorage } from 'react-native';
+import Log from '../Log';
+import { Article } from './Article';
+import { Background } from './Background';
+import { UserSettings } from './UserSettings';
 import Store from 'react-native-fs-store';
-import { Utils } from "./Utils";
-import { Current } from "./Current";
+import { Utils } from './Utils';
+import { Current } from './Current';
 const FSStore = new Store('store1');
 
 export class Storage {
     public static DB_VERSION = '3.1';
     public static DbLocked = false; //prevents running multiple CheckDB at the same time
     public static FSStore = FSStore;
-    private static log = Log.BE.context("Storage");
+    private static log = Log.BE.context('Storage');
 
     /* Resets cache */
     public static async ResetCache(): Promise<void> {

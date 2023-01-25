@@ -1,4 +1,4 @@
-import { Article } from "./Article";
+import { Article } from './Article';
 
 export class Current {
     public static LastRemovedBookmark: Article | null = null;

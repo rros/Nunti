@@ -1,3 +1,8 @@
+import Log from '../Log';
+import { Feed } from './Feed';
+import { UserSettings } from './UserSettings';
+import { Utils } from './Utils';
+
 export class Tag {
     public static lastRemoved: Tag | null = null;
     public name: string;
@@ -12,14 +17,14 @@ export class Tag {
     
     public static async New(name: string): Promise<Tag> {
         let contains = false;
-        Backend.UserSettings.Tags.forEach((tag) => {
+        UserSettings.Instance.Tags.forEach((tag) => {
             if (tag.name == name)
                 contains = true;
         });
         if (!contains) {
             const tag = new Tag(name);
-            Backend.UserSettings.Tags.push(tag);
-            await Backend.UserSettings.Save();
+            UserSettings.Instance.Tags.push(tag);
+            await UserSettings.Instance.Save();
             return tag;
         } else
             throw new Error(`Tag ${name} already exists.`);
@@ -27,7 +32,7 @@ export class Tag {
 
     public static async NewOrExisting(name: string): Promise<Tag> {
         let found: Tag | null = null;
-        Backend.UserSettings.Tags.forEach((tag) => {
+        UserSettings.Instance.Tags.forEach((tag) => {
             if (tag.name == name)
                 found = tag;
         });
@@ -39,17 +44,17 @@ export class Tag {
 
     public static async Remove(tag: Tag): Promise<void> {
         let i = -1;
-        for (let y = 0; y < Backend.UserSettings.Tags.length; y++) {
-            if (Backend.UserSettings.Tags[y].name == tag.name)
+        for (let y = 0; y < UserSettings.Instance.Tags.length; y++) {
+            if (UserSettings.Instance.Tags[y].name == tag.name)
                 i = y;
         }
         if (i < 0)
             Log.BE.context('Tag:'+tag.name).context('Remove').error('Cannot remove tag from UserSettings.');
         else
-            Backend.UserSettings.Tags.splice(i, 1);
+            UserSettings.Instance.Tags.splice(i, 1);
         
         tag.feedUrlsAffected = [];
-        Backend.UserSettings.FeedList.forEach((feed: Feed) => {
+        UserSettings.Instance.FeedList.forEach((feed: Feed) => {
             let feed_tag_index = -1;
             for (let y = 0; y < feed.tags.length; y++) {
                 if (feed.tags[i].name == tag.name)
@@ -63,7 +68,7 @@ export class Tag {
             }
         });
         Tag.lastRemoved = tag;
-        Backend.UserSettings.Save();
+        UserSettings.Save();
     }
 
     public static async UndoRemove(): Promise<boolean> {
@@ -72,15 +77,15 @@ export class Tag {
         const tag = this.lastRemoved;
         const feedsAffected = tag.feedUrlsAffected;
         tag.feedUrlsAffected = null;
-        Backend.UserSettings.Tags.push(tag);
+        UserSettings.Instance.Tags.push(tag);
         if (feedsAffected != null) {
             feedsAffected.forEach( (url: string) => {
-                const feedList = Backend.UserSettings.FeedList;
-                feedList[Backend.FindFeedByUrl(url, feedList)].tags.push(tag);
+                const feedList = UserSettings.Instance.FeedList;
+                feedList[Utils.FindFeedByUrl(url, feedList)].tags.push(tag);
             });
         }
         this.lastRemoved = null;
-        await Backend.UserSettings.Save();
+        await UserSettings.Save();
         return true;
     }
 }

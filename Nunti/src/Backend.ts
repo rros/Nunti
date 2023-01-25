@@ -11,7 +11,7 @@ import { ArticlesUtils } from './Backend/ArticlesUtils';
 import { ArticlesFilter } from './Backend/ArticlesFilter';
 import { Current } from './Backend/Current';
 
-export class BackendAPI {
+export class Backend {
     public static log = Log.BE;
    
     public static get UserSettings(): UserSettings {
@@ -42,7 +42,7 @@ export class BackendAPI {
 
         this.log.context('Pagination').debug(`Finished in ${timeEnd - timeBegin} ms`);
         return pages;
-    }
+    }Backend
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
     public static async GetArticles(
         articleSource: string,
@@ -103,7 +103,7 @@ export class BackendAPI {
             log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
-            arts = await Downloader.DownloadArticles(abort, (ctx: "feed", percent: number) => {
+            arts = await Downloader.DownloadArticles(abort, (ctx: 'feed', percent: number) => {
                 this.StatusUpdateCallback ? this.StatusUpdateCallback(ctx, percent * 0.6) : null;
             });
             if (arts.length > 0) //TODO: resolve issue #72 here
@@ -155,17 +155,17 @@ export class BackendAPI {
         let channelDescription: string;
         const locale = Utils.GetLocale();
         switch (channel) {
-            case 'new_articles':
-                channelName = locale.notifications_new_articles;
-                channelDescription = locale.notifications_new_articles_description;
-                break;
-            case 'other':
-                channelName = 'Other';
-                channelDescription = 'Other notifications';
-                break;
-            default:
-                log.error(`Failed attempt, '${channel}' - channel not allowed.`);
-                return false;
+        case 'new_articles':
+            channelName = locale.notifications_new_articles;
+            channelDescription = locale.notifications_new_articles_description;
+            break;
+        case 'other':
+            channelName = 'Other';
+            channelDescription = 'Other notifications';
+            break;
+        default:
+            log.error(`Failed attempt, '${channel}' - channel not allowed.`);
+            return false;
         }
         const title = channelName;
         const summary = null;
@@ -246,4 +246,4 @@ export class BackendAPI {
         return status;
     }
 }
-export default BackendAPI;
+export default Backend;

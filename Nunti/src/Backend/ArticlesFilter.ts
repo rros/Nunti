@@ -1,5 +1,5 @@
-import { Article } from "./Article";
-import { Tag } from "./Tag";
+import { Article } from './Article';
+import { Tag } from './Tag';
 
 export class ArticlesFilter {
     public sortType: string | undefined; //either 'learning' or 'date'
