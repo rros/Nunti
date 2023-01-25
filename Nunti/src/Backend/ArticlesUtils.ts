@@ -189,9 +189,9 @@ export class ArticlesUtils {
 
         //pass 2 - calculate tf-idf, get keywords
         let feeds = 0;
-        sorted.keys.forEach(() => {
+        for (const _feed in sorted) {
             feeds += 1;
-        });
+        }
         let feedsProcessed = 0;
         for(const feedName in sorted) {
             feedsProcessed += 1;

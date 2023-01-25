@@ -173,8 +173,8 @@ function ArticlesPage (props) {
             refreshAbortController.current = new AbortController();
             articlesFromBackend.current = await Backend.GetArticlesPaginated(props.source, 
                 sourceFilter.current, refreshAbortController.current);
-        } catch {
-            log.current.warn("Get articles was cancelled");
+        } catch (err) {
+            log.current.warn("Get articles was cancelled", err);
             return;
         }
 

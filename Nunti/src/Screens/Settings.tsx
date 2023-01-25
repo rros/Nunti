@@ -176,7 +176,7 @@ function SettingsMain (props) {
             return;
         }
 
-        if(await Storage.TryLoadBackup(file.data)){
+        if(await Backup.TryLoadBackup(file.data)){
             snackbarRef.current.showSnack(props.lang.import_ok);
 
             setLearningStatus(await Backend.GetLearningStatus());

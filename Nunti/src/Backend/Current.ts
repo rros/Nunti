@@ -1,7 +1,6 @@
 import { Article } from './Article';
 
 export class Current {
-    public static LastRemovedBookmark: Article | null = null;
     public static CurrentArticles: {[source: string]: Article[][]} = {
         'feed': [[]],
         'bookmarks': [[]],

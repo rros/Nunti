@@ -9,6 +9,7 @@ import { Current } from './Current';
 const FSStore = new Store('store1');
 
 export class Storage {
+    public static LastRemovedBookmark: Article | null = null;
     public static DB_VERSION = '3.1';
     public static DbLocked = false; //prevents running multiple CheckDB at the same time
     public static FSStore = FSStore;
@@ -146,7 +147,7 @@ export class Storage {
                 saved.splice(index,1);
                 await this.StorageSave('saved',saved);
                 Current.CurrentBookmarks = Utils.PagesRemoveArticle(article, Current.CurrentBookmarks);
-                Current.LastRemovedBookmark = article;
+                this.LastRemovedBookmark = article;
                 return true;
             } else
                 throw new Error('not found in saved');

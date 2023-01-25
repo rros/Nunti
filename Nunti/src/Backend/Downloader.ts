@@ -7,6 +7,7 @@ import { ArticlesUtils } from './ArticlesUtils';
 const DOMParser = require('xmldom').DOMParser; //eslint-disable-line
 const XMLSerializer = require('xmldom').XMLSerializer; //eslint-disable-line
 import { decode } from 'html-entities';
+import { Buffer } from 'buffer';
 
 export class Downloader {
     private static log = Log.BE.context('Downloader');
