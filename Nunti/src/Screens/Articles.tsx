@@ -421,7 +421,6 @@ function ListEmptyComponent ({ theme, route, lang }) {
     }
 }
 
-// TODO LANG CHANGE IN MODAL
 function RssModalContent ({ lang, theme, applyFilter, sourceFilter }) {
     const [selectedFeeds, setFeeds] = useState([...sourceFilter.feeds]);
     const [forceValue, forceUpdate] = useState(false);
@@ -439,7 +438,6 @@ function RssModalContent ({ lang, theme, applyFilter, sourceFilter }) {
                 // unselect everything else
                 selectedFeeds.splice(0, selectedFeeds.length);
             } else {
-                console.log(selectedFeeds.indexOf('all_rss'));
                 // remove all_rss if picking something specific
                 if(selectedFeeds.indexOf('all_rss') >= 0) {
                     selectedFeeds.splice(selectedFeeds.indexOf('all_rss'), 1);
@@ -471,7 +469,7 @@ function RssModalContent ({ lang, theme, applyFilter, sourceFilter }) {
                         background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
                         onPress={() => changeSelectedFeeds('all_rss')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
-                            <Checkbox.Android position="leading"
+                            <Checkbox.Android
                                 status={selectedFeeds.indexOf('all_rss') >= 0 ? 'checked' : 'unchecked'} />
                             <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
                                 {color: theme.colors.onSurfaceVariant}]}>
@@ -485,7 +483,7 @@ function RssModalContent ({ lang, theme, applyFilter, sourceFilter }) {
                                 background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
                                 onPress={() => changeSelectedFeeds(feed.url)}>
                                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
-                                    <Checkbox.Android position="leading"
+                                    <Checkbox.Android
                                         status={selectedFeeds.indexOf(feed.url) >= 0 ? 'checked' : 'unchecked'} />
                                     <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
                                         {color: theme.colors.onSurfaceVariant}]}>

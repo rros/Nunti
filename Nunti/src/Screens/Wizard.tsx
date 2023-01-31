@@ -322,7 +322,7 @@ function Step4Topics (props) {
                             background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                             onPress={() => changeDefaultTopics(topic)}>
                             <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
-                                <Checkbox.Android position="leading"
+                                <Checkbox.Android
                                     status={topic.value ? 'checked' : 'unchecked'} />
                                 <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
                                     {color: props.theme.colors.onSurfaceVariant}]}>
@@ -346,7 +346,7 @@ function Step4Topics (props) {
                             background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
                             onPress={() => changeDefaultTopics(topic)}>
                             <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
-                                <Checkbox.Android position="leading"
+                                <Checkbox.Android
                                     status={topic.value ? 'checked' : 'unchecked'} />
                                 <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel, 
                                     {color: props.theme.colors.onSurfaceVariant}]}>
