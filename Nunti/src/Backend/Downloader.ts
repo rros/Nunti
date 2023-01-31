@@ -240,7 +240,7 @@ export class Downloader {
     }
     public static async DownloadArticles
     (abort: AbortController | null = null,
-        statusUpdateCallback: ((ctx: 'feed', perctFloat: number) => void) | null = null
+        statusUpdateCallback: ((perctFloat: number) => void) | null = null
     ): Promise<Article[]> {
 
         const THREADS = 6;
@@ -258,7 +258,7 @@ export class Downloader {
             const x = await this.DownloadArticlesOneChannel(feed, maxArts);
             feeds_processed += 1;
             const percentage = (feeds_processed / UserSettings.Instance.FeedList.length);
-            if (statusUpdateCallback) statusUpdateCallback('feed', percentage);
+            if (statusUpdateCallback) statusUpdateCallback(0.75 * percentage);
             return x;
         };
 
@@ -281,7 +281,9 @@ export class Downloader {
 
         const timeEnd = Date.now();
         log.info(`Finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
-        ArticlesUtils.ExtractKeywords(arts, statusUpdateCallback, abort);
+        ArticlesUtils.ExtractKeywords(arts, (perctFloat: number) => {
+            if (statusUpdateCallback) statusUpdateCallback(0.75 + 0.25 * perctFloat);
+        }, abort);
         return arts;
     }
 }

@@ -42,7 +42,7 @@ export class Backend {
 
         this.log.context('Pagination').debug(`Finished in ${timeEnd - timeBegin} ms`);
         return pages;
-    }Backend
+    }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
     public static async GetArticles(
         articleSource: string,
@@ -88,6 +88,11 @@ export class Backend {
     ): Promise<Article[]> {
 
         const log = this.log.context('GetFeedArticles');
+
+        const statusUpdateCallback = (p: number) => {
+            if(this.StatusUpdateCallback) this.StatusUpdateCallback('feed', p);
+        };
+
         if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0);
         log.info('Loading new articles..');
         const timeBegin: number = Date.now();
@@ -103,8 +108,8 @@ export class Backend {
             log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
-            arts = await Downloader.DownloadArticles(abort, (ctx: 'feed', percent: number) => {
-                this.StatusUpdateCallback ? this.StatusUpdateCallback(ctx, percent * 0.6) : null;
+            arts = await Downloader.DownloadArticles(abort, (percent: number) => {
+                statusUpdateCallback(percent * 0.6);
             });
             if (arts.length > 0) //TODO: resolve issue #72 here
                 await Storage.FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
@@ -114,12 +119,12 @@ export class Backend {
         }
         if (abort?.signal.aborted)
             throw new Error('Aborted by AbortController.');
-        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.8);
+        statusUpdateCallback(0.8);
 
         arts = await ArticlesUtils.SortArticles(arts, overrides);
         if (abort?.signal.aborted)
             throw new Error('Aborted by AbortController.');
-        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.9);
+        statusUpdateCallback(0.9);
 
         if (!this.UserSettings.DisableBackgroundTasks && this.UserSettings.EnableNotifications) {
             // force inject last notification's article to the top of the feed
@@ -138,9 +143,9 @@ export class Backend {
 
         if (abort?.signal.aborted)
             throw new Error('Aborted by AbortController.');
-        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0.95);
+        statusUpdateCallback(0.95);
         arts = await ArticlesUtils.CleanArticles(arts);
-        if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 1);
+        statusUpdateCallback(1);
 
         const timeEnd = Date.now();
         log.info(`Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);

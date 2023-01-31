@@ -136,7 +136,7 @@ export class ArticlesUtils {
     /* Fills in article.keywords property, does all the TF-IDF magic. */
     public static ExtractKeywords(
         arts: Article[],
-        statusUpdateCallback: ((ctx: 'feed', perctFloat: number) => void) | null = null,
+        statusUpdateCallback: ((perctFloat: number) => void) | null = null,
         abort: AbortController | null = null
     ): void {
 
@@ -183,7 +183,7 @@ export class ArticlesUtils {
             }
         }
         log.info('pass 1 finished');
-        if (statusUpdateCallback) statusUpdateCallback('feed', 0.65);
+        if (statusUpdateCallback) statusUpdateCallback(0.2);
         if (abort?.signal.aborted)
             throw new Error('Aborted by AbortController.');
 
@@ -247,7 +247,7 @@ export class ArticlesUtils {
             }
             if (abort?.signal.aborted)
                 throw new Error('Aborted by AbortController.');
-            if (statusUpdateCallback) statusUpdateCallback('feed', 0.65 + (0.8 - 0.65) * (feedsProcessed / feeds));
+            if (statusUpdateCallback) statusUpdateCallback(0.2 + 0.8 * (feedsProcessed / feeds));
         }
         log.info('pass 2 finished');
         const timeEnd = Date.now();
