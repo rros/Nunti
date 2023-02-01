@@ -57,9 +57,10 @@ export class Tag {
         UserSettings.Instance.FeedList.forEach((feed: Feed) => {
             let feed_tag_index = -1;
             for (let y = 0; y < feed.tags.length; y++) {
-                if (feed.tags[i].name == tag.name)
+                if (feed.tags[y].name == tag.name)
                     feed_tag_index = y;
             }
+
             if (feed_tag_index >= 0) {
                 if (tag.feedUrlsAffected == null)
                     tag.feedUrlsAffected = [];

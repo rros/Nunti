@@ -10,6 +10,8 @@ import { Storage } from './Backend/Storage';
 import { ArticlesUtils } from './Backend/ArticlesUtils';
 import { ArticlesFilter } from './Backend/ArticlesFilter';
 import { Current } from './Backend/Current';
+import { Tag } from './Backend/Tag';
+import { Feed } from './Backend/Feed';
 
 export class Backend {
     public static log = Log.BE;
@@ -186,26 +188,39 @@ export class Backend {
     }
     
     /* Change RSS topics */
-    public static async ChangeDefaultTopics(topicName: string, enable: boolean): Promise<void> {
+    public static async ChangeDefaultTopics(topicName: string, localisedName: string, enable: boolean): Promise<void> {
         const log = this.log.context('ChangeDefaultTopics');
         log.info(`${topicName} - ${enable ? 'add' : 'remove'}`);
 
+        // create a default tag if enabling
+        let tag:Tag = enable ? await Tag.New(localisedName) : null;
+
         if (DefaultTopics.Topics[topicName] !== undefined) {
             for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
-                const topicFeed = DefaultTopics.Topics[topicName].sources[i];
+                const topicFeed:Feed = DefaultTopics.Topics[topicName].sources[i];
                 if (enable) {
                     if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
-                        log.debug(`add feed ${topicFeed.name} to feedlist`);
-                        this.UserSettings.FeedList.push(topicFeed);
+                        log.debug(`add feed ${topicFeed.name} to feedlist with tag ${tag.name}`);
+                        Feed.AddTag(topicFeed, tag); // adds tag and saves the feed
                     }
                 } else {
                     const index = Utils.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList);
                     if (index >= 0) {
+                        if(topicFeed.tags.length > 0)
+                            tag = topicFeed.tags[0]; // there is only one possible tag in setup
+
                         log.debug(`remove feed ${topicFeed.name} from feedlist`);
                         this.UserSettings.FeedList.splice(index, 1);
                     }
                 }
             }
+
+            if(!enable) {
+                // remove previously gotten tag
+                log.debug(`removing tag ${tag.name}`);
+                await Tag.Remove(tag); 
+            }
+
             await UserSettings.Save();
         }
     }

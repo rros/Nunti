@@ -303,7 +303,7 @@ function Step4Topics (props) {
         setTopics(topics);
         forceUpdate(!forceValue);
 
-        Backend.ChangeDefaultTopics(topic.name, topic.value);
+        Backend.ChangeDefaultTopics(topic.name, props.lang[topic.name], topic.value);
     }
 
     return(
