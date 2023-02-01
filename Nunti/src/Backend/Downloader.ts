@@ -13,11 +13,16 @@ import { Buffer } from 'buffer';
 export class Downloader {
     private static log = Log.BE.context('Downloader');
 
-    /* Downloads articles from all feeds in feedlist */
+    /* 
+    * Downloads articles from all feeds in feedlist.
+    * returns articles and saveToCache, which is false if articles were loaded,
+    * but shall not be saved to cache (many feeds unexpectedly failed),
+    * for more info see issue #72.
+    */
     public static async DownloadArticles(
         abort: AbortController | null = null,
         statusUpdateCallback: ((perctFloat: number) => void) | null = null
-    ): Promise<Article[]> {
+    ): Promise<{articles: Article[], saveToCache: boolean}> {
 
         const THREADS = 6;
         const log = this.log.context('DownloadArticles');
@@ -30,9 +35,16 @@ export class Downloader {
         
         let feeds_processed = 0;
 
+        let unexpected_fails = 0;
+
         const statusUpdateWrapper = async (feed: Feed, maxArts: number): Promise<Article[]> => {
             const x = await this.SingleFeed(feed, maxArts);
             feeds_processed += 1;
+            if (x.length <= 0) { // feed probably failed
+                if (feed.failedAttempts < 2) { // failed only twice yet
+                    unexpected_fails++;
+                }
+            }
             const percentage = (feeds_processed / UserSettings.Instance.FeedList.length);
             if (statusUpdateCallback) statusUpdateCallback(0.75 * percentage);
             return x;
@@ -60,7 +72,7 @@ export class Downloader {
         ArticlesUtils.ExtractKeywords(arts, (perctFloat: number) => {
             if (statusUpdateCallback) statusUpdateCallback(0.75 + 0.25 * perctFloat);
         }, abort);
-        return arts;
+        return {articles: arts, saveToCache: unexpected_fails/UserSettings.Instance.FeedList.length > .25};
     }
 
     /* Downloads article from a single feed, does not throw errors unless throwError is enabled. */
@@ -77,7 +89,7 @@ export class Downloader {
         let response: string;
         try {
             try {
-                response = await this.Get(feed.url, log);
+                response = await this.Get(feed.url, log, feed.failedAttempts < 2 ? 5000 : 2000); //reduce timeout for feeds which tend to fail anyway
             } catch(err) {
                 throw new Error('Cannot read RSS ' + err);
             }
@@ -160,7 +172,7 @@ export class Downloader {
     }
 
     /* sends simple GET request to url, retrieving data as a string. */
-    public static Get(url: string, _log: Log): Promise<string> {
+    public static Get(url: string, _log: Log, timeout = 5000): Promise<string> {
         const log = _log.context('Get');
         return new Promise((resolve, reject) => {
             const request = new XMLHttpRequest();
@@ -188,14 +200,14 @@ export class Downloader {
             };
 
             request.responseType = 'arraybuffer';
-            request.timeout = 5000;
+            request.timeout = timeout;
             setTimeout(() => {
                 /* 10s max-timeout because sometimes feeds connect SSL but then hang for a long time,
                 * which "cheats" the request.timeout.*/
                 if (!isFinished) {
                     reject(new Error('Timeout: answer took too long'));
                 }
-            }, 10000);
+            }, timeout * 2);
             request.open('GET', url);
             request.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
             request.setRequestHeader('User-Agent', this.GetRandomUA());

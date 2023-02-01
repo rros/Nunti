@@ -108,10 +108,11 @@ export class Backend {
             log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
-            arts = await Downloader.DownloadArticles(abort, (percent: number) => {
+            let result = await Downloader.DownloadArticles(abort, (percent: number) => {
                 statusUpdateCallback(percent * 0.6);
             });
-            if (arts.length > 0) //TODO: resolve issue #72 here
+            arts = result.articles;
+            if (arts.length > 0 && result.saveToCache)
                 await Storage.FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
         } else {
             log.info(`Using cached articles. (${cacheAgeMinutes} minutes old)`);
