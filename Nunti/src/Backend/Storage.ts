@@ -1,4 +1,4 @@
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Log from '../Log';
 import { Article } from './Article';
 import { Background } from './Background';

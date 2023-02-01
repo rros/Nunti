@@ -1,8 +1,11 @@
 package com.nunti;
 
 import android.os.Bundle;
-import com.facebook.react.ReactActivity;
 import android.content.res.Configuration;
+import com.facebook.react.ReactActivity;
+import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
+import com.facebook.react.defaults.DefaultReactActivityDelegate;
 
 import com.facebook.react.ReactActivityDelegate; // <- add this necessary import
 import com.zoontek.rnbootsplash.RNBootSplash; // <- add this necessary import
@@ -31,13 +34,21 @@ public class MainActivity extends ReactActivity {
 
     @Override
   protected ReactActivityDelegate createReactActivityDelegate() {
-    return new ReactActivityDelegate(this, getMainComponentName()) {
+    return new DefaultReactActivityDelegate(
+        this,
+        getMainComponentName(),
+        // If you opted-in for the New Architecture, we enable the Fabric Renderer.
+        DefaultNewArchitectureEntryPoint.getFabricEnabled(), // fabricEnabled
+        // If you opted-in for the New Architecture, we enable Concurrent React (i.e. React 18).
+        DefaultNewArchitectureEntryPoint.getConcurrentReactEnabled() // concurrentRootEnabled
+        ) {
 
       @Override
       protected void loadApp(String appKey) {
         RNBootSplash.init(MainActivity.this); // <- initialize the splash screen
         super.loadApp(appKey);
       }
+
     };
   }
 }
