@@ -36,14 +36,16 @@ export class Downloader {
         let feeds_processed = 0;
 
         let unexpected_fails = 0;
+        let total_fails = 0;
 
         const statusUpdateWrapper = async (feed: Feed, maxArts: number): Promise<Article[]> => {
             const x = await this.SingleFeed(feed, maxArts);
             feeds_processed += 1;
             if (x.length <= 0) { // feed probably failed
-                if (feed.failedAttempts < 2) { // failed only twice yet
+                if (feed.failedAttempts < 4) { // is not marked as faulty
                     unexpected_fails++;
                 }
+                total_fails++;
             }
             const percentage = (feeds_processed / UserSettings.Instance.FeedList.length);
             if (statusUpdateCallback) statusUpdateCallback(0.75 * percentage);
@@ -68,11 +70,24 @@ export class Downloader {
         }
 
         const timeEnd = Date.now();
-        log.info(`Finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles.`);
+        log.info(`Finished in ${((timeEnd - timeBegin)/1000)} seconds, got ${arts.length} articles, ${unexpected_fails} unexpected fails.`);
+
+        if (total_fails >= 0.9 * UserSettings.Instance.FeedList.length) {
+            // more than 90% feeds failed, treat this as a nonfunctioning network and revert failed attempts
+            log.error(`Almost all feeds failed (${total_fails}/${UserSettings.Instance.FeedList.length}), possibly non-functioning internet connection.`);
+            for (let i = 0; i < UserSettings.Instance.FeedList.length; i++) {
+                if(UserSettings.Instance.FeedList[i].failedAttempts > 0) {
+                    log.info(`Lowered failedAttempts by 1 - (${UserSettings.Instance.FeedList[i].name})`);
+                    UserSettings.Instance.FeedList[i].failedAttempts -= 1;
+                }
+            }
+            await UserSettings.Save();
+        }
+
         ArticlesUtils.ExtractKeywords(arts, (perctFloat: number) => {
             if (statusUpdateCallback) statusUpdateCallback(0.75 + 0.25 * perctFloat);
         }, abort);
-        return {articles: arts, saveToCache: unexpected_fails/UserSettings.Instance.FeedList.length > .25};
+        return {articles: arts, saveToCache: unexpected_fails/UserSettings.Instance.FeedList.length <= 0.25};
     }
 
     /* Downloads article from a single feed, does not throw errors unless throwError is enabled. */
@@ -162,7 +177,8 @@ export class Downloader {
             return arts;
         } catch (err) {
             log.error('Faulty RSS feed: ', err);
-            feed.failedAttempts += 1;
+            if (feed.failedAttempts < 9999)
+                feed.failedAttempts += 1;
             log.info(`increased failedAttempts to ${feed.failedAttempts}`);
             UserSettings.Save();
             if (throwError)

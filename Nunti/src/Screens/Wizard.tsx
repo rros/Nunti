@@ -20,6 +20,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 
 import { snackbarRef, globalStateRef, logRef } from '../App';
 import { Backend } from '../Backend';
+import { Backup } from '../Backend/Backup';
 import Log from '../Log';
 import { Accents } from '../Styles';
 import DefaultTopics from '../DefaultTopics';
@@ -93,7 +94,7 @@ function Step1Welcome (props) {
             return;
         }
 
-        if(await Storage.TryLoadBackup(file.data)){
+        if(await Backup.TryLoadBackup(file.data)){
             globalStateRef.current.updateLanguage(Backend.UserSettings.Language);
             globalStateRef.current.updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
             

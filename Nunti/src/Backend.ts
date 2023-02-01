@@ -116,6 +116,8 @@ export class Backend {
             arts = result.articles;
             if (arts.length > 0 && result.saveToCache)
                 await Storage.FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
+            else
+                log.warn(`Downloaded articles will NOT be saved to cache. (${(arts.length > 0 ? 'many feeds unexpectedly failed' : 'no articles were loaded')})`);
         } else {
             log.info(`Using cached articles. (${cacheAgeMinutes} minutes old)`);
             arts = cache.articles;

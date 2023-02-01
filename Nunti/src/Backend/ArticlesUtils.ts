@@ -102,10 +102,13 @@ export class ArticlesUtils {
             return articles;
         }
 
+        log.debug(`Starting to calculate scores at ${Date.now() - timeBegin} ms.`);
         const scores: [Article,number][] = [];
         for(let i = 0; i < articles.length; i++) {
+            //TODO: optimize (takes ~ 3830 ms / 119)
             scores.push([articles[i], await Article.GetArticleScore(articles[i])]);
         }
+        log.info(`Article scores calculated at ${Date.now() - timeBegin} ms.`);
         scores.sort((first:any, second:any) => { //eslint-disable-line
             return second[1] - first[1];
         });
