@@ -93,14 +93,17 @@ export class Article {
         Current.CurrentFeed = Utils.PagesRemoveArticle(art, Current.CurrentFeed);
     }
     public static async GetArticleScore(art: Article): Promise<number> {
-        let score = 0;
         const db: {[term: string]: number} = (await Storage.StorageGet('learning_db'))['keywords'];
-        for(const term in art.keywords) {
+        this.CalcArticleScoreFast(art, db);
+        return art.score;
+    }
+    public static CalcArticleScoreFast(art: Article, db: {[term: string]: number}): void {
+        let score = 0;
+        for (const term in art.keywords) {
             if (db[term] === undefined)
                 continue;
             score += art.keywords[term] * db[term];
         }
         art.score = score;
-        return score;
     }
 }
