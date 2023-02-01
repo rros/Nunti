@@ -1,7 +1,5 @@
 package com.nunti;
 
-import android.os.Bundle;
-import android.content.res.Configuration;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
@@ -19,17 +17,6 @@ public class MainActivity extends ReactActivity {
   @Override
   protected String getMainComponentName() {
     return "Nunti";
-  }
-
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(null);
-  }
-
-  @Override
-  public void onConfigurationChanged(Configuration newConfig) {
-    super.onConfigurationChanged(newConfig);
-    getReactInstanceManager().onConfigurationChanged(this, newConfig);
   }
 
     @Override
