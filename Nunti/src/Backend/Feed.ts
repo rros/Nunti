@@ -33,7 +33,7 @@ export class Feed {
         if (Utils.FindFeedByUrl(feed.url, UserSettings.Instance.FeedList) >= 0)
             throw new Error('Feed already in feedlist.');
 
-        await Downloader.DownloadArticlesOneChannel(feed, 5, true);
+        await Downloader.SingleFeed(feed, 5, true);
 
         UserSettings.Instance.FeedList.push(feed);
         await UserSettings.Save();
@@ -73,7 +73,7 @@ export class Feed {
         // confirm that feed is working
         const isWorking = async (link: string): Promise<boolean> => {
             try {
-                await Downloader.DownloadArticlesOneChannel(new Feed(link), 5, true);
+                await Downloader.SingleFeed(new Feed(link), 5, true);
                 return true;
             } catch {
                 return false;
