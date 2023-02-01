@@ -195,15 +195,18 @@ export class Backend {
         log.info(`${topicName} - ${enable ? 'add' : 'remove'}`);
 
         // create a default tag if enabling
-        let tag:Tag = enable ? await Tag.New(localisedName) : null;
+        let tag: Tag | null = enable ? await Tag.New(localisedName) : null;
 
         if (DefaultTopics.Topics[topicName] !== undefined) {
             for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
                 const topicFeed:Feed = DefaultTopics.Topics[topicName].sources[i];
                 if (enable) {
                     if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
-                        log.debug(`add feed ${topicFeed.name} to feedlist with tag ${tag.name}`);
-                        Feed.AddTag(topicFeed, tag); // adds tag and saves the feed
+                        log.debug(`add feed ${topicFeed.name} to feedlist with tag ${tag?.name}`);
+                        if (tag != null)
+                            Feed.AddTag(topicFeed, tag); // adds tag and saves the feed
+                        else
+                            Feed.Save(topicFeed);
                     }
                 } else {
                     const index = Utils.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList);
@@ -219,8 +222,9 @@ export class Backend {
 
             if(!enable) {
                 // remove previously gotten tag
-                log.debug(`removing tag ${tag.name}`);
-                await Tag.Remove(tag); 
+                log.debug(`removing tag ${tag?.name}`);
+                if (tag != null)
+                    await Tag.Remove(tag);
             }
 
             await UserSettings.Save();

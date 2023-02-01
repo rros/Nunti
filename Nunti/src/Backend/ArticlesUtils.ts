@@ -163,17 +163,23 @@ export class ArticlesUtils {
 
         // calculate tf-idf
         // pass 1 - gather term counts
+
+        const artWordSets: {[url: string]: Set<string>} = {};
+
         const feedTermCount: {[term: string]: number} = {};
         const artTermCount: {[artUrl: string]: {[term: string]: number}} = {};
         for(const feedName in sorted) {
             const artsInFeed = sorted[feedName];
             for (let i = 0; i < artsInFeed.length; i++) {
                 const art = artsInFeed[i];
+                const set: Set<string> = new Set();
+                artWordSets[art.url] = set;
                 const words = art.GetKeywordBase().split(' ');
                 artTermCount[art.url] = {};
                 for (let y = 0; y < words.length; y++) {
                     if (words[y] == '')
                         continue;
+                    set.add(words[y]);
                     if (feedTermCount[words[y]] === undefined)
                         feedTermCount[words[y]] = 1;
                     else
@@ -204,16 +210,18 @@ export class ArticlesUtils {
             for (let i = 0; i < artsInFeed.length; i++) {
                 const art = artsInFeed[i];
                 const words = art.GetKeywordBase().split(' ');
+
+                let totalTermCount = 0;
+                for (const term in artTermCount[art.url]) {
+                    totalTermCount += artTermCount[art.url][term];
+                }
+
                 for (let y = 0; y < words.length; y++) {
                     const word = words[y];
                     if (word == '')
                         continue;
 
                     // calculate tf
-                    let totalTermCount = 0;
-                    for (const term in artTermCount[art.url]) {
-                        totalTermCount += artTermCount[art.url][term];
-                    }
                     const tf = artTermCount[art.url][word] / totalTermCount;
 
                     //calculate idf
@@ -221,7 +229,7 @@ export class ArticlesUtils {
                     let documentsContainingTerm = 0;
                     for (let a = 0; a < artsInFeed.length; a++) {
                         const art = artsInFeed[a];
-                        if (art.GetKeywordBase().indexOf(word) > -1)
+                        if (artWordSets[art.url].has(word))
                             documentsContainingTerm += 1;
                     }
                     const idf = Math.log(totalDocuments / (1 + documentsContainingTerm)) + 1;
@@ -230,7 +238,6 @@ export class ArticlesUtils {
                     const tfidf = tf * idf * 1000;
                     art.keywords[word] = tfidf;
                 }
-
                 // cut only the top
                 let items = Object.keys(art.keywords).map(function(key) {
                     return [key, art.keywords[key]];
@@ -240,9 +247,10 @@ export class ArticlesUtils {
                     return second[1] - first[1];
                 });
 
-                items = items.slice(0, 20);
                 art.keywords = {};
-                for(let p = 0; p < items.length; p++) {
+                for(let p = 0; p < 20; p++) {
+                    if (p >= items.length)
+                        break;
                     const item = items[p];
                     if (typeof(item[1]) !== 'number')
                         throw Error('Something real wrong.');
