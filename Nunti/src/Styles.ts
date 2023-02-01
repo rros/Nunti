@@ -911,7 +911,9 @@ export default Styles = StyleSheet.create ({
     },
 
     modalContentWrapper: {
+        flexShrink: 1,
         width: '100%',
+        maxWidth: 560,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -920,7 +922,6 @@ export default Styles = StyleSheet.create ({
         borderRadius: 28,
         overflow: 'hidden',
         width: '100%',
-        maxWidth: 560,
         maxHeight: '100%',
         flexShrink: 1,
     },

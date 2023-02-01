@@ -657,13 +657,13 @@ function DetailsModalContent ({ showImages, currentArticle, lang, theme, screenT
                                 
                 <View style={[{flexShrink: 1, borderBottomColor: theme.colors.outline, borderBottomWidth: 1}]}>
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
-                    <Text variant="titleLarge">{currentArticle.current.title}</Text>
-                    <Text style={Styles.captionText} variant="labelSmall">
+                    <Text selectable={true} variant="titleLarge">{currentArticle.current.title}</Text>
+                    <Text selectable={true}  style={Styles.captionText} variant="labelSmall">
                         {getDateCaption(currentArticle.current.date) === undefined ?
                             currentArticle.current.source :
                             getDateCaption(currentArticle.current.date) + ' • ' + currentArticle.current.source}</Text>
                     { currentArticle.current.description.length != 0 ?
-                        <Text variant="bodyMedium" style={Styles.bodyText}>
+                        <Text selectable={true} variant="bodyMedium" style={Styles.bodyText}>
                             {currentArticle.current.description}</Text> : null }
                 </ScrollView>
                 </View>
@@ -746,7 +746,8 @@ function ArticleCard ({ item, showImages, getDateCaption, screenType,
                     
                     <View style={{flexDirection: 'row-reverse'}}>
                         {(item.cover !== undefined && showImages) ? 
-                            <Card.Cover style={[Styles.cardCover, Styles.cardCoverSide]} source={{ uri: item.cover }}/> : null }
+                            <Card.Cover style={[Styles.cardCover, {backgroundColor: theme.colors.disabledContent, flex: 1}]} 
+                                source={{ uri: item.cover }} progressiveRenderingEnabled={true}/> : null }
                         <View style={[Styles.cardContent, {flex: 1}]}>
                             <Text variant="titleLarge" style={{color: theme.colors.onSecondaryContainer}} numberOfLines={3}>{item.title}</Text>
                             <Text variant="bodyMedium" numberOfLines={7} style={[{flexGrow: 1,
@@ -782,7 +783,8 @@ function ArticleCard ({ item, showImages, getDateCaption, screenType,
                     
                     <View>
                         {(item.cover !== undefined && showImages) ? 
-                            <Card.Cover style={Styles.cardCover} source={{ uri: item.cover }}/> : null }
+                            <Card.Cover style={[Styles.cardCover, {backgroundColor: theme.colors.disabledContent}]} 
+                                source={{ uri: item.cover }} progressiveRenderingEnabled={true}/> : null }
                         <View style={Styles.cardContent}>
                             <Text variant="titleLarge" style={{color: theme.colors.onSecondaryContainer}} numberOfLines={3}>{item.title}</Text>
                             { ((item.description.length != 0 && !showImages) || item.cover === undefined) ?
