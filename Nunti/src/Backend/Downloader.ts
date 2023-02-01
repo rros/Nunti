@@ -229,7 +229,14 @@ export class Downloader {
 
         try { art.description = art.description.replace(/<([^>]*)>/g,'').replace(/&[\S]+;/g,'').replace(/\[\S+\]/g, ''); } catch { /* dontcare */ }
         try { art.description = art.description.substr(0,1024); } catch { /* dontcare */ }
-        try { art.description = art.description.replace(/[^\S ]/,' ').replace(/[^\S]{3,}/g,' ').replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/g, '\uFFFD'); } catch { /* dontcare */ }
+        try { 
+            art.description = art.description
+                .replace(/[^\S ]/,' ')
+                .replace(/[^\S]{3,}/g,' ')
+                // replaces lone surrogates by the replacement character
+                // see issue #86
+                .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/g, '\uFFFD');
+        } catch { /* dontcare */ }
                     
     }
     private static ParseArticleImage(art: Article, item: any, serializer: any) {
