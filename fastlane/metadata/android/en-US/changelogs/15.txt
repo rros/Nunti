@@ -1,0 +1,6 @@
+- refactored and optimised the backend
+- the image placeholder (while an image is loading) now respects application theme
+- added https links to default topics where possible (thanks @IratePorcupine)
+- added option to export opml backup
+- added option to select text in article details
+- added default tags to default topics
