@@ -2221,7 +2221,7 @@ export const Ukrainian = {
     minutes: ' хвилин',
     hours: 'годин',
     days: 'днів',
-    dismiss: 'Відмовитися',
+    dismiss: 'Сховати',
     undo: 'Скасувати',
     save: 'Зберегти',
     share: 'Поширити',
