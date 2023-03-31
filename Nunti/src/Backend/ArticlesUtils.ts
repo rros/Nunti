@@ -88,7 +88,7 @@ export class ArticlesUtils {
         const originalShuffledArts = articles.slice();
 
         const learning_db = await Storage.StorageGet('learning_db');
-        if (overrides.sortType == 'date' || learning_db['upvotes'] + learning_db['downvotes'] <= UserSettings.Instance.NoSortUntil) {
+        if (overrides.sortType == 'date' || learning_db['upvotes'] + learning_db['downvotes'] < UserSettings.Instance.NoSortUntil) {
             if (overrides.sortType == 'date')
                 log.info('Won\'t sort because of overrides:',overrides);
             else
