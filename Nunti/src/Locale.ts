@@ -1971,6 +1971,7 @@ export const Persian = {
     hours: 'ساعت',
     days: 'روز',
     dismiss: 'رد کن',
+    undo: 'Undo',
     save: 'ذخیره کن',
     share: 'همرسانی کن',
     remove: 'پاک کن',
