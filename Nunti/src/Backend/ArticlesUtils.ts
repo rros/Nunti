@@ -14,16 +14,22 @@ export class ArticlesUtils {
         const startCount = arts.length;
         const seen = await Storage.StorageGet('seen');
 
+        const removedReasonCount: {[reason: string]: number} = {};
+
         // remove seen articles
+        removedReasonCount["seen"] = 0;
         for (let i = 0; i < seen.length; i++) {
             let index = Utils.FindArticleByUrl(seen[i].url,arts);
             while(index >= 0) {
                 arts.splice(index,1);
+                removedReasonCount["seen"]++;
                 index = Utils.FindArticleByUrl(seen[i].url,arts);
             }
         }
-        
-        // remove duplicate urls
+
+        // remove duplicate urls and old age
+        removedReasonCount["dup_url"] = 0;
+        removedReasonCount["old"] = 0;
         const newarts: Article[] = [];
         arts.forEach((art: Article | undefined) => {
             if (art == undefined) {
@@ -33,16 +39,21 @@ export class ArticlesUtils {
             // remove duplicate urls
             if (Utils.FindArticleByUrl(art.url, newarts) < 0) {
                 if (art.date != undefined) {
+                    // remove old age
                     if (Date.now() - art.date.getTime() < UserSettings.Instance.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
                         newarts.push(art);
+                    else
+                    removedReasonCount["old"]++;
                 } else
                     newarts.push(art);
-            }
+            } else
+                removedReasonCount["dup_url"]++;
         });
         arts = newarts;
         
         // remove duplicate titles
         const titleDuplicates: {[title: string]: Article[]} = {};
+        removedReasonCount["dup_title"] = 0;
         for (let i = 0; i < arts.length; i++) {
             const art: Article = arts[i];
             const title = art.title.toLowerCase();
@@ -63,11 +74,12 @@ export class ArticlesUtils {
             }
             for (let i = 0; i < indexesToDiscard.length; i++) {
                 arts.splice(indexesToDiscard[i], 1);
+                removedReasonCount["dup_title"]++;
             }
         }
 
         const endTime = Date.now();
-        log.debug(`Finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles.`);
+        log.debug(`Finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles. Details: ${JSON.stringify(removedReasonCount)}`);
         return arts;
     }
     public static async SortArticles(articles: Article[], overrides: {sortType: undefined | string} = {sortType: undefined}): Promise<Article[]> {
