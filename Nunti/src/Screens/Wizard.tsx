@@ -111,6 +111,10 @@ function Step1Welcome (props) {
         }
     }
 
+    const beginWizard = () => {
+        props.navigation.navigate('Language');
+    }
+
     return(
         <ScrollView showsVerticalScrollIndicator={false}>
             <View style={Styles.centeredImageContainer}>
@@ -119,14 +123,16 @@ function Step1Welcome (props) {
             </View>
 
             <View style={Styles.wizardCardWithButtonContainer}>
-                <Card mode={'contained'} style={[Styles.wizardCardWithButton, Styles.card]}>
+                <Card mode={'contained'} style={[Styles.wizardCardWithButton]}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1, 
                             color: props.theme.colors.onSurfaceVariant}]}>{props.lang.welcome}</Text>
                         <Text variant="bodyMedium" style={[Styles.bodyText, 
                             {color: props.theme.colors.onSurfaceVariant}]}>{props.lang.enjoy}</Text>
                         <Button icon="application-import" style={Styles.bodyText}
-                            onPress={importBackup}>{props.lang.import}</Button>
+                            onPress={importBackup}>{props.lang['have_backup']}</Button>
+                        <Button icon="handshake" style={Styles.bodyText} mode="contained"
+                            onPress={beginWizard}>{props.lang['new_to_rss']}</Button>
                     </View>
                 </Card>
             </View>
@@ -389,7 +395,7 @@ function Step6Learning (props) {
             </View>
 
             <View style={Styles.wizardCardWithButtonContainer}>
-                <Card mode={'contained'} style={[Styles.wizardCardWithButton, Styles.card]}>
+                <Card mode={'contained'} style={[Styles.wizardCardWithButton]}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleLarge" style={[Styles.centeredText, {flex: 1, 
                             color: props.theme.colors.onSurfaceVariant}]}>{props.lang.adapt}</Text>

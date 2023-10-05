@@ -1157,13 +1157,15 @@ export default Styles = StyleSheet.create ({
         flex: 1,
         justifyContent: 'center'
     },
-
-    wizardCardWithButtonContainer: {
-        marginVertical: 4,
-        marginHorizontal: 8,
-    },
     
     wizardCardWithButtonContainer: {
+        marginBottom: 8,
+        marginHorizontal: 16,
+        borderRadius: 12,
+        overflow: 'hidden',
+    },
+
+    wizardCardWithButton: {
         maxWidth: 560,
         width: '100%',
         alignSelf: 'center',

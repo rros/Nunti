@@ -108,7 +108,7 @@ function CustomHeader ({ navigation, route, lang, theme, screenType }) {
         <Appbar.Header mode={'small'} elevated={false}> 
             { (route.name == 'settings' && screenType <= 1) ? 
                 <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
-            { route.name != 'settings' ? <Appbar.BackAction onPress={() => { navigation.goBack(); }} /> : null }
+            { route.name != 'settings' ? <Appbar.BackAction onPress={() => { navigation.navigate('settings'); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
         </Appbar.Header> 
     );

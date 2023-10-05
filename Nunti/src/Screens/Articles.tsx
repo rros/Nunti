@@ -190,7 +190,7 @@ function ArticlesPage (props) {
         banner: if(props.source == 'feed' && numberOfArticles == 0) {
             if(Backend.UserSettings.FeedList.length == 0) {
                 bannerMessage.current = 'no_feed_banner';
-                bannerAction.current = 'goto_settings';
+                bannerAction.current = 'add_feeds';
             } else if(sourceFilter.current.tags.length != 0 || sourceFilter.current.search != '') {
                 bannerMessage.current = 'filter_nothing_found_banner';
                 bannerAction.current = 'open_filter';
@@ -324,12 +324,22 @@ function ArticlesPage (props) {
     }
 
     const bannerDoAction = (action: string) => {
-        if(action == 'goto_settings') {
-            props.navigation.navigate('settings');
-        } else if(action == 'open_filter') {
-            modalRef.current.showModal(() => <FilterModalContent theme={props.theme}
-                applyFilter={applyFilter} lang={props.lang}
-                sourceFilter={sourceFilter.current} />);
+        switch ( action ) {
+            case 'add_feeds':
+                props.navigation.navigate('settings', {
+                    screen: 'feeds',
+                });
+                break;
+            case 'goto_settings':
+                props.navigation.navigate('settings');
+                break;
+            case 'open_filter':
+                modalRef.current.showModal(() => <FilterModalContent theme={props.theme}
+                    applyFilter={applyFilter} lang={props.lang}
+                    sourceFilter={sourceFilter.current} />);
+                break;
+            default: 
+                break;
         }
     }
 
