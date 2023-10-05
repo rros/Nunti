@@ -81,7 +81,8 @@ function Step1Welcome (props) {
 
     const importBackup = async () => {
         const file: ScopedStorage.FileType = await ScopedStorage.openDocument(true, 'utf8');
-        const allowed_mime = ['text/plain', 'application/octet-stream', 'application/json'];
+        const allowed_mime = ['text/plain', 'application/octet-stream', 'application/json',
+            'application/xml', 'text/xml'];
 
         if(file == null){
             log.warn('Import cancelled by user')
