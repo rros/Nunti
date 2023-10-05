@@ -26,7 +26,8 @@ function SegmentedButton({ theme, lang, sourceFilter, applySorting }) {
         (async () => {
             learningStatus.current = await Backend.GetLearningStatus();
             setLearningDisabled(!learningStatus.current.SortingEnabled);
-            setSortType(learningStatus.current.SortingEnabled ? 'learning' : 'date');
+
+            setSortType(Backend.UserSettings.SortType);
         })();
     }, []);
 
@@ -48,6 +49,9 @@ function SegmentedButton({ theme, lang, sourceFilter, applySorting }) {
             setSortType(newSortType);
             applySorting(newSortType);
         }
+        
+        Backend.UserSettings.SortType = newSortType;
+        Backend.UserSettings.Save();
     }
     
     return(

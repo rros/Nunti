@@ -9,6 +9,8 @@ export class UserSettings {
     public FeedList: Feed[] = [];
     public Tags: Tag[] = [];
 
+    public SortType = 'date';
+
     public DisableImages = false;
     public LargeImages = true;
     public WifiOnly = false;
