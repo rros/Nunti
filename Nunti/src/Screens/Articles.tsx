@@ -85,7 +85,7 @@ function ArticlesPage (props) {
 
     const lang = useRef(props.lang); // modal event cannot read updated props
     const theme = useRef(props.theme); // modal event cannot read updated props
-    const sourceFilter = useRef({sortType: '', search: '', tags: []});
+    const sourceFilter = useRef({sortType: Backend.UserSettings.SortType, search: '', tags: []});
     const flatListRef = useAnimatedRef(); //scrollTo from reanimated doesn't work, use old .scrollToOffset
     
     const log = useRef(logRef.current.globalLog.current.context('ArticlePage_' + props.route.name));
@@ -94,7 +94,6 @@ function ArticlesPage (props) {
     useEffect(() => {
         (async () => {
             const learningStatus = await Backend.GetLearningStatus();
-            sourceFilter.current.sortType = learningStatus.SortingEnabled ? 'learning' : 'date';
             sourceFilter.current.feeds = ['all_rss'];
             sourceFilter.current.tags = [];
             sourceFilter.current.search = '';
