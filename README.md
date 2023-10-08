@@ -66,6 +66,7 @@ Nunti has been built with the firm belief that there is no reason to process or 
 - @marcomarcobello - Italian translation
 - @vitorhcl, @marssaljr - Brazilian Portuguese translation
 - @vaf0 - Japanese translation
+- @FaxArt - Ukrainian translation
 
 ### Contribute a translation
 
