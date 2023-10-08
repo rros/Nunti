@@ -17,19 +17,19 @@ export class ArticlesUtils {
         const removedReasonCount: {[reason: string]: number} = {};
 
         // remove seen articles
-        removedReasonCount["seen"] = 0;
+        removedReasonCount['seen'] = 0;
         for (let i = 0; i < seen.length; i++) {
             let index = Utils.FindArticleByUrl(seen[i].url,arts);
             while(index >= 0) {
                 arts.splice(index,1);
-                removedReasonCount["seen"]++;
+                removedReasonCount['seen']++;
                 index = Utils.FindArticleByUrl(seen[i].url,arts);
             }
         }
 
         // remove duplicate urls and old age
-        removedReasonCount["dup_url"] = 0;
-        removedReasonCount["old"] = 0;
+        removedReasonCount['dup_url'] = 0;
+        removedReasonCount['old'] = 0;
         const newarts: Article[] = [];
         arts.forEach((art: Article | undefined) => {
             if (art == undefined) {
@@ -43,17 +43,17 @@ export class ArticlesUtils {
                     if (Date.now() - art.date.getTime() < UserSettings.Instance.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
                         newarts.push(art);
                     else
-                    removedReasonCount["old"]++;
+                        removedReasonCount['old']++;
                 } else
                     newarts.push(art);
             } else
-                removedReasonCount["dup_url"]++;
+                removedReasonCount['dup_url']++;
         });
         arts = newarts;
         
         // remove duplicate titles
         const titleDuplicates: {[title: string]: Article[]} = {};
-        removedReasonCount["dup_title"] = 0;
+        removedReasonCount['dup_title'] = 0;
         for (let i = 0; i < arts.length; i++) {
             const art: Article = arts[i];
             const title = art.title.toLowerCase();
@@ -74,7 +74,7 @@ export class ArticlesUtils {
             }
             for (let i = 0; i < indexesToDiscard.length; i++) {
                 arts.splice(indexesToDiscard[i], 1);
-                removedReasonCount["dup_title"]++;
+                removedReasonCount['dup_title']++;
             }
         }
 
@@ -85,7 +85,7 @@ export class ArticlesUtils {
     public static async SortArticles(articles: Article[], overrides: {sortType: undefined | string} = {sortType: undefined}): Promise<Article[]> {
         const log = this.log.context('SortArticles');
         function shuffle(a: any) { //eslint-disable-line
-            let j: number, x: any, i: number;
+            let j: number, x: any, i: number; //eslint-disable-line
             for (i = a.length - 1; i > 0; i--) {
                 j = Math.floor(Math.random() * (i + 1));
                 x = a[i];
@@ -210,10 +210,7 @@ export class ArticlesUtils {
             throw new Error('Aborted by AbortController.');
 
         //pass 2 - calculate tf-idf, get keywords
-        let feeds = 0;
-        for (const _feed in sorted) {
-            feeds += 1;
-        }
+        const feeds = Object.keys(sorted).length;
         let feedsProcessed = 0;
         for(const feedName in sorted) {
             feedsProcessed += 1;
@@ -251,7 +248,7 @@ export class ArticlesUtils {
                     art.keywords[word] = tfidf;
                 }
                 // cut only the top
-                let items = Object.keys(art.keywords).map(function(key) {
+                const items = Object.keys(art.keywords).map(function(key) {
                     return [key, art.keywords[key]];
                 });
 
