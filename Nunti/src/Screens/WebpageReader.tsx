@@ -19,10 +19,11 @@ import { Readability } from '@mozilla/readability';
 import RenderHtml from 'react-native-render-html';
 import SanitizeHtml from 'sanitize-html';
 
-import { snackbarRef } from '../App';
 import Log from '../Log';
 import Styles from '../Styles';
 import HtmlPurifyList from '../HtmlPurifyList';
+import LoadingScreenComponent from '../Components/LoadingScreenComponent.tsx'
+import { snackbarRef } from '../App';
 import { Backend } from '../Backend';
 
 function WebPageReader (props) {
@@ -87,23 +88,20 @@ function WebPageReader (props) {
     // TODO load images
     // TODO loading icon
     return (
-        <ScrollView>
+        articleContent.html != '' ? <ScrollView>
             { articleTitle != '' ? <View style={{borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1,
                     marginHorizontal: 16, paddingVertical: 16}}>
                 <Text variant="titleLarge">{articleTitle}</Text>
             </View> : <></> }
-            { articleContent.html != '' ? <RenderHtml
-                        contentWidth={Dimensions.get('window').width - 32}
-                        source={articleContent}
-                        enableExperimentalMarginCollapsing={true}
-                        renderersProps={{ img: { enableExperimentalPercentWidth: true } }}
-                        baseStyle={{backgroundColor: props.theme.colors.background, 
-                            color: props.theme.colors.onSurface, marginHorizontal: 16}}
-                        defaultTextProps={{selectable: true}}
-                        ignoredDomTags={ignoredTags} 
-                     />
-            : <></> }
-        </ScrollView>
+            <RenderHtml source={articleContent}
+                contentWidth={Dimensions.get('window').width - 32}
+                enableExperimentalMarginCollapsing={true}
+                renderersProps={{ img: { enableExperimentalPercentWidth: true } }}
+                baseStyle={{backgroundColor: props.theme.colors.background, 
+                    color: props.theme.colors.onSurface, marginHorizontal: 16}}
+                defaultTextProps={{selectable: true}}
+                ignoredDomTags={ignoredTags} />
+        </ScrollView> : <LoadingScreenComponent/>
     );
 }
 
