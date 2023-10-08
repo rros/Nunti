@@ -14,17 +14,15 @@ import {
 } from 'react-native-paper';
 
 import { WebView } from 'react-native-webview';
-import { DOMParser } from 'linkedom'
-import { Readability } from '@mozilla/readability';
 import RenderHtml from 'react-native-render-html';
-import SanitizeHtml from 'sanitize-html';
 
 import Log from '../Log';
 import Styles from '../Styles';
-import HtmlPurifyList from '../HtmlPurifyList';
 import LoadingScreenComponent from '../Components/LoadingScreenComponent.tsx'
 import { snackbarRef } from '../App';
+
 import { Backend } from '../Backend';
+import { WebpageParser } from '../Backend/WebpageParser';
 
 function WebPageReader (props) {
     const [articleTitle, setArticleTitle] = useState('');
@@ -56,24 +54,9 @@ function WebPageReader (props) {
 
     const extractArticle = async () => {
         try {
-            const response = await fetch(props.route.params.uri);
-            const html = await response.text();
-            const cleanHtml = SanitizeHtml(html, {
-                allowedTags: HtmlPurifyList.tags,
-                allowedAttributes: { '*': HtmlPurifyList.attributes }
-            });
-            const dom = new DOMParser().parseFromString(cleanHtml, 'text/html');
-
-            // add base at base, readability expects it
-            const base = dom.createElement('base');
-            base.setAttribute('href', props.route.params.uri);
-            dom.head.appendChild(base);
-
-            const article = new Readability(dom).parse();
+            const article = await WebpageParser.ExtractContentAsync(props.route.params.uri);
             setArticleContent({ html: article.content });
             setArticleTitle(article.title);
-
-            //throw new Error();
         } catch(err) {
             log.current.error('failed to parse readable form from article', err);
             snackbarRef.current.showSnack(props.lang.reader_failed);
