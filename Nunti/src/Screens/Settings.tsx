@@ -459,6 +459,7 @@ function BrowserModeModal ({lang, theme, changeBrowserModeParentState}) {
             borderBottomColor: theme.colors.outline}]}>
             <ScrollView showsVerticalScrollIndicator={false}>
                 <RadioButton.Group value={browserMode}>
+                    <ModalRadioButton lang={lang} theme={theme} value={'webpage_reader'} changeValue={changeBrowserMode} />
                     <ModalRadioButton lang={lang} theme={theme} value={'legacy_webview'} changeValue={changeBrowserMode} />
                     <ModalRadioButton lang={lang} theme={theme} value={'webview'} changeValue={changeBrowserMode} />
                     <ModalRadioButton lang={lang} theme={theme} value={'external_browser'} changeValue={changeBrowserMode} />

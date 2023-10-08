@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@mozilla/readability": "^0.4.4",
     "@react-native-async-storage/async-storage": "^1.17.11",
     "@react-native-community/netinfo": "^7.1.12",
     "@react-native-masked-view/masked-view": "^0.2.8",
@@ -20,6 +21,9 @@
     "buffer": "^6.0.3",
     "html-entities": "^2.3.3",
     "iconv-lite": "^0.6.3",
+    "install": "^0.13.0",
+    "linkedom": "^0.15.4",
+    "npm": "^10.2.0",
     "react": "18.2.0",
     "react-native": "0.71.1",
     "react-native-async-storage": "^0.0.1",
@@ -32,6 +36,7 @@
     "react-native-pager-view": "^6.1.2",
     "react-native-paper": "^5.1.4",
     "react-native-reanimated": "^2.14.4",
+    "react-native-render-html": "^6.3.4",
     "react-native-safe-area-context": "^3.4.1",
     "react-native-scoped-storage": "^1.9.2",
     "react-native-screens": "^3.17.0",
@@ -39,6 +44,7 @@
     "react-native-tab-view": "^3.1.1",
     "react-native-vector-icons": "^9.2.0",
     "react-native-webview": "^11.23.0",
+    "sanitize-html": "^2.11.0",
     "stream": "^0.0.2",
     "xmldom": "^0.6.0"
   },

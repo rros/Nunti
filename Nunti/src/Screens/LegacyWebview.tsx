@@ -10,11 +10,11 @@ import {
 import { WebView } from 'react-native-webview';
 
 import Log from '../Log';
-
 import Styles from '../Styles';
 
 function LegacyWebview (props) {
     const log = useRef(Log.FE.context('LegacyWebview'));
+    
     // on component mount
     useEffect(() => {
         log.current.debug("Navigating from " + props.route.params.source)
