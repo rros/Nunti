@@ -1,5 +1,5 @@
 import SanitizeHtml from 'sanitize-html';
-const DOMParser = require('xmldom').DOMParser; //eslint-disable-line
+import { DOMParser } from 'linkedom';
 import { Readability } from '@mozilla/readability';
 import HtmlPurifyList from '../HtmlPurifyList';
 
@@ -17,7 +17,6 @@ export class WebpageParser {
         lang: string
     }> {
         const response = await fetch(url);
-
         if (!response.ok)
             throw Error('HTTP Error: ' + response.statusText);
 
@@ -25,10 +24,7 @@ export class WebpageParser {
             allowedTags: HtmlPurifyList.tags,
             allowedAttributes: { '*': HtmlPurifyList.attributes }
         });
-        const dom = new DOMParser({
-            locator: {},
-            errorHandler: { warning: () => { }, error: () => { }, fatalError: (e: any) => { throw e; } } //eslint-disable-line
-        }).parseFromString(cleanHtml, 'text/html');
+        const dom = new DOMParser().parseFromString(cleanHtml, 'text/html');
 
         // add base at base, readability expects it
         const baseElem = dom.createElement('base');

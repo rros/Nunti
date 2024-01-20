@@ -1,8 +1,9 @@
-// lists that are used by DOMPurify
+// Lists that are used by DOMPurify
 // https://github.com/cure53/DOMPurify
 //
-// custom added:
+// Custom changes:
 // tags += 'meta'
+// tags -= 'audio', 'video'
 // attributes += 'content', 'property'
 
 export default HtmlPurifyList = {
@@ -14,7 +15,6 @@ export default HtmlPurifyList = {
         'area',
         'article',
         'aside',
-        'audio',
         'b',
         'bdi',
         'bdo',
@@ -122,7 +122,6 @@ export default HtmlPurifyList = {
         'u',
         'ul',
         'var',
-        'video',
         'wbr',
     ],
     attributes: [

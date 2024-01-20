@@ -8,17 +8,12 @@ import {
 
 import { 
     withTheme,
-    Separator,
     Text,
-    Button,
 } from 'react-native-paper';
 
-import { WebView } from 'react-native-webview';
 import RenderHtml from 'react-native-render-html';
-
 import Log from '../Log';
-import Styles from '../Styles';
-import LoadingScreenComponent from '../Components/LoadingScreenComponent.tsx'
+import LoadingScreenComponent from '../Components/LoadingScreenComponent'
 import { snackbarRef } from '../App';
 
 import { Backend } from '../Backend';
@@ -34,19 +29,16 @@ function WebPageReader (props) {
     // on component mount
     useEffect(() => {
         log.current.debug("Navigating from " + props.route.params.source)
-        backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+        let backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
             props.navigation.navigate(props.route.params.source);
             return true;
         });
 
-        let ignored = ['svg', 'audio', 'video'];
         if (Backend.UserSettings.DisableImages) {
-            ignored.push('img');
+            setIgnoredTags(['img']);    
         }
-        setIgnoredTags(ignored);
 
         extractArticle();
-
         return () => { 
             backHandler.remove();
         }
@@ -68,8 +60,6 @@ function WebPageReader (props) {
         }
     }
 
-    // TODO load images
-    // TODO loading icon
     return (
         articleContent.html != '' ? <ScrollView>
             { articleTitle != '' ? <View style={{borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1,
