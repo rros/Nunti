@@ -29,6 +29,7 @@ const Stack = createNativeStackNavigator();
 
 import SettingsTags from './SettingsSubpages/SettingsTags';
 import SettingsFeeds from './SettingsSubpages/SettingsFeeds';
+import SettingsFeedDetails from './SettingsSubpages/SettingsFeedDetails';
 import SettingsAdvanced from './SettingsSubpages/SettingsAdvanced';
 import SettingsBackground from './SettingsSubpages/SettingsBackground';
 import SettingsLearning from './SettingsSubpages/SettingsLearning';
@@ -79,11 +80,15 @@ class Settings extends Component {
                         Languages={this.props.Languages} theme={this.props.theme} />}
                 </Stack.Screen>
                 <Stack.Screen name="tags">
-                    {props => <SettingsTags {...props} isLargeScreen={this.props.isLargeScreen}
+                    {props => <SettingsTags {...props}
                         lang={this.props.lang} />}
                 </Stack.Screen>
                 <Stack.Screen name="feeds">
-                    {props => <SettingsFeeds {...props} isLargeScreen={this.props.isLargeScreen}
+                    {props => <SettingsFeeds {...props}
+                        lang={this.props.lang} />}
+                </Stack.Screen>
+                <Stack.Screen name="feed_details">
+                    {props => <SettingsFeedDetails {...props}
                         lang={this.props.lang} />}
                 </Stack.Screen>
                 <Stack.Screen name="background">
@@ -108,7 +113,7 @@ function CustomHeader ({ navigation, route, lang, theme, screenType }) {
         <Appbar.Header mode={'small'} elevated={false}> 
             { (route.name == 'settings' && screenType <= 1) ? 
                 <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
-            { route.name != 'settings' ? <Appbar.BackAction onPress={() => { navigation.navigate('settings'); }} /> : null }
+            { route.name != 'settings' ? <Appbar.BackAction onPress={() => { navigation.pop(); }} /> : null }
             <Appbar.Content title={lang[route.name]} />
         </Appbar.Header> 
     );

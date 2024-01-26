@@ -21,7 +21,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
 import { Backend } from '../../Backend';
 import { Feed } from '../../Backend/Feed';
-import { Accents } from '../../Styles';
+import Styles from '../../Styles';
 import Switch from '../../Components/Switch';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 
@@ -44,8 +44,7 @@ function SettingsFeeds (props) {
             (index == feeds.length - 1) ? Styles.flatListCardBottom : undefined]}>
         <TouchableNativeFeedback
             background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
-            onPress={() => modalRef.current.showModal(() => <FeedDetailsModal lang={props.lang} parentLog={log.current}
-                feed={item} theme={props.theme} changeFeedsParentState={changeFeedsParentState} />)}>
+            onPress={() => props.navigation.navigate('feed_details', {feed: item}) }>
         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
             <View style={[Styles.settingsLeftContent, Styles.settingsRowContainer]}>
                 <Icon style={Styles.settingsIcon} name={item.failedAttempts == 0 ? 'rss' : (item.failedAttempts >= 5 ? 'close-circle' : 'alert')}
@@ -174,148 +173,6 @@ function FeedRemoveModal ({feed, lang, changeFeedsParentState, parentLog}) {
                 style={Styles.modalButton}>{lang.remove}</Button>
             <Button onPress={() => modalRef.current.hideModal() }
                 style={Styles.modalButton}>{lang.cancel}</Button>
-        </View>
-        </>
-    );
-}
-
-function FeedDetailsModal ({feed, lang, theme, changeFeedsParentState, parentLog}) {
-    const log = useRef(parentLog.context('FeedStatusModal_' + feed.url));
-    const [noImages, setNoImages] = useState(feed['noImages']);
-    const [enabled, setEnabled] = useState(!feed['enabled']);
-    const [tags, setTags] = useState([...feed.tags]);
-    const [inputValue, setInputValue] = useState('');
-    const [loading, setLoading] = useState(false);
-    
-    const [forceValue, forceUpdate] = useState(false);
-    
-    const changeFeedName = async () => {
-        log.current.debug('Changing feed name:', feed.name, '->', inputValue);
-        setLoading(true);
-
-        feed.name = inputValue;
-        await Feed.Save(feed);
-
-        changeFeedsParentState(Backend.UserSettings.FeedList);
-        globalStateRef.current.reloadFeed(true);
-        
-        setInputValue('');
-        setLoading(false);
-    }
-    
-    const changeFeedOption = async (optionName: string) => {
-        log.current.debug('Changing feed option:', optionName, '->', !feed[optionName]);
-        
-        feed[optionName] = !feed[optionName];
-        setNoImages(feed['noImages']);
-        setEnabled(!feed['enabled']);
-
-        await Feed.Save(feed);
-
-        changeFeedsParentState(Backend.UserSettings.FeedList);
-        globalStateRef.current.reloadFeed(true);
-    }
-
-    const changeFeedTag = async (tag: Tag) => {
-        const newTags = tags;
-        if(!tags.some(pickedTag => pickedTag.name == tag.name)){
-            newTags.push(tag);
-            Feed.AddTag(feed, tag);
-        } else {
-            newTags.splice(feed.tags.indexOf(tag), 1);
-            Feed.RemoveTag(feed, tag);
-        }
-        
-        log.current.debug('Changing feed tags:', newTags);
-        
-        setTags([...newTags]);
-        forceUpdate(!forceValue);
-
-        changeFeedsParentState(Backend.UserSettings.FeedList);
-        globalStateRef.current.reloadFeed(false);
-    }
-
-    return(
-        <>
-        <Dialog.Icon icon="rss" />
-        <Dialog.Title style={Styles.centeredText}>{lang.feed_details}</Dialog.Title>
-        <View style={[Styles.modalScrollArea, {borderTopColor: theme.colors.outline, 
-            borderBottomColor: theme.colors.outline}]}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={[Styles.settingsModalButton, Styles.settingsRowContainer]}>
-                    <View style={Styles.settingsLeftContent}>
-                        <Text variant="titleMedium">{lang.feed_status}</Text>
-                        <Text variant="labelSmall">{feed.failedAttempts == 0 ? lang.feed_status_ok : 
-                            (feed.failedAttempts >= 5 ? lang.feed_status_error : lang.feed_status_warn)}</Text>
-                    </View>
-
-                    <Icon name={feed.failedAttempts == 0 ? 'check-circle' : (feed.failedAttempts >= 5 ? 'close-circle' : 'alert')}
-                        size={24} color={feed.failedAttempts == 0 ? theme.colors.secondary : (feed.failedAttempts >= 5 ? theme.colors.error : 
-                            theme.colors.warn )} />
-                </View>
-                <View style={[Styles.settingsModalButton, {paddingTop: 0}]}>
-                    <Text variant="titleMedium">{'URL'}</Text>
-                    <Text variant="labelSmall">{feed.url}</Text>
-                </View>
-                <View style={[Styles.settingsModalButton, {paddingTop: 0}]}>
-                    <Text variant="titleMedium">{lang.feed_name}</Text>
-                    <Text variant="labelSmall">{feed.name}</Text>
-                </View>
-                
-                <View style={[ Styles.settingsModalButton, Styles.settingsRowContainer, {paddingTop: 0,
-                    borderBottomColor: theme.colors.outline, borderBottomWidth: 1}]}>
-                    <TextInput label={lang.feed_name} autoCapitalize="none" 
-                        style={{flex: 1}} value={inputValue}
-                        onChangeText={text => setInputValue(text)}/>
-                    <Button onPress={changeFeedName} disabled={inputValue == ''} mode="outlined"
-                        style={Styles.modalButton}>{lang.change}</Button>
-                </View>
-
-                <View style={{borderBottomColor: theme.colors.outline, borderBottomWidth: 1}}>
-                    <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
-                        onPress={() => changeFeedOption('noImages')}>
-                        <View style={[Styles.settingsButton, Styles.settingsRowContainer, {paddingHorizontal: 0}]}>
-                            <View style={Styles.settingsLeftContent}>
-                                <Text variant="titleMedium">{lang.no_images}</Text>
-                                <Text variant="labelSmall">{lang.no_images_description}</Text>
-                            </View>
-                            <Switch value={noImages} />
-                        </View>
-                    </TouchableNativeFeedback>
-                    <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
-                        onPress={() => changeFeedOption('enabled')}>
-                        <View style={[Styles.settingsButton, Styles.settingsRowContainer, {paddingHorizontal: 0}]}>
-                            <View style={Styles.settingsLeftContent}>
-                                <Text variant="titleMedium">{lang.hide_feed}</Text>
-                                <Text variant="labelSmall">{lang.hide_feed_description}</Text>
-                            </View>
-                            <Switch value={enabled} />
-                        </View>
-                    </TouchableNativeFeedback>
-                </View>
-                
-                { Backend.UserSettings.Tags.length > 0 ? 
-                    <View style={[Styles.settingsModalButton, Styles.chipContainer]}>
-                        { Backend.UserSettings.Tags.map((tag) => {
-                            return(
-                                <Chip onPress={() => changeFeedTag(tag)}
-                                    selected={feed.tags.some(pickedTag => pickedTag.name == tag.name)}
-                                        style={Styles.chip}>{tag.name}</Chip>
-                            );
-                        })}
-                    </View> : <View style={Styles.settingsModalButton}>
-                        <Text variant="titleMedium">{lang.no_tags}</Text>
-                        <Text variant="labelSmall">{lang.no_tags_description}</Text>
-                    </View>
-                }
-
-            </ScrollView>
-        </View>
-        <View style={Styles.modalButtonContainer}>
-            <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.dismiss}</Button>
         </View>
         </>
     );
