@@ -6,6 +6,7 @@ import { UserSettings } from './UserSettings';
 import Store from 'react-native-fs-store';
 import { Utils } from './Utils';
 import { Current } from './Current';
+import { OfflineArticle } from './OfflineCache';
 const FSStore = new Store('store1');
 
 export class Storage {
@@ -19,6 +20,7 @@ export class Storage {
     public static async ResetCache(): Promise<void> {
         this.log.context('ResetCache').info('Resetting cache..');
         await FSStore.setItem('cache', JSON.stringify({'timestamp': 0, 'articles': []}));
+        await FSStore.setItem('offline-cache', JSON.stringify({}));
     }
     /* Resets all data in the app storage. */
     public static async ResetAllData(): Promise<void> {
@@ -103,6 +105,7 @@ export class Storage {
             this.DbLocked = false;
         }
     }
+    /** Gets article cache */
     public static async GetArticleCache(): Promise<{timestamp: number | string, articles: Article[]}> {
         const log = this.log.context('GetArticleCache');
         const startTime = Date.now();
@@ -119,13 +122,34 @@ export class Storage {
         log.debug(`Retrieved in ${endTime - startTime} ms.`);
         return cache;
     }
+    public static async ClearOfflineCacheAsync(): Promise<void> {
+        await FSStore.setItem('offline-cache', '{}');
+    }
+    public static async SetOfflineCacheAsync(arts: {[url: string]: OfflineArticle}): Promise<void> {
+        await FSStore.setItem('offline-cache', JSON.stringify(arts));
+    }
+    public static async GetOfflineCacheAsync(): Promise<{[url: string]: OfflineArticle}> {
+        const log = this.log.context('GetOfflineCache');
+        const startTime = Date.now();
+        let cache = await FSStore.getItem('offline-cache');
+        if (cache == null) {
+            log.debug('Cache is null, initializing it.');
+            cache = {};
+            await FSStore.setItem('cache',JSON.stringify(cache));
+        } else {
+            cache = JSON.parse(cache);
+        }
+        const endTime = Date.now();
+        log.debug(`Retrieved in ${endTime - startTime} ms.`);
+        return cache;
+    }
     /* Tries to save an article, true on success, false on fail. */
     public static async TrySaveArticle(article: Article): Promise<boolean> {
         const log = this.log.context('SaveArticle');
         try {
             log.info('Saving', article.url);
             const saved = await this.StorageGet('saved');
-            if (await Utils.FindArticleByUrl(article.url, saved) < 0) {
+            if (Utils.FindArticleByUrl(article.url, saved) < 0) {
                 saved.push(article);
                 await this.StorageSave('saved',saved);
             } else {
@@ -142,7 +166,7 @@ export class Storage {
     public static async TryRemoveSavedArticle(article: Article): Promise<boolean> {
         try {
             const saved = await this.StorageGet('saved');
-            const index = await Utils.FindArticleByUrl(article.url, saved);
+            const index = Utils.FindArticleByUrl(article.url, saved);
             if (index >= 0) {
                 saved.splice(index,1);
                 await this.StorageSave('saved',saved);

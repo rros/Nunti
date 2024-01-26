@@ -34,15 +34,18 @@ export class UserSettings {
     public AutomaticBackupPeriod = 1*24; //in hours
     public AutomaticBackupDir = '';
 
+    public EnableOfflineReading = false;
+
     /* Advanced */
     public DiscoverRatio = 0.1; //0.1 means 10% of articles will be random (preventing bubble effect)
-    public ArticleCacheTime: number = 3*60; //minutes
+    public ArticleCacheTime = 3*60; //minutes
     public MaxArticlesPerChannel = 20;
     public NoSortUntil = 50; //do not sort by preferences until X articles have been rated
     public RotateDBAfter = this.NoSortUntil * 2; //effectively evaluate only last X ratings when scoring articles
     public SeenHistoryLength = 700; //to prevent flooding storage with seen articles history
     public FeedPageSize = 20; //articles per page
     public ArticleHistory = 40; //length (articles count) of history display to user
+    public OfflineCacheSize = this.FeedPageSize * 2;
 
     /* Not settings, just user-related info. */
     public TotalUpvotes = 0;

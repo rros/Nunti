@@ -46,7 +46,7 @@ function WebPageReader (props) {
 
     const extractArticle = async () => {
         try {
-            const article = await WebpageParser.ExtractContentAsync(props.route.params.uri);
+            const article = await Backend.GetReaderModeArticle(props.route.params.uri);
             setArticleContent({ html: article.content });
             setArticleTitle(article.title);
         } catch(err) {

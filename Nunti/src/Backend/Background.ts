@@ -6,6 +6,7 @@ import BackendAPI from '../Backend';
 import { Article } from './Article';
 import * as ScopedStorage from 'react-native-scoped-storage';
 import { Backup } from './Backup';
+import { OfflineCache } from './OfflineCache';
 
 export class Background {
     private static log = Log.BE.context('Background');
@@ -40,6 +41,7 @@ export class Background {
             const arts = await this.TryDoBackgroundSyncAsync();
             await this.TryDoNotificationAsync(arts);
             await this.TryDoAutoBackupAsync();
+            await OfflineCache.TryDoOfflineSave(arts);
         } catch (err) {
             log.error(`Exception on backgroundTask, id:${taskId}, error:`, err);
         } finally {
@@ -51,7 +53,7 @@ export class Background {
     /** Attempts to perform background sync according to user settings, returns fresh articles */
     private static async TryDoBackgroundSyncAsync(): Promise<Article[]> {
         if (UserSettings.Instance.EnableBackgroundSync) {
-            const log = Background.log.context("BackgroundSync");
+            const log = Background.log.context('BackgroundSync');
             log.debug('BackgroundSync is enabled, checking cache...');
             const cache = await Storage.GetArticleCache();
             const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
@@ -65,7 +67,7 @@ export class Background {
     }
 
     private static async TryDoNotificationAsync(arts: Article[]): Promise<void> {
-        const log = Background.log.context("Notifications");
+        const log = Background.log.context('Notifications');
         if (UserSettings.Instance.EnableNotifications) {
             const notifcache = await Storage.StorageGet('notifications-cache');
             const lastNotificationBeforeMins = (Date.now() - parseInt(notifcache.timestamp.toString())) / 60000;
@@ -141,4 +143,6 @@ export class Background {
                 log.info(`Remaining time until next auto-backup: ${-(remainingTime / (60 * 60 * 1000)).toFixed(2)} hrs.`);
         }
     }
+
+    
 }

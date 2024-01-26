@@ -12,6 +12,8 @@ import { ArticlesFilter } from './Backend/ArticlesFilter';
 import { Current } from './Backend/Current';
 import { Tag } from './Backend/Tag';
 import { Feed } from './Backend/Feed';
+import { OfflineCache } from './Backend/OfflineCache';
+import { ReadabilityArticle, WebpageParser } from './Backend/WebpageParser';
 
 export class Backend {
     public static log = Log.BE;
@@ -156,6 +158,9 @@ export class Backend {
         log.info(`Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
         if (abort?.signal.aborted)
             throw new Error('Aborted by AbortController.');
+
+        OfflineCache.TryDoOfflineSave(arts);
+        
         return arts;
     }
     /* Sends push notification to user, returns true on success, false on fail. */
@@ -271,6 +276,28 @@ export class Backend {
             LearningLifetimeRemaining: (prefs.RotateDBAfter - (learning_db['upvotes'] + learning_db['downvotes'])),
         };
         return status;
+    }
+
+    public static async GetReaderModeArticle(url: string, noCache = false): Promise<ReadabilityArticle | null> {
+        //TODO: get offline if available (and offline) or retrieve fresh
+        const log = this.log.context('GetReaderModeArticle');
+        const startTime = Date.now();
+
+        if (!noCache && UserSettings.Instance.EnableOfflineReading) {
+            const art = await OfflineCache.TryGetArticleAsync(url);
+            if (art != null) {
+                log.debug(`Retrieved article ${url} from cache in ${Date.now() - startTime} ms.`);
+                return art;
+            }
+            log.debug(`Article ${url} not in cache, trying CachedFetch.`);
+            return await OfflineCache.TryCachedFetch(url);
+        }
+        try {
+            log.debug(`Article ${url}, noCache = ${noCache}, disableOfflineReading = ${UserSettings.Instance.EnableOfflineReading}, extracting content.`);
+            return await WebpageParser.ExtractContentAsync(url);
+        } catch {
+            return null;
+        }
     }
 }
 export default Backend;
