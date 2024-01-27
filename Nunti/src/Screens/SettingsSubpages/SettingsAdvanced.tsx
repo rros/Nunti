@@ -105,6 +105,7 @@ function SettingsAdvanced (props) {
                 }
 
                 Backend.UserSettings.FeedPageSize = newValueNumber;
+                Backend.UserSettings.OfflineCacheSize = newValueNumber * 2;
                 setPageSize(newValueNumber);
                 
                 globalStateRef.current.reloadFeed(false);

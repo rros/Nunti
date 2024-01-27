@@ -193,7 +193,7 @@ function ArticlesPage (props) {
             } else if(sourceFilter.current.tags.length != 0 || sourceFilter.current.search != '') {
                 bannerMessage.current = 'filter_nothing_found_banner';
                 bannerAction.current = 'open_filter';
-            } else if(await Utils.IsDoNotDownloadEnabled() && Backend.UserSettings.WifiOnly) {
+            } else if(await Utils.IsDoNotDownloadEnabled()) {
                 bannerMessage.current = 'wifi_only_banner';
                 bannerAction.current = 'goto_settings';
             } else {

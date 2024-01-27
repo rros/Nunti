@@ -17,7 +17,6 @@ import LoadingScreenComponent from '../Components/LoadingScreenComponent'
 import { snackbarRef } from '../App';
 
 import { Backend } from '../Backend';
-import { WebpageParser } from '../Backend/WebpageParser';
 
 function WebPageReader (props) {
     const [articleTitle, setArticleTitle] = useState('');
@@ -35,7 +34,7 @@ function WebPageReader (props) {
         });
 
         if (Backend.UserSettings.DisableImages) {
-            setIgnoredTags(['img']);    
+            setIgnoredTags(['img']);
         }
 
         extractArticle();
@@ -47,6 +46,9 @@ function WebPageReader (props) {
     const extractArticle = async () => {
         try {
             const article = await Backend.GetReaderModeArticle(props.route.params.uri);
+            if (article == null)
+                throw new Error("article could not be parsed into reader mode");
+
             setArticleContent({ html: article.content });
             setArticleTitle(article.title);
         } catch(err) {

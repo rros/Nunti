@@ -48,6 +48,7 @@ import About from './Screens/About';
 import LegacyWebview from './Screens/LegacyWebview';
 import WebpageReader from './Screens/WebpageReader.tsx';
 import Backend from './Backend';
+import { Utils } from './Backend/Utils';
 import Log from './Log';
 
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
@@ -519,7 +520,11 @@ export default function App (props) {
     }
 
     const openBrowser = async (url: string) => {
-        switch (Backend.UserSettings.BrowserMode) {
+        let browserType: string = Backend.UserSettings.BrowserMode;
+        if (Backend.UserSettings.EnableOfflineReading && await Utils.IsDoNotDownloadEnabled())
+            browserType = 'webpage_reader';
+
+        switch (browserType) {
             case 'webview':
                 await InAppBrowser.open(url, {
                     forceCloseOnRedirection: false, showInRecents: true,
