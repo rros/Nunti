@@ -292,7 +292,11 @@ export class Backend {
             return await OfflineCache.TryCachedFetch(url);
         }
         try {
-            log.debug(`Article ${url}, noCache = ${noCache}, disableOfflineReading = ${UserSettings.Instance.EnableOfflineReading}, extracting content.`);
+            log.debug(`Article ${url}, noCache = ${noCache}, offlineReading = ${UserSettings.Instance.EnableOfflineReading}, extracting content.`);
+            if (await Utils.IsDoNotDownloadActive()) {
+                this.log.info('Refusing to download article because DoNotDownload true.');
+                return null;
+            }
             return await WebpageParser.ExtractContentAsync(url);
         } catch {
             return null;
