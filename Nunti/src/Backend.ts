@@ -12,25 +12,27 @@ import { ArticlesFilter } from './Backend/ArticlesFilter';
 import { Current } from './Backend/Current';
 import { Tag } from './Backend/Tag';
 import { Feed } from './Backend/Feed';
+import { OfflineCache } from './Backend/OfflineCache';
+import { ReadabilityArticle, WebpageParser } from './Backend/WebpageParser';
 
 export class Backend {
     public static log = Log.BE;
-   
+
     public static get UserSettings(): UserSettings {
         return UserSettings.Instance;
     }
 
     public static StatusUpdateCallback: ((context: 'feed', percentageFloat: number) => void) | null = null;
-    
+
     /* Init some stuff like locale, meant to be called only once at app startup. */
     public static async Init(): Promise<void> {
         this.log.info('Init.');
         await UserSettings.RefreshUserSettings();
     }
-    
+
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(
-        articleSource: string,
+        articleSource: 'feed' | 'bookmarks' | 'history',
         filter: ArticlesFilter = ArticlesFilter.Empty,
         abort: AbortController | null = null
     ): Promise<Article[][]> {
@@ -47,7 +49,7 @@ export class Backend {
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
     public static async GetArticles(
-        articleSource: string,
+        articleSource: 'feed' | 'bookmarks' | 'history',
         filter: ArticlesFilter = ArticlesFilter.Empty,
         abort: AbortController | null = null
     ): Promise<Article[]> {
@@ -58,7 +60,7 @@ export class Backend {
         let articles: Article[];
         switch (articleSource) {
         case 'feed':
-            articles = await this.GetFeedArticles({sortType: filter.sortType}, abort);
+            articles = await this.GetFeedArticles({ sortType: filter.sortType }, abort);
             break;
         case 'bookmarks':
             articles = (await Storage.GetSavedArticles()).reverse();
@@ -80,19 +82,19 @@ export class Backend {
         // repair article ids, frontend will crash if index doesnt match up with id.
         for (let i = 0; i < articles.length; i++)
             articles[i].id = i;
-    
+
         return articles;
     }
     /* Retrieves sorted articles to show in feed. */
     public static async GetFeedArticles(
-        overrides: {sortType: string | undefined } = {sortType: undefined},
+        overrides: { sortType: string | undefined } = { sortType: undefined },
         abort: AbortController | null = null
     ): Promise<Article[]> {
 
         const log = this.log.context('GetFeedArticles');
 
         const statusUpdateCallback = (p: number) => {
-            if(this.StatusUpdateCallback) this.StatusUpdateCallback('feed', p);
+            if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', p);
         };
 
         if (this.StatusUpdateCallback) this.StatusUpdateCallback('feed', 0);
@@ -100,14 +102,14 @@ export class Backend {
         const timeBegin: number = Date.now();
 
         await Storage.CheckDB();
-        
+
         const cache = await Storage.GetArticleCache();
         let arts: Article[];
 
         const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
 
-        if(await Utils.IsDoNotDownloadEnabled()) {
-            log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
+        if (await Utils.IsDoNotDownloadActive()) {
+            log.info('DoNotDownload active, will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
             const result = await Downloader.DownloadArticles(abort, (percent: number) => {
@@ -115,7 +117,7 @@ export class Backend {
             });
             arts = result.articles;
             if (arts.length > 0 && result.saveToCache)
-                await Storage.FSStore.setItem('cache', JSON.stringify({'timestamp': Date.now(), 'articles': arts}));
+                await Storage.FSStore.setItem('cache', JSON.stringify({ 'timestamp': Date.now(), 'articles': arts }));
             else
                 log.warn(`Downloaded articles will NOT be saved to cache. (${(arts.length > 0 ? 'many feeds unexpectedly failed' : 'no articles were loaded')})`);
         } else {
@@ -156,10 +158,13 @@ export class Backend {
         log.info(`Loaded feed in ${((timeEnd - timeBegin) / 1000)} seconds (${arts.length} articles total).`);
         if (abort?.signal.aborted)
             throw new Error('Aborted by AbortController.');
+
+        OfflineCache.TryDoOfflineSave(arts);
+        
         return arts;
     }
     /* Sends push notification to user, returns true on success, false on fail. */
-    public static async SendNotification(message: string, channel: string): Promise<boolean> {
+    public static async SendNotification(message: string, channel: 'new_articles' | 'other'): Promise<boolean> {
         const log = this.log.context('SendNotification');
         let channelName: string;
         let channelDescription: string;
@@ -188,7 +193,7 @@ export class Backend {
             return false;
         }
     }
-    
+
     /* Change RSS topics */
     public static async ChangeDefaultTopics(topicName: string, localisedName: string, enable: boolean): Promise<void> {
         const log = this.log.context('ChangeDefaultTopics');
@@ -199,7 +204,7 @@ export class Backend {
 
         if (DefaultTopics.Topics[topicName] !== undefined) {
             for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
-                const topicFeed:Feed = DefaultTopics.Topics[topicName].sources[i];
+                const topicFeed: Feed = DefaultTopics.Topics[topicName].sources[i];
                 if (enable) {
                     if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
                         log.debug(`add feed ${topicFeed.name} to feedlist with tag ${tag?.name}`);
@@ -211,7 +216,7 @@ export class Backend {
                 } else {
                     const index = Utils.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList);
                     if (index >= 0) {
-                        if(topicFeed.tags.length > 0)
+                        if (topicFeed.tags.length > 0)
                             tag = topicFeed.tags[0]; // there is only one possible tag in setup
 
                         log.debug(`remove feed ${topicFeed.name} from feedlist`);
@@ -220,7 +225,7 @@ export class Backend {
                 }
             }
 
-            if(!enable) {
+            if (!enable) {
                 // remove previously gotten tag
                 log.debug(`removing tag ${tag?.name}`);
                 if (tag != null)
@@ -248,12 +253,12 @@ export class Backend {
         } else
             return false;
     }
-    
+
     /* Returns basic info about the learning process to inform the user. */
     public static async GetLearningStatus(): Promise<{
         TotalUpvotes: number,
-        TotalDownvotes: number, 
-        VoteRatio: string, 
+        TotalDownvotes: number,
+        VoteRatio: string,
         SortingEnabled: boolean,
         SortingEnabledIn: number,
         LearningLifetime: number,
@@ -271,6 +276,31 @@ export class Backend {
             LearningLifetimeRemaining: (prefs.RotateDBAfter - (learning_db['upvotes'] + learning_db['downvotes'])),
         };
         return status;
+    }
+
+    public static async GetReaderModeArticle(url: string, noCache = false): Promise<ReadabilityArticle | null> {
+        const log = this.log.context('GetReaderModeArticle');
+        const startTime = Date.now();
+
+        if (!noCache && UserSettings.Instance.EnableOfflineReading) {
+            const art = await OfflineCache.TryGetArticleAsync(url);
+            if (art != null) {
+                log.debug(`Retrieved article ${url} from cache in ${Date.now() - startTime} ms.`);
+                return art;
+            }
+            log.debug(`Article ${url} not in cache, trying CachedFetch.`);
+            return await OfflineCache.TryCachedFetch(url);
+        }
+        try {
+            log.debug(`Article ${url}, noCache = ${noCache}, offlineReading = ${UserSettings.Instance.EnableOfflineReading}, extracting content.`);
+            if (await Utils.IsDoNotDownloadActive()) {
+                this.log.info('Refusing to download article because DoNotDownload true.');
+                return null;
+            }
+            return await WebpageParser.ExtractContentAsync(url);
+        } catch {
+            return null;
+        }
     }
 }
 export default Backend;

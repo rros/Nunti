@@ -124,6 +124,7 @@ function SettingsMain (props) {
     const [browserMode, setBrowserMode] = useState(Backend.UserSettings.BrowserMode);
     const [disableImages, setDisableImages] = useState(Backend.UserSettings.DisableImages);
     const [wifiOnly, setWifiOnly] = useState(Backend.UserSettings.WifiOnly);
+    const [offlineReading, setOfflineReading] = useState(Backend.UserSettings.EnableOfflineReading);
 
     const [theme, setTheme] = useState(Backend.UserSettings.Theme);
     const [accent, setAccent] = useState(Backend.UserSettings.Accent);
@@ -155,6 +156,15 @@ function SettingsMain (props) {
         setWifiOnly(newValue);
 
         Backend.UserSettings.WifiOnly = newValue;
+        Backend.UserSettings.Save();
+    }
+
+    const changeOfflineReading = () => {
+        const newValue = !offlineReading;
+
+        setOfflineReading(newValue);
+
+        Backend.UserSettings.EnableOfflineReading = newValue;
         Backend.UserSettings.Save();
     }
     
@@ -259,6 +269,19 @@ function SettingsMain (props) {
                                 {props.lang.wifi_only_description}</Text>
                         </View>
                         <Switch value={wifiOnly} />
+                    </View>
+                </TouchableNativeFeedback>
+                <TouchableNativeFeedback 
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    onPress={() => changeOfflineReading()}>
+                    <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
+                        <View style={Styles.settingsLeftContent}>
+                            <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>
+                                {props.lang.offline_reading}</Text>
+                            <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>
+                                {props.lang.offline_reading_description}</Text>
+                        </View>
+                        <Switch value={offlineReading} />
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
@@ -464,6 +487,7 @@ function BrowserModeModal ({lang, theme, changeBrowserModeParentState}) {
             borderBottomColor: theme.colors.outline}]}>
             <ScrollView showsVerticalScrollIndicator={false}>
                 <RadioButton.Group value={browserMode}>
+                    <ModalRadioButton lang={lang} theme={theme} value={'webpage_reader'} changeValue={changeBrowserMode} />
                     <ModalRadioButton lang={lang} theme={theme} value={'legacy_webview'} changeValue={changeBrowserMode} />
                     <ModalRadioButton lang={lang} theme={theme} value={'webview'} changeValue={changeBrowserMode} />
                     <ModalRadioButton lang={lang} theme={theme} value={'external_browser'} changeValue={changeBrowserMode} />

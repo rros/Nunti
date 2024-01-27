@@ -85,7 +85,7 @@ export class ArticlesUtils {
     public static async SortArticles(articles: Article[], overrides: {sortType: undefined | string} = {sortType: undefined}): Promise<Article[]> {
         const log = this.log.context('SortArticles');
         function shuffle(a: any) { //eslint-disable-line
-            let j: number, x: any, i: number;
+            let j: number, x: any, i: number; //eslint-disable-line
             for (i = a.length - 1; i > 0; i--) {
                 j = Math.floor(Math.random() * (i + 1));
                 x = a[i];
@@ -210,10 +210,7 @@ export class ArticlesUtils {
             throw new Error('Aborted by AbortController.');
 
         //pass 2 - calculate tf-idf, get keywords
-        let feeds = 0;
-        for (const _feed in sorted) {
-            feeds += 1;
-        }
+        const feeds = Object.keys(sorted).length;
         let feedsProcessed = 0;
         for(const feedName in sorted) {
             feedsProcessed += 1;

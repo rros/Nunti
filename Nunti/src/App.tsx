@@ -46,7 +46,9 @@ import ArticlesPageOptimisedWrapper from './Screens/Articles';
 import Settings from './Screens/Settings';
 import About from './Screens/About';
 import LegacyWebview from './Screens/LegacyWebview';
+import WebpageReader from './Screens/WebpageReader.tsx';
 import Backend from './Backend';
+import { Utils } from './Backend/Utils';
 import Log from './Log';
 
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
@@ -517,16 +519,37 @@ export default function App (props) {
         // modal gets hidden after animation finishes
     }
 
-    const openBrowser = async (url: string) => {
-        if(Backend.UserSettings.BrowserMode == 'webview'){
-            await InAppBrowser.open(url, {
-                forceCloseOnRedirection: false, showInRecents: true,
-            });
-        } else if(Backend.UserSettings.BrowserMode == 'legacy_webview') {
-            hideModal();
-            drawerNavigationRef.navigate('legacyWebview', { uri: url, source: drawerNavigationRef.getCurrentRoute().name });
-        } else { // == 'external_browser'
-            Linking.openURL(url);
+    const openBrowser = async (url: string, ignoreConnectionStatus: boolean = false, useParentSource: boolean = false) => {
+        let browserType: string = Backend.UserSettings.BrowserMode;
+        if (!ignoreConnectionStatus && await Utils.IsDoNotDownloadActive())
+            browserType = 'webpage_reader';
+
+        let source = drawerNavigationRef.getCurrentRoute().name;
+        if (useParentSource)
+            source = drawerNavigationRef.getCurrentRoute()?.params.source;
+
+        switch (browserType) {
+            case 'webview':
+                await InAppBrowser.open(url, {
+                    forceCloseOnRedirection: false, showInRecents: true,
+                });
+
+                break;
+            case 'legacy_webview':
+                hideModal();
+                drawerNavigationRef.navigate('legacyWebview', { uri: url,
+                    source: source });
+                break;
+            case 'external_browser':
+                Linking.openURL(url);
+                break;
+            case 'webpage_reader':
+                drawerNavigationRef.navigate('webpageReader', { uri: url, 
+                    source: source });
+                break;
+            default:
+                log.current.error("wrong browser mode type");
+                break;
         }
     }
 
@@ -605,6 +628,11 @@ export default function App (props) {
                         unmountOnBlur: true, headerShown: false, drawerStyle: 
                             {width: screenType >= 2 ? 0 : undefined}}}>
                         {props => <LegacyWebview {...props}/>}
+                    </NavigationDrawer.Screen>
+                    <NavigationDrawer.Screen name="webpageReader" options={{swipeEnabled: false,
+                        unmountOnBlur: true, headerShown: false, drawerStyle: 
+                            {width: screenType >= 2 ? 0 : undefined}}}>
+                        {props => <WebpageReader {...props} lang={language}/>}
                     </NavigationDrawer.Screen>
                 </NavigationDrawer.Navigator>
             </NavigationContainer> 

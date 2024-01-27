@@ -4,17 +4,18 @@ import {
 } from 'react-native';
 
 import { 
-    withTheme
+    withTheme,
 } from 'react-native-paper';
 
 import { WebView } from 'react-native-webview';
 
+import LoadingScreenComponent from '../Components/LoadingScreenComponent.tsx'
 import Log from '../Log';
-
 import Styles from '../Styles';
 
 function LegacyWebview (props) {
     const log = useRef(Log.FE.context('LegacyWebview'));
+    
     // on component mount
     useEffect(() => {
         log.current.debug("Navigating from " + props.route.params.source)
@@ -30,7 +31,9 @@ function LegacyWebview (props) {
 
 
     return (
-        <WebView source={{ uri: props.route.params.uri }} />
+        <WebView source={{ uri: props.route.params.uri }}
+            startInLoadingState={true}
+            renderLoading={() => { return <LoadingScreenComponent/> }} />
     );
 }
 
