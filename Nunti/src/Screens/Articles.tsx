@@ -415,17 +415,17 @@ function ListEmptyComponent ({ theme, route, lang }) {
         case 'feed':
             return(
                 <EmptyScreenComponent title={lang.empty_feed_title} description={lang.empty_feed_desc}
-                    bottomOffset={true}/>
+                    useBottomOffset={true}/>
             );
         case 'bookmarks':
             return(
                 <EmptyScreenComponent title={lang.no_bookmarks} description={lang.no_bookmarks_desc} 
-                    bottomOffset={true}/>
+                    useBottomOffset={true}/>
             );
         case 'history':
             return(
                 <EmptyScreenComponent title={lang.no_history} description={lang.no_history_desc} 
-                    bottomOffset={true}/>
+                    useBottomOffset={true}/>
             );
     }
 }

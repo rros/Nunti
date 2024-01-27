@@ -90,14 +90,14 @@ function WebPageReader(props) {
                     ignoredDomTags={ignoredTags} />
             </ScrollView> :
                 <EmptyScreenComponent title={props.lang.opening_article_failed} description={props.lang.opening_article_failed_reason}
-                    bottomOffset={true} footer={() => (
+                    useBottomOffset={true} footer={
                         <View style={Styles.settingsButton}>
                             <Button icon="cog" style={Styles.bodyText}
                                 onPress={openSettings}>{props.lang.goto_settings}</Button>
                             <Button icon="web" style={Styles.bodyText} mode="contained"
                                 onPress={forceWebview}>{props.lang.force_open}</Button>
                         </View>
-                    )} />
+                    } />
     );
 }
 

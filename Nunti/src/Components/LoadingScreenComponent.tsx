@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     View,
 } from 'react-native';
@@ -8,11 +8,12 @@ import {
     withTheme
 } from 'react-native-paper';
 
-import { ScrollView } from 'react-native-gesture-handler';
+import Styles from '../Styles';
+import CommonProps from '../Props';
 
-function LoadingScreenComponent (props) {
-    return(
-        <View style={[Styles.EmptyPageContainer, {backgroundColor: props.theme.colors.surface}]}>
+function LoadingScreenComponent(props: CommonProps) {
+    return (
+        <View style={[Styles.EmptyPageContainer, { backgroundColor: props.theme.colors.surface }]}>
             <ActivityIndicator animating={true} color={props.theme.colors.primary} />
         </View>
     );

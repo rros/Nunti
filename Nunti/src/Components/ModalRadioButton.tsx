@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
 
 import {
     View,
@@ -11,16 +11,26 @@ import {
     RadioButton,
 } from 'react-native-paper';
 
-function ModalRadioButton ({lang, theme, value, changeValue, disabled, name = undefined}) {
-    return(
-        <TouchableNativeFeedback disabled={disabled}
-            background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}
-            onPress={() => changeValue(value)}>
+import Styles from '../Styles';
+import CommonProps from '../Props';
+
+interface Props extends CommonProps {
+    value: string,
+    changeValue: (value: string) => void,
+    disabled: boolean,
+    name?: string,
+}
+
+function ModalRadioButton(props: Props) {
+    return (
+        <TouchableNativeFeedback disabled={props.disabled}
+            background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
+            onPress={() => props.changeValue(props.value)}>
             <View style={[Styles.modalRadioButton, Styles.settingsRowContainer]}>
-                <RadioButton.Android value={value} disabled={disabled} />
+                <RadioButton.Android value={props.value} disabled={props.disabled} />
                 <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel,
-                    {color: (disabled ? theme.colors.disabledContent : theme.colors.onSurface)}]}>
-                        {name === undefined ? lang[value] : name}</Text>
+                { color: (props.disabled ? props.theme.colors.disabledContent : props.theme.colors.onSurface) }]}>
+                    {props.name === undefined ? props.lang[props.value] : props.name}</Text>
             </View>
         </TouchableNativeFeedback>
     );

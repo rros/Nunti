@@ -15,6 +15,16 @@ import { Feed } from './Backend/Feed';
 import { OfflineCache } from './Backend/OfflineCache';
 import { ReadabilityArticle, WebpageParser } from './Backend/WebpageParser';
 
+export interface LearningStatus {
+    TotalUpvotes: number,
+    TotalDownvotes: number,
+    VoteRatio: string,
+    SortingEnabled: boolean,
+    SortingEnabledIn: number,
+    LearningLifetime: number,
+    LearningLifetimeRemaining: number
+}
+
 export class Backend {
     public static log = Log.BE;
 
@@ -255,18 +265,10 @@ export class Backend {
     }
 
     /* Returns basic info about the learning process to inform the user. */
-    public static async GetLearningStatus(): Promise<{
-        TotalUpvotes: number,
-        TotalDownvotes: number,
-        VoteRatio: string,
-        SortingEnabled: boolean,
-        SortingEnabledIn: number,
-        LearningLifetime: number,
-        LearningLifetimeRemaining: number
-    }> {
+    public static async GetLearningStatus(): Promise<LearningStatus> {
         const prefs = this.UserSettings;
         const learning_db = await Storage.StorageGet('learning_db');
-        const status = {
+        const status: LearningStatus = {
             TotalUpvotes: prefs.TotalUpvotes,
             TotalDownvotes: prefs.TotalDownvotes,
             VoteRatio: ((learning_db['upvotes'] + 1) / (learning_db['downvotes'] + 1)).toFixed(2),
