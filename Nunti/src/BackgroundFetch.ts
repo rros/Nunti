@@ -28,19 +28,19 @@ interface AbstractConfig {
     /**
     * [Android only] Set false to continue background-fetch events after user terminates the app.  Default to true.
     */
-    stopOnTerminate?:boolean;
+    stopOnTerminate?: boolean;
     /**
     * [Android only] Set true to initiate background-fetch events when the device is rebooted.  Defaults to false.
     */
-    startOnBoot?:boolean;
+    startOnBoot?: boolean;
     /**
     * [Android only] Set true to enable Headless mechanism for handling fetch events after app termination.
     */
-    enableHeadless?:boolean;
+    enableHeadless?: boolean;
     /**
     * [Android only]
     */
-    forceAlarmManager?:boolean;
+    forceAlarmManager?: boolean;
     /**
     * [Android only] Set detailed description of the kind of network your job requires.
     *
@@ -48,23 +48,23 @@ interface AbstractConfig {
     *
     * Calling this method defines network as a strict requirement for your job. If the network requested is not available your job will never run.
     */
-    requiredNetworkType?:NetworkType;
+    requiredNetworkType?: NetworkType;
     /**
     * [Android only] Specify that to run this job, the device's battery level must not be low.
     *
     * This defaults to false. If true, the job will only run when the battery level is not low, which is generally the point where the user is given a "low battery" warning.
     */
-    requiresBatteryNotLow?:boolean;
+    requiresBatteryNotLow?: boolean;
     /**
     * [Android only] Specify that to run this job, the device's available storage must not be low.
     *
     * This defaults to false. If true, the job will only run when the device is not in a low storage state, which is generally the point where the user is given a "low storage" warning.
     */
-    requiresStorageNotLow?:boolean;
+    requiresStorageNotLow?: boolean;
     /**
     * [Android only] Specify that to run this job, the device must be charging (or be a non-battery-powered device connected to permanent power, such as Android TV devices). This defaults to false.
     */
-    requiresCharging?:boolean;
+    requiresCharging?: boolean;
     /**
     * [Android only] When set true, ensure that this job will not run if the device is in active use.
     *
@@ -72,28 +72,28 @@ interface AbstractConfig {
     *
     * This state is a loose definition provided by the system. In general, it means that the device is not currently being used interactively, and has not been in use for some time. As such, it is a good time to perform resource heavy jobs. Bear in mind that battery usage will still be attributed to your application, and surfaced to the user in battery stats.
     */
-    requiresDeviceIdle?:boolean;
+    requiresDeviceIdle?: boolean;
 }
 interface TaskConfig extends AbstractConfig {
     /**
     * The name of the task.  This will be used with [[BackgroundFetch.finish]] to signal task-completion.
     */
-    taskId:string;
+    taskId: string;
     /**
     * The minimum interval in milliseconds to execute this task.
     */
-    delay:number;
+    delay: number;
     /**
     * Whether this task will continue executing or just a "one-shot".
     */
-    periodic?:boolean;
+    periodic?: boolean;
 }
 
 interface BackgroundFetchConfig extends AbstractConfig {
     /**
     * The minimum interval in minutes to execute background fetch events.  Defaults to 15 minutes.  Minimum is 15 minutes.
     */
-    minimumFetchInterval?:number;
+    minimumFetchInterval?: number;
 }
 
 /**
@@ -140,14 +140,14 @@ const EventEmitter = new NativeEventEmitter(RNBackgroundFetch);
 const EVENT_FETCH = 'fetch';
 
 const STATUS_RESTRICTED = 0;
-const STATUS_DENIED     = 1;
-const STATUS_AVAILABLE  = 2;
+const STATUS_DENIED = 1;
+const STATUS_AVAILABLE = 2;
 
-const NETWORK_TYPE_NONE         = 0;
-const NETWORK_TYPE_ANY          = 1;
-const NETWORK_TYPE_UNMETERED    = 2;
-const NETWORK_TYPE_NOT_ROAMING  = 3;
-const NETWORK_TYPE_CELLULAR     = 4;
+const NETWORK_TYPE_NONE = 0;
+const NETWORK_TYPE_ANY = 1;
+const NETWORK_TYPE_UNMETERED = 2;
+const NETWORK_TYPE_NOT_ROAMING = 3;
+const NETWORK_TYPE_CELLULAR = 4;
 
 export default class BackgroundFetch {
     static get STATUS_RESTRICTED(): BackgroundFetchStatus { return STATUS_RESTRICTED; }
@@ -162,10 +162,10 @@ export default class BackgroundFetch {
 
     static configure(config: BackgroundFetchConfig, onEvent: (taskId: string) => void, onTimeout?: (taskId: string) => void): Promise<BackgroundFetchStatus> {
         const log = Log.context('BackgroundFetch').context('configure');
-        if (typeof(onEvent) !== 'function') {
+        if (typeof (onEvent) !== 'function') {
             throw 'BackgroundFetch requires an event callback at 2nd argument';
         }
-        if (typeof(onTimeout) !== 'function') {
+        if (typeof (onTimeout) !== 'function') {
             log.warn('You did not provide a 3rd argument onTimeout callback.  This callback is a signal from the OS that your allowed background time is about to expire.  Use this callback to finish what you\'re doing and immediately call BackgroundFetch.finish(taskId)');
             onTimeout = (taskId) => {
                 log.warn('default onTimeout callback fired.  You should provide your own onTimeout callback to .configure(options, onEvent, onTimeout)');
@@ -241,7 +241,7 @@ export default class BackgroundFetch {
     }
 
     static status(callback?: (status: BackgroundFetchStatus) => void): Promise<BackgroundFetchStatus> {
-        if (typeof(callback) === 'function') {
+        if (typeof (callback) === 'function') {
             return RNBackgroundFetch.status(callback);
         }
         return new Promise((resolve) => {

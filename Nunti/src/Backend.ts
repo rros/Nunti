@@ -69,17 +69,17 @@ export class Backend {
 
         let articles: Article[];
         switch (articleSource) {
-        case 'feed':
-            articles = await this.GetFeedArticles({ sortType: filter.sortType }, abort);
-            break;
-        case 'bookmarks':
-            articles = (await Storage.GetSavedArticles()).reverse();
-            break;
-        case 'history':
-            articles = (await Storage.StorageGet('seen')).reverse().slice(0, this.UserSettings.ArticleHistory);
-            break;
-        default:
-            throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
+            case 'feed':
+                articles = await this.GetFeedArticles({ sortType: filter.sortType }, abort);
+                break;
+            case 'bookmarks':
+                articles = (await Storage.GetSavedArticles()).reverse();
+                break;
+            case 'history':
+                articles = (await Storage.StorageGet('seen')).reverse().slice(0, this.UserSettings.ArticleHistory);
+                break;
+            default:
+                throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
         }
         articles.forEach(Article.Fix);
 
@@ -170,7 +170,7 @@ export class Backend {
             throw new Error('Aborted by AbortController.');
 
         OfflineCache.TryDoOfflineSave(arts);
-        
+
         return arts;
     }
     /* Sends push notification to user, returns true on success, false on fail. */
@@ -180,17 +180,17 @@ export class Backend {
         let channelDescription: string;
         const locale = Utils.GetLocale();
         switch (channel) {
-        case 'new_articles':
-            channelName = locale.notifications_new_articles;
-            channelDescription = locale.notifications_new_articles_description;
-            break;
-        case 'other':
-            channelName = 'Other';
-            channelDescription = 'Other notifications';
-            break;
-        default:
-            log.error(`Failed attempt, '${channel}' - channel not allowed.`);
-            return false;
+            case 'new_articles':
+                channelName = locale.notifications_new_articles;
+                channelDescription = locale.notifications_new_articles_description;
+                break;
+            case 'other':
+                channelName = 'Other';
+                channelDescription = 'Other notifications';
+                break;
+            default:
+                log.error(`Failed attempt, '${channel}' - channel not allowed.`);
+                return false;
         }
         const title = channelName;
         const summary = null;

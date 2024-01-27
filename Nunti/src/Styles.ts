@@ -9,7 +9,7 @@ const Colors = {
             errorContainer: '#93000a',
             onErrorContainer: '#ffdad6',
         },
-        
+
         light: {
             error: '#ba1a1a',
             onError: '#ffffff',
@@ -25,7 +25,7 @@ const Colors = {
             warnContainer: '#584400',
             onWarnContainer: '#ffe08b',
         },
-        
+
         light: {
             warn: '#745b00',
             onWarn: '#ffffff',
@@ -46,7 +46,7 @@ const Colors = {
             positiveContainer: '#045316',
             onPositiveContainer: '#aaf5a4',
         },
-        
+
         light: {
             positive: '#266c2b',
             onPositive: '#ffffff',
@@ -77,7 +77,7 @@ export const Accents = {
         // primary base = #1eba81
 
         dark: {
-            primary: '#52dea2', 
+            primary: '#52dea2',
             onPrimary: '#003824',
             primaryContainer: '#005235',
             onPrimaryContainer: '#72fbbc',
@@ -86,7 +86,7 @@ export const Accents = {
             onSecondary: '#20352a',
             secondaryContainer: '#364b3f',
             onSecondaryContainer: '#d0e8d8',
-            
+
             tertiary: '#a4cdde',
             onTertiary: '#063543',
             tertiaryContainer: '#234c5a',
@@ -109,12 +109,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#7fda99',
             onPositive: '#00391a',
             positiveContainer: '#005229',
@@ -127,7 +127,7 @@ export const Accents = {
         },
 
         light: {
-            primary: '#006c48', 
+            primary: '#006c48',
             onPrimary: '#ffffff',
             primaryContainer: '#72fbbc',
             onPrimaryContainer: '#002113',
@@ -136,7 +136,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#d0e8d8',
             onSecondaryContainer: '#0a1f15',
-            
+
             tertiary: '#3c6472',
             onTertiary: '#ffffff',
             tertiaryContainer: '#c0e9fa',
@@ -159,12 +159,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#006d38',
             onPositive: '#ffffff',
             positiveContainer: '#9bf6b3',
@@ -181,7 +181,7 @@ export const Accents = {
         // primary base = #725aff
 
         dark: {
-            primary: '#c7bfff', 
+            primary: '#c7bfff',
             onPrimary: '#2e2176',
             primaryContainer: '#453a8e',
             onPrimaryContainer: '#e4dfff',
@@ -190,7 +190,7 @@ export const Accents = {
             onSecondary: '#302e41',
             secondaryContainer: '#474459',
             onSecondaryContainer: '#e5dff9',
-            
+
             tertiary: '#ecb8ce',
             onTertiary: '#482537',
             tertiaryContainer: '#613b4d',
@@ -213,12 +213,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#75daa3',
             onPositive: '#003921',
             positiveContainer: '#005232',
@@ -231,7 +231,7 @@ export const Accents = {
         },
 
         light: {
-            primary: '#5d53a7', 
+            primary: '#5d53a7',
             onPrimary: '#ffffff',
             primaryContainer: '#e4dfff',
             onPrimaryContainer: '#180362',
@@ -240,7 +240,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#e5dff9',
             onSecondaryContainer: '#1b192c',
-            
+
             tertiary: '#7b5265',
             onTertiary: '#ffffff',
             tertiaryContainer: '#ffd8e7',
@@ -263,12 +263,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#006d44',
             onPositive: '#ffffff',
             positiveContainer: '#91f7bd',
@@ -284,7 +284,7 @@ export const Accents = {
         // primary base = #4596e2
 
         dark: {
-            primary: '#9dcaff', 
+            primary: '#9dcaff',
             onPrimary: '#003257',
             primaryContainer: '#00497c',
             onPrimaryContainer: '#d1e4ff',
@@ -293,7 +293,7 @@ export const Accents = {
             onSecondary: '#253140',
             secondaryContainer: '#3b4858',
             onSecondaryContainer: '#d6e4f7',
-            
+
             tertiary: '#d6bee5',
             onTertiary: '#3b2948',
             tertiaryContainer: '#524060',
@@ -316,12 +316,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#75daa3',
             onPositive: '#003921',
             positiveContainer: '#005232',
@@ -334,7 +334,7 @@ export const Accents = {
         },
 
         light: {
-            primary: '#0061a2', 
+            primary: '#0061a2',
             onPrimary: '#ffffff',
             primaryContainer: '#d1e4ff',
             onPrimaryContainer: '#001d35',
@@ -343,7 +343,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#d6e4f7',
             onSecondaryContainer: '#0f1c2b',
-            
+
             tertiary: '#6a5778',
             onTertiary: '#ffffff',
             tertiaryContainer: '#f2daff',
@@ -366,12 +366,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#75daa3',
             onPositive: '#ffffff',
             positiveContainer: '#91f7bd',
@@ -387,7 +387,7 @@ export const Accents = {
         // primary base = #c3a6a2
 
         dark: {
-            primary: '#ffb4a5', 
+            primary: '#ffb4a5',
             onPrimary: '#5f1609',
             primaryContainer: '#7d2c1c',
             onPrimaryContainer: '#ffdad3',
@@ -396,7 +396,7 @@ export const Accents = {
             onSecondary: '#442a24',
             secondaryContainer: '#5d3f39',
             onSecondaryContainer: '#ffdad3',
-            
+
             tertiary: '#dcc48c',
             onTertiary: '#3d2f04',
             tertiaryContainer: '#554519',
@@ -419,12 +419,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#aad472',
             onPositive: '#203700',
             positiveContainer: '#304f00',
@@ -437,7 +437,7 @@ export const Accents = {
         },
 
         light: {
-            primary: '#9c4331', 
+            primary: '#9c4331',
             onPrimary: '#ffffff',
             primaryContainer: '#ffdad3',
             onPrimaryContainer: '#3e0400',
@@ -446,7 +446,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#ffdad3',
             onSecondaryContainer: '#2c1511',
-            
+
             tertiary: '#6e5c2e',
             onTertiary: '#ffffff',
             tertiaryContainer: '#f9e0a6',
@@ -469,12 +469,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#456812',
             onPositive: '#ffffff',
             positiveContainer: '#c5f08b',
@@ -490,7 +490,7 @@ export const Accents = {
         // primary base = #84c188
 
         dark: {
-            primary: '#88d990', 
+            primary: '#88d990',
             onPrimary: '#003913',
             primaryContainer: '#00531e',
             onPrimaryContainer: '#a4f5aa',
@@ -499,7 +499,7 @@ export const Accents = {
             onSecondary: '#243424',
             secondaryContainer: '#3a4b3a',
             onSecondaryContainer: '#d4e8d1',
-            
+
             tertiary: '#a1ced6',
             onTertiary: '#00363d',
             tertiaryContainer: '#1f4d54',
@@ -522,12 +522,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#8bd88d',
             onPositive: '#003910',
             positiveContainer: '#00531a',
@@ -540,7 +540,7 @@ export const Accents = {
         },
 
         light: {
-            primary: '#1b6c31', 
+            primary: '#1b6c31',
             onPrimary: '#ffffff',
             primaryContainer: '#a4f5aa',
             onPrimaryContainer: '#002108',
@@ -549,7 +549,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#d4e8d1',
             onSecondaryContainer: '#0f1f11',
-            
+
             tertiary: '#39656c',
             onTertiary: '#ffffff',
             tertiaryContainer: '#bdeaf3',
@@ -572,12 +572,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#206c2e',
             onPositive: '#ffffff',
             positiveContainer: '#a6f5a7',
@@ -593,7 +593,7 @@ export const Accents = {
         // primary base = #ffbe00
 
         dark: {
-            primary: '#fcbc00', 
+            primary: '#fcbc00',
             onPrimary: '#402d00',
             primaryContainer: '#5c4300',
             onPrimaryContainer: '#ffdea1',
@@ -602,7 +602,7 @@ export const Accents = {
             onSecondary: '#3b2f15',
             secondaryContainer: '#53452a',
             onSecondaryContainer: '#f5e0bb',
-            
+
             tertiary: '#b1cfa9',
             onTertiary: '#1e361b',
             tertiaryContainer: '#344d30',
@@ -625,12 +625,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#aad472',
             onPositive: '#203700',
             positiveContainer: '#304f00',
@@ -643,7 +643,7 @@ export const Accents = {
         },
 
         light: {
-            primary: '#7a5900', 
+            primary: '#7a5900',
             onPrimary: '#ffffff',
             primaryContainer: '#ffdea1',
             onPrimaryContainer: '#261900',
@@ -652,7 +652,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#f5e0bb',
             onSecondaryContainer: '#241a04',
-            
+
             tertiary: '#4b6546',
             onTertiary: '#ffffff',
             tertiaryContainer: '#cdebc3',
@@ -675,12 +675,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#456812',
             onPositive: '#ffffff',
             positiveContainer: '#c5f08b',
@@ -696,7 +696,7 @@ export const Accents = {
         // primary base = #00ffff
 
         dark: {
-            primary: '#00dddd', 
+            primary: '#00dddd',
             onPrimary: '#003737',
             primaryContainer: '#004f4f',
             onPrimaryContainer: '#00fbfb',
@@ -705,7 +705,7 @@ export const Accents = {
             onSecondary: '#1b3534',
             secondaryContainer: '#324b4b',
             onSecondaryContainer: '#cce8e7',
-            
+
             tertiary: '#b3c8e8',
             onTertiary: '#1c314b',
             tertiaryContainer: '#334863',
@@ -728,12 +728,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#74daa4',
             onPositive: '#003822',
             positiveContainer: '#005233',
@@ -746,7 +746,7 @@ export const Accents = {
         },
 
         light: {
-            primary: '#006a6a', 
+            primary: '#006a6a',
             onPrimary: '#ffffff',
             primaryContainer: '#00fbfb',
             onPrimaryContainer: '#002020',
@@ -755,7 +755,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#cce8e7',
             onSecondaryContainer: '#051f1f',
-            
+
             tertiary: '#4b607c',
             onTertiary: '#ffffff',
             tertiaryContainer: '#d3e4ff',
@@ -778,12 +778,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#006c45',
             onPositive: '#ffffff',
             positiveContainer: '#90f7be',
@@ -799,7 +799,7 @@ export const Accents = {
         // primary base = #c42cc9
 
         dark: {
-            primary: '#ffaaf8', 
+            primary: '#ffaaf8',
             onPrimary: '#5a005e',
             primaryContainer: '#7f0085',
             onPrimaryContainer: '#ffd6f7',
@@ -808,7 +808,7 @@ export const Accents = {
             onSecondary: '#3c2b3a',
             secondaryContainer: '#544151',
             onSecondaryContainer: '#f6daef',
-            
+
             tertiary: '#f6b8a9',
             onTertiary: '#4c261c',
             tertiaryContainer: '#663b30',
@@ -831,12 +831,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#a9d473',
             onPositive: '#1f3700',
             positiveContainer: '#2f4f00',
@@ -849,7 +849,7 @@ export const Accents = {
         },
 
         light: {
-            primary: '#a700ae', 
+            primary: '#a700ae',
             onPrimary: '#ffffff',
             primaryContainer: '#ffd6f7',
             onPrimaryContainer: '#37003a',
@@ -858,7 +858,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#f6daef',
             onSecondaryContainer: '#261625',
-            
+
             tertiary: '#825246',
             onTertiary: '#ffffff',
             tertiaryContainer: '#ffdbd2',
@@ -881,12 +881,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#446813',
             onPositive: '#ffffff',
             positiveContainer: '#c4f18c',
@@ -901,7 +901,7 @@ export const Accents = {
 };
 
 // custom css here
-export default Styles = StyleSheet.create ({
+export default StyleSheet.create({
     modal: {
         width: '100%',
         height: '100%',
@@ -956,7 +956,7 @@ export default Styles = StyleSheet.create ({
     modalRadioButton: {
         paddingHorizontal: 24,
         paddingVertical: 12,
-    }, 
+    },
 
     card: {
         marginBottom: 8,
@@ -969,7 +969,7 @@ export default Styles = StyleSheet.create ({
         borderTopRightRadius: 12,
         borderTopLeftRadius: 12,
     },
-    
+
     flatListCardBottom: {
         borderBottomRightRadius: 12,
         borderBottomLeftRadius: 12,
@@ -978,9 +978,9 @@ export default Styles = StyleSheet.create ({
     cardCover: {
         borderRadius: 12,
     },
-    
+
     cardCoverSide: {
-        flex: 1, 
+        flex: 1,
         margin: 12
     },
 
@@ -997,7 +997,7 @@ export default Styles = StyleSheet.create ({
         marginRight: 'auto',
         alignSelf: 'center',
     },
-    
+
     cardSwipeLeft: {
         flex: 1,
         marginBottom: 8,
@@ -1006,7 +1006,7 @@ export default Styles = StyleSheet.create ({
         justifyContent: 'center',
         alignItems: 'flex-start',
     },
-    
+
     cardSwipeRight: {
         flex: 1,
         marginBottom: 8,
@@ -1031,7 +1031,7 @@ export default Styles = StyleSheet.create ({
     centeredText: {
         textAlign: 'center'
     },
-    
+
     footerContainer: {
         flexDirection: 'row',
         flex: 1,
@@ -1055,20 +1055,20 @@ export default Styles = StyleSheet.create ({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    
+
     centeredImageContainer: {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 24,
     },
-    
+
     fullscreenImage: {
         height: 200,
         width: undefined,
         aspectRatio: 1,
     },
 
-    settingsButton: { 
+    settingsButton: {
         paddingHorizontal: 12,
         paddingVertical: 12,
     },
@@ -1081,8 +1081,8 @@ export default Styles = StyleSheet.create ({
         flexShrink: 1,
         marginRight: 'auto',
     },
-    
-    settingsSectionTitle: { 
+
+    settingsSectionTitle: {
         paddingHorizontal: 20,
         paddingTop: 8,
         paddingBottom: 4
@@ -1107,7 +1107,7 @@ export default Styles = StyleSheet.create ({
     },
 
     chipContainer: {
-        flexDirection: "row", 
+        flexDirection: "row",
         flexWrap: "wrap",
     },
 
@@ -1138,7 +1138,7 @@ export default Styles = StyleSheet.create ({
         borderBottomRightRadius: 16,
         overflow: 'hidden',
     },
-    
+
     drawerPermanent: {
         flex: 1,
 
@@ -1160,7 +1160,7 @@ export default Styles = StyleSheet.create ({
         flex: 1,
         justifyContent: 'center'
     },
-    
+
     wizardCardWithButtonContainer: {
         marginBottom: 8,
         marginHorizontal: 16,

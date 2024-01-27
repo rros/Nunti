@@ -1,7 +1,7 @@
 import { Feed } from './Backend/Feed';
 
 export default class DefaultTopics {
-    public static Topics: {[id: string]: {icon: string, sources: Feed[]}} = {
+    public static Topics: { [id: string]: { icon: string, sources: Feed[] } } = {
         'cars': {
             icon: 'car-traction-control',
             sources: [
