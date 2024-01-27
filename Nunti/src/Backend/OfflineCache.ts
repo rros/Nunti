@@ -2,6 +2,7 @@ import Log from '../Log';
 import { Article } from './Article';
 import { Storage } from './Storage';
 import { UserSettings } from './UserSettings';
+import { Utils } from './Utils';
 import { ReadabilityArticle, WebpageParser } from './WebpageParser';
 
 export class OfflineArticle {
@@ -46,8 +47,12 @@ export class OfflineCache {
         }
     }
 
-    /** Try to retrieve and parse fresh article from net, saving it to cache, if successful. */
+    /** Try to retrieve and parse fresh article from net, saving it to cache, if successful. Obeys wifionly mode. */
     public static async TryCachedFetch(url: string): Promise<ReadabilityArticle | null> {
+        if (await Utils.IsDoNotDownloadActive()) {
+            this.log.context('CachedFetch').info('Refusing to download article because DoNotDownload true.');
+            return null;
+        }
         try {
             const art = await WebpageParser.ExtractContentAsync(url);
             const cache = await this.GetCacheAsync();
@@ -59,12 +64,18 @@ export class OfflineCache {
         }
     }
 
-    /** Attempts to save articles for offline reading according to user settings. */
+    /** Attempts to save articles for offline reading according to user settings. Obeys wifionly mode. */
     public static async TryDoOfflineSave(arts: Article[]): Promise<void> {
         if (!UserSettings.Instance.EnableOfflineReading) {
             return;
         }
         const log = this.log.context('OfflineSave');
+
+        if (await Utils.IsDoNotDownloadActive()) {
+            log.info('Not doing anything because DoNotDownload true.');
+            return;
+        }
+
         const startTime = Date.now();
         log.info(`Saving top ${UserSettings.Instance.OfflineCacheSize} articles for offline use..`);
         

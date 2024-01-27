@@ -16,7 +16,7 @@ export class ReadabilityArticle {
 }
 
 export class WebpageParser {
-    /** Extracts readable content from webpage, may throw errors */
+    /** Extracts readable content from webpage, may throw errors. !Does not respect wifionly mode! */
     public static async ExtractContentAsync(url: string): Promise<ReadabilityArticle> {
         const response = await fetch(url);
         if (!response.ok)

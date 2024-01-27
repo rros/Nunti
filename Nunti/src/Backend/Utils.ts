@@ -46,9 +46,16 @@ export class Utils {
         }
         return pages;
     }
-    /* returns true if user is on cellular data and wifionly mode is enabled */
-    public static async IsDoNotDownloadEnabled(): Promise<boolean> {
-        return (((await NetInfo.fetch()).details?.isConnectionExpensive ?? false) && UserSettings.Instance.WifiOnly);
+    /** (wifionly && expensiveConnection) or (internet unreachable) */
+    public static async IsDoNotDownloadActive(): Promise<boolean> {
+        const netinfo = await NetInfo.fetch();
+        const expensiveConnection = netinfo.details?.isConnectionExpensive;
+        const wifionly = UserSettings.Instance.WifiOnly;
+
+        const internetReachable = netinfo.isInternetReachable !== null ? netinfo.isInternetReachable : 
+            (netinfo.isConnected !== null ? netinfo.isConnected : true);
+
+        return ((wifionly && expensiveConnection === true) || !internetReachable);
     }
     public static GetLocale(): {[key: string]: string} {
         let locale;

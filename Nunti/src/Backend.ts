@@ -108,8 +108,8 @@ export class Backend {
 
         const cacheAgeMinutes = (Date.now() - parseInt(cache.timestamp.toString())) / 60000;
 
-        if (await Utils.IsDoNotDownloadEnabled()) {
-            log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
+        if (await Utils.IsDoNotDownloadActive()) {
+            log.info('DoNotDownload active, will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
             const result = await Downloader.DownloadArticles(abort, (percent: number) => {
@@ -279,7 +279,6 @@ export class Backend {
     }
 
     public static async GetReaderModeArticle(url: string, noCache = false): Promise<ReadabilityArticle | null> {
-        //TODO: get offline if available (and offline) or retrieve fresh
         const log = this.log.context('GetReaderModeArticle');
         const startTime = Date.now();
 
