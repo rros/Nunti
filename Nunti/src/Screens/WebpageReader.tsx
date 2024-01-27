@@ -6,23 +6,26 @@ import {
     View,
 } from 'react-native';
 
-import { 
+import {
     withTheme,
     Text,
+    Button,
 } from 'react-native-paper';
 
 import RenderHtml from 'react-native-render-html';
 import Log from '../Log';
 import LoadingScreenComponent from '../Components/LoadingScreenComponent'
-import { snackbarRef } from '../App';
+import EmptyScreenComponent from '../Components/EmptyScreenComponent';
+import { browserRef, snackbarRef } from '../App';
 
 import { Backend } from '../Backend';
 
-function WebPageReader (props) {
+function WebPageReader(props) {
+    const [loading, setLoading] = useState(true);
     const [articleTitle, setArticleTitle] = useState('');
     const [articleContent, setArticleContent] = useState({ html: '' });
     const [ignoredTags, setIgnoredTags] = useState([]);
-    
+
     const log = useRef(Log.FE.context('LegacyWebview'));
 
     // on component mount
@@ -37,46 +40,64 @@ function WebPageReader (props) {
             setIgnoredTags(['img']);
         }
 
-        extractArticle();
-        return () => { 
+        getArticle();
+        return () => {
             backHandler.remove();
         }
     }, []);
 
-    const extractArticle = async () => {
-        try {
-            const article = await Backend.GetReaderModeArticle(props.route.params.uri);
-            if (article == null)
-                throw new Error("article could not be parsed into reader mode");
-
+    const getArticle = async () => {
+        const article = await Backend.GetReaderModeArticle(props.route.params.uri);
+        if (article == null) {
+            log.current.error('failed to get reader mode article');
+        }
+        else {
             setArticleContent({ html: article.content });
             setArticleTitle(article.title);
-        } catch(err) {
-            log.current.error('failed to parse readable form from article', err);
-            snackbarRef.current.showSnack(props.lang.reader_failed);
-
-            props.navigation.navigate('legacyWebview', {
-                uri: props.route.params.uri,
-                source: props.route.params.source, 
-            });
         }
+
+        setLoading(false);
+    }
+
+    const forceWebview = async () => {
+        browserRef.current.openBrowser(props.route.params.uri, true, true);
+    }
+
+    const openSettings = async () => {
+        props.navigation.navigate('settings', {
+            source: props.route.params.source,
+        });
     }
 
     return (
-        articleContent.html != '' ? <ScrollView>
-            { articleTitle != '' ? <View style={{borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1,
-                    marginHorizontal: 16, paddingVertical: 16}}>
-                <Text variant="titleLarge">{articleTitle}</Text>
-            </View> : <></> }
-            <RenderHtml source={articleContent}
-                contentWidth={Dimensions.get('window').width - 32}
-                enableExperimentalMarginCollapsing={true}
-                renderersProps={{ img: { enableExperimentalPercentWidth: true } }}
-                baseStyle={{backgroundColor: props.theme.colors.background, 
-                    color: props.theme.colors.onSurface, marginHorizontal: 16}}
-                defaultTextProps={{selectable: true}}
-                ignoredDomTags={ignoredTags} />
-        </ScrollView> : <LoadingScreenComponent/>
+        loading ? <LoadingScreenComponent /> :
+            articleContent.html != '' ? <ScrollView>
+                {articleTitle != '' ? <View style={{
+                    borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1,
+                    marginHorizontal: 16, paddingVertical: 16
+                }}>
+                    <Text variant="titleLarge">{articleTitle}</Text>
+                </View> : <></>}
+                <RenderHtml source={articleContent}
+                    contentWidth={Dimensions.get('window').width - 32}
+                    enableExperimentalMarginCollapsing={true}
+                    renderersProps={{ img: { enableExperimentalPercentWidth: true } }}
+                    baseStyle={{
+                        backgroundColor: props.theme.colors.background,
+                        color: props.theme.colors.onSurface, marginHorizontal: 16
+                    }}
+                    defaultTextProps={{ selectable: true }}
+                    ignoredDomTags={ignoredTags} />
+            </ScrollView> :
+                <EmptyScreenComponent title={props.lang.opening_article_failed} description={props.lang.opening_article_failed_reason}
+                    bottomOffset={true} footer={() => (
+                        <View style={Styles.settingsButton}>
+                            <Button icon="cog" style={Styles.bodyText}
+                                onPress={openSettings}>{props.lang.goto_settings}</Button>
+                            <Button icon="web" style={Styles.bodyText} mode="contained"
+                                onPress={forceWebview}>{props.lang.force_open}</Button>
+                        </View>
+                    )} />
     );
 }
 

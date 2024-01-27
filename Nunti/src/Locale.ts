@@ -246,6 +246,9 @@ export const English = {
     backup_interval_description: 'Every %interval%d',
     change_backup_interval_success: 'Backup interval changed',
     change_backup_interval_fail: 'Failed to change backup interval',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };
 export const Czech = {
     code: 'cs',
@@ -495,6 +498,9 @@ export const Czech = {
     backup_interval_description: 'Každé %interval%d',
     change_backup_interval_success: 'Interval zálohování změněn',
     change_backup_interval_fail: 'Nepodařilo se změnit interval zálohování',
+    opening_article_failed: 'Nepovedlo se otevřít článek',
+    opening_article_failed_reason: 'Zdá se, že zařízení je offline, nebo nastavení momentálně neumožnuje článek otevřít. Offline verze článku také není dostupná.',
+    force_open: 'Nuceně otevřít',
 };
 export const Japanese = {
     code: 'ja',
@@ -744,6 +750,9 @@ export const Japanese = {
     backup_interval_description: '%interval%日ごと',
     change_backup_interval_success: 'バックアップの間隔を変更',
     change_backup_interval_fail: 'バックアップ間隔の変更に失敗しました',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };
 export const Italian = {
     code: 'it',
@@ -993,6 +1002,9 @@ export const Italian = {
     backup_interval_description: 'Ogni %interval%g',
     change_backup_interval_success: 'Intervallo di backup modificato',
     change_backup_interval_fail: 'Impossibile modificare l\'intervallo di backup',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };
 export const Polish = {
     code: 'pl',
@@ -1242,6 +1254,9 @@ export const Polish = {
     backup_interval_description: 'Co %interval%d',
     change_backup_interval_success: 'Zmieniony interwał tworzenia kopii zapasowych',
     change_backup_interval_fail: 'Nie udało się zmienić interwału tworzenia kopii zapasowych',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };
 export const German = {
     code: 'de',
@@ -1491,6 +1506,9 @@ export const German = {
     backup_interval_description: 'Alle %interval% Tage',
     change_backup_interval_success: 'Sicherungsintervall geändert',
     change_backup_interval_fail: 'Sicherungsintervall konnte nicht geändert werden',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };
 export const French = {
     code: 'fr',
@@ -1740,6 +1758,9 @@ export const French = {
     backup_interval_description: 'Tous les %interval%d',
     change_backup_interval_success: 'Modification de l\'intervalle de sauvegarde',
     change_backup_interval_fail: 'Échec de la modification de l\'intervalle de sauvegarde',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };
 export const BrazilianPortuguese = {
     code: 'pt_BR',
@@ -1989,6 +2010,9 @@ export const BrazilianPortuguese = {
     backup_interval_description: 'A cada %interval%d',
     change_backup_interval_success: 'Intervalo de backup alterado',
     change_backup_interval_fail: 'Falha em alterar o intervalo de backup',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };
 export const Persian = {
     code: 'fa',
@@ -2238,4 +2262,7 @@ export const Persian = {
     backup_interval_description: 'Every %interval%d',
     change_backup_interval_success: 'Backup interval changed',
     change_backup_interval_fail: 'Failed to change backup interval',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };

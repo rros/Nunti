@@ -519,10 +519,14 @@ export default function App (props) {
         // modal gets hidden after animation finishes
     }
 
-    const openBrowser = async (url: string) => {
+    const openBrowser = async (url: string, ignoreConnectionStatus: boolean = false, useParentSource: boolean = false) => {
         let browserType: string = Backend.UserSettings.BrowserMode;
-        if (Backend.UserSettings.EnableOfflineReading && await Utils.IsDoNotDownloadEnabled())
+        if (!ignoreConnectionStatus && await Utils.IsDoNotDownloadActive())
             browserType = 'webpage_reader';
+
+        let source = drawerNavigationRef.getCurrentRoute().name;
+        if (useParentSource)
+            source = drawerNavigationRef.getCurrentRoute()?.params.source;
 
         switch (browserType) {
             case 'webview':
@@ -534,14 +538,14 @@ export default function App (props) {
             case 'legacy_webview':
                 hideModal();
                 drawerNavigationRef.navigate('legacyWebview', { uri: url,
-                    source: drawerNavigationRef.getCurrentRoute().name });
+                    source: source });
                 break;
             case 'external_browser':
                 Linking.openURL(url);
                 break;
             case 'webpage_reader':
                 drawerNavigationRef.navigate('webpageReader', { uri: url, 
-                    source: drawerNavigationRef.getCurrentRoute().name });
+                    source: source });
                 break;
             default:
                 log.current.error("wrong browser mode type");

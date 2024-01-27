@@ -42,7 +42,8 @@ function EmptyScreenComponent (props) {
                 <Text variant="titleLarge" style={Styles.centeredText}>{props.title}</Text>
                 <Text variant="bodyMedium" style={[Styles.centeredText, Styles.bodyText]}>{props.description}</Text>
             </View>
-        </View>
+            { props.footer == undefined ? null : props.footer()}
+         </View>
         </Animated.ScrollView>
     );
 }
