@@ -92,7 +92,7 @@ export class Downloader {
 
     /* Downloads article from a single feed, does not throw errors unless throwError is enabled. */
     public static async SingleFeed(feed: Feed, maxperfeed: number, throwError = false): Promise<Article[]> {
-        const log = this.log.context('SingleFeed').context('Feed:'+feed.url);
+        const log = this.log.context('SingleFeed').context(feed.url);
         if (!feed.enabled) {
             log.debug('(skipped, feed disabled)');
             return [];
@@ -174,6 +174,7 @@ export class Downloader {
                 log.info(`reset failedAttempts to ${feed.failedAttempts}`);
                 UserSettings.Save();
             }
+
             return arts;
         } catch (err) {
             log.error('Faulty RSS feed: ', err);
@@ -202,7 +203,7 @@ export class Downloader {
                         text = iconv.decode(Buffer.from(request.response), 'iso-8859-1');
                     resolve(text);
                 } else {
-                    reject(new Error(request.statusText));
+                    reject(new Error(`Server returned ${request.status}, statustext: ${request.statusText}`));
                 }
             };
             request.ontimeout = () => {

@@ -110,7 +110,7 @@ export class Backend {
             log.info('We are on cellular data and wifiOnly mode is enabled. Will use cache.');
             arts = cache.articles;
         } else if (cacheAgeMinutes >= this.UserSettings.ArticleCacheTime) {
-            let result = await Downloader.DownloadArticles(abort, (percent: number) => {
+            const result = await Downloader.DownloadArticles(abort, (percent: number) => {
                 statusUpdateCallback(percent * 0.6);
             });
             arts = result.articles;

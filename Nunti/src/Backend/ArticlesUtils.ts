@@ -17,19 +17,19 @@ export class ArticlesUtils {
         const removedReasonCount: {[reason: string]: number} = {};
 
         // remove seen articles
-        removedReasonCount["seen"] = 0;
+        removedReasonCount['seen'] = 0;
         for (let i = 0; i < seen.length; i++) {
             let index = Utils.FindArticleByUrl(seen[i].url,arts);
             while(index >= 0) {
                 arts.splice(index,1);
-                removedReasonCount["seen"]++;
+                removedReasonCount['seen']++;
                 index = Utils.FindArticleByUrl(seen[i].url,arts);
             }
         }
 
         // remove duplicate urls and old age
-        removedReasonCount["dup_url"] = 0;
-        removedReasonCount["old"] = 0;
+        removedReasonCount['dup_url'] = 0;
+        removedReasonCount['old'] = 0;
         const newarts: Article[] = [];
         arts.forEach((art: Article | undefined) => {
             if (art == undefined) {
@@ -43,17 +43,17 @@ export class ArticlesUtils {
                     if (Date.now() - art.date.getTime() < UserSettings.Instance.MaxArticleAgeDays * 24 * 60 * 60 * 1000)
                         newarts.push(art);
                     else
-                    removedReasonCount["old"]++;
+                        removedReasonCount['old']++;
                 } else
                     newarts.push(art);
             } else
-                removedReasonCount["dup_url"]++;
+                removedReasonCount['dup_url']++;
         });
         arts = newarts;
         
         // remove duplicate titles
         const titleDuplicates: {[title: string]: Article[]} = {};
-        removedReasonCount["dup_title"] = 0;
+        removedReasonCount['dup_title'] = 0;
         for (let i = 0; i < arts.length; i++) {
             const art: Article = arts[i];
             const title = art.title.toLowerCase();
@@ -74,7 +74,7 @@ export class ArticlesUtils {
             }
             for (let i = 0; i < indexesToDiscard.length; i++) {
                 arts.splice(indexesToDiscard[i], 1);
-                removedReasonCount["dup_title"]++;
+                removedReasonCount['dup_title']++;
             }
         }
 
@@ -251,7 +251,7 @@ export class ArticlesUtils {
                     art.keywords[word] = tfidf;
                 }
                 // cut only the top
-                let items = Object.keys(art.keywords).map(function(key) {
+                const items = Object.keys(art.keywords).map(function(key) {
                     return [key, art.keywords[key]];
                 });
 

@@ -7,7 +7,9 @@ import { UserSettings } from './UserSettings';
 import { Utils } from './Utils';
 
 export class Feed {
-    public static lastRemoved: Feed | null = null; //to allow "undo" function
+    private static lastRemoved: Feed | null = null; //to allow "undo" function
+    private static log = Log.BE.context('Feed');
+
     public name: string;
     public url: string;
     public enabled = true;
@@ -27,13 +29,18 @@ export class Feed {
             this.url = 'http://' + this.url;
     }
 
+    /** Add url to feedlist and saves usersettings, returns the created Feed object. */
     public static async New(url: string): Promise<Feed> {
+        const log = this.log.context('New').context(url);
         const feed = new Feed(url);
         
         if (Utils.FindFeedByUrl(feed.url, UserSettings.Instance.FeedList) >= 0)
             throw new Error('Feed already in feedlist.');
 
+        log.debug('Testing if new feed is working before adding it..');
+
         await Downloader.SingleFeed(feed, 5, true);
+        log.debug('Feed appears to be working.');
 
         UserSettings.Instance.FeedList.push(feed);
         await UserSettings.Save();
@@ -72,10 +79,15 @@ export class Feed {
     public static async GuessRSSLink(url: string): Promise<string|null> {
         // confirm that feed is working
         const isWorking = async (link: string): Promise<boolean> => {
+            const SLEEP_MS = 1000;
             try {
                 await Downloader.SingleFeed(new Feed(link), 5, true);
+                // Needed to prevent flooding RSS server with requests, see issue #100.
+                await new Promise((resolve) => setTimeout(resolve, SLEEP_MS));
                 return true;
             } catch {
+                // Needed to prevent flooding RSS server with requests, see issue #100.
+                await new Promise((resolve) => setTimeout(resolve, SLEEP_MS));
                 return false;
             }
         };
