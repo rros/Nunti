@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     NativeModules,
@@ -20,15 +20,17 @@ const NotificationsModule = NativeModules.Notifications;
 import { modalRef, snackbarRef, logRef } from '../../App';
 import { Backend } from '../../Backend';
 import Switch from '../../Components/Switch';
+import { LangProps, ScreenProps } from '../../Props';
+import Styles from '../../Styles';
 
-function SettingsBackground (props) {
+function SettingsBackground(props: ScreenProps) {
     const [disableBackground, setDisableBackground] = useState(Backend.UserSettings.DisableBackgroundTasks);
     const [backgroundSync, setBackgroundSync] = useState(Backend.UserSettings.EnableBackgroundSync);
     const [notifications, setNotifications] = useState(Backend.UserSettings.EnableNotifications);
     const [notificationInterval, setNotificationInterval] = useState(Backend.UserSettings.NewArticlesNotificationPeriod / 60);
     const [backups, setBackups] = useState(Backend.UserSettings.EnableAutomaticBackups);
     const [backupInterval, setBackupInterval] = useState(Backend.UserSettings.AutomaticBackupPeriod / 24);
-    
+
     const log = useRef(logRef.current.globalLog.current.context('SettingsBackground'));
 
     const toggleDisableBackground = () => {
@@ -46,7 +48,7 @@ function SettingsBackground (props) {
     }
 
     const toggleNotificationsPermissionHelper = async () => {
-        if(!(await NotificationsModule.areNotificationsEnabled()) && !notifications) {
+        if (!(await NotificationsModule.areNotificationsEnabled()) && !notifications) {
             // enabling notifications and permission disabled
             // we pass a callback which gets called after user makes a choice
             log.current.debug("Asking user for notification permission");
@@ -58,16 +60,16 @@ function SettingsBackground (props) {
 
     const toggleNotifications = () => {
         setNotifications(!notifications);
-        
+
         Backend.UserSettings.EnableNotifications = !notifications;
         Backend.UserSettings.Save();
     }
 
     const toggleBackups = async () => {
-        if(!backups) { // automatic backups are being turned on
+        if (!backups) { // automatic backups are being turned on
             const dir = await ScopedStorage.openDocumentTree(true);
-            
-            if(dir == null) {
+
+            if (dir == null) {
                 log.current.warn("User has cancelled turning automatic backups on");
                 return;
             } else {
@@ -77,53 +79,51 @@ function SettingsBackground (props) {
         }
 
         setBackups(!backups);
-        
+
         Backend.UserSettings.EnableAutomaticBackups = !backups;
         Backend.UserSettings.Save();
     }
 
     const changeInterval = (type: string, interval: number) => {
-        const newIntervalNumber = Number(interval);
-
-        if(Object.is(newIntervalNumber, NaN) || newIntervalNumber < 1){
-            if(type == 'automatic_backup_interval') {
+        if (Object.is(interval, NaN) || interval < 1) {
+            if (type == 'automatic_backup_interval') {
                 log.current.warn("Changing backup interval failed");
                 snackbarRef.current.showSnack(props.lang.change_backup_interval_fail);
             } else if (type == 'notification_interval') {
                 log.current.warn("Changing notification interval failed");
                 snackbarRef.current.showSnack(props.lang.change_notification_interval_fail);
             }
-            
+
             modalRef.current.hideModal();
             return;
         }
 
-        if(type == 'automatic_backup_interval') {
-            setBackupInterval(newIntervalNumber);
-            Backend.UserSettings.AutomaticBackupPeriod = newIntervalNumber * 24;
-            
+        if (type == 'automatic_backup_interval') {
+            setBackupInterval(interval);
+            Backend.UserSettings.AutomaticBackupPeriod = interval * 24;
+
             snackbarRef.current.showSnack(props.lang.change_backup_interval_success);
         } else if (type == 'notification_interval') {
-            setNotificationInterval(newIntervalNumber);
-            Backend.UserSettings.NewArticlesNotificationPeriod = newIntervalNumber * 60;
-            
+            setNotificationInterval(interval);
+            Backend.UserSettings.NewArticlesNotificationPeriod = interval * 60;
+
             snackbarRef.current.showSnack(props.lang.change_notification_interval_success);
         }
-        
+
         Backend.UserSettings.Save();
         modalRef.current.hideModal();
     }
 
-    return(
+    return (
         <ScrollView showsVerticalScrollIndicator={false}>
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
                     onPress={() => toggleDisableBackground()}>
-                    <View style={[Styles.settingsButton, Styles.settingsRowContainer, {backgroundColor: props.theme.colors.primaryContainer}]}>
+                    <View style={[Styles.settingsButton, Styles.settingsRowContainer, { backgroundColor: props.theme.colors.primaryContainer }]}>
                         <View style={Styles.settingsLeftContent}>
-                            <Text variant="titleMedium" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.enable_background}</Text>
-                            <Text variant="labelSmall" style={{color: props.theme.colors.onSurfaceVariant}}>{props.lang.enable_background_description}</Text>
+                            <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.enable_background}</Text>
+                            <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.enable_background_description}</Text>
                         </View>
                         <Switch value={!disableBackground} />
                     </View>
@@ -132,15 +132,19 @@ function SettingsBackground (props) {
 
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback disabled={disableBackground}
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
                     onPress={() => toggleBackgroundSync()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer,
-                        {backgroundColor: disableBackground ? props.theme.colors.disabledContainer : 'transparent'}]}>
+                    { backgroundColor: disableBackground ? props.theme.colors.disabledContainer : 'transparent' }]}>
                         <View style={Styles.settingsLeftContent}>
-                            <Text variant="titleMedium" style={{color: (disableBackground ? props.theme.colors.disabledContent : 
-                                props.theme.colors.onSurfaceVariant)}}>{props.lang.background_sync}</Text>
-                            <Text variant="labelSmall" style={{color: (disableBackground ? props.theme.colors.disabledContent : 
-                                props.theme.colors.onSurfaceVariant)}}>{props.lang.background_sync_description}</Text>
+                            <Text variant="titleMedium" style={{
+                                color: (disableBackground ? props.theme.colors.disabledContent :
+                                    props.theme.colors.onSurfaceVariant)
+                            }}>{props.lang.background_sync}</Text>
+                            <Text variant="labelSmall" style={{
+                                color: (disableBackground ? props.theme.colors.disabledContent :
+                                    props.theme.colors.onSurfaceVariant)
+                            }}>{props.lang.background_sync_description}</Text>
                         </View>
                         <Switch value={backgroundSync} disabled={disableBackground} />
                     </View>
@@ -149,64 +153,80 @@ function SettingsBackground (props) {
 
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback disabled={disableBackground}
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
                     onPress={() => toggleNotificationsPermissionHelper()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer,
-                        {backgroundColor: disableBackground ? props.theme.colors.disabledContainer : 'transparent'}]}>
+                    { backgroundColor: disableBackground ? props.theme.colors.disabledContainer : 'transparent' }]}>
                         <View style={Styles.settingsLeftContent}>
-                            <Text variant="titleMedium" style={{color: (disableBackground ? props.theme.colors.disabledContent : 
-                                props.theme.colors.onSurfaceVariant)}}>{props.lang.notifications}</Text>
-                            <Text variant="labelSmall" style={{color: (disableBackground ? props.theme.colors.disabledContent : 
-                                props.theme.colors.onSurfaceVariant)}}>{props.lang.notifications_description}</Text>
+                            <Text variant="titleMedium" style={{
+                                color: (disableBackground ? props.theme.colors.disabledContent :
+                                    props.theme.colors.onSurfaceVariant)
+                            }}>{props.lang.notifications}</Text>
+                            <Text variant="labelSmall" style={{
+                                color: (disableBackground ? props.theme.colors.disabledContent :
+                                    props.theme.colors.onSurfaceVariant)
+                            }}>{props.lang.notifications_description}</Text>
                         </View>
                         <Switch value={notifications} disabled={disableBackground} />
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback disabled={!notifications || disableBackground}
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
                     onPress={() => modalRef.current.showModal(() => <ChangeIntervalModal
-                        lang={props.lang} currentValue={notificationInterval}  suffix={props.lang.hours}
+                        lang={props.lang} currentValue={notificationInterval} suffix={props.lang.hours}
                         title={'notification_interval'} icon={'bell'}
                         changeInterval={changeInterval} />)}>
                     <View style={[Styles.settingsButton,
-                        {backgroundColor: !notifications || disableBackground ? props.theme.colors.disabledContainer : 'transparent'}]}>
-                        <Text variant="titleMedium" style={{color: (!notifications || disableBackground ? props.theme.colors.disabledContent : 
-                            props.theme.colors.onSurfaceVariant)}}>{props.lang.notification_interval}</Text>
-                        <Text variant="labelSmall" style={{color: (!notifications || disableBackground ? props.theme.colors.disabledContent : 
-                            props.theme.colors.onSurfaceVariant)}}>{(props.lang.notification_interval_description).replace(
-                                '%interval%', notificationInterval)}</Text>
+                    { backgroundColor: !notifications || disableBackground ? props.theme.colors.disabledContainer : 'transparent' }]}>
+                        <Text variant="titleMedium" style={{
+                            color: (!notifications || disableBackground ? props.theme.colors.disabledContent :
+                                props.theme.colors.onSurfaceVariant)
+                        }}>{props.lang.notification_interval}</Text>
+                        <Text variant="labelSmall" style={{
+                            color: (!notifications || disableBackground ? props.theme.colors.disabledContent :
+                                props.theme.colors.onSurfaceVariant)
+                        }}>{(props.lang.notification_interval_description).replace(
+                            '%interval%', notificationInterval)}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
-            
+
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback disabled={disableBackground}
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
                     onPress={() => toggleBackups()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer,
-                        {backgroundColor: disableBackground ? props.theme.colors.disabledContainer : 'transparent'}]}>
+                    { backgroundColor: disableBackground ? props.theme.colors.disabledContainer : 'transparent' }]}>
                         <View style={Styles.settingsLeftContent}>
-                            <Text variant="titleMedium" style={{color: (disableBackground ? props.theme.colors.disabledContent : 
-                                props.theme.colors.onSurfaceVariant)}}>{props.lang.automatic_backups}</Text>
-                            <Text variant="labelSmall" style={{color: (disableBackground ? props.theme.colors.disabledContent : 
-                                props.theme.colors.onSurfaceVariant)}}>{props.lang.automatic_backups_description}</Text>
+                            <Text variant="titleMedium" style={{
+                                color: (disableBackground ? props.theme.colors.disabledContent :
+                                    props.theme.colors.onSurfaceVariant)
+                            }}>{props.lang.automatic_backups}</Text>
+                            <Text variant="labelSmall" style={{
+                                color: (disableBackground ? props.theme.colors.disabledContent :
+                                    props.theme.colors.onSurfaceVariant)
+                            }}>{props.lang.automatic_backups_description}</Text>
                         </View>
                         <Switch value={backups} disabled={disableBackground} />
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback disabled={!backups || disableBackground}
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}    
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
                     onPress={() => modalRef.current.showModal(() => <ChangeIntervalModal
                         lang={props.lang} currentValue={backupInterval} suffix={props.lang.days}
                         title={'automatic_backup_interval'} icon={'backup-restore'}
                         changeInterval={changeInterval} />)}>
                     <View style={[Styles.settingsButton,
-                        {backgroundColor: !backups || disableBackground ? props.theme.colors.disabledContainer : 'transparent'}]}>
-                        <Text variant="titleMedium" style={{color: (!backups || disableBackground ? props.theme.colors.disabledContent : 
-                            props.theme.colors.onSurfaceVariant)}}>{props.lang.automatic_backup_interval}</Text>
-                        <Text variant="labelSmall" style={{color: (!backups || disableBackground ? props.theme.colors.disabledContent : 
-                            props.theme.colors.onSurfaceVariant)}}>{(props.lang.backup_interval_description).replace(
-                                '%interval%', backupInterval)}</Text>
+                    { backgroundColor: !backups || disableBackground ? props.theme.colors.disabledContainer : 'transparent' }]}>
+                        <Text variant="titleMedium" style={{
+                            color: (!backups || disableBackground ? props.theme.colors.disabledContent :
+                                props.theme.colors.onSurfaceVariant)
+                        }}>{props.lang.automatic_backup_interval}</Text>
+                        <Text variant="labelSmall" style={{
+                            color: (!backups || disableBackground ? props.theme.colors.disabledContent :
+                                props.theme.colors.onSurfaceVariant)
+                        }}>{(props.lang.backup_interval_description).replace(
+                            '%interval%', backupInterval)}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
@@ -214,26 +234,34 @@ function SettingsBackground (props) {
     );
 }
 
-function ChangeIntervalModal ({lang, currentValue, title, icon, suffix, changeInterval}) {
+interface ChangeIntervalModalProps extends LangProps {
+    icon: string,
+    title: string,
+    suffix: string,
+    currentValue: number,
+    changeInterval: (title: string, value: number) => void,
+}
+
+function ChangeIntervalModal(props: ChangeIntervalModalProps) {
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
 
-    return(
+    return (
         <>
-        <Dialog.Icon icon={icon} />
-        <Dialog.Title style={Styles.centeredText}>{lang[title]}</Dialog.Title>
-        <View style={Styles.modalNonScrollArea}>
-            <TextInput label={currentValue + suffix}
-                autoCapitalize="none" keyboardType="numeric" disabled={loading}
-            right={<TextInput.Affix text={lang.hours} />} onChangeText={text => setInputValue(text)}/>
-        </View>
-        <View style={Styles.modalButtonContainer}>
-            <Button onPress={() => { setLoading(true); changeInterval(title, inputValue); }}
-                loading={loading} disabled={inputValue == '' || loading}
-                style={Styles.modalButton}>{lang.change}</Button>
-            <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.cancel}</Button>
-        </View>
+            <Dialog.Icon icon={props.icon} />
+            <Dialog.Title style={Styles.centeredText}>{props.lang[props.title]}</Dialog.Title>
+            <View style={Styles.modalNonScrollArea}>
+                <TextInput label={props.currentValue.toString() + props.suffix}
+                    autoCapitalize="none" keyboardType="numeric" disabled={loading}
+                    right={<TextInput.Affix text={props.lang.hours} />} onChangeText={text => setInputValue(text)} />
+            </View>
+            <View style={Styles.modalButtonContainer}>
+                <Button onPress={() => { setLoading(true); props.changeInterval(props.title, Number(inputValue)); }}
+                    loading={loading} disabled={inputValue == '' || loading}
+                    style={Styles.modalButton}>{props.lang.change}</Button>
+                <Button onPress={() => modalRef.current.hideModal()}
+                    style={Styles.modalButton}>{props.lang.cancel}</Button>
+            </View>
         </>
     );
 }

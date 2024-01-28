@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Component } from 'react';
 import {
     Image,
     Platform,
@@ -26,62 +26,67 @@ import DefaultTopics from '../DefaultTopics';
 import SettingsBackground from '../Screens/SettingsSubpages/SettingsBackground';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { ScreenProps, ScreenPropsLogging, language } from '../Props';
+import { LogProps, ScreenProps, language } from '../Props';
 import Log from '../Log';
 const NavigationTabs = createMaterialTopTabNavigator();
 
 interface WizardProps extends ScreenProps {
-    languages: {[id: string]: language},
+    languages: { [id: string]: language },
 }
 
-function Wizard(props: WizardProps) {
-    const log = useRef<Log>(logRef.current.globalLog.current.context('Wizard'));
-    const _props: WizardProps = props; // props are not available inside navigator
+class Wizard extends Component<WizardProps> {
+    private log = useRef<Log>(logRef.current.globalLog.current.context('Wizard'));
 
-    return (
-        <NavigationTabs.Navigator tabBarPosition="bottom"
-            screenOptions={{
-                tabBarStyle: { backgroundColor: props.theme.colors.surface, elevation: 0 },
-                tabBarIndicatorStyle: { backgroundColor: 'transparent' },
-                tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => {
-                    return (
-                        <View style={Styles.wizardTabContainer}>
-                            <Icon style={{ alignSelf: 'center' }} name={focused ? 'circle' : 'radiobox-blank'}
-                                size={16} color={focused ? _props.theme.colors.primary :
-                                    _props.theme.colors.outline} />
-                        </View>
-                    );
-                }
-            }}>
-            <NavigationTabs.Screen name="Welcome">
-                {props => <Step1Welcome {...props} parentLog={log.current}
-                    lang={_props.lang} theme={_props.theme} />}
-            </NavigationTabs.Screen>
-            <NavigationTabs.Screen name="Language">
-                {props => <Step2Language {...props} lang={_props.lang}
-                    languages={_props.languages} theme={_props.theme} />}
-            </NavigationTabs.Screen>
-            <NavigationTabs.Screen name="Theming">
-                {props => <Step3Theme {...props} lang={_props.lang}
-                    theme={_props.theme} />}
-            </NavigationTabs.Screen>
-            <NavigationTabs.Screen name="Topics">
-                {props => <Step4Topics {...props} lang={_props.lang}
-                    theme={_props.theme} />}
-            </NavigationTabs.Screen>
-            <NavigationTabs.Screen name="Notifications">
-                {props => <Step5Notifications {...props} lang={_props.lang}
-                    theme={_props.theme} />}
-            </NavigationTabs.Screen>
-            <NavigationTabs.Screen name="Learning">
-                {props => <Step6Learning {...props} lang={_props.lang}
-                    theme={_props.theme} />}
-            </NavigationTabs.Screen>
-        </NavigationTabs.Navigator>
-    );
+    constructor(props: WizardProps) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <NavigationTabs.Navigator tabBarPosition="bottom"
+                screenOptions={{
+                    tabBarStyle: { backgroundColor: this.props.theme.colors.surface, elevation: 0 },
+                    tabBarIndicatorStyle: { backgroundColor: 'transparent' },
+                    tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => {
+                        return (
+                            <View style={Styles.wizardTabContainer}>
+                                <Icon style={{ alignSelf: 'center' }} name={focused ? 'circle' : 'radiobox-blank'}
+                                    size={16} color={focused ? this.props.theme.colors.primary :
+                                        this.props.theme.colors.outline} />
+                            </View>
+                        );
+                    }
+                }}>
+                <NavigationTabs.Screen name="Welcome">
+                    {props => <Step1Welcome {...props} parentLog={this.log.current}
+                        lang={this.props.lang} theme={this.props.theme} />}
+                </NavigationTabs.Screen>
+                <NavigationTabs.Screen name="Language">
+                    {props => <Step2Language {...props} lang={this.props.lang}
+                        languages={this.props.languages} theme={this.props.theme} />}
+                </NavigationTabs.Screen>
+                <NavigationTabs.Screen name="Theming">
+                    {props => <Step3Theme {...props} lang={this.props.lang}
+                        theme={this.props.theme} />}
+                </NavigationTabs.Screen>
+                <NavigationTabs.Screen name="Topics">
+                    {props => <Step4Topics {...props} lang={this.props.lang}
+                        theme={this.props.theme} />}
+                </NavigationTabs.Screen>
+                <NavigationTabs.Screen name="Notifications">
+                    {props => <Step5Notifications {...props} lang={this.props.lang}
+                        theme={this.props.theme} />}
+                </NavigationTabs.Screen>
+                <NavigationTabs.Screen name="Learning">
+                    {props => <Step6Learning {...props} lang={this.props.lang}
+                        theme={this.props.theme} />}
+                </NavigationTabs.Screen>
+            </NavigationTabs.Navigator>
+        )
+    };
 }
 
-function Step1Welcome(props: ScreenPropsLogging) {
+function Step1Welcome(props: ScreenProps & LogProps) {
     const log = props.parentLog.context('Step1Welcome');
 
     const importBackup = async () => {
@@ -296,7 +301,7 @@ function Step3Theme(props: ScreenProps) {
 }
 
 function Step4Topics(props: ScreenProps) {
-    type topicHandle = {name: string, enabled: boolean, icon: string} 
+    type topicHandle = { name: string, enabled: boolean, icon: string }
 
     const [topics, setTopics] = useState<topicHandle[]>([]);
     const [forceValue, forceUpdate] = useState(false);

@@ -40,15 +40,14 @@ import { Utils } from '../Backend/Utils';
 import { Storage } from '../Backend/Storage';
 import { Current } from '../Backend/Current';
 import Styles from '../Styles';
-import { LangProps, route, ScreenProps, State, ThemeProps } from '../Props';
+import { LangProps, route, ScreenProps, ScreenTypeProps, State, ThemeProps } from '../Props';
 import { ArticlesFilter, sortType } from '../Backend/ArticlesFilter';
 import { Tag } from '../Backend/Tag';
 
 type buttonType = 'delete' | 'thumb-up' | 'thumb-down';
 type articleSwipe = 'right' | 'left';
 
-interface Props extends ScreenProps {
-    screenType: number,
+interface Props extends ScreenProps, ScreenTypeProps {
     source: articleSource,
     buttonType: buttonType,
 }
@@ -621,9 +620,8 @@ function RssModalContent(props: FilterModalProps) {
     );
 }
 
-interface DetailsModalProps extends ThemeProps, LangProps {
+interface DetailsModalProps extends ThemeProps, LangProps, ScreenTypeProps {
     showImages: boolean,
-    screenType: number,
     buttonType: buttonType,
     currentArticle: Article,
     saveArticle: (article: Article) => void,
@@ -739,9 +737,8 @@ function DetailsModalContent(props: DetailsModalProps) {
     }
 }
 
-interface ArticleCardProps extends ThemeProps, LangProps {
+interface ArticleCardProps extends ThemeProps, LangProps, ScreenTypeProps {
     showImages: boolean,
-    screenType: number,
     buttonType: buttonType,
     source: articleSource,
     item: Article,

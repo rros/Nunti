@@ -15,11 +15,11 @@ import { ScreenProps } from '../Props';
 
 function LegacyWebview(props: ScreenProps) {
     const log = useRef(Log.FE.context('LegacyWebview'));
-
+    
     useEffect(() => {
-        log.current.debug("Navigating from " + props.route.params.source)
+        log.current.debug("Navigating from " + props.route.params?.source)
         const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-            props.navigation.navigate(props.route.params.source);
+            props.navigation.navigate(props.route.params?.source);
             return true;
         });
 
@@ -30,7 +30,7 @@ function LegacyWebview(props: ScreenProps) {
 
 
     return (
-        <WebView source={{ uri: props.route.params.uri }}
+        <WebView source={{ uri: props.route.params?.uri }}
             startInLoadingState={true}
             renderLoading={() => { return <LoadingScreenComponent /> }} />
     );
