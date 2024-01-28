@@ -8,7 +8,7 @@ import { UserSettings } from './Backend/UserSettings';
 import { Utils } from './Backend/Utils';
 import { Storage } from './Backend/Storage';
 import { ArticlesUtils } from './Backend/ArticlesUtils';
-import { ArticlesFilter } from './Backend/ArticlesFilter';
+import { ArticlesFilter, sortType } from './Backend/ArticlesFilter';
 import { Current } from './Backend/Current';
 import { Tag } from './Backend/Tag';
 import { Feed } from './Backend/Feed';

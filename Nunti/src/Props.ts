@@ -1,25 +1,37 @@
+import { ParamListBase, RouteProp } from "@react-navigation/native"
+import Log from "./Log"
+
+export type route = RouteProp<ParamListBase, string>;
+export type theme = any;
+export type language = any;
+
 export interface ThemeProps {
-    theme: any,
+    theme: theme,
 }
 
 export interface LangProps {
-    lang: any,
-}
-
-export interface Route {
-    name: string,
-    params: any,
+    lang: language,
 }
 
 export interface State {
     data: {
         state: {
-            routes: Route[],
+            routes: route[],
         }
     }
 }
 
+export interface NavigationParams {
+    source: string,
+}
+
 export interface ScreenProps extends ThemeProps, LangProps {
-    route: Route,
-    navigation: any,
+    route: route,
+    navigation: {
+        navigate: (target: string, params?: NavigationParams) => void,
+    },
+}
+
+export interface ScreenPropsLogging extends ScreenProps {
+    parentLog: Log,
 }

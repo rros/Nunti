@@ -16,19 +16,20 @@ import RenderHtml from 'react-native-render-html';
 import Log from '../Log';
 import LoadingScreenComponent from '../Components/LoadingScreenComponent'
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
-import { browserRef, snackbarRef } from '../App';
+import { browserRef } from '../App';
 
 import { Backend } from '../Backend';
+import { ScreenProps } from '../Props';
+import Styles from '../Styles';
 
-function WebPageReader(props) {
+function WebPageReader(props: ScreenProps) {
     const [loading, setLoading] = useState(true);
     const [articleTitle, setArticleTitle] = useState('');
     const [articleContent, setArticleContent] = useState({ html: '' });
-    const [ignoredTags, setIgnoredTags] = useState([]);
+    const [ignoredTags, setIgnoredTags] = useState<string[]>([]);
 
     const log = useRef(Log.FE.context('LegacyWebview'));
 
-    // on component mount
     useEffect(() => {
         log.current.debug("Navigating from " + props.route.params.source)
         let backHandler = BackHandler.addEventListener("hardwareBackPress", () => {

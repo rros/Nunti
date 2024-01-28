@@ -4,7 +4,6 @@ import {
     Share,
     FlatList,
     RefreshControl,
-    ListRenderItem,
 } from 'react-native';
 
 import {
@@ -41,7 +40,7 @@ import { Utils } from '../Backend/Utils';
 import { Storage } from '../Backend/Storage';
 import { Current } from '../Backend/Current';
 import Styles from '../Styles';
-import { LangProps, Route, ScreenProps, State, ThemeProps } from '../Props';
+import { LangProps, route, ScreenProps, State, ThemeProps } from '../Props';
 import { ArticlesFilter, sortType } from '../Backend/ArticlesFilter';
 import { Tag } from '../Backend/Tag';
 
@@ -92,7 +91,7 @@ function ArticlesPage(props: Props) {
     const articlesFromBackend = useRef<Article[][]>([]); // CurrentFeed/CurrentBookmarks/CurrentHistory
     const currentArticle = useRef<Article>(); // details modal
     const currentPageIndex = useRef(0);
-    const refreshAbortController = useRef<AbortController>({});
+    const refreshAbortController = useRef<AbortController>(new AbortController());
 
     const bannerAction = useRef('');
     const bannerMessage = useRef('');
@@ -402,16 +401,16 @@ function ArticlesPage(props: Props) {
                     />
                 }
 
-                renderItem={({item}) => renderItem(item)}
+                renderItem={({ item }) => renderItem(item)}
                 ListHeaderComponent={props.source == 'feed' ? <SegmentedButton applySorting={applySorting}
                     theme={props.theme} lang={props.lang} /> : null}
-                ListEmptyComponent={<ListEmptyComponent route={props.route} lang={props.lang}  />}
+                ListEmptyComponent={<ListEmptyComponent route={props.route} lang={props.lang} />}
                 ListFooterComponent={() => articlePage.length != 0 ? (
                     <View style={Styles.footerContainer}>
                         <IconButton onPress={() => { changePage(currentPageIndex.current - 1); }}
                             icon="chevron-left" mode="outlined"
                             disabled={currentPageIndex.current == 0} />
-                        <Button onPress={() => { flatListRef.current!.scrollToOffset({offset: 0, animated: true}); }}
+                        <Button onPress={() => { flatListRef.current!.scrollToOffset({ offset: 0, animated: true }); }}
                             style={{ flex: 1, alignSelf: 'center' }}>{currentPageIndex.current + 1}</Button>
                         <IconButton onPress={() => { changePage(currentPageIndex.current + 1); }}
                             icon="chevron-right" mode="outlined"
@@ -424,7 +423,7 @@ function ArticlesPage(props: Props) {
 }
 
 interface ListEmptyComponentProps extends LangProps {
-    route: Route,
+    route: route,
 }
 
 function ListEmptyComponent(props: ListEmptyComponentProps) {
@@ -784,11 +783,11 @@ function ArticleCard(props: ArticleCardProps) {
         return (
             <Animated.View style={[Styles.cardSwipeLeft, {
                 backgroundColor: (props.buttonType == 'delete') ?
-                props.theme.colors.negativeContainer : props.theme.colors.positiveContainer
+                    props.theme.colors.negativeContainer : props.theme.colors.positiveContainer
             }, swipeComponentAnimStyle]}>
                 <Icon name={props.buttonType == 'delete' ? 'delete' : 'thumb-up'}
                     size={24} color={props.buttonType == 'delete' ? props.theme.colors.onNegativeContainer :
-                    props.theme.colors.onPositiveContainer} style={Styles.cardSwipeIcon} />
+                        props.theme.colors.onPositiveContainer} style={Styles.cardSwipeIcon} />
             </Animated.View>
         );
     }

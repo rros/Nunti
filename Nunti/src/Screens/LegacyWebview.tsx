@@ -3,28 +3,27 @@ import {
     BackHandler
 } from 'react-native';
 
-import { 
+import {
     withTheme,
 } from 'react-native-paper';
 
 import { WebView } from 'react-native-webview';
 
-import LoadingScreenComponent from '../Components/LoadingScreenComponent.tsx'
+import LoadingScreenComponent from '../Components/LoadingScreenComponent'
 import Log from '../Log';
-import Styles from '../Styles';
+import { ScreenProps } from '../Props';
 
-function LegacyWebview (props) {
+function LegacyWebview(props: ScreenProps) {
     const log = useRef(Log.FE.context('LegacyWebview'));
-    
-    // on component mount
+
     useEffect(() => {
         log.current.debug("Navigating from " + props.route.params.source)
-        backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
             props.navigation.navigate(props.route.params.source);
             return true;
         });
-        
-        return () => { 
+
+        return () => {
             backHandler.remove();
         }
     }, []);
@@ -33,7 +32,7 @@ function LegacyWebview (props) {
     return (
         <WebView source={{ uri: props.route.params.uri }}
             startInLoadingState={true}
-            renderLoading={() => { return <LoadingScreenComponent/> }} />
+            renderLoading={() => { return <LoadingScreenComponent /> }} />
     );
 }
 
