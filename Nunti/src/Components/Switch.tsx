@@ -15,9 +15,9 @@ import Animated, {
 import Color from 'color';
 
 import Styles from '../Styles';
-import CommonProps from '../Props';
+import { ThemeProps } from '../Props';
 
-interface Props extends CommonProps {
+interface Props extends ThemeProps {
     value: boolean,
     disabled: boolean,
 }

@@ -16,9 +16,9 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import Styles from '../Styles';
-import CommonProps from '../Props';
+import { ThemeProps } from '../Props';
 
-interface Props extends CommonProps {
+interface Props extends ThemeProps {
     title: string,
     description: string,
     useBottomOffset: boolean,

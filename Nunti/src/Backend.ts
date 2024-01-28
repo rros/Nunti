@@ -15,6 +15,8 @@ import { Feed } from './Backend/Feed';
 import { OfflineCache } from './Backend/OfflineCache';
 import { ReadabilityArticle, WebpageParser } from './Backend/WebpageParser';
 
+export type articleSource = 'feed' | 'bookmarks' | 'history';
+
 export interface LearningStatus {
     TotalUpvotes: number,
     TotalDownvotes: number,
@@ -42,7 +44,7 @@ export class Backend {
 
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(
-        articleSource: 'feed' | 'bookmarks' | 'history',
+        articleSource: articleSource,
         filter: ArticlesFilter = ArticlesFilter.Empty,
         abort: AbortController | null = null
     ): Promise<Article[][]> {
@@ -59,7 +61,7 @@ export class Backend {
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
     public static async GetArticles(
-        articleSource: 'feed' | 'bookmarks' | 'history',
+        articleSource: articleSource,
         filter: ArticlesFilter = ArticlesFilter.Empty,
         abort: AbortController | null = null
     ): Promise<Article[]> {
@@ -78,8 +80,6 @@ export class Backend {
             case 'history':
                 articles = (await Storage.StorageGet('seen')).reverse().slice(0, this.UserSettings.ArticleHistory);
                 break;
-            default:
-                throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
         }
         articles.forEach(Article.Fix);
 
@@ -97,7 +97,7 @@ export class Backend {
     }
     /* Retrieves sorted articles to show in feed. */
     public static async GetFeedArticles(
-        overrides: { sortType: string | undefined } = { sortType: undefined },
+        overrides: { sortType?: sortType } = { sortType: undefined },
         abort: AbortController | null = null
     ): Promise<Article[]> {
 

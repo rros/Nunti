@@ -15,14 +15,15 @@ import { TouchableNativeFeedback } from 'react-native-gesture-handler';
 import { snackbarRef } from '../App';
 import Backend, { LearningStatus } from '../Backend';
 import Styles from '../Styles';
-import CommonProps from '../Props';
+import { ThemeProps, LangProps } from '../Props';
+import { sortType } from '../Backend/ArticlesFilter';
 
-interface Props extends CommonProps {
-    applySorting: (sortingType: string) => void,
+interface Props extends ThemeProps, LangProps {
+    applySorting: (sortingType: sortType) => void,
 }
 
 function SegmentedButton(props: Props) {
-    const [sortType, setSortType] = useState<string>();
+    const [sortType, setSortType] = useState<sortType>();
     const [learningDisabled, setLearningDisabled] = useState<boolean>();
 
     const learningStatus = useRef<LearningStatus>();
@@ -43,7 +44,7 @@ function SegmentedButton(props: Props) {
         })();
     });
 
-    const changeSortType = (newSortType: string) => {
+    const changeSortType = (newSortType: sortType) => {
         if (learningDisabled && newSortType == 'learning') {
             snackbarRef.current.showSnack((props.lang.rate_more).replace('%articles%',
                 learningStatus.current?.SortingEnabledIn));

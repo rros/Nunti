@@ -9,9 +9,9 @@ import {
 } from 'react-native-paper';
 
 import Styles from '../Styles';
-import CommonProps from '../Props';
+import { ThemeProps } from '../Props';
 
-function LoadingScreenComponent(props: CommonProps) {
+function LoadingScreenComponent(props: ThemeProps) {
     return (
         <View style={[Styles.EmptyPageContainer, { backgroundColor: props.theme.colors.surface }]}>
             <ActivityIndicator animating={true} color={props.theme.colors.primary} />

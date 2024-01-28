@@ -1,3 +1,4 @@
+import { sortType } from '../Backend';
 import Log from '../Log';
 import { Feed } from './Feed';
 import { Storage } from './Storage';
@@ -9,7 +10,7 @@ export class UserSettings {
     public FeedList: Feed[] = [];
     public Tags: Tag[] = [];
 
-    public SortType = 'date';
+    public SortType: sortType = 'date';
 
     public DisableImages = false;
     public LargeImages = true;

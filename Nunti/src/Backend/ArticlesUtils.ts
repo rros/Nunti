@@ -1,3 +1,4 @@
+import { sortType } from '../Backend';
 import Log from '../Log';
 import { Article } from './Article';
 import { Storage } from './Storage';
@@ -82,7 +83,7 @@ export class ArticlesUtils {
         log.debug(`Finished in ${endTime - startTime} ms, discarded ${startCount - newarts.length} articles. Details: ${JSON.stringify(removedReasonCount)}`);
         return arts;
     }
-    public static async SortArticles(articles: Article[], overrides: {sortType: undefined | string} = {sortType: undefined}): Promise<Article[]> {
+    public static async SortArticles(articles: Article[], overrides: {sortType?: sortType} = {sortType: undefined}): Promise<Article[]> {
         const log = this.log.context('SortArticles');
         function shuffle(a: any) { //eslint-disable-line
             let j: number, x: any, i: number; //eslint-disable-line

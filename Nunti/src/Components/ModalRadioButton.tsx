@@ -12,9 +12,9 @@ import {
 } from 'react-native-paper';
 
 import Styles from '../Styles';
-import CommonProps from '../Props';
+import { ThemeProps, LangProps } from '../Props';
 
-interface Props extends CommonProps {
+interface Props extends ThemeProps, LangProps {
     value: string,
     changeValue: (value: string) => void,
     disabled: boolean,

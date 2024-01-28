@@ -15,9 +15,9 @@ import Animated, {
     interpolate,
 } from 'react-native-reanimated';
 
-import CommonProps from '../Props';
+import { ThemeProps } from '../Props';
 
-interface Props extends CommonProps {
+interface Props extends ThemeProps {
     value: number,
     show: boolean,
 }
