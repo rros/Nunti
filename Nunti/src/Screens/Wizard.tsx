@@ -22,11 +22,11 @@ import { snackbarRef, globalStateRef, logRef } from '../App';
 import { Backend } from '../Backend';
 import { Backup } from '../Backend/Backup';
 import Styles, { Accents } from '../Styles';
-import DefaultTopics from '../DefaultTopics';
+import { DefaultTopics } from '../DefaultTopics';
 import SettingsBackground from '../Screens/SettingsSubpages/SettingsBackground';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { LogProps, ScreenProps, LanguageList } from '../Props';
+import { LogProps, ScreenProps, LanguageList, ThemeName, AccentName, TopicName, LanguageCode, LanguageIndex } from '../Props';
 import Log from '../Log';
 const NavigationTabs = createMaterialTopTabNavigator();
 
@@ -35,7 +35,7 @@ interface WizardProps extends ScreenProps {
 }
 
 class Wizard extends Component<WizardProps> {
-    private log = useRef<Log>(logRef.current.globalLog.current.context('Wizard'));
+    private log = useRef<Log>(logRef.current!.globalLog.current.context('Wizard'));
 
     constructor(props: WizardProps) {
         super(props);
@@ -101,22 +101,22 @@ function Step1Welcome(props: ScreenProps & LogProps) {
 
         if (allowed_mime.indexOf(file.mime) < 0) {
             log.error('Import failed, wrong format')
-            snackbarRef.current.showSnack(props.lang.import_fail_format);
+            snackbarRef.current?.showSnack(props.lang.import_fail_format);
             return;
         }
 
         if (await Backup.TryLoadBackup(file.data)) {
-            globalStateRef.current.updateLanguage(Backend.UserSettings.Language);
-            globalStateRef.current.updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
+            globalStateRef.current?.updateLanguage(Backend.UserSettings.Language);
+            globalStateRef.current?.updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
 
             // when importing OPML files from other apps, we need to set first launch to false to leave the wizard
             Backend.UserSettings.FirstLaunch = false;
             Backend.UserSettings.Save();
 
-            snackbarRef.current.showSnack(props.lang.import_ok);
+            snackbarRef.current?.showSnack(props.lang.import_ok);
             props.navigation.navigate('feed');
         } else {
-            snackbarRef.current.showSnack(props.lang.import_fail_invalid);
+            snackbarRef.current?.showSnack(props.lang.import_fail_invalid);
             log.error('Import failed')
         }
     }
@@ -155,9 +155,9 @@ function Step1Welcome(props: ScreenProps & LogProps) {
 function Step2Language(props: WizardProps) {
     const [selectedLang, setSelectedLang] = useState(Backend.UserSettings.Language);
 
-    const changeLanguage = (newLanguage: string) => {
+    const changeLanguage = (newLanguage: LanguageCode) => {
         setSelectedLang(newLanguage);
-        globalStateRef.current.updateLanguage(newLanguage);
+        globalStateRef.current?.updateLanguage(newLanguage);
     }
 
     return (
@@ -167,7 +167,7 @@ function Step2Language(props: WizardProps) {
             <Card mode={'contained'} style={Styles.card}>
                 <RadioButton.Group value={selectedLang} onValueChange={(_) => { }}>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                         onPress={() => changeLanguage('system')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'system'} />
@@ -180,13 +180,13 @@ function Step2Language(props: WizardProps) {
                     {Object.keys(props.languages).map((language) => {
                         return (
                             <TouchableNativeFeedback
-                                background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                                onPress={() => changeLanguage(props.languages[language].code)}>
+                                background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                                onPress={() => changeLanguage(props.languages[language as LanguageIndex].code as LanguageCode)}>
                                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
-                                    <RadioButton.Android value={props.languages[language].code} />
+                                    <RadioButton.Android value={props.languages[language as LanguageIndex].code as LanguageCode} />
                                     <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel,
                                     { color: props.theme.accent.onSurfaceVariant }]}>
-                                        {props.languages[language].this_language}</Text>
+                                        {props.languages[language as LanguageIndex].this_language}</Text>
                                 </View>
                             </TouchableNativeFeedback>
                         );
@@ -203,14 +203,14 @@ function Step3Theme(props: ScreenProps) {
 
     const isMaterialYouSupport = useRef(Number(Platform.Version) < 31);
 
-    const changeTheme = (newTheme: string) => {
+    const changeTheme = (newTheme: ThemeName) => {
         setTheme(newTheme);
-        globalStateRef.current.updateTheme(newTheme, accent);
+        globalStateRef.current?.updateTheme(newTheme, accent);
     }
 
-    const changeAccent = (newAccent: string) => {
+    const changeAccent = (newAccent: AccentName) => {
         setAccent(newAccent);
-        globalStateRef.current.updateTheme(theme, newAccent);
+        globalStateRef.current?.updateTheme(theme, newAccent);
     }
 
     return (
@@ -220,7 +220,7 @@ function Step3Theme(props: ScreenProps) {
             <Card mode={'contained'} style={Styles.card}>
                 <RadioButton.Group value={theme} onValueChange={(_) => { }}>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                         onPress={() => changeTheme('system')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'system'} />
@@ -230,7 +230,7 @@ function Step3Theme(props: ScreenProps) {
                         </View>
                     </TouchableNativeFeedback>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                         onPress={() => changeTheme('light')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'light'} />
@@ -240,7 +240,7 @@ function Step3Theme(props: ScreenProps) {
                         </View>
                     </TouchableNativeFeedback>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                         onPress={() => changeTheme('dark')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'dark'} />
@@ -250,7 +250,7 @@ function Step3Theme(props: ScreenProps) {
                         </View>
                     </TouchableNativeFeedback>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                         onPress={() => changeTheme('black')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                             <RadioButton.Android value={'black'} />
@@ -270,27 +270,27 @@ function Step3Theme(props: ScreenProps) {
                     {Object.keys(Accents).map((accentName) => {
                         return (
                             <TouchableNativeFeedback
-                                background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                                onPress={() => changeAccent(accentName)}>
+                                background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                                onPress={() => changeAccent(accentName as AccentName)}>
                                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
-                                    <RadioButton.Android value={accentName} />
+                                    <RadioButton.Android value={accentName as AccentName} />
                                     <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel,
                                     { color: props.theme.accent.onSurfaceVariant }]}>
-                                        {props.lang[accentName]}</Text>
+                                        {props.lang[accentName as AccentName]}</Text>
                                 </View>
                             </TouchableNativeFeedback>
                         );
                     })}
                     <TouchableNativeFeedback disabled={!isMaterialYouSupport.current}
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                         onPress={() => changeAccent('material_you')}>
                         <View style={[Styles.settingsButton, Styles.settingsRowContainer,
-                        { backgroundColor: (isMaterialYouSupport.current ? 'transparent' : props.theme.accent.disabledContainer) }]}>
+                        { backgroundColor: (isMaterialYouSupport.current ? 'transparent' : props.theme.accent.surfaceDisabled) }]}>
                             <RadioButton.Android value={'material_you'} disabled={!isMaterialYouSupport} />
                             <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel,
                             {
                                 color: (isMaterialYouSupport ? props.theme.accent.onSurfaceVariant :
-                                    props.theme.accent.disabledContent)
+                                    props.theme.accent.onSurfaceDisabled)
                             }]}>{props.lang.material_you}</Text>
                         </View>
                     </TouchableNativeFeedback>
@@ -301,20 +301,19 @@ function Step3Theme(props: ScreenProps) {
 }
 
 function Step4Topics(props: ScreenProps) {
-    type topicHandle = { name: string, enabled: boolean, icon: string }
+    type topicHandle = { name: TopicName, enabled: boolean, icon: string }
 
     const [topics, setTopics] = useState<topicHandle[]>([]);
     const [forceValue, forceUpdate] = useState(false);
 
-    // on component mount
     useEffect(() => {
         let newTopics: topicHandle[] = [];
 
-        Object.keys(DefaultTopics.Topics).forEach((topicName) => {
+        Object.entries(DefaultTopics).forEach(([key, value]) => {
             newTopics.push({
-                name: topicName,
-                enabled: Backend.IsTopicEnabled(topicName),
-                icon: (DefaultTopics.Topics[topicName].icon)
+                name: key as TopicName,
+                enabled: Backend.IsTopicEnabled(key as TopicName),
+                icon: value.icon
             });
         });
 
@@ -347,7 +346,7 @@ function Step4Topics(props: ScreenProps) {
 
                     return (
                         <TouchableNativeFeedback
-                            background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                            background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                             onPress={() => changeDefaultTopics(topic)}>
                             <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                 <Checkbox.Android
@@ -371,7 +370,7 @@ function Step4Topics(props: ScreenProps) {
 
                     return (
                         <TouchableNativeFeedback
-                            background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                            background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                             onPress={() => changeDefaultTopics(topic)}>
                             <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                 <Checkbox.Android
@@ -394,7 +393,7 @@ function Step5Notifications(props: ScreenProps) {
             <Text variant="labelLarge" style={[Styles.settingsSectionTitle,
             { color: props.theme.accent.onSurfaceVariant }]}>
                 {props.lang.background}</Text>
-            <SettingsBackground lang={props.lang} />
+            <SettingsBackground {...props} lang={props.lang} />
         </>
     );
 }
@@ -423,7 +422,7 @@ function Step6Learning(props: ScreenProps) {
                         }]}>{props.lang.adapt}</Text>
                         <Text variant="bodyMedium" style={[Styles.bodyText,
                         { color: props.theme.accent.onSurfaceVariant }]}>{(props.lang.wizard_learning).replace(
-                            '%noSort%', Backend.UserSettings.NoSortUntil)}</Text>
+                            '%noSort%', Backend.UserSettings.NoSortUntil.toString())}</Text>
                         <Button icon="book" style={Styles.bodyText} mode="contained"
                             onPress={exitWizard}>{props.lang.start}</Button>
                     </View>

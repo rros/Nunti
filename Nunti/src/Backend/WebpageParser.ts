@@ -3,7 +3,7 @@ import { DOMParser } from 'linkedom';
 import { Readability } from '@mozilla/readability';
 import HtmlPurifyList from '../HtmlPurifyList';
 
-export class ReadabilityArticle {
+export type ReadabilityArticle = {
     title: string;
     content: string; 
     textContent: string; 

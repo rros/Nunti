@@ -33,7 +33,7 @@ import Animated, {
 import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 
 import Styles, { Accents } from './Styles';
-import * as ImportedLanguages from './Locale';
+import { Languages } from './Locale';
 import Wizard from './Screens/Wizard';
 import ArticlesPageOptimisedWrapper from './Screens/Articles';
 import Settings from './Screens/Settings';
@@ -53,8 +53,8 @@ import BackgroundFetch from './BackgroundFetch';
 import { Background } from './Backend/Background';
 import { Storage } from './Backend/Storage';
 import {
-    LanguageList, Accent, ScreenTypeProps, Theme, StateProps, AccentName, ThemeName,
-    LanguageName, Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef, LangProps, ThemeProps, WordIndex
+    Accent, ScreenTypeProps, Theme, StateProps, AccentName, ThemeName,
+    Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef, LangProps, ThemeProps, WordIndex, LanguageCode
 } from './Props';
 
 type RootStackParamList = {
@@ -80,7 +80,7 @@ export const logRef = React.createRef<LogRef>();
 
 export default function App() {
     const [theme, setTheme] = useState<Theme>({ dark: true, themeName: 'dark', accentName: 'default', accent: Accents.default.dark });
-    const [language, setLanguage] = useState(ImportedLanguages.English);
+    const [language, setLanguage] = useState(Languages.en);
 
     const [snackVisible, setSnackVisible] = useState(false);
     const [snackMessage, setSnackMessage] = useState('');
@@ -99,7 +99,6 @@ export default function App() {
     const [prefsLoaded, setPrefsLoaded] = useState(false);
     const [forceValue, forceUpdate] = useState(false);
 
-    const languages = useRef<LanguageList>(ImportedLanguages);
     const shouldFeedReload = useRef(false);
     const globalLog = useRef(Log.FE);
     const log = useRef(globalLog.current.context('App.tsx'));
@@ -296,23 +295,26 @@ export default function App() {
         setPrefsLoaded(true);
     }
 
-    const updateLanguage = (newLanguage: LanguageName) => {
-        Backend.UserSettings.Language = newLanguage;
+    const updateLanguage = (newLanguageCode: LanguageCode) => {
+        Backend.UserSettings.Language = newLanguageCode;
         Backend.UserSettings.Save();
 
-        let language: Language = languages.current.English;
-        if (newLanguage == 'system') {
-            for (const [_, value] of Object.entries(languages)) {
-                if (NativeModules.I18nManager.localeIdentifier.contains(value.code))
-                    language = value;
-            }
-        } else {
-            language = languages.current[newLanguage];
+        let newLanguage: Language | undefined = undefined;
+        newLanguageCode = newLanguageCode == 'system' ? NativeModules.I18nManager.localeIdentifier : newLanguageCode;
+
+        for (const [key, value] of Object.entries(Languages)) {
+            if (newLanguageCode == key)
+                newLanguage = value;
         }
 
-        log.current.debug('language set to', language.code)
-        setLanguage(language);
-        return language;
+        if (newLanguage === undefined) {
+            log.current.error('language update failed, did not find coresponding language object');
+            return language;
+        } else {
+            log.current.debug('language set to', newLanguage.code);
+            setLanguage(newLanguage);
+            return newLanguage;
+        }
     }
 
     const updateTheme = async (themeName: ThemeName, accentName: AccentName) => {
@@ -538,7 +540,7 @@ export default function App() {
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="settings" options={{ headerShown: false }}>
                             {props => <Settings {...props}
-                                lang={language} languages={languages.current} screenType={screenType} />}
+                                lang={language} languages={Languages} screenType={screenType} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="about">
                             {props => <About {...props} lang={language} />}
@@ -547,7 +549,7 @@ export default function App() {
                             swipeEnabled: false,
                             unmountOnBlur: true
                         }}>
-                            {props => <Wizard {...props} lang={language} languages={languages.current} />}
+                            {props => <Wizard {...props} lang={language} languages={Languages} />}
                         </NavigationDrawer.Screen>
                         <NavigationDrawer.Screen name="legacyWebview" options={{
                             swipeEnabled: false,

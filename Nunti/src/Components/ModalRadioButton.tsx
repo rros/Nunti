@@ -12,10 +12,10 @@ import {
 } from 'react-native-paper';
 
 import Styles from '../Styles';
-import { ThemeProps, LangProps } from '../Props';
+import { ThemeProps, LangProps, WordIndex } from '../Props';
 
 interface Props extends ThemeProps, LangProps {
-    value: string,
+    value: WordIndex,
     changeValue: (value: string) => void,
     disabled: boolean,
     name?: string,
@@ -24,12 +24,12 @@ interface Props extends ThemeProps, LangProps {
 function ModalRadioButton(props: Props) {
     return (
         <TouchableNativeFeedback disabled={props.disabled}
-            background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+            background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
             onPress={() => props.changeValue(props.value)}>
             <View style={[Styles.modalRadioButton, Styles.settingsRowContainer]}>
                 <RadioButton.Android value={props.value} disabled={props.disabled} />
                 <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel,
-                { color: (props.disabled ? props.theme.accent.disabledContent : props.theme.accent.onSurface) }]}>
+                { color: (props.disabled ? props.theme.accent.onSurfaceDisabled : props.theme.accent.onSurface) }]}>
                     {props.name === undefined ? props.lang[props.value] : props.name}</Text>
             </View>
         </TouchableNativeFeedback>

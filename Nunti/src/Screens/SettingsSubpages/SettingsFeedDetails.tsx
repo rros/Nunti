@@ -29,14 +29,14 @@ function SettingsFeedDetails(props: ScreenProps) {
     const [noImages, setNoImages] = useState(feed['noImages']);
     const [enabled, setEnabled] = useState(!feed['enabled']);
     const [tags, setTags] = useState([...feed.tags]);
-    const log = useRef(logRef.current.globalLog.current.context('SettingsFeedDetails'));
+    const log = useRef(logRef.current!.globalLog.current.context('SettingsFeedDetails'));
 
     const changeNoImages = async () => {
         feed.noImages = !feed.noImages;
         setNoImages(feed.noImages);
 
         await Feed.Save(feed);
-        globalStateRef.current.reloadFeed(true);
+        globalStateRef.current?.reloadFeed(true);
     }
 
     const changeEnabled = async () => {
@@ -44,7 +44,7 @@ function SettingsFeedDetails(props: ScreenProps) {
         setEnabled(feed.enabled);
 
         await Feed.Save(feed);
-        globalStateRef.current.reloadFeed(true);
+        globalStateRef.current?.reloadFeed(true);
     }
 
     const changeFeedTag = async (tag: Tag) => {
@@ -60,7 +60,7 @@ function SettingsFeedDetails(props: ScreenProps) {
         log.current.debug('Changing feed tags:', newTags);
 
         setTags([...newTags]);
-        globalStateRef.current.reloadFeed(false);
+        globalStateRef.current?.reloadFeed(false);
     }
 
     return (
@@ -83,8 +83,8 @@ function SettingsFeedDetails(props: ScreenProps) {
                     <Text variant="labelSmall">{feed.url}</Text>
                 </View>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => modalRef.current.showModal(() => <ChangeFeedNameModal feed={feed} parentLog={log.current} lang={props.lang} />)}>
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => modalRef.current?.showModal(<ChangeFeedNameModal feed={feed} parentLog={log.current} lang={props.lang} />)}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium">{props.lang.feed_name}</Text>
                         <Text variant="labelSmall">{feed.name}</Text>
@@ -94,7 +94,7 @@ function SettingsFeedDetails(props: ScreenProps) {
 
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                     onPress={() => changeNoImages()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
@@ -105,7 +105,7 @@ function SettingsFeedDetails(props: ScreenProps) {
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                     onPress={() => changeEnabled}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
@@ -152,8 +152,8 @@ function ChangeFeedNameModal(props: ChangeFeedNameModalProps) {
         props.feed.name = inputValue;
         await Feed.Save(props.feed);
 
-        globalStateRef.current.reloadFeed(true);
-        modalRef.current.hideModal();
+        globalStateRef.current?.reloadFeed(true);
+        modalRef.current?.hideModal();
     }
 
     return (
@@ -167,7 +167,7 @@ function ChangeFeedNameModal(props: ChangeFeedNameModalProps) {
             <View style={Styles.modalButtonContainer}>
                 <Button onPress={changeFeedName} loading={loading} disabled={inputValue == '' || loading}
                     style={Styles.modalButton}>{props.lang.change}</Button>
-                <Button onPress={() => modalRef.current.hideModal()}
+                <Button onPress={() => modalRef.current?.hideModal()}
                     style={Styles.modalButton}>{props.lang.cancel}</Button>
             </View>
         </>

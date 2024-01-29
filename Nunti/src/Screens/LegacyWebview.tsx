@@ -15,7 +15,7 @@ import { ScreenProps } from '../Props';
 
 function LegacyWebview(props: ScreenProps) {
     const log = useRef(Log.FE.context('LegacyWebview'));
-    
+
     useEffect(() => {
         log.current.debug("Navigating from " + props.route.params?.source)
         const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {

@@ -31,9 +31,9 @@ function WebPageReader(props: ScreenProps) {
     const log = useRef(Log.FE.context('LegacyWebview'));
 
     useEffect(() => {
-        log.current.debug("Navigating from " + props.route.params.source)
+        log.current.debug("Navigating from " + props.route.params?.source)
         let backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-            props.navigation.navigate(props.route.params.source);
+            props.navigation.navigate(props.route.params?.source);
             return true;
         });
 
@@ -48,7 +48,7 @@ function WebPageReader(props: ScreenProps) {
     }, []);
 
     const getArticle = async () => {
-        const article = await Backend.GetReaderModeArticle(props.route.params.uri);
+        const article = await Backend.GetReaderModeArticle(props.route.params?.uri);
         if (article == null) {
             log.current.error('failed to get reader mode article');
         }
@@ -61,12 +61,12 @@ function WebPageReader(props: ScreenProps) {
     }
 
     const forceWebview = async () => {
-        browserRef.current.openBrowser(props.route.params.uri, true, true);
+        browserRef.current?.openBrowser(props.route.params?.uri, props.route.params?.source, true);
     }
 
     const openSettings = async () => {
         props.navigation.navigate('settings', {
-            source: props.route.params.source,
+            source: props.route.params?.source,
         });
     }
 

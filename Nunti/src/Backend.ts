@@ -1,4 +1,4 @@
-import DefaultTopics from './DefaultTopics';
+import { DefaultTopics } from './DefaultTopics';
 import { NativeModules } from 'react-native';
 const NotificationsModule = NativeModules.Notifications;
 import Log from './Log';
@@ -8,24 +8,13 @@ import { UserSettings } from './Backend/UserSettings';
 import { Utils } from './Backend/Utils';
 import { Storage } from './Backend/Storage';
 import { ArticlesUtils } from './Backend/ArticlesUtils';
-import { ArticlesFilter, sortType } from './Backend/ArticlesFilter';
+import { ArticlesFilter } from './Backend/ArticlesFilter';
 import { Current } from './Backend/Current';
 import { Tag } from './Backend/Tag';
 import { Feed } from './Backend/Feed';
 import { OfflineCache } from './Backend/OfflineCache';
 import { ReadabilityArticle, WebpageParser } from './Backend/WebpageParser';
-
-export type articleSource = 'feed' | 'bookmarks' | 'history';
-
-export interface LearningStatus {
-    TotalUpvotes: number,
-    TotalDownvotes: number,
-    VoteRatio: string,
-    SortingEnabled: boolean,
-    SortingEnabledIn: number,
-    LearningLifetime: number,
-    LearningLifetimeRemaining: number
-}
+import { ArticleSource, LearningStatus, TopicName, SortType } from './Props';
 
 export class Backend {
     public static log = Log.BE;
@@ -44,7 +33,7 @@ export class Backend {
 
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(
-        articleSource: articleSource,
+        articleSource: ArticleSource,
         filter: ArticlesFilter = ArticlesFilter.Empty,
         abort: AbortController | null = null
     ): Promise<Article[][]> {
@@ -61,7 +50,7 @@ export class Backend {
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
     public static async GetArticles(
-        articleSource: articleSource,
+        articleSource: ArticleSource,
         filter: ArticlesFilter = ArticlesFilter.Empty,
         abort: AbortController | null = null
     ): Promise<Article[]> {
@@ -97,7 +86,7 @@ export class Backend {
     }
     /* Retrieves sorted articles to show in feed. */
     public static async GetFeedArticles(
-        overrides: { sortType?: sortType } = { sortType: undefined },
+        overrides: { sortType?: SortType } = { sortType: undefined },
         abort: AbortController | null = null
     ): Promise<Article[]> {
 
@@ -205,16 +194,16 @@ export class Backend {
     }
 
     /* Change RSS topics */
-    public static async ChangeDefaultTopics(topicName: string, localisedName: string, enable: boolean): Promise<void> {
+    public static async ChangeDefaultTopics(topicName: TopicName, localisedName: string, enable: boolean): Promise<void> {
         const log = this.log.context('ChangeDefaultTopics');
         log.info(`${topicName} - ${enable ? 'add' : 'remove'}`);
 
         // create a default tag if enabling
         let tag: Tag | null = enable ? await Tag.New(localisedName) : null;
 
-        if (DefaultTopics.Topics[topicName] !== undefined) {
-            for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
-                const topicFeed: Feed = DefaultTopics.Topics[topicName].sources[i];
+        if (DefaultTopics[topicName] !== undefined) {
+            for (let i = 0; i < DefaultTopics[topicName].sources.length; i++) {
+                const topicFeed: Feed = DefaultTopics[topicName].sources[i];
                 if (enable) {
                     if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
                         log.debug(`add feed ${topicFeed.name} to feedlist with tag ${tag?.name}`);
@@ -248,15 +237,15 @@ export class Backend {
     // NOTE from frontend: leave this sync, I can't use await in componentDidMount when creating states with this
     // NOTE: also sync is faster (by eye) and this needs to be fast
     /* Checks wheter use has at least X percent of the topic enabled. */
-    public static IsTopicEnabled(topicName: string, threshold = 0.5): boolean {
-        if (DefaultTopics.Topics[topicName] !== undefined) {
+    public static IsTopicEnabled(topicName: TopicName, threshold = 0.5): boolean {
+        if (DefaultTopics[topicName] !== undefined) {
             let enabledFeedsCount = 0;
-            for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
-                const topicFeed = DefaultTopics.Topics[topicName].sources[i];
+            for (let i = 0; i < DefaultTopics[topicName].sources.length; i++) {
+                const topicFeed = DefaultTopics[topicName].sources[i];
                 if (Utils.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList) >= 0)
                     enabledFeedsCount++;
             }
-            if (enabledFeedsCount / DefaultTopics.Topics[topicName].sources.length >= threshold)
+            if (enabledFeedsCount / DefaultTopics[topicName].sources.length >= threshold)
                 return true;
             else
                 return false;

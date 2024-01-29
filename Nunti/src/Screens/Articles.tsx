@@ -30,7 +30,7 @@ import Animated, {
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import { Backend, articleSource } from '../Backend';
+import { Backend } from '../Backend';
 import { Article } from '../Backend/Article';
 import { modalRef, snackbarRef, browserRef, globalStateRef, logRef } from '../App';
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
@@ -40,15 +40,15 @@ import { Utils } from '../Backend/Utils';
 import { Storage } from '../Backend/Storage';
 import { Current } from '../Backend/Current';
 import Styles from '../Styles';
-import { LangProps, Route, ScreenProps, ScreenTypeProps, State, ThemeProps } from '../Props';
-import { ArticlesFilter, sortType } from '../Backend/ArticlesFilter';
+import { LangProps, Route, ScreenProps, ScreenTypeProps, State, ThemeProps, WordIndex, ArticleSource, SortType } from '../Props';
+import { ArticlesFilter } from '../Backend/ArticlesFilter';
 import { Tag } from '../Backend/Tag';
 
 type buttonType = 'delete' | 'thumb-up' | 'thumb-down' | 'none' | 'rate';
 type articleSwipe = 'right' | 'left';
 
 interface Props extends ScreenProps, ScreenTypeProps {
-    source: articleSource,
+    source: ArticleSource,
     buttonType: buttonType,
 }
 
@@ -92,15 +92,15 @@ function ArticlesPage(props: Props) {
     const currentPageIndex = useRef(0);
     const refreshAbortController = useRef<AbortController>(new AbortController());
 
-    const bannerAction = useRef('');
-    const bannerMessage = useRef('');
+    const bannerAction = useRef<WordIndex>('no_feeds');
+    const bannerMessage = useRef<WordIndex>('no_feeds_description');
 
     const lang = useRef(props.lang); // modal event cannot read updated props
     const theme = useRef(props.theme); // modal event cannot read updated props
     const sourceFilter = useRef<ArticlesFilter>({ sortType: Backend.UserSettings.SortType, search: '', feeds: [], tags: [] });
     const flatListRef = useAnimatedRef<FlatList>(); //scrollTo from reanimated doesn't work, use old .scrollToOffset
 
-    const log = useRef(logRef.current.globalLog.current.context('ArticlePage_' + props.route.name));
+    const log = useRef(logRef.current!.globalLog.current.context('ArticlePage_' + props.route.name));
 
     // on component mount
     useEffect(() => {
@@ -115,7 +115,7 @@ function ArticlesPage(props: Props) {
         const onFocus = props.navigation.addListener('focus', () => {
             if (props.route.name != 'feed') {
                 refresh(false); // reload bookmarks/history on each access
-            } else if (globalStateRef.current.shouldFeedReload.current) {
+            } else if (globalStateRef.current?.shouldFeedReload.current) {
                 log.current.debug('Reload feed requested, reloading articles and resetting filter');
 
                 sourceFilter.current.feeds = ['all_rss'];
@@ -130,17 +130,17 @@ function ArticlesPage(props: Props) {
 
         // show filter and rss modal on button press in appbar header
         const onState = props.navigation.addListener('state', (parentState: State) => {
-            parentState.data.state.routes.some(pickedRoute => {
-                if (pickedRoute.name == props.route.name && pickedRoute.params.showFilterModal) {
+            parentState.routes.some(pickedRoute => {
+                if (pickedRoute.name == props.route.name && pickedRoute.params?.showFilterModal) {
                     log.current.debug('Showing filter modal, appbar button pressed');
                     props.navigation.setParams({ showFilterModal: false });
-                    modalRef.current.showModal(() => <FilterModalContent theme={theme.current}
+                    modalRef.current?.showModal(<FilterModalContent theme={theme.current}
                         applyFilter={applyFilter} lang={lang.current}
                         sourceFilter={sourceFilter.current} />);
-                } else if (pickedRoute.name == props.route.name && pickedRoute.params.showRssModal) {
+                } else if (pickedRoute.name == props.route.name && pickedRoute.params?.showRssModal) {
                     log.current.debug('Showing rss modal, appbar button pressed');
                     props.navigation.setParams({ showRssModal: false });
-                    modalRef.current.showModal(() => <RssModalContent theme={theme.current}
+                    modalRef.current?.showModal(<RssModalContent theme={theme.current}
                         applyFilter={applyFilter} lang={lang.current}
                         sourceFilter={sourceFilter.current} />);
                 }
@@ -227,11 +227,10 @@ function ArticlesPage(props: Props) {
 
     // article functions
     const saveArticle = async (article: Article) => {
-        if (await Storage.TrySaveArticle(article)) {
-            snackbarRef.current.showSnack(props.lang.article_saved);
-        } else {
-            snackbarRef.current.showSnack(props.lang.article_already_saved);
-        }
+        if (await Storage.TrySaveArticle(article))
+            snackbarRef.current?.showSnack(props.lang.article_saved);
+        else
+            snackbarRef.current?.showSnack(props.lang.article_already_saved);
     }
 
     const shareArticle = async (url: string) => {
@@ -240,7 +239,7 @@ function ArticlesPage(props: Props) {
         });
     }
 
-    const applySorting = (sortType: sortType) => {
+    const applySorting = (sortType: SortType) => {
         log.current.debug('Applying sorting:', sortType);
         setRefreshing(true);
 
@@ -250,7 +249,7 @@ function ArticlesPage(props: Props) {
 
     const applyFilter = (filter: ArticlesFilter) => {
         setRefreshing(true);
-        modalRef.current.hideModal();
+        modalRef.current?.hideModal();
 
         sourceFilter.current.feeds = filter.feeds;
         sourceFilter.current.tags = filter.tags;
@@ -262,10 +261,10 @@ function ArticlesPage(props: Props) {
 
     const modifyArticle = async (article: Article, direction: string = 'right') => {
         if (props.buttonType == 'delete') {
-            modalRef.current.hideModal();
+            modalRef.current?.hideModal();
             await Storage.TryRemoveSavedArticle(article);
 
-            snackbarRef.current.showSnack(props.lang.removed_saved, props.lang.undo,
+            snackbarRef.current?.showSnack(props.lang.removed_saved, props.lang.undo,
                 async () => {
                     await Storage.TrySaveArticle(article);
                     refresh(false);
@@ -314,19 +313,17 @@ function ArticlesPage(props: Props) {
         const difference = ((Date.now() - date.getTime()) / (24 * 60 * 60 * 1000));
         let dateCaption = '';
 
-        if (Object.is(difference, NaN)) {
+        if (Object.is(difference, NaN))
             return undefined;
-        }
 
         if (difference <= 1) { // hours
             const hours = Math.round(difference * 24);
-            if (hours == 0) {
+            if (hours == 0)
                 dateCaption = props.lang.just_now;
-            } else {
-                dateCaption = props.lang.hours_ago.replace('%time%', hours);
-            }
+            else
+                dateCaption = props.lang.hours_ago.replace('%time%', hours.toString());
         } else { // days
-            dateCaption = props.lang.days_ago.replace('%time%', Math.round(difference));
+            dateCaption = props.lang.days_ago.replace('%time%', Math.round(difference).toString());
         }
 
         return dateCaption;
@@ -343,7 +340,7 @@ function ArticlesPage(props: Props) {
                 props.navigation.navigate('settings');
                 break;
             case 'open_filter':
-                modalRef.current.showModal(() => <FilterModalContent theme={props.theme}
+                modalRef.current?.showModal(<FilterModalContent theme={props.theme}
                     applyFilter={applyFilter} lang={props.lang}
                     sourceFilter={sourceFilter.current} />);
                 break;
@@ -356,7 +353,7 @@ function ArticlesPage(props: Props) {
         <ArticleCard item={item} showImages={showImages} getDateCaption={getDateCaption}
             screenType={props.screenType} viewDetails={() => {
                 currentArticle.current = item;
-                modalRef.current.showModal((() => <DetailsModalContent lang={props.lang} theme={props.theme}
+                modalRef.current?.showModal((<DetailsModalContent lang={props.lang} theme={props.theme}
                     getDateCaption={getDateCaption} showImages={showImages} currentArticle={currentArticle.current!}
                     buttonType={props.buttonType} screenType={props.screenType} saveArticle={saveArticle}
                     shareArticle={shareArticle} modifyArticle={modifyArticle} />))
@@ -478,13 +475,13 @@ function FilterModalContent(props: FilterModalProps) {
 
     const clearFilter = () => {
         if (props.sourceFilter.tags!.length == 0 && props.sourceFilter.search == '') {
-            modalRef.current.hideModal();
+            modalRef.current?.hideModal();
         } else {
             const clearedFilter: ArticlesFilter = {
                 sortType: props.sourceFilter.sortType,
                 search: '',
                 tags: [],
-                feeds: []
+                feeds: [],
             }
             props.applyFilter(clearedFilter);
         }
@@ -575,7 +572,7 @@ function RssModalContent(props: FilterModalProps) {
                     {Backend.UserSettings.FeedList.length > 0 ?
                         <>
                             <TouchableNativeFeedback
-                                background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                                background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                                 onPress={() => changeSelectedFeeds('all_rss')}>
                                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                     <Checkbox.Android
@@ -589,7 +586,7 @@ function RssModalContent(props: FilterModalProps) {
                             {Backend.UserSettings.FeedList.map((feed) => {
                                 return (
                                     <TouchableNativeFeedback
-                                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                                         onPress={() => changeSelectedFeeds(feed.url)}>
                                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                             <Checkbox.Android
@@ -614,7 +611,7 @@ function RssModalContent(props: FilterModalProps) {
                     disabled={selectedFeeds.length == 0}
                     onPress={updateFilter}>{props.lang.apply}</Button>
                 <Button style={Styles.modalButton}
-                    onPress={modalRef.current.hideModal}>{props.lang.cancel}</Button>
+                    onPress={modalRef.current?.hideModal}>{props.lang.cancel}</Button>
             </View>
         </>
     );
@@ -657,7 +654,7 @@ function DetailsModalContent(props: DetailsModalProps) {
 
                 <View style={Styles.cardButtonContainer}>
                     <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
-                        onPress={() => { browserRef.current.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
+                        onPress={() => { browserRef.current?.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
                     {props.buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
                         onPress={() => { props.saveArticle(props.currentArticle); }} /> : null}
                     {props.buttonType == 'delete' ? <IconButton icon="delete" size={24}
@@ -693,7 +690,7 @@ function DetailsModalContent(props: DetailsModalProps) {
 
                 <View style={Styles.cardButtonContainer}>
                     <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
-                        onPress={() => { browserRef.current.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
+                        onPress={() => { browserRef.current?.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
                     {props.buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
                         onPress={() => { props.saveArticle(props.currentArticle); }} /> : null}
                     {props.buttonType == 'delete' ? <IconButton icon="delete" size={24}
@@ -724,7 +721,7 @@ function DetailsModalContent(props: DetailsModalProps) {
 
                 <View style={Styles.cardButtonContainer}>
                     <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
-                        onPress={() => { browserRef.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
+                        onPress={() => { browserRef.current?.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
                     {props.buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
                         onPress={() => { props.saveArticle(props.currentArticle); }} /> : null}
                     {props.buttonType == 'delete' ? <IconButton icon="delete" size={24}
@@ -740,7 +737,7 @@ function DetailsModalContent(props: DetailsModalProps) {
 interface ArticleCardProps extends ThemeProps, LangProps, ScreenTypeProps {
     showImages: boolean,
     buttonType: buttonType,
-    source: articleSource,
+    source: ArticleSource,
     item: Article,
     viewDetails: (article: Article) => void,
     modifyArticle: (article: Article, direction: articleSwipe) => void,
@@ -808,14 +805,14 @@ function ArticleCard(props: ArticleCardProps) {
                     onSwipeableOpen={(direction) => { props.modifyArticle(props.item, direction); }}
                     leftThreshold={150} rightThreshold={150}>
                     <View style={[Styles.card, { backgroundColor: props.theme.accent.secondaryContainer }]}>
-                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                             useForeground={true}
-                            onPress={() => { browserRef.current.openBrowser(props.item.url); }}
+                            onPress={() => { browserRef.current?.openBrowser(props.item.url); }}
                             onLongPress={() => { props.viewDetails(props.item); }}>
 
                             <View style={{ flexDirection: 'row-reverse' }}>
                                 {(props.item.cover !== undefined && props.showImages) ?
-                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.accent.disabledContent, flex: 1 }]}
+                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.accent.onSurfaceDisabled, flex: 1 }]}
                                         source={{ uri: props.item.cover }} progressiveRenderingEnabled={true} /> : null}
                                 <View style={[Styles.cardContent, { flex: 1 }]}>
                                     <Text variant="titleLarge" style={{ color: props.theme.accent.onSecondaryContainer }} numberOfLines={3}>
@@ -848,14 +845,14 @@ function ArticleCard(props: ArticleCardProps) {
                     onSwipeableOpen={(direction) => { props.modifyArticle(props.item, direction); }}
                     leftThreshold={150} rightThreshold={150}>
                     <View style={[Styles.card, { backgroundColor: props.theme.accent.secondaryContainer }]}>
-                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                             useForeground={true}
-                            onPress={() => { browserRef.current.openBrowser(props.item.url); }}
+                            onPress={() => { browserRef.current?.openBrowser(props.item.url); }}
                             onLongPress={() => { props.viewDetails(props.item); }}>
 
                             <View>
                                 {(props.item.cover !== undefined && props.showImages) ?
-                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.accent.disabledContent }]}
+                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.accent.onSurfaceDisabled }]}
                                         source={{ uri: props.item.cover }} progressiveRenderingEnabled={true} /> : null}
                                 <View style={Styles.cardContent}>
                                     <Text variant="titleLarge" style={{ color: props.theme.accent.onSecondaryContainer }} numberOfLines={3}>{props.item.title}</Text>

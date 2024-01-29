@@ -16,7 +16,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 
 import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
 import { Backend } from '../../Backend';
-import { LangProps, ScreenProps, ThemeProps } from '../../Props';
+import { LangProps, ScreenProps, WordIndex } from '../../Props';
 import Styles from '../../Styles';
 
 function SettingsAdvanced(props: ScreenProps) {
@@ -27,7 +27,7 @@ function SettingsAdvanced(props: ScreenProps) {
     const [maxArtFeed, setMaxArtFeed] = useState(Backend.UserSettings.MaxArticlesPerChannel);
     const [artHistory, setArtHistory] = useState(Backend.UserSettings.ArticleHistory);
 
-    const log = useRef(logRef.current.globalLog.current.context('SettingsAdvanced'));
+    const log = useRef(logRef.current!.globalLog.current.context('SettingsAdvanced'));
 
     const changeAdvanced = (type: string, value: number) => {
         log.current.debug('Changing', type, 'to', value);
@@ -35,8 +35,8 @@ function SettingsAdvanced(props: ScreenProps) {
         if (Object.is(value, NaN)) {
             log.current.warn('Input value not a number');
 
-            snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
-            modalRef.current.hideModal();
+            snackbarRef.current?.showSnack(props.lang['change_' + type + '_fail' as WordIndex]);
+            modalRef.current?.hideModal();
             return;
         }
 
@@ -45,50 +45,50 @@ function SettingsAdvanced(props: ScreenProps) {
                 if (value < 1) {
                     log.current.warn('Input value not allowed');
 
-                    snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
-                    modalRef.current.hideModal();
+                    snackbarRef.current?.showSnack(props.lang['change_' + type + '_fail' as WordIndex]);
+                    modalRef.current?.hideModal();
                     return;
                 }
 
                 Backend.UserSettings.MaxArticleAgeDays = value;
                 setMaxArtAge(value);
 
-                globalStateRef.current.reloadFeed(false);
+                globalStateRef.current?.reloadFeed(false);
                 break;
             case 'discovery':
                 if (value < 0 || value > 100) {
                     log.current.warn('Input value not allowed');
 
-                    snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
-                    modalRef.current.hideModal(false);
+                    snackbarRef.current?.showSnack(props.lang['change_' + type + '_fail' as WordIndex]);
+                    modalRef.current?.hideModal();
                     return;
                 }
 
                 Backend.UserSettings.DiscoverRatio = value / 100;
                 setDiscovery(value);
 
-                globalStateRef.current.reloadFeed(true);
+                globalStateRef.current?.reloadFeed(true);
                 break;
             case 'cache_time':
                 if (value < 1) {
                     log.current.warn('Input value not allowed');
 
-                    snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
-                    modalRef.current.hideModal();
+                    snackbarRef.current?.showSnack(props.lang['change_' + type + '_fail' as WordIndex]);
+                    modalRef.current?.hideModal();
                     return;
                 }
 
                 Backend.UserSettings.ArticleCacheTime = value * 60;
                 setCacheTime(value);
 
-                globalStateRef.current.reloadFeed(false);
+                globalStateRef.current?.reloadFeed(false);
                 break;
             case 'art_history':
                 if (value < 1) {
                     log.current.warn('Input value not allowed');
 
-                    snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
-                    modalRef.current.hideModal();
+                    snackbarRef.current?.showSnack(props.lang['change_' + type + '_fail' as WordIndex]);
+                    modalRef.current?.hideModal();
                     return;
                 }
 
@@ -100,8 +100,8 @@ function SettingsAdvanced(props: ScreenProps) {
                 if (value < 1) {
                     log.current.warn('Input value not allowed');
 
-                    snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
-                    modalRef.current.hideModal();
+                    snackbarRef.current?.showSnack(props.lang['change_' + type + '_fail' as WordIndex]);
+                    modalRef.current?.hideModal();
                     return;
                 }
 
@@ -109,21 +109,21 @@ function SettingsAdvanced(props: ScreenProps) {
                 Backend.UserSettings.OfflineCacheSize = value * 2;
                 setPageSize(value);
 
-                globalStateRef.current.reloadFeed(false);
+                globalStateRef.current?.reloadFeed(false);
                 break;
             case 'max_art_feed':
                 if (value < 1) {
                     log.current.warn('Input value not allowed');
 
-                    snackbarRef.current.showSnack(props.lang['change_' + type + '_fail']);
-                    modalRef.current.hideModal();
+                    snackbarRef.current?.showSnack(props.lang['change_' + type + '_fail' as WordIndex]);
+                    modalRef.current?.hideModal();
                     return;
                 }
 
                 Backend.UserSettings.MaxArticlesPerChannel = value;
                 setMaxArtFeed(value);
 
-                globalStateRef.current.reloadFeed(true);
+                globalStateRef.current?.reloadFeed(true);
                 break;
             default:
                 log.current.error('Advanced setting type doesn\'t exist');
@@ -133,16 +133,16 @@ function SettingsAdvanced(props: ScreenProps) {
 
         Backend.UserSettings.Save();
 
-        snackbarRef.current.showSnack(props.lang['change_' + type + '_success']);
-        modalRef.current.hideModal();
+        snackbarRef.current?.showSnack(props.lang['change_' + type + '_success' as WordIndex]);
+        modalRef.current?.hideModal();
     }
 
     return (
         <ScrollView showsVerticalScrollIndicator={false}>
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => modalRef.current.showModal(() => <ChangeAdvancedModal
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'max_art_age'} icon={'clock-outline'} suffix={props.lang.days}
                         currentValue={maxArtAge} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
@@ -151,8 +151,8 @@ function SettingsAdvanced(props: ScreenProps) {
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => modalRef.current.showModal(() => <ChangeAdvancedModal
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'discovery'} icon={'book-search'} suffix={'%'}
                         currentValue={discovery} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
@@ -161,8 +161,8 @@ function SettingsAdvanced(props: ScreenProps) {
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => modalRef.current.showModal(() => <ChangeAdvancedModal
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'cache_time'} icon={'timer-off'} suffix={props.lang.hours}
                         currentValue={cacheTime} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
@@ -171,8 +171,8 @@ function SettingsAdvanced(props: ScreenProps) {
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => modalRef.current.showModal(() => <ChangeAdvancedModal
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'art_history'} icon={'history'}
                         currentValue={artHistory} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
@@ -181,8 +181,8 @@ function SettingsAdvanced(props: ScreenProps) {
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => modalRef.current.showModal(() => <ChangeAdvancedModal
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'page_size'} icon={'arrow-collapse-up'}
                         currentValue={pageSize} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
@@ -191,8 +191,8 @@ function SettingsAdvanced(props: ScreenProps) {
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => modalRef.current.showModal(() => <ChangeAdvancedModal
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'max_art_feed'} icon={'arrow-collapse-up'}
                         currentValue={maxArtFeed} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
@@ -204,8 +204,8 @@ function SettingsAdvanced(props: ScreenProps) {
 
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => modalRef.current.showModal(() => <ResetCacheModal lang={props.lang} />)}>
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => modalRef.current?.showModal(<ResetCacheModal lang={props.lang} />)}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>
                             {props.lang.wipe_cache}</Text>
@@ -218,7 +218,7 @@ function SettingsAdvanced(props: ScreenProps) {
 
 interface ChangeAdvancedModalProps extends LangProps {
     icon: string,
-    title: string,
+    title: WordIndex,
     suffix?: string,
     currentValue: number,
     changeAdvanced: (title: string, value: number) => void,
@@ -242,7 +242,7 @@ function ChangeAdvancedModal(props: ChangeAdvancedModalProps) {
                 <Button onPress={() => { setLoading(true); props.changeAdvanced(props.title, Number(inputValue)); }}
                     loading={loading} disabled={inputValue == '' || loading}
                     style={Styles.modalButton}>{props.lang.change}</Button>
-                <Button onPress={() => modalRef.current.hideModal()}
+                <Button onPress={() => modalRef.current?.hideModal()}
                     style={Styles.modalButton}>{props.lang.cancel}</Button>
             </View>
         </>
@@ -251,10 +251,10 @@ function ChangeAdvancedModal(props: ChangeAdvancedModalProps) {
 
 function ResetCacheModal(props: LangProps) {
     const resetCache = () => {
-        snackbarRef.current.showSnack(props.lang.reset_art_cache);
-        modalRef.current.hideModal();
+        snackbarRef.current?.showSnack(props.lang.reset_art_cache);
+        modalRef.current?.hideModal();
 
-        globalStateRef.current.reloadFeed(true);
+        globalStateRef.current?.reloadFeed(true);
     }
 
     return (
@@ -267,7 +267,7 @@ function ResetCacheModal(props: LangProps) {
             <View style={Styles.modalButtonContainer}>
                 <Button onPress={resetCache}
                     style={Styles.modalButton}>{props.lang.reset}</Button>
-                <Button onPress={() => modalRef.current.hideModal()}
+                <Button onPress={() => modalRef.current?.hideModal()}
                     style={Styles.modalButton}>{props.lang.cancel}</Button>
             </View>
         </>

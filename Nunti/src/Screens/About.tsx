@@ -21,17 +21,17 @@ import Styles from '../Styles';
 import { ScreenProps } from '../Props';
 
 function About(props: ScreenProps) {
-    const log = useRef<Log>(logRef.current.globalLog.current.context('About'));
+    const log = useRef<Log>(logRef.current!.globalLog.current.context('About'));
 
     const exportLogs = async () => {
         const logs: string = await Log.exportLogs();
 
         try {
             if (await ScopedStorage.createDocument('NuntiLogs.txt', 'application/txt', logs, 'utf8') != null) {
-                snackbarRef.current.showSnack(props.lang.export_logs_success);
+                snackbarRef.current?.showSnack(props.lang.export_logs_success);
             }
         } catch (err) {
-            snackbarRef.current.showSnack(props.lang.export_logs_fail);
+            snackbarRef.current?.showSnack(props.lang.export_logs_fail);
             log.current.error('Failed to export logs, ' + err);
         }
     }
@@ -66,15 +66,15 @@ function About(props: ScreenProps) {
                 {props.lang.report_at}</Text>
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => browserRef.current.openBrowser(
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => browserRef.current?.openBrowser(
                         'https://gitlab.com/ondrejfoltyn/nunti/-/issues')}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.issue_tracker}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                     onPress={exportLogs}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.export_logs}</Text>

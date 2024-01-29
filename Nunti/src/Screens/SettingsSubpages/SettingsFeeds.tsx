@@ -28,7 +28,7 @@ import { useAnimatedRef } from 'react-native-reanimated';
 function SettingsFeeds(props: ScreenProps) {
     const [feeds, setFeeds] = useState(Backend.UserSettings.FeedList);
     const flatListRef = useAnimatedRef<FlatList>();
-    const log = useRef(logRef.current.globalLog.current.context('SettingsFeeds'));
+    const log = useRef(logRef.current!.globalLog.current.context('SettingsFeeds'));
 
     const changeFeeds = (newFeeds: Feed[], scrollToEnd: boolean = false) => {
         setFeeds(newFeeds)
@@ -43,7 +43,7 @@ function SettingsFeeds(props: ScreenProps) {
         (index == 0) ? Styles.flatListCardTop : undefined,
         (index == feeds.length - 1) ? Styles.flatListCardBottom : undefined]}>
             <TouchableNativeFeedback
-                background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                 onPress={() => props.navigation.navigate('feed_details', { feed: item })}>
                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                     <View style={[Styles.settingsLeftContent, Styles.settingsRowContainer]}>
@@ -55,8 +55,8 @@ function SettingsFeeds(props: ScreenProps) {
 
                     <View>
                         <TouchableNativeFeedback
-                            background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                            onPress={() => modalRef.current.showModal(() => <FeedRemoveModal lang={props.lang}
+                            background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                            onPress={() => modalRef.current?.showModal(<FeedRemoveModal lang={props.lang}
                                 feed={item} changeParentFeeds={changeFeeds} parentLog={log.current} />)}>
                             <View style={{ borderLeftWidth: 1, borderLeftColor: props.theme.accent.outline }}>
                                 <Icon name="close" style={[Styles.settingsIcon, { margin: 12 }]}
@@ -90,7 +90,7 @@ function SettingsFeeds(props: ScreenProps) {
             <FAB
                 icon={'plus'}
                 size={'large'}
-                onPress={() => modalRef.current.showModal(() => <FeedAddModal lang={props.lang}
+                onPress={() => modalRef.current?.showModal(<FeedAddModal lang={props.lang}
                     changeParentFeeds={changeFeeds} parentLog={log.current} />)}
                 style={Styles.fab}
             />
@@ -114,15 +114,15 @@ function FeedAddModal(props: FeedAddModalProps) {
         const rssUrl = await Feed.GuessRSSLink(inputValue);
         if (rssUrl == null) {
             log.current.error('Can\'t add RSS feed');
-            snackbarRef.current.showSnack(props.lang.add_feed_fail);
+            snackbarRef.current?.showSnack(props.lang.add_feed_fail);
         } else {
             const feed = await Feed.New(rssUrl);
-            snackbarRef.current.showSnack((props.lang.added_feed).replace('%feed%', ("\"" + feed.name + "\"")));
+            snackbarRef.current?.showSnack((props.lang.added_feed).replace('%feed%', ("\"" + feed.name + "\"")));
             props.changeParentFeeds(Backend.UserSettings.FeedList, true);
-            globalStateRef.current.reloadFeed(true);
+            globalStateRef.current?.reloadFeed(true);
         }
 
-        modalRef.current.hideModal();
+        modalRef.current?.hideModal();
     }
 
     return (
@@ -136,7 +136,7 @@ function FeedAddModal(props: FeedAddModalProps) {
             <View style={Styles.modalButtonContainer}>
                 <Button onPress={addFeed} loading={loading} disabled={inputValue == '' || loading}
                     style={Styles.modalButton}>{props.lang.add}</Button>
-                <Button onPress={() => modalRef.current.hideModal()}
+                <Button onPress={() => modalRef.current?.hideModal()}
                     style={Styles.modalButton}>{props.lang.cancel}</Button>
             </View>
         </>
@@ -159,15 +159,15 @@ function FeedRemoveModal(props: FeedRemoveModalProps) {
         await Feed.Remove(props.feed);
 
         // snack with undo functionality
-        snackbarRef.current.showSnack((props.lang.removed_feed).replace('%feed%',
+        snackbarRef.current?.showSnack((props.lang.removed_feed).replace('%feed%',
             ("\"" + props.feed.name + "\"")), props.lang.undo, () => {
                 Feed.UndoRemove();
                 props.changeParentFeeds(Backend.UserSettings.FeedList, true);
             });
 
         props.changeParentFeeds(Backend.UserSettings.FeedList);
-        modalRef.current.hideModal();
-        globalStateRef.current.reloadFeed(true);
+        modalRef.current?.hideModal();
+        globalStateRef.current?.reloadFeed(true);
     }
 
     return (
@@ -181,7 +181,7 @@ function FeedRemoveModal(props: FeedRemoveModalProps) {
             <View style={Styles.modalButtonContainer}>
                 <Button onPress={removeFeed} loading={loading} disabled={loading}
                     style={Styles.modalButton}>{props.lang.remove}</Button>
-                <Button onPress={() => modalRef.current.hideModal()}
+                <Button onPress={() => modalRef.current?.hideModal()}
                     style={Styles.modalButton}>{props.lang.cancel}</Button>
             </View>
         </>

@@ -28,7 +28,7 @@ import { useAnimatedRef } from 'react-native-reanimated';
 function SettingsTags(props: ScreenProps) {
     const [tags, setTags] = useState(Backend.UserSettings.Tags);
     const flatListRef = useAnimatedRef<FlatList>();
-    const log = useRef(logRef.current.globalLog.current.context('SettingsTags'));
+    const log = useRef(logRef.current!.globalLog.current.context('SettingsTags'));
 
     const changeTags = (newTags: Tag[], scrollToEnd: boolean = false) => {
         setTags(newTags);
@@ -51,8 +51,8 @@ function SettingsTags(props: ScreenProps) {
 
                 <View>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                        onPress={() => modalRef.current.showModal(() => <TagRemoveModal lang={props.lang}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                        onPress={() => modalRef.current?.showModal(<TagRemoveModal lang={props.lang}
                             tag={item} changeParentTags={changeTags} parentLog={log.current} />)}>
                         <View style={[{ borderLeftWidth: 1, borderLeftColor: props.theme.accent.outline }]}>
                             <Icon name="close" style={{ margin: 12 }}
@@ -85,7 +85,7 @@ function SettingsTags(props: ScreenProps) {
             <FAB
                 icon={'plus'}
                 size={'large'}
-                onPress={() => modalRef.current.showModal(() => <TagAddModal lang={props.lang}
+                onPress={() => modalRef.current?.showModal(<TagAddModal lang={props.lang}
                     changeParentTags={changeTags} parentLog={log.current} />)}
                 style={Styles.fab}
             />
@@ -108,16 +108,16 @@ function TagAddModal(props: TagAddModalProps) {
 
         try {
             log.current.debug('Adding tag:', inputValue);
-            
+
             const tag: Tag = await Tag.New(inputValue);
-            snackbarRef.current.showSnack((props.lang.added_tag).replace('%tag%', ("\"" + tag.name + "\"")));
+            snackbarRef.current?.showSnack((props.lang.added_tag).replace('%tag%', ("\"" + tag.name + "\"")));
             props.changeParentTags(Backend.UserSettings.Tags, true);
         } catch (err) {
             log.current.error('Can\'t add tag', err);
-            snackbarRef.current.showSnack(props.lang.add_tag_fail);
+            snackbarRef.current?.showSnack(props.lang.add_tag_fail);
         }
 
-        modalRef.current.hideModal();
+        modalRef.current?.hideModal();
     }
 
     return (
@@ -131,7 +131,7 @@ function TagAddModal(props: TagAddModalProps) {
             <View style={Styles.modalButtonContainer}>
                 <Button onPress={addTag} loading={loading} disabled={inputValue == '' || loading}
                     style={Styles.modalButton}>{props.lang.add}</Button>
-                <Button onPress={() => modalRef.current.hideModal()}
+                <Button onPress={() => modalRef.current?.hideModal()}
                     style={Styles.modalButton}>{props.lang.cancel}</Button>
             </View>
         </>
@@ -155,13 +155,13 @@ function TagRemoveModal(props: TagRemoveModalProps) {
 
         props.changeParentTags(Backend.UserSettings.Tags);
 
-        modalRef.current.hideModal();
-        snackbarRef.current.showSnack((props.lang.removed_tag).replace('%tag%',
+        modalRef.current?.hideModal();
+        snackbarRef.current?.showSnack((props.lang.removed_tag).replace('%tag%',
             ("\"" + props.tag.name + "\"")), props.lang.undo, () => {
                 Tag.UndoRemove();
                 props.changeParentTags(Backend.UserSettings.Tags, true);
             });
-        globalStateRef.current.reloadFeed(false);
+        globalStateRef.current?.reloadFeed(false);
     }
 
     return (
@@ -175,7 +175,7 @@ function TagRemoveModal(props: TagRemoveModalProps) {
             <View style={Styles.modalButtonContainer}>
                 <Button onPress={removeTag} loading={loading} disabled={loading}
                     style={Styles.modalButton}>{props.lang.remove}</Button>
-                <Button onPress={() => modalRef.current.hideModal()}
+                <Button onPress={() => modalRef.current?.hideModal()}
                     style={Styles.modalButton}>{props.lang.cancel}</Button>
             </View>
         </>

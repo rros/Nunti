@@ -13,17 +13,16 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { TouchableNativeFeedback } from 'react-native-gesture-handler';
 
 import { snackbarRef } from '../App';
-import Backend, { LearningStatus } from '../Backend';
+import Backend from '../Backend';
 import Styles from '../Styles';
-import { ThemeProps, LangProps } from '../Props';
-import { sortType } from '../Backend/ArticlesFilter';
+import { ThemeProps, LangProps, LearningStatus, SortType } from '../Props';
 
 interface Props extends ThemeProps, LangProps {
-    applySorting: (sortingType: sortType) => void,
+    applySorting: (sortingType: SortType) => void,
 }
 
 function SegmentedButton(props: Props) {
-    const [sortType, setSortType] = useState<sortType>();
+    const [sortType, setSortType] = useState<SortType>();
     const [learningDisabled, setLearningDisabled] = useState<boolean>();
 
     const learningStatus = useRef<LearningStatus>();
@@ -44,10 +43,10 @@ function SegmentedButton(props: Props) {
         })();
     });
 
-    const changeSortType = (newSortType: sortType) => {
+    const changeSortType = (newSortType: SortType) => {
         if (learningDisabled && newSortType == 'learning') {
-            snackbarRef.current.showSnack((props.lang.rate_more).replace('%articles%',
-                learningStatus.current?.SortingEnabledIn));
+            snackbarRef.current?.showSnack((props.lang.rate_more).replace('%articles%',
+                learningStatus.current?.SortingEnabledIn.toString() ?? "0"));
             return;
         }
 
@@ -65,17 +64,17 @@ function SegmentedButton(props: Props) {
             <View style={Styles.segmentedButtonContainer}>
                 <View style={{ flex: 1 }}>
                     <TouchableNativeFeedback style={{ backgroundColor: props.theme.accent.surface }}
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                         onPress={() => changeSortType('learning')}>
                         <View style={[Styles.segmentedButton, {
                             borderRightColor: props.theme.accent.outline, backgroundColor: (!learningDisabled ?
-                                (sortType == 'learning' ? props.theme.accent.secondaryContainer : props.theme.accent.surface) : props.theme.accent.disabledContainer)
+                                (sortType == 'learning' ? props.theme.accent.secondaryContainer : props.theme.accent.surface) : props.theme.accent.surfaceDisabled)
                         }]}>
                             {sortType == 'learning' ? <Icon size={18} name="check" color={props.theme.accent.onSecondaryContainer}
                                 style={Styles.segmentedButtonIcon} /> : null}
                             <Text variant="labelLarge" style={{
                                 color: (!learningDisabled ? (sortType == 'learning' ?
-                                    props.theme.accent.onSecondaryContainer : props.theme.accent.onSurface) : props.theme.accent.disabledContent)
+                                    props.theme.accent.onSecondaryContainer : props.theme.accent.onSurface) : props.theme.accent.onSurfaceDisabled)
                             }}>{props.lang.sort_learning}</Text>
                         </View>
                     </TouchableNativeFeedback>
@@ -83,7 +82,7 @@ function SegmentedButton(props: Props) {
 
                 <View style={{ flex: 1 }}>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
                         onPress={() => changeSortType('date')}>
                         <View style={[Styles.segmentedButton, {
                             borderRightWidth: 0, backgroundColor: (sortType == 'date' ?

@@ -12,8 +12,8 @@ import {
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
 import { browserRef } from '../../App';
-import { Backend, LearningStatus } from '../../Backend';
-import { ScreenProps } from '../../Props';
+import { Backend } from '../../Backend';
+import { ScreenProps, LearningStatus } from '../../Props';
 import Styles from '../../Styles';
 
 function SettingsLearning(props: ScreenProps) {
@@ -38,7 +38,7 @@ function SettingsLearning(props: ScreenProps) {
                     <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.sorting_status}</Text>
                     <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{learningStatus?.SortingEnabled ?
                         props.lang.enabled : (props.lang.rate_more).replace(
-                            '%articles%', learningStatus?.SortingEnabledIn)}</Text>
+                            '%articles%', learningStatus?.SortingEnabledIn?.toString() ?? Number.NaN.toString())}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
                     <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.rated_articles}</Text>
@@ -53,8 +53,8 @@ function SettingsLearning(props: ScreenProps) {
 
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
-                    onPress={() => browserRef.current.openBrowser(
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    onPress={() => browserRef.current?.openBrowser(
                         'https://gitlab.com/ondrejfoltyn/nunti/-/issues/28')}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.learn_more}</Text>

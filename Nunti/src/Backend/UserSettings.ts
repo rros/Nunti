@@ -1,6 +1,6 @@
-import { sortType as SortType } from '../Backend/ArticlesFilter';
+import { SortType as SortType } from '../Backend/ArticlesFilter';
 import Log from '../Log';
-import { AccentName, BrowserMode, LanguageName, ThemeName } from '../Props';
+import { AccentName, BrowserMode, LanguageCode, ThemeName } from '../Props';
 import { Feed } from './Feed';
 import { Storage } from './Storage';
 import { Tag } from './Tag';
@@ -19,7 +19,7 @@ export class UserSettings {
     public BrowserMode: BrowserMode = 'webview';
     public MaxArticleAgeDays = 7;
 
-    public Language: LanguageName = 'system';
+    public Language: LanguageCode = 'system';
     public Theme: ThemeName = 'system';
     public Accent: AccentName = 'default';
 
