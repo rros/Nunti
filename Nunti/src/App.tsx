@@ -90,7 +90,7 @@ export default function App() {
     const [snackButtonLabel, setSnackButtonLabel] = useState('');
     const snackCallback = React.useRef(() => { });
     const snackTimerDuration = React.useRef(4);
-    const snackTimer = React.useRef<NodeJS.Timer>();
+    const snackTimer = React.useRef<NodeJS.Timeout>();
 
     const [screenHeight, setScreenHeight] = useState(Dimensions.get('window').height);
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
@@ -519,7 +519,7 @@ export default function App() {
             index: 0,
             routes: [{ name: 'wizard' }],
         });
-        drawerNavigationRef.current!.navigate({ key: 'wizard' });
+        drawerNavigationRef.current!.navigate({ name: 'wizard', params: undefined });
 
         hideModal();
         showSnack(language.wiped_data);

@@ -105,7 +105,7 @@ export type NavigationState = {
 export type NavigationParams = {
     source?: string,
     feed?: Feed,
-    uri?: string,
+    url?: string,
     screen?: string,
 }
 
@@ -123,9 +123,7 @@ export interface ScreenTypeProps {
 }
 export interface EventStateProps {
     data: {
-        state: {
-            routes: Route[],
-        }
+        state: NavigationState,
     }
 }
 export interface NavigationStateProps {

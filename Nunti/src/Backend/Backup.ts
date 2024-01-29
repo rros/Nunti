@@ -4,8 +4,8 @@ import { Feed } from './Feed';
 import { Storage } from './Storage';
 import { UserSettings } from './UserSettings';
 import { Utils } from './Utils';
-const DOMParser = require('xmldom').DOMParser; //eslint-disable-line
-const XMLSerializer = require('xmldom').XMLSerializer; //eslint-disable-line
+const DOMParser = require('@xmldom/xmldom').DOMParser; //eslint-disable-line
+const XMLSerializer = require('@xmldom/xmldom').XMLSerializer; //eslint-disable-line
 
 export class Backup {
     public Version: string | undefined;

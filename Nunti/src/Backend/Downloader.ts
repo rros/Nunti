@@ -4,8 +4,8 @@ import Log from '../Log';
 import iconv from 'iconv-lite';
 import { UserSettings } from './UserSettings';
 import { ArticlesUtils } from './ArticlesUtils';
-const DOMParser = require('xmldom').DOMParser; //eslint-disable-line
-const XMLSerializer = require('xmldom').XMLSerializer; //eslint-disable-line
+const DOMParser = require('@xmldom/xmldom').DOMParser; //eslint-disable-line
+const XMLSerializer = require('@xmldom/xmldom').XMLSerializer; //eslint-disable-line
 import { decode } from 'html-entities';
 import { Buffer } from 'buffer';
 

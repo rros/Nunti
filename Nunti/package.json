@@ -20,6 +20,7 @@
     "@react-navigation/native-stack": "^6.7.0",
     "@types/sanitize-html": "^2.9.1",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@xmldom/xmldom": "^0.8.10",
     "buffer": "^6.0.3",
     "eslint-plugin-react": "^7.33.2",
     "html-entities": "^2.3.3",
@@ -48,8 +49,7 @@
     "react-native-vector-icons": "^9.2.0",
     "react-native-webview": "^11.23.0",
     "sanitize-html": "^2.11.0",
-    "stream": "^0.0.2",
-    "xmldom": "^0.6.0"
+    "stream": "^0.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
