@@ -48,7 +48,7 @@ function WebPageReader(props: ScreenProps) {
     }, []);
 
     const getArticle = async () => {
-        const article = await Backend.GetReaderModeArticle(props.route.params?.uri);
+        const article = await Backend.GetReaderModeArticle(props.route.params?.url);
         if (article == null) {
             log.current.error('failed to get reader mode article');
         }
@@ -61,7 +61,7 @@ function WebPageReader(props: ScreenProps) {
     }
 
     const forceWebview = async () => {
-        browserRef.current?.openBrowser(props.route.params?.uri, props.route.params?.source, true);
+        browserRef.current?.openBrowser(props.route.params?.url, props.route.params?.source, true);
     }
 
     const openSettings = async () => {
@@ -74,7 +74,7 @@ function WebPageReader(props: ScreenProps) {
         loading ? <LoadingScreenComponent /> :
             articleContent.html != '' ? <ScrollView>
                 {articleTitle != '' ? <View style={{
-                    borderBottomColor: props.theme.accent.outline, borderBottomWidth: 1,
+                    borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1,
                     marginHorizontal: 16, paddingVertical: 16
                 }}>
                     <Text variant="titleLarge">{articleTitle}</Text>
@@ -84,8 +84,8 @@ function WebPageReader(props: ScreenProps) {
                     enableExperimentalMarginCollapsing={true}
                     renderersProps={{ img: { enableExperimentalPercentWidth: true } }}
                     baseStyle={{
-                        backgroundColor: props.theme.accent.background,
-                        color: props.theme.accent.onSurface, marginHorizontal: 16
+                        backgroundColor: props.theme.colors.background,
+                        color: props.theme.colors.onSurface, marginHorizontal: 16
                     }}
                     defaultTextProps={{ selectable: true }}
                     ignoredDomTags={ignoredTags} />

@@ -40,16 +40,13 @@ import { Utils } from '../Backend/Utils';
 import { Storage } from '../Backend/Storage';
 import { Current } from '../Backend/Current';
 import Styles from '../Styles';
-import { LangProps, Route, ScreenProps, ScreenTypeProps, State, ThemeProps, WordIndex, ArticleSource, SortType } from '../Props';
+import { LangProps, Route, ScreenProps, ScreenTypeProps, ThemeProps, WordIndex, ArticleSource, SortType, EventStateProps, ArticleSwipe, ButtonType } from '../Props';
 import { ArticlesFilter } from '../Backend/ArticlesFilter';
 import { Tag } from '../Backend/Tag';
 
-type buttonType = 'delete' | 'thumb-up' | 'thumb-down' | 'none' | 'rate';
-type articleSwipe = 'right' | 'left';
-
 interface Props extends ScreenProps, ScreenTypeProps {
     source: ArticleSource,
-    buttonType: buttonType,
+    buttonType: ButtonType,
 }
 
 // use a class wrapper to stop rerenders caused by global snack/modal
@@ -129,8 +126,8 @@ function ArticlesPage(props: Props) {
         });
 
         // show filter and rss modal on button press in appbar header
-        const onState = props.navigation.addListener('state', (parentState: State) => {
-            parentState.routes.some(pickedRoute => {
+        const onState = props.navigation.addListener('state', (parentState: EventStateProps) => {
+            parentState.data.state.routes.some(pickedRoute => {
                 if (pickedRoute.name == props.route.name && pickedRoute.params?.showFilterModal) {
                     log.current.debug('Showing filter modal, appbar button pressed');
                     props.navigation.setParams({ showFilterModal: false });
@@ -392,8 +389,8 @@ function ArticlesPage(props: Props) {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={refresh}
-                        colors={[props.theme.accent.inversePrimary]}
-                        progressBackgroundColor={props.theme.accent.inverseSurface}
+                        colors={[props.theme.colors.inversePrimary]}
+                        progressBackgroundColor={props.theme.colors.inverseSurface}
                     />
                 }
 
@@ -492,8 +489,8 @@ function FilterModalContent(props: FilterModalProps) {
             <Dialog.Icon icon="filter-variant" />
             <Dialog.Title style={Styles.centeredText}>{props.lang.filter}</Dialog.Title>
             <View style={[Styles.modalScrollArea, {
-                borderTopColor: props.theme.accent.outline,
-                borderBottomColor: props.theme.accent.outline
+                borderTopColor: props.theme.colors.outline,
+                borderBottomColor: props.theme.colors.outline
             }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={[Styles.settingsModalButton, { paddingBottom: 0 }]}>
@@ -567,18 +564,18 @@ function RssModalContent(props: FilterModalProps) {
             <Dialog.Title style={Styles.centeredText}>{props.lang.filter_rss}</Dialog.Title>
             <View style={[Backend.UserSettings.FeedList.length > 0 ?
                 Styles.modalScrollAreaNoPadding : Styles.modalScrollArea,
-            { borderTopColor: props.theme.accent.outline, borderBottomColor: props.theme.accent.outline }]}>
+            { borderTopColor: props.theme.colors.outline, borderBottomColor: props.theme.colors.outline }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     {Backend.UserSettings.FeedList.length > 0 ?
                         <>
                             <TouchableNativeFeedback
-                                background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                                background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                                 onPress={() => changeSelectedFeeds('all_rss')}>
                                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                     <Checkbox.Android
                                         status={selectedFeeds.indexOf('all_rss') >= 0 ? 'checked' : 'unchecked'} />
                                     <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel,
-                                    { color: props.theme.accent.onSurfaceVariant }]}>
+                                    { color: props.theme.colors.onSurfaceVariant }]}>
                                         {props.lang.all_rss}</Text>
                                 </View>
                             </TouchableNativeFeedback>
@@ -586,13 +583,13 @@ function RssModalContent(props: FilterModalProps) {
                             {Backend.UserSettings.FeedList.map((feed) => {
                                 return (
                                     <TouchableNativeFeedback
-                                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                                        background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                                         onPress={() => changeSelectedFeeds(feed.url)}>
                                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                                             <Checkbox.Android
                                                 status={selectedFeeds.indexOf(feed.url) >= 0 ? 'checked' : 'unchecked'} />
                                             <Text variant="bodyLarge" style={[Styles.settingsCheckboxLabel,
-                                            { color: props.theme.accent.onSurfaceVariant }]}>
+                                            { color: props.theme.colors.onSurfaceVariant }]}>
                                                 {feed.name}</Text>
                                         </View>
                                     </TouchableNativeFeedback>
@@ -619,7 +616,7 @@ function RssModalContent(props: FilterModalProps) {
 
 interface DetailsModalProps extends ThemeProps, LangProps, ScreenTypeProps {
     showImages: boolean,
-    buttonType: buttonType,
+    buttonType: ButtonType,
     currentArticle: Article,
     saveArticle: (article: Article) => void,
     modifyArticle: (article: Article) => void,
@@ -632,7 +629,7 @@ function DetailsModalContent(props: DetailsModalProps) {
         return (
             <View style={{ flexShrink: 1 }}>
                 <View style={[Styles.cardContent, {
-                    borderBottomColor: props.theme.accent.outline,
+                    borderBottomColor: props.theme.colors.outline,
                     borderBottomWidth: (props.currentArticle.description.length != 0 ? 0 : 1)
                 }]}>
                     <Text selectable={true} variant="titleLarge">{props.currentArticle.title}</Text>
@@ -644,8 +641,8 @@ function DetailsModalContent(props: DetailsModalProps) {
 
                 {props.currentArticle.description.length != 0 ?
                     <View style={[{
-                        flexShrink: 1, borderBottomColor: props.theme.accent.outline, borderBottomWidth: 1,
-                        borderTopColor: props.theme.accent.outline, borderTopWidth: 1
+                        flexShrink: 1, borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1,
+                        borderTopColor: props.theme.colors.outline, borderTopWidth: 1
                     }]}>
                         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
                             <Text selectable={true} variant="bodyMedium">{props.currentArticle.description}</Text>
@@ -669,7 +666,7 @@ function DetailsModalContent(props: DetailsModalProps) {
             <View style={{ flexShrink: 1 }}>
                 <View style={{
                     flexDirection: 'row-reverse', flexShrink: 1,
-                    borderBottomColor: props.theme.accent.outline, borderBottomWidth: 1
+                    borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1
                 }}>
                     <Card.Cover style={[Styles.cardCover, Styles.cardCoverSide]}
                         source={{ uri: props.currentArticle.cover }} />
@@ -706,7 +703,7 @@ function DetailsModalContent(props: DetailsModalProps) {
                 <Card.Cover style={Styles.cardCover}
                     source={{ uri: props.currentArticle.cover }} />
 
-                <View style={[{ flexShrink: 1, borderBottomColor: props.theme.accent.outline, borderBottomWidth: 1 }]}>
+                <View style={[{ flexShrink: 1, borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1 }]}>
                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
                         <Text selectable={true} variant="titleLarge">{props.currentArticle.title}</Text>
                         <Text selectable={true} style={Styles.captionText} variant="labelSmall">
@@ -736,11 +733,11 @@ function DetailsModalContent(props: DetailsModalProps) {
 
 interface ArticleCardProps extends ThemeProps, LangProps, ScreenTypeProps {
     showImages: boolean,
-    buttonType: buttonType,
+    buttonType: ButtonType,
     source: ArticleSource,
     item: Article,
     viewDetails: (article: Article) => void,
-    modifyArticle: (article: Article, direction: articleSwipe) => void,
+    modifyArticle: (article: Article, direction: ArticleSwipe) => void,
     getDateCaption: (date?: Date) => void,
 }
 
@@ -777,11 +774,11 @@ function ArticleCard(props: ArticleCardProps) {
         return (
             <Animated.View style={[Styles.cardSwipeLeft, {
                 backgroundColor: (props.buttonType == 'delete') ?
-                    props.theme.accent.negativeContainer : props.theme.accent.positiveContainer
+                    props.theme.colors.negativeContainer : props.theme.colors.positiveContainer
             }, swipeComponentAnimStyle]}>
                 <Icon name={props.buttonType == 'delete' ? 'delete' : 'thumb-up'}
-                    size={24} color={props.buttonType == 'delete' ? props.theme.accent.onNegativeContainer :
-                        props.theme.accent.onPositiveContainer} style={Styles.cardSwipeIcon} />
+                    size={24} color={props.buttonType == 'delete' ? props.theme.colors.onNegativeContainer :
+                        props.theme.colors.onPositiveContainer} style={Styles.cardSwipeIcon} />
             </Animated.View>
         );
     }
@@ -789,9 +786,9 @@ function ArticleCard(props: ArticleCardProps) {
     const rightSwipeComponent = () => {
         return (
             <Animated.View style={[Styles.cardSwipeRight,
-            { backgroundColor: props.theme.accent.negativeContainer }, swipeComponentAnimStyle]}>
+            { backgroundColor: props.theme.colors.negativeContainer }, swipeComponentAnimStyle]}>
                 <Icon name={props.buttonType == 'delete' ? 'delete' : 'thumb-down'}
-                    size={24} color={props.theme.accent.onNegativeContainer} style={Styles.cardSwipeIcon} />
+                    size={24} color={props.theme.colors.onNegativeContainer} style={Styles.cardSwipeIcon} />
             </Animated.View>
         );
     }
@@ -804,27 +801,27 @@ function ArticleCard(props: ArticleCardProps) {
                     onSwipeableWillOpen={() => { disappearAnimation(); }}
                     onSwipeableOpen={(direction) => { props.modifyArticle(props.item, direction); }}
                     leftThreshold={150} rightThreshold={150}>
-                    <View style={[Styles.card, { backgroundColor: props.theme.accent.secondaryContainer }]}>
-                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    <View style={[Styles.card, { backgroundColor: props.theme.colors.secondaryContainer }]}>
+                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                             useForeground={true}
                             onPress={() => { browserRef.current?.openBrowser(props.item.url); }}
                             onLongPress={() => { props.viewDetails(props.item); }}>
 
                             <View style={{ flexDirection: 'row-reverse' }}>
                                 {(props.item.cover !== undefined && props.showImages) ?
-                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.accent.onSurfaceDisabled, flex: 1 }]}
+                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.colors.onSurfaceDisabled, flex: 1 }]}
                                         source={{ uri: props.item.cover }} progressiveRenderingEnabled={true} /> : null}
                                 <View style={[Styles.cardContent, { flex: 1 }]}>
-                                    <Text variant="titleLarge" style={{ color: props.theme.accent.onSecondaryContainer }} numberOfLines={3}>
+                                    <Text variant="titleLarge" style={{ color: props.theme.colors.onSecondaryContainer }} numberOfLines={3}>
                                         {props.item.title}</Text>
                                     <Text variant="bodyMedium" numberOfLines={7} style={[{
                                         flexGrow: 1,
-                                        color: props.theme.accent.onSecondaryContainer,
+                                        color: props.theme.colors.onSecondaryContainer,
                                         flex: ((props.item.cover !== undefined && props.showImages) ? 1 : undefined),
                                         marginTop: (props.item.description.length != 0 ? 8 : 0)
                                     }]}
                                     >{props.item.description.length != 0 ? props.item.description : ''}</Text>
-                                    <Text style={[Styles.captionText, { color: props.theme.accent.onSecondaryContainer }]} variant="labelSmall">
+                                    <Text style={[Styles.captionText, { color: props.theme.colors.onSecondaryContainer }]} variant="labelSmall">
                                         {props.getDateCaption(props.item.date) === undefined ?
                                             props.item.source :
                                             props.getDateCaption(props.item.date) + ' • ' + props.item.source}</Text>
@@ -844,22 +841,22 @@ function ArticleCard(props: ArticleCardProps) {
                     onSwipeableWillOpen={() => { disappearAnimation(); }}
                     onSwipeableOpen={(direction) => { props.modifyArticle(props.item, direction); }}
                     leftThreshold={150} rightThreshold={150}>
-                    <View style={[Styles.card, { backgroundColor: props.theme.accent.secondaryContainer }]}>
-                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    <View style={[Styles.card, { backgroundColor: props.theme.colors.secondaryContainer }]}>
+                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                             useForeground={true}
                             onPress={() => { browserRef.current?.openBrowser(props.item.url); }}
                             onLongPress={() => { props.viewDetails(props.item); }}>
 
                             <View>
                                 {(props.item.cover !== undefined && props.showImages) ?
-                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.accent.onSurfaceDisabled }]}
+                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.colors.onSurfaceDisabled }]}
                                         source={{ uri: props.item.cover }} progressiveRenderingEnabled={true} /> : null}
                                 <View style={Styles.cardContent}>
-                                    <Text variant="titleLarge" style={{ color: props.theme.accent.onSecondaryContainer }} numberOfLines={3}>{props.item.title}</Text>
+                                    <Text variant="titleLarge" style={{ color: props.theme.colors.onSecondaryContainer }} numberOfLines={3}>{props.item.title}</Text>
                                     {((props.item.description.length != 0 && !props.showImages) || props.item.cover === undefined) ?
-                                        <Text variant="bodyMedium" style={[Styles.bodyText, { color: props.theme.accent.onSecondaryContainer }]}
+                                        <Text variant="bodyMedium" style={[Styles.bodyText, { color: props.theme.colors.onSecondaryContainer }]}
                                             numberOfLines={7}>{props.item.description}</Text> : null}
-                                    <Text style={[Styles.captionText, { color: props.theme.accent.onSecondaryContainer }]} variant="labelSmall">
+                                    <Text style={[Styles.captionText, { color: props.theme.colors.onSecondaryContainer }]} variant="labelSmall">
                                         {props.getDateCaption(props.item.date) === undefined ?
                                             props.item.source :
                                             props.getDateCaption(props.item.date) + ' • ' + props.item.source}</Text>

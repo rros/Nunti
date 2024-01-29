@@ -13,8 +13,8 @@ import { ThemeProps } from '../Props';
 
 function LoadingScreenComponent(props: ThemeProps) {
     return (
-        <View style={[Styles.EmptyPageContainer, { backgroundColor: props.theme.accent.surface }]}>
-            <ActivityIndicator animating={true} color={props.theme.accent.primary} />
+        <View style={[Styles.EmptyPageContainer, { backgroundColor: props.theme.colors.surface }]}>
+            <ActivityIndicator animating={true} color={props.theme.colors.primary} />
         </View>
     );
 }

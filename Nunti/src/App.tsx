@@ -20,6 +20,8 @@ import {
     Text,
     Divider,
     Button,
+    MD3DarkTheme,
+    MD3LightTheme,
 } from 'react-native-paper';
 
 import Animated, {
@@ -53,9 +55,10 @@ import BackgroundFetch from './BackgroundFetch';
 import { Background } from './Backend/Background';
 import { Storage } from './Backend/Storage';
 import {
-    Accent, ScreenTypeProps, Theme, StateProps, AccentName, ThemeName,
-    Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef, LangProps, ThemeProps, WordIndex, LanguageCode
+    Accent, ScreenTypeProps, Theme, NavigationStateProps, AccentName, ThemeName,
+    Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef, LangProps, ThemeProps, WordIndex, LanguageCode, BrowserMode
 } from './Props';
+import Color from 'color';
 
 type RootStackParamList = {
     feed: { showFilterModal: boolean },
@@ -79,7 +82,7 @@ export const globalStateRef = React.createRef<GlobalStateRef>();
 export const logRef = React.createRef<LogRef>();
 
 export default function App() {
-    const [theme, setTheme] = useState<Theme>({ dark: true, themeName: 'dark', accentName: 'default', accent: Accents.default.dark });
+    const [theme, setTheme] = useState<Theme>({ dark: true, themeName: 'dark', accentName: 'default', colors: Accents.default.dark });
     const [language, setLanguage] = useState(Languages.en);
 
     const [snackVisible, setSnackVisible] = useState(false);
@@ -300,10 +303,10 @@ export default function App() {
         Backend.UserSettings.Save();
 
         let newLanguage: Language | undefined = undefined;
-        newLanguageCode = newLanguageCode == 'system' ? NativeModules.I18nManager.localeIdentifier : newLanguageCode;
+        const languageCodeStr: string = newLanguageCode == 'system' ? NativeModules.I18nManager.localeIdentifier : newLanguageCode;
 
         for (const [key, value] of Object.entries(Languages)) {
-            if (newLanguageCode == key)
+            if (languageCodeStr.includes(key))
                 newLanguage = value;
         }
 
@@ -322,7 +325,7 @@ export default function App() {
         Backend.UserSettings.Accent = accentName;
         Backend.UserSettings.Save();
 
-        let newTheme: Theme = { dark: theme.dark, themeName: themeName, accentName: accentName, accent: theme.accent };
+        let newTheme: Theme = { dark: theme.dark, themeName: themeName, accentName: accentName, colors: theme.colors };
         if (themeName == 'system') {
             newTheme.dark = Appearance.getColorScheme() == 'light' ? false : true;
 
@@ -337,21 +340,22 @@ export default function App() {
         else
             newTheme.dark = true;
 
-        newTheme.accent = await getAccent(accentName, newTheme.dark);
+        newTheme.colors = await getAccent(accentName, newTheme.dark);
 
         // override background colours when using black theme
         // otherwise identical to dark theme
         if (newTheme.themeName == 'black') {
-            newTheme.accent.background = '#000000';
-            newTheme.accent.surface = '#000000';
+            newTheme.colors.background = '#000000';
+            newTheme.colors.surface = '#000000';
         }
 
         setTheme(newTheme);
         forceUpdate(!forceValue)
 
-        setStatusBarColor(newTheme.accent.surface, newTheme.dark);
+        setStatusBarColor(newTheme.colors.surface, newTheme.dark);
 
         log.current.debug('Theme set to ' + newTheme.themeName + ' with ' + newTheme.accentName + ' accent.');
+        log.current.debug('Theme is ' + (newTheme.dark ? 'dark' : 'light'));
         return newTheme;
     }
 
@@ -370,12 +374,41 @@ export default function App() {
     const getAccent = async (accentName: AccentName, isDarkTheme: boolean) => {
         let accent: Accent;
         if (accentName == 'material_you' && isDarkTheme)
-            accent = await MaterialYouModule.getMaterialYouPalette('dark');
+            accent = patchMaterialYouPalette(await MaterialYouModule.getMaterialYouPalette('dark'), true);
         else if (accentName == 'material_you')
-            accent = await MaterialYouModule.getMaterialYouPalette('light');
+            accent = patchMaterialYouPalette(await MaterialYouModule.getMaterialYouPalette('light'), false);
         else
             accent = isDarkTheme ? Accents[accentName].dark : Accents[accentName].light;
 
+        return accent;
+    }
+
+    const patchMaterialYouPalette = (accent: Accent, isDark: boolean) => {
+        accent.surfaceDisabled = Color(accent.surfaceVariant).alpha(0.12).toString();
+        accent.onSurfaceDisabled = Color(accent.onSurface).alpha(0.38).toString();
+        accent.outlineVariant = isDark ? MD3DarkTheme.colors.outlineVariant : MD3LightTheme.colors.outlineVariant;
+        accent.shadow = isDark ? MD3DarkTheme.colors.shadow : MD3LightTheme.colors.shadow;
+        accent.scrim = isDark ? MD3DarkTheme.colors.scrim : MD3LightTheme.colors.scrim;
+        accent.backdrop = Color(accent.onSurface).alpha(0.20).toString();
+
+        accent.elevation = {
+            level0: Color(accent.primary).alpha(0.05).toString(),
+            level1: Color(accent.primary).alpha(0.08).toString(),
+            level2: Color(accent.primary).alpha(0.11).toString(),
+            level3: Color(accent.primary).alpha(0.12).toString(),
+            level4: Color(accent.primary).alpha(0.14).toString(),
+            level5: Color(accent.primary).alpha(0.15).toString(),
+        };
+
+        accent.inverseElevation = {
+            level0: Color(accent.primary).alpha(0.05).toString(),
+            level1: Color(accent.primary).alpha(0.08).toString(),
+            level2: Color(accent.primary).alpha(0.11).toString(),
+            level3: Color(accent.primary).alpha(0.12).toString(),
+            level4: Color(accent.primary).alpha(0.14).toString(),
+            level5: Color(accent.primary).alpha(0.15).toString(),
+        };
+        
         return accent;
     }
 
@@ -427,9 +460,9 @@ export default function App() {
     }
 
     const openBrowser = async (url: string, source?: string, ignoreConnectionStatus: boolean = false) => {
-        let browserType: string = Backend.UserSettings.BrowserMode;
+        let browserType: BrowserMode = Backend.UserSettings.BrowserMode;
         if (!ignoreConnectionStatus && await Utils.IsDoNotDownloadActive())
-            browserType = 'webpage_reader';
+            browserType = 'reader_mode';
 
         if (source === undefined)
             source = drawerNavigationRef.current!.getCurrentRoute()?.name;
@@ -444,7 +477,7 @@ export default function App() {
             case 'legacy_webview':
                 hideModal();
                 drawerNavigationRef.current!.navigate({
-                    key: 'legacyWebview', params: {
+                    name: 'legacyWebview', params: {
                         url: url,
                         source: source!,
                     }
@@ -453,9 +486,9 @@ export default function App() {
             case 'external_browser':
                 Linking.openURL(url);
                 break;
-            case 'webpage_reader':
+            case 'reader_mode':
                 drawerNavigationRef.current!.navigate({
-                    key: 'webpageReader', params: {
+                    name: 'webpageReader', params: {
                         url: url,
                         source: source!,
                     }
@@ -507,22 +540,13 @@ export default function App() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <PaperProvider theme={theme}>
-                <NavigationContainer theme={{
-                    dark: theme.dark, colors: {
-                        primary: theme.accent.primary,
-                        background: theme.accent.background,
-                        card: theme.accent.primaryContainer,
-                        text: theme.accent.onPrimary,
-                        border: theme.accent.outline,
-                        notification: theme.accent.surface,
-                    }
-                }} ref={drawerNavigationRef}
+                <NavigationContainer theme={theme as { dark: boolean, colors: any }} ref={drawerNavigationRef}
                     onReady={() => RNBootSplash.hide({ fade: true })}>
                     <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
                         drawerContent={(props) => <CustomDrawer {...props} screenType={screenType}
                             theme={theme} lang={language} />} backBehavior="none"
                         screenOptions={{
-                            drawerType: screenType >= 2 ? 'permanent' : 'front', overlayColor: theme.accent.backdrop,
+                            drawerType: screenType >= 2 ? 'permanent' : 'front', overlayColor: theme.colors.backdrop,
                             header: (props) => <CustomHeader {...props} screenType={screenType}
                                 theme={theme} lang={language} />
                         }}>
@@ -570,17 +594,17 @@ export default function App() {
                 <Portal>
                     {modalVisible ? <View style={Styles.modal}>
                         <TouchableWithoutFeedback onPress={hideModal}>
-                            <Animated.View style={[modalScrimAnimStyle, { backgroundColor: theme.accent.backdrop },
+                            <Animated.View style={[modalScrimAnimStyle, { backgroundColor: theme.colors.backdrop },
                                 StyleSheet.absoluteFill]}>
                             </Animated.View>
                         </TouchableWithoutFeedback>
                         <View style={Styles.modalContentWrapper}>
-                            <Animated.View style={[{ backgroundColor: theme.accent.surface },
+                            <Animated.View style={[{ backgroundColor: theme.colors.surface },
                             Styles.modalContent, modalContentAnimStyle]}>
                                 <View style={[{
                                     backgroundColor:
-                                        (theme.themeName == 'black' ? theme.accent.elevation.level0 :
-                                            theme.accent.elevation.level3), flexShrink: 1
+                                        (theme.themeName == 'black' ? theme.colors.elevation.level0 :
+                                            theme.colors.elevation.level3), flexShrink: 1
                                 },
                                 ]}>{modalContent}
                                 </View>
@@ -589,10 +613,10 @@ export default function App() {
                     </View> : null}
 
                     {snackVisible ? <View style={Styles.snackBarWrapper}>
-                        <Animated.View style={[Styles.snackBarBase, snackAnimStyle, { backgroundColor: theme.accent.inverseSurface }]}>
-                            <View style={[Styles.snackBar, { backgroundColor: theme.accent.inverseElevation.level2 }]}>
-                                <Text style={{ color: theme.accent.inverseOnSurface, flexShrink: 1, marginRight: 8 }}>{snackMessage}</Text>
-                                <Button textColor={theme.accent.inversePrimary}
+                        <Animated.View style={[Styles.snackBarBase, snackAnimStyle, { backgroundColor: theme.colors.inverseSurface }]}>
+                            <View style={[Styles.snackBar, { backgroundColor: theme.colors.inverseElevation.level2 }]}>
+                                <Text style={{ color: theme.colors.inverseOnSurface, flexShrink: 1, marginRight: 8 }}>{snackMessage}</Text>
+                                <Button textColor={theme.colors.inversePrimary}
                                     onPress={() => { snackCallback.current(); hideSnack(); }}>{snackButtonLabel}</Button>
                             </View>
                         </Animated.View>
@@ -620,7 +644,7 @@ function CustomHeader(props: DrawerHeaderProps & ScreenTypeProps & LangProps & T
     );
 }
 
-function CustomDrawer(props: DrawerContentComponentProps & ScreenTypeProps & StateProps & LangProps & ThemeProps) {
+function CustomDrawer(props: DrawerContentComponentProps & ScreenTypeProps & NavigationStateProps & LangProps & ThemeProps) {
     const [active, setActive] = useState(props.state.routes[props.state.index].name);
 
     // update selected tab when going back with backbutton
@@ -631,14 +655,14 @@ function CustomDrawer(props: DrawerContentComponentProps & ScreenTypeProps & Sta
     });
 
     return (
-        <View style={[props.screenType >= 2 ? Styles.drawerPermanent : Styles.drawer, { backgroundColor: props.theme.accent.surface }]}>
+        <View style={[props.screenType >= 2 ? Styles.drawerPermanent : Styles.drawer, { backgroundColor: props.theme.colors.surface }]}>
             <ScrollView showsVerticalScrollIndicator={false} overScrollMode={'never'}
                 style={{
                     backgroundColor: (props.screenType >= 2 || props.theme.themeName == 'black') ?
-                        props.theme.accent.elevation.level0 : props.theme.accent.elevation.level1, flex: 1
+                        props.theme.colors.elevation.level0 : props.theme.colors.elevation.level1, flex: 1
                 }}>
                 <Text variant="titleLarge"
-                    style={[Styles.drawerTitle, { color: props.theme.accent.secondary }]}>Nunti</Text>
+                    style={[Styles.drawerTitle, { color: props.theme.colors.secondary }]}>Nunti</Text>
 
                 <Drawer.Item
                     label={props.lang.feed}

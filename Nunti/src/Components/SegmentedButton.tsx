@@ -60,21 +60,21 @@ function SegmentedButton(props: Props) {
     }
 
     return (
-        <View style={[Styles.segmentedButtonContainerOutline, { backgroundColor: props.theme.accent.outline }]}>
+        <View style={[Styles.segmentedButtonContainerOutline, { backgroundColor: props.theme.colors.outline }]}>
             <View style={Styles.segmentedButtonContainer}>
                 <View style={{ flex: 1 }}>
-                    <TouchableNativeFeedback style={{ backgroundColor: props.theme.accent.surface }}
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    <TouchableNativeFeedback style={{ backgroundColor: props.theme.colors.surface }}
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                         onPress={() => changeSortType('learning')}>
                         <View style={[Styles.segmentedButton, {
-                            borderRightColor: props.theme.accent.outline, backgroundColor: (!learningDisabled ?
-                                (sortType == 'learning' ? props.theme.accent.secondaryContainer : props.theme.accent.surface) : props.theme.accent.surfaceDisabled)
+                            borderRightColor: props.theme.colors.outline, backgroundColor: (!learningDisabled ?
+                                (sortType == 'learning' ? props.theme.colors.secondaryContainer : props.theme.colors.surface) : props.theme.colors.surfaceDisabled)
                         }]}>
-                            {sortType == 'learning' ? <Icon size={18} name="check" color={props.theme.accent.onSecondaryContainer}
+                            {sortType == 'learning' ? <Icon size={18} name="check" color={props.theme.colors.onSecondaryContainer}
                                 style={Styles.segmentedButtonIcon} /> : null}
                             <Text variant="labelLarge" style={{
                                 color: (!learningDisabled ? (sortType == 'learning' ?
-                                    props.theme.accent.onSecondaryContainer : props.theme.accent.onSurface) : props.theme.accent.onSurfaceDisabled)
+                                    props.theme.colors.onSecondaryContainer : props.theme.colors.onSurface) : props.theme.colors.onSurfaceDisabled)
                             }}>{props.lang.sort_learning}</Text>
                         </View>
                     </TouchableNativeFeedback>
@@ -82,17 +82,17 @@ function SegmentedButton(props: Props) {
 
                 <View style={{ flex: 1 }}>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                         onPress={() => changeSortType('date')}>
                         <View style={[Styles.segmentedButton, {
                             borderRightWidth: 0, backgroundColor: (sortType == 'date' ?
-                                props.theme.accent.secondaryContainer : props.theme.accent.surface)
+                                props.theme.colors.secondaryContainer : props.theme.colors.surface)
                         }]}>
-                            {sortType == 'date' ? <Icon size={18} name="check" color={props.theme.accent.onSecondaryContainer}
+                            {sortType == 'date' ? <Icon size={18} name="check" color={props.theme.colors.onSecondaryContainer}
                                 style={Styles.segmentedButtonIcon} /> : null}
                             <Text variant="labelLarge" style={{
                                 color: (sortType == 'date' ?
-                                    props.theme.accent.onSecondaryContainer : props.theme.accent.onSurface)
+                                    props.theme.colors.onSecondaryContainer : props.theme.colors.onSurface)
                             }}>{props.lang.sort_date}</Text>
                         </View>
                     </TouchableNativeFeedback>

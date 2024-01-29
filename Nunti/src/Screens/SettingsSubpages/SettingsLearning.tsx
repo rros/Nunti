@@ -35,29 +35,29 @@ function SettingsLearning(props: ScreenProps) {
         <ScrollView showsVerticalScrollIndicator={false}>
             <Card mode={'contained'} style={Styles.card}>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.sorting_status}</Text>
-                    <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{learningStatus?.SortingEnabled ?
+                    <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.sorting_status}</Text>
+                    <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{learningStatus?.SortingEnabled ?
                         props.lang.enabled : (props.lang.rate_more).replace(
                             '%articles%', learningStatus?.SortingEnabledIn?.toString() ?? Number.NaN.toString())}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.rated_articles}</Text>
-                    <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{(learningStatus?.TotalUpvotes ?? 0)
+                    <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.rated_articles}</Text>
+                    <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{(learningStatus?.TotalUpvotes ?? 0)
                         + (learningStatus?.TotalDownvotes ?? 0)}</Text>
                 </View>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.rating_ratio}</Text>
-                    <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{learningStatus?.VoteRatio}</Text>
+                    <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.rating_ratio}</Text>
+                    <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{learningStatus?.VoteRatio}</Text>
                 </View>
             </Card>
 
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                     onPress={() => browserRef.current?.openBrowser(
                         'https://gitlab.com/ondrejfoltyn/nunti/-/issues/28')}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.learn_more}</Text>
+                        <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.learn_more}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>

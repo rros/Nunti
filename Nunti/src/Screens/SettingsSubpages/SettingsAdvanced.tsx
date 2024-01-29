@@ -141,73 +141,73 @@ function SettingsAdvanced(props: ScreenProps) {
         <ScrollView showsVerticalScrollIndicator={false}>
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                     onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'max_art_age'} icon={'clock-outline'} suffix={props.lang.days}
                         currentValue={maxArtAge} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.max_art_age}</Text>
-                        <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.max_art_age_description}</Text>
+                        <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.max_art_age}</Text>
+                        <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.max_art_age_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                     onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'discovery'} icon={'book-search'} suffix={'%'}
                         currentValue={discovery} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.discovery}</Text>
-                        <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.discovery_description}</Text>
+                        <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.discovery}</Text>
+                        <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.discovery_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                     onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'cache_time'} icon={'timer-off'} suffix={props.lang.hours}
                         currentValue={cacheTime} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.cache_time}</Text>
-                        <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.cache_time_description}</Text>
+                        <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.cache_time}</Text>
+                        <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.cache_time_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                     onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'art_history'} icon={'history'}
                         currentValue={artHistory} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.art_history}</Text>
-                        <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.art_history_description}</Text>
+                        <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.art_history}</Text>
+                        <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.art_history_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                     onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'page_size'} icon={'arrow-collapse-up'}
                         currentValue={pageSize} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.page_size}</Text>
-                        <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.page_size_description}</Text>
+                        <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.page_size}</Text>
+                        <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.page_size_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                     onPress={() => modalRef.current?.showModal(<ChangeAdvancedModal
                         lang={props.lang} title={'max_art_feed'} icon={'arrow-collapse-up'}
                         currentValue={maxArtFeed} changeAdvanced={changeAdvanced} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.max_art_feed}</Text>
-                        <Text variant="labelSmall" style={{ color: props.theme.accent.onSurfaceVariant }}>{props.lang.max_art_feed_description}</Text>
+                        <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.max_art_feed}</Text>
+                        <Text variant="labelSmall" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.max_art_feed_description}</Text>
                     </View>
                 </TouchableNativeFeedback>
             </Card>
 
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.accent.surfaceDisabled, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                     onPress={() => modalRef.current?.showModal(<ResetCacheModal lang={props.lang} />)}>
                     <View style={Styles.settingsButton}>
-                        <Text variant="titleMedium" style={{ color: props.theme.accent.onSurfaceVariant }}>
+                        <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>
                             {props.lang.wipe_cache}</Text>
                     </View>
                 </TouchableNativeFeedback>

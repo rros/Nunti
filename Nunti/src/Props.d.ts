@@ -7,6 +7,8 @@ import { MutableRefObject } from "react";
 
 export type ArticleSource = 'feed' | 'bookmarks' | 'history';
 export type SortType = 'learning' | 'date';
+export type ButtonType = 'delete' | 'thumb-up' | 'thumb-down' | 'none' | 'rate';
+export type ArticleSwipe = 'right' | 'left';
 export type LearningStatus = {
     TotalUpvotes: number,
     TotalDownvotes: number,
@@ -79,11 +81,11 @@ export type AccentName = Extract<WordIndex, AccentIndex | 'material_you'>;
 export type Accent = MD3Colors & WarnColor & PositiveColor & NegativeColor & InverseElevation;
 export type AccentList = { [id in AccentIndex]: { dark: Accent, light: Accent } };
 export type ThemeName = Extract<WordIndex, 'light' | 'dark' | 'black' | 'system'>;
-export interface Theme {
+export type Theme = {
     dark: boolean,
     themeName: ThemeName,
     accentName: AccentName,
-    accent: Accent,
+    colors: Accent, // naming needed to match react-native-paper theme object
 }
 
 export type TopicName = Extract<WordIndex, 'cars' | 'food' | 'gaming' | 'history_news' | 'movies' | 'music' | 'science' | 'sport' | 'technology' |
@@ -96,7 +98,7 @@ export type TopicList = { [id in TopicName]: Topic }
 export type BrowserMode = Extract<WordIndex, 'webview' | 'legacy_webview' | 'reader_mode' | 'external_browser'>;
 
 export type Route = RouteProp<any, string>;
-export type State = {
+export type NavigationState = {
     index: number,
     routes: Route[],
 }
@@ -119,8 +121,15 @@ export interface LogProps {
 export interface ScreenTypeProps {
     screenType: number,
 }
-export interface StateProps {
-    state: State,
+export interface EventStateProps {
+    data: {
+        state: {
+            routes: Route[],
+        }
+    }
+}
+export interface NavigationStateProps {
+    state: NavigationState,
 }
 export interface ScreenProps extends ThemeProps, LangProps {
     route: Route,

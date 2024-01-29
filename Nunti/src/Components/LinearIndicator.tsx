@@ -65,8 +65,8 @@ function LinearIndicator(props: Props) {
 
     return (
         <Animated.View style={[indicatorContainerAnimStyle,
-            { backgroundColor: props.theme.accent.surfaceVariant, flexDirection: 'row' }]}>
-            <Animated.View style={[indicatorLineAnimStyle, { backgroundColor: props.theme.accent.primary }]} />
+            { backgroundColor: props.theme.colors.surfaceVariant, flexDirection: 'row' }]}>
+            <Animated.View style={[indicatorLineAnimStyle, { backgroundColor: props.theme.colors.primary }]} />
         </Animated.View>
     );
 }

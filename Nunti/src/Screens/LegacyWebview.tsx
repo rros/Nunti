@@ -30,7 +30,7 @@ function LegacyWebview(props: ScreenProps) {
 
 
     return (
-        <WebView source={{ uri: props.route.params?.uri }}
+        <WebView source={{ uri: props.route.params?.url }}
             startInLoadingState={true}
             renderLoading={() => { return <LoadingScreenComponent /> }} />
     );

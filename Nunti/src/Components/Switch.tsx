@@ -24,27 +24,27 @@ interface Props extends ThemeProps {
 
 function Switch(props: Props) {
     const switchDisabledValues = useRef({
-        outlineUnselected: Color(props.theme.accent.onSurface).alpha(0.12).toString(),
-        outlineSelected: Color(props.theme.accent.onSurface).alpha(0.12).toString(),
-        trackUnselected: Color(props.theme.accent.surface).alpha(0.12).toString(),
-        trackSelected: Color(props.theme.accent.onSurface).alpha(0.12).toString(),
-        thumbUnselected: Color(props.theme.accent.onSurface).alpha(0.38).toString(),
-        thumbSelected: Color(props.theme.accent.surface).alpha(0.38).toString(),
+        outlineUnselected: Color(props.theme.colors.onSurface).alpha(0.12).toString(),
+        outlineSelected: Color(props.theme.colors.onSurface).alpha(0.12).toString(),
+        trackUnselected: Color(props.theme.colors.surface).alpha(0.12).toString(),
+        trackSelected: Color(props.theme.colors.onSurface).alpha(0.12).toString(),
+        thumbUnselected: Color(props.theme.colors.onSurface).alpha(0.38).toString(),
+        thumbSelected: Color(props.theme.colors.surface).alpha(0.38).toString(),
     });
     const switchAnim = useSharedValue(Number(props.value));
     const switchOutlineAnimStyle = useAnimatedStyle(() => {
         return {
             backgroundColor: withTiming(interpolateColor(switchAnim.value, [0, 1], [
-                (props.disabled) ? (switchDisabledValues.current.outlineUnselected) : (props.theme.accent.outline),
-                (props.disabled) ? (switchDisabledValues.current.outlineSelected) : (props.theme.accent.primary)]),
+                (props.disabled) ? (switchDisabledValues.current.outlineUnselected) : (props.theme.colors.outline),
+                (props.disabled) ? (switchDisabledValues.current.outlineSelected) : (props.theme.colors.primary)]),
                 { duration: 150 }),
         };
     });
     const switchTrackAnimStyle = useAnimatedStyle(() => {
         return {
             backgroundColor: withTiming(interpolateColor(switchAnim.value, [0, 1], [
-                (props.disabled) ? (switchDisabledValues.current.trackUnselected) : (props.theme.accent.surface),
-                (props.disabled) ? (switchDisabledValues.current.trackSelected) : (props.theme.accent.primary)]),
+                (props.disabled) ? (switchDisabledValues.current.trackUnselected) : (props.theme.colors.surface),
+                (props.disabled) ? (switchDisabledValues.current.trackSelected) : (props.theme.colors.primary)]),
                 { duration: 150 }),
         };
     });
@@ -54,20 +54,20 @@ function Switch(props: Props) {
             height: withTiming(interpolate(switchAnim.value, [0, 1], [16, 24]), { duration: 150 }),
             width: withTiming(interpolate(switchAnim.value, [0, 1], [16, 24]), { duration: 150 }),
             backgroundColor: withTiming(interpolateColor(switchAnim.value, [0, 1], [
-                (props.disabled) ? (switchDisabledValues.current.thumbUnselected) : (props.theme.accent.outline),
-                (props.disabled) ? (switchDisabledValues.current.thumbSelected) : (props.theme.accent.onPrimary)]),
+                (props.disabled) ? (switchDisabledValues.current.thumbUnselected) : (props.theme.colors.outline),
+                (props.disabled) ? (switchDisabledValues.current.thumbSelected) : (props.theme.colors.onPrimary)]),
                 { duration: 150 }),
         };
     });
 
     useEffect(() => {
         switchDisabledValues.current = {
-            outlineUnselected: Color(props.theme.accent.onSurface).alpha(0.12).toString(),
-            outlineSelected: Color(props.theme.accent.onSurface).alpha(0.12).toString(),
-            trackUnselected: Color(props.theme.accent.surface).alpha(0.12).toString(),
-            trackSelected: Color(props.theme.accent.onSurface).alpha(0.12).toString(),
-            thumbUnselected: Color(props.theme.accent.onSurface).alpha(0.38).toString(),
-            thumbSelected: Color(props.theme.accent.surface).alpha(0.38).toString(),
+            outlineUnselected: Color(props.theme.colors.onSurface).alpha(0.12).toString(),
+            outlineSelected: Color(props.theme.colors.onSurface).alpha(0.12).toString(),
+            trackUnselected: Color(props.theme.colors.surface).alpha(0.12).toString(),
+            trackSelected: Color(props.theme.colors.onSurface).alpha(0.12).toString(),
+            thumbUnselected: Color(props.theme.colors.onSurface).alpha(0.38).toString(),
+            thumbSelected: Color(props.theme.colors.surface).alpha(0.38).toString(),
         }
 
         switchAnim.value = Number(props.value);
