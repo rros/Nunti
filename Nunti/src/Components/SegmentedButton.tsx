@@ -61,21 +61,21 @@ function SegmentedButton(props: Props) {
     }
 
     return (
-        <View style={[Styles.segmentedButtonContainerOutline, { backgroundColor: props.theme.colors.outline }]}>
+        <View style={[Styles.segmentedButtonContainerOutline, { backgroundColor: props.theme.accent.outline }]}>
             <View style={Styles.segmentedButtonContainer}>
                 <View style={{ flex: 1 }}>
-                    <TouchableNativeFeedback style={{ backgroundColor: props.theme.colors.surface }}
-                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
+                    <TouchableNativeFeedback style={{ backgroundColor: props.theme.accent.surface }}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
                         onPress={() => changeSortType('learning')}>
                         <View style={[Styles.segmentedButton, {
-                            borderRightColor: props.theme.colors.outline, backgroundColor: (!learningDisabled ?
-                                (sortType == 'learning' ? props.theme.colors.secondaryContainer : props.theme.colors.surface) : props.theme.colors.disabledContainer)
+                            borderRightColor: props.theme.accent.outline, backgroundColor: (!learningDisabled ?
+                                (sortType == 'learning' ? props.theme.accent.secondaryContainer : props.theme.accent.surface) : props.theme.accent.disabledContainer)
                         }]}>
-                            {sortType == 'learning' ? <Icon size={18} name="check" color={props.theme.colors.onSecondaryContainer}
+                            {sortType == 'learning' ? <Icon size={18} name="check" color={props.theme.accent.onSecondaryContainer}
                                 style={Styles.segmentedButtonIcon} /> : null}
                             <Text variant="labelLarge" style={{
                                 color: (!learningDisabled ? (sortType == 'learning' ?
-                                    props.theme.colors.onSecondaryContainer : props.theme.colors.onSurface) : props.theme.colors.disabledContent)
+                                    props.theme.accent.onSecondaryContainer : props.theme.accent.onSurface) : props.theme.accent.disabledContent)
                             }}>{props.lang.sort_learning}</Text>
                         </View>
                     </TouchableNativeFeedback>
@@ -83,17 +83,17 @@ function SegmentedButton(props: Props) {
 
                 <View style={{ flex: 1 }}>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
                         onPress={() => changeSortType('date')}>
                         <View style={[Styles.segmentedButton, {
                             borderRightWidth: 0, backgroundColor: (sortType == 'date' ?
-                                props.theme.colors.secondaryContainer : props.theme.colors.surface)
+                                props.theme.accent.secondaryContainer : props.theme.accent.surface)
                         }]}>
-                            {sortType == 'date' ? <Icon size={18} name="check" color={props.theme.colors.onSecondaryContainer}
+                            {sortType == 'date' ? <Icon size={18} name="check" color={props.theme.accent.onSecondaryContainer}
                                 style={Styles.segmentedButtonIcon} /> : null}
                             <Text variant="labelLarge" style={{
                                 color: (sortType == 'date' ?
-                                    props.theme.colors.onSecondaryContainer : props.theme.colors.onSurface)
+                                    props.theme.accent.onSecondaryContainer : props.theme.accent.onSurface)
                             }}>{props.lang.sort_date}</Text>
                         </View>
                     </TouchableNativeFeedback>

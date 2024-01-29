@@ -45,18 +45,18 @@ function SettingsTags(props: ScreenProps) {
             <View style={[Styles.settingsRowContainer, Styles.settingsButton]}>
                 <View style={[Styles.settingsLeftContent, Styles.settingsRowContainer]}>
                     <Icon style={Styles.settingsIcon} name="tag"
-                        size={24} color={props.theme.colors.secondary} />
-                    <Text variant="titleMedium" style={{ flexShrink: 1, color: props.theme.colors.onSurfaceVariant }}>{item.name}</Text>
+                        size={24} color={props.theme.accent.secondary} />
+                    <Text variant="titleMedium" style={{ flexShrink: 1, color: props.theme.accent.onSurfaceVariant }}>{item.name}</Text>
                 </View>
 
                 <View>
                     <TouchableNativeFeedback
-                        background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
+                        background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
                         onPress={() => modalRef.current.showModal(() => <TagRemoveModal lang={props.lang}
                             tag={item} changeParentTags={changeTags} parentLog={log.current} />)}>
-                        <View style={[{ borderLeftWidth: 1, borderLeftColor: props.theme.colors.outline }]}>
+                        <View style={[{ borderLeftWidth: 1, borderLeftColor: props.theme.accent.outline }]}>
                             <Icon name="close" style={{ margin: 12 }}
-                                size={24} color={props.theme.colors.onSurface} />
+                                size={24} color={props.theme.accent.onSurface} />
                         </View>
                     </TouchableNativeFeedback>
                 </View>

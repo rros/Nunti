@@ -74,7 +74,7 @@ function WebPageReader(props: ScreenProps) {
         loading ? <LoadingScreenComponent /> :
             articleContent.html != '' ? <ScrollView>
                 {articleTitle != '' ? <View style={{
-                    borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1,
+                    borderBottomColor: props.theme.accent.outline, borderBottomWidth: 1,
                     marginHorizontal: 16, paddingVertical: 16
                 }}>
                     <Text variant="titleLarge">{articleTitle}</Text>
@@ -84,8 +84,8 @@ function WebPageReader(props: ScreenProps) {
                     enableExperimentalMarginCollapsing={true}
                     renderersProps={{ img: { enableExperimentalPercentWidth: true } }}
                     baseStyle={{
-                        backgroundColor: props.theme.colors.background,
-                        color: props.theme.colors.onSurface, marginHorizontal: 16
+                        backgroundColor: props.theme.accent.background,
+                        color: props.theme.accent.onSurface, marginHorizontal: 16
                     }}
                     defaultTextProps={{ selectable: true }}
                     ignoredDomTags={ignoredTags} />

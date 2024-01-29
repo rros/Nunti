@@ -43,24 +43,24 @@ function SettingsFeeds(props: ScreenProps) {
         (index == 0) ? Styles.flatListCardTop : undefined,
         (index == feeds.length - 1) ? Styles.flatListCardBottom : undefined]}>
             <TouchableNativeFeedback
-                background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
+                background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
                 onPress={() => props.navigation.navigate('feed_details', { feed: item })}>
                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                     <View style={[Styles.settingsLeftContent, Styles.settingsRowContainer]}>
                         <Icon style={Styles.settingsIcon} name={item.failedAttempts == 0 ? 'rss' : (item.failedAttempts >= 5 ? 'close-circle' : 'alert')}
-                            size={24} color={item.failedAttempts == 0 ? props.theme.colors.secondary : (item.failedAttempts >= 5 ? props.theme.colors.error :
-                                props.theme.colors.warn)} />
-                        <Text variant="titleMedium" style={{ flexShrink: 1, color: props.theme.colors.onSurfaceVariant }}>{item.name}</Text>
+                            size={24} color={item.failedAttempts == 0 ? props.theme.accent.secondary : (item.failedAttempts >= 5 ? props.theme.accent.error :
+                                props.theme.accent.warn)} />
+                        <Text variant="titleMedium" style={{ flexShrink: 1, color: props.theme.accent.onSurfaceVariant }}>{item.name}</Text>
                     </View>
 
                     <View>
                         <TouchableNativeFeedback
-                            background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
+                            background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
                             onPress={() => modalRef.current.showModal(() => <FeedRemoveModal lang={props.lang}
                                 feed={item} changeParentFeeds={changeFeeds} parentLog={log.current} />)}>
-                            <View style={{ borderLeftWidth: 1, borderLeftColor: props.theme.colors.outline }}>
+                            <View style={{ borderLeftWidth: 1, borderLeftColor: props.theme.accent.outline }}>
                                 <Icon name="close" style={[Styles.settingsIcon, { margin: 12 }]}
-                                    size={24} color={props.theme.colors.onSurface} />
+                                    size={24} color={props.theme.accent.onSurface} />
                             </View>
                         </TouchableNativeFeedback>
                     </View>

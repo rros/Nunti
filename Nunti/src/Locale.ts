@@ -1,3 +1,5 @@
+import { Language } from "./Props";
+
 export const English = {
     code: 'en',
     wizard: 'Wizard',
@@ -250,7 +252,7 @@ export const English = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Czech = {
+export const Czech: Language = {
     code: 'cs',
     wizard: 'Průvodce',
     feed: 'Články',
@@ -502,7 +504,7 @@ export const Czech = {
     opening_article_failed_reason: 'Zdá se, že zařízení je offline, nebo nastavení momentálně neumožnuje článek otevřít. Offline verze článku také není dostupná.',
     force_open: 'Nuceně otevřít',
 };
-export const Japanese = {
+export const Japanese: Language = {
     code: 'ja',
     wizard: 'ウィザード',
     feed: 'フィード',
@@ -754,7 +756,7 @@ export const Japanese = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Italian = {
+export const Italian: Language = {
     code: 'it',
     wizard: 'Procedura guidata',
     feed: 'Articoli',
@@ -1006,7 +1008,7 @@ export const Italian = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Polish = {
+export const Polish: Language = {
     code: 'pl',
     wizard: 'Kreator',
     feed: 'Artykuły',
@@ -1258,7 +1260,7 @@ export const Polish = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const German = {
+export const German: Language = {
     code: 'de',
     wizard: 'Assistent',
     feed: 'Artikel',
@@ -1510,7 +1512,7 @@ export const German = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const French = {
+export const French: Language = {
     code: 'fr',
     wizard: 'Assistant',
     feed: 'Flux',
@@ -1762,7 +1764,7 @@ export const French = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const BrazilianPortuguese = {
+export const BrazilianPortuguese: Language = {
     code: 'pt_BR',
     wizard: 'Assistente',
     feed: 'Feed',
@@ -2014,7 +2016,7 @@ export const BrazilianPortuguese = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Persian = {
+export const Persian: Language = {
     code: 'fa',
     wizard: 'راه‌اندازی',
     feed: 'اخبار',
@@ -2266,7 +2268,8 @@ export const Persian = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Ukrainian = {
+
+export const Ukrainian: Language = {
     code: 'uk',
     wizard: 'Налаштування додатку',
     feed: 'Feed',
@@ -2333,6 +2336,8 @@ export const Ukrainian = {
     no_tags_description: 'Додайте тег щоб побачити його тут',
     no_feeds: 'Немає каналів',
     no_feeds_description: 'Додайте канал щоб побачити його тут',
+    new_to_rss: 'I am new to this',
+    have_backup: 'I have a backup',
     import: 'Імпортувати бекап',
     import_button: 'Імпорт',
     export: 'Експортувати бекап Nunti',
@@ -2373,12 +2378,16 @@ export const Ukrainian = {
     hide_feed: 'Сховати канал',
     wifi_only: 'Тільки Wi-Fi',
     wifi_only_description: 'Не завантажувати статті на мережевих з\'єднаннях',
+    offline_reading: 'Offline reading',
+    offline_reading_description: 'Download articles to be read when offline',
     hide_feed_description: 'Сховати статті з цього каналу',
     no_images_description: 'Завантажувати статті без картинок',
     browser_mode: 'Режим браузеру',
+    webpage_reader: 'Reader mode',
     legacy_webview: 'Integrated',
     webview: 'Webview',
     external_browser: 'Зовнішній',
+    reader_failed: 'Reader mode failed',
     theme: 'Тема',
     accent: 'Акцент',
     light: 'Світла тема',
@@ -2508,4 +2517,7 @@ export const Ukrainian = {
     backup_interval_description: 'Кожні %interval% днів',
     change_backup_interval_success: 'Період бекапів змінено',
     change_backup_interval_fail: 'Не вдалося змінити період бекапів',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };

@@ -73,8 +73,8 @@ function SettingsFeedDetails(props: ScreenProps) {
                             (feed.failedAttempts >= 5 ? props.lang.feed_status_error : props.lang.feed_status_warn)}</Text>
                     </View>
                     <Icon name={feed.failedAttempts == 0 ? 'check-circle' : (feed.failedAttempts >= 5 ? 'close-circle' : 'alert')}
-                        size={24} color={feed.failedAttempts == 0 ? props.theme.colors.secondary : (feed.failedAttempts >= 5 ? props.theme.colors.error :
-                            props.theme.colors.warn)} />
+                        size={24} color={feed.failedAttempts == 0 ? props.theme.accent.secondary : (feed.failedAttempts >= 5 ? props.theme.accent.error :
+                            props.theme.accent.warn)} />
                 </View>
             </Card>
             <Card mode={'contained'} style={Styles.card}>
@@ -83,7 +83,7 @@ function SettingsFeedDetails(props: ScreenProps) {
                     <Text variant="labelSmall">{feed.url}</Text>
                 </View>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
                     onPress={() => modalRef.current.showModal(() => <ChangeFeedNameModal feed={feed} parentLog={log.current} lang={props.lang} />)}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium">{props.lang.feed_name}</Text>
@@ -94,7 +94,7 @@ function SettingsFeedDetails(props: ScreenProps) {
 
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
                     onPress={() => changeNoImages()}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
@@ -105,7 +105,7 @@ function SettingsFeedDetails(props: ScreenProps) {
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState, false, undefined)}
+                    background={TouchableNativeFeedback.Ripple(props.theme.accent.pressedState, false, undefined)}
                     onPress={() => changeEnabled}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
