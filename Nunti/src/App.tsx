@@ -345,6 +345,7 @@ export default function App() {
         // override background colours when using black theme
         // otherwise identical to dark theme
         if (newTheme.themeName == 'black') {
+            newTheme.colors = {...newTheme.colors}; // copy needed so that we do not overwrite accent
             newTheme.colors.background = '#000000';
             newTheme.colors.surface = '#000000';
         }
@@ -360,9 +361,6 @@ export default function App() {
     }
 
     const setStatusBarColor = async (statusBarColor: string, darkTheme: boolean) => {
-        if (!prefsLoaded) // setting statusbar on startup is bugged, so we wait a while
-            await new Promise(r => setTimeout(r, 1000));
-
         if (darkTheme)
             StatusBar.setBarStyle('light-content');
         else
@@ -378,13 +376,13 @@ export default function App() {
         else if (accentName == 'material_you')
             accent = patchMaterialYouPalette(await MaterialYouModule.getMaterialYouPalette('light'), false);
         else
-            accent = isDarkTheme ? Accents[accentName].dark : Accents[accentName].light;
+            accent = isDarkTheme ? {...Accents[accentName].dark} : {...Accents[accentName].light};
 
         return accent;
     }
 
     const patchMaterialYouPalette = (accent: Accent, isDark: boolean) => {
-        accent.surfaceDisabled = Color(accent.surfaceVariant).alpha(0.12).toString();
+        accent.surfaceDisabled = Color(accent.onSurface).alpha(0.12).toString();
         accent.onSurfaceDisabled = Color(accent.onSurface).alpha(0.38).toString();
         accent.outlineVariant = isDark ? MD3DarkTheme.colors.outlineVariant : MD3LightTheme.colors.outlineVariant;
         accent.shadow = isDark ? MD3DarkTheme.colors.shadow : MD3LightTheme.colors.shadow;
@@ -401,12 +399,12 @@ export default function App() {
         };
 
         accent.inverseElevation = {
-            level0: Color(accent.primary).alpha(0.05).toString(),
-            level1: Color(accent.primary).alpha(0.08).toString(),
-            level2: Color(accent.primary).alpha(0.11).toString(),
-            level3: Color(accent.primary).alpha(0.12).toString(),
-            level4: Color(accent.primary).alpha(0.14).toString(),
-            level5: Color(accent.primary).alpha(0.15).toString(),
+            level0: Color(accent.inversePrimary).alpha(0.05).toString(),
+            level1: Color(accent.inversePrimary).alpha(0.08).toString(),
+            level2: Color(accent.inversePrimary).alpha(0.11).toString(),
+            level3: Color(accent.inversePrimary).alpha(0.12).toString(),
+            level4: Color(accent.inversePrimary).alpha(0.14).toString(),
+            level5: Color(accent.inversePrimary).alpha(0.15).toString(),
         };
         
         return accent;

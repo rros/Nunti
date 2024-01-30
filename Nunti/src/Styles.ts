@@ -128,7 +128,7 @@ export const Accents: AccentList = {
             negativeContainer: '#7e2c00',
             onNegativeContainer: '#ffdbcd',
 
-            surfaceDisabled: Color('#404943').alpha(0.12).toString(),
+            surfaceDisabled: Color('#e1e3df').alpha(0.12).toString(),
             onSurfaceDisabled: Color('#e1e3df').alpha(0.12).toString(),
             outlineVariant: MD3DarkTheme.colors.outlineVariant,
             shadow: MD3DarkTheme.colors.shadow,
