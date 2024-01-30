@@ -9,8 +9,7 @@
  *  as opposed to always rebuilding Log from scratch (prone to inconsistencies and more performance overhead)
  */
 
-const RNFS = require('react-native-fs');
-
+import * as RNFS from '@dr.pogodin/react-native-fs';
 export default class Log {
     public static isRelease = false;
     private contexts: string[] = [];
