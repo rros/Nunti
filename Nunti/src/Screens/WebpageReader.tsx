@@ -22,7 +22,7 @@ import { Backend } from '../Backend';
 import { ScreenProps } from '../Props';
 import Styles from '../Styles';
 
-function WebPageReader(props: ScreenProps) {
+function ReaderMode(props: ScreenProps) {
     const [loading, setLoading] = useState(true);
     const [articleTitle, setArticleTitle] = useState('');
     const [articleContent, setArticleContent] = useState({ html: '' });
@@ -65,7 +65,7 @@ function WebPageReader(props: ScreenProps) {
     }
 
     const openSettings = async () => {
-        props.navigation.navigate('settings', {
+        props.navigation.navigate('settings_handler', {
             source: props.route.params?.source,
         });
     }
@@ -102,4 +102,4 @@ function WebPageReader(props: ScreenProps) {
     );
 }
 
-export default withTheme(WebPageReader);
+export default withTheme(ReaderMode);

@@ -329,12 +329,12 @@ function ArticlesPage(props: Props) {
     const bannerDoAction = (action: string) => {
         switch (action) {
             case 'add_feeds':
-                props.navigation.navigate('settings', {
+                props.navigation.navigate('settings_handler', {
                     screen: 'feeds',
                 });
                 break;
             case 'goto_settings':
-                props.navigation.navigate('settings');
+                props.navigation.navigate('settings_handler');
                 break;
             case 'open_filter':
                 modalRef.current?.showModal(<FilterModalContent theme={props.theme}

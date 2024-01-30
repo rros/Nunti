@@ -27,7 +27,17 @@ import SettingsBackground from '../Screens/SettingsSubpages/SettingsBackground';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { LogProps, ScreenProps, LanguageList, ThemeName, AccentName, TopicName, LanguageCode, LanguageIndex } from '../Props';
-const NavigationTabs = createMaterialTopTabNavigator();
+
+type NavigationParamList = {
+    welcome: undefined,
+    language: undefined,
+    theming: undefined,
+    topics: undefined,
+    notifications: undefined,
+    learning: undefined,
+};
+
+const NavigationTabs = createMaterialTopTabNavigator<NavigationParamList>();
 
 interface WizardProps extends ScreenProps {
     languages: LanguageList,
@@ -56,27 +66,27 @@ class Wizard extends Component<WizardProps> {
                         );
                     }
                 }}>
-                <NavigationTabs.Screen name="Welcome">
+                <NavigationTabs.Screen name="welcome">
                     {props => <Step1Welcome {...props} parentLog={this.log}
                         lang={this.props.lang} theme={this.props.theme} />}
                 </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="Language">
+                <NavigationTabs.Screen name="language">
                     {props => <Step2Language {...props} lang={this.props.lang}
                         languages={this.props.languages} theme={this.props.theme} />}
                 </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="Theming">
+                <NavigationTabs.Screen name="theming">
                     {props => <Step3Theme {...props} lang={this.props.lang}
                         theme={this.props.theme} />}
                 </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="Topics">
+                <NavigationTabs.Screen name="topics">
                     {props => <Step4Topics {...props} lang={this.props.lang}
                         theme={this.props.theme} />}
                 </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="Notifications">
+                <NavigationTabs.Screen name="notifications">
                     {props => <Step5Notifications {...props} lang={this.props.lang}
                         theme={this.props.theme} />}
                 </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="Learning">
+                <NavigationTabs.Screen name="learning">
                     {props => <Step6Learning {...props} lang={this.props.lang}
                         theme={this.props.theme} />}
                 </NavigationTabs.Screen>
@@ -121,7 +131,7 @@ function Step1Welcome(props: ScreenProps & LogProps) {
     }
 
     const beginWizard = () => {
-        props.navigation.navigate('Language');
+        props.navigation.navigate('language');
     }
 
     return (

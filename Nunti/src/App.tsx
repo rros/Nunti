@@ -60,18 +60,18 @@ import {
 } from './Props';
 import Color from 'color';
 
-type RootStackParamList = {
+type NavigationParamList = {
     feed: { showFilterModal: boolean },
     bookmarks: { showFilterModal: boolean },
     history: { showFilterModal: boolean },
     wizard: undefined,
-    settings: undefined,
+    settings_handler: undefined,
     about: undefined,
-    legacyWebview: { source: string, url: string },
-    webpageReader: { source: string, url: string },
+    legacy_webview: { source: string, url: string },
+    reader_mode: { source: string, url: string },
 };
 
-const NavigationDrawer = createDrawerNavigator<RootStackParamList>();
+const NavigationDrawer = createDrawerNavigator<NavigationParamList>();
 const MaterialYouModule = NativeModules.MaterialYouModule;
 const NotificationsModule = NativeModules.Notifications;
 
@@ -154,7 +154,7 @@ export default function App() {
     });
 
     const appearanceSubscription = useRef<NativeEventSubscription>();
-    const drawerNavigationRef = React.useRef<NavigationContainerRef<RootStackParamList>>(null);
+    const drawerNavigationRef = React.useRef<NavigationContainerRef<NavigationParamList>>(null);
 
     // makes sure the modal gets hidden after the full animation has run
     useEffect(() => {
@@ -475,7 +475,7 @@ export default function App() {
             case 'legacy_webview':
                 hideModal();
                 drawerNavigationRef.current!.navigate({
-                    name: 'legacyWebview', params: {
+                    name: 'legacy_webview', params: {
                         url: url,
                         source: source!,
                     }
@@ -486,7 +486,7 @@ export default function App() {
                 break;
             case 'reader_mode':
                 drawerNavigationRef.current!.navigate({
-                    name: 'webpageReader', params: {
+                    name: 'reader_mode', params: {
                         url: url,
                         source: source!,
                     }
@@ -560,7 +560,7 @@ export default function App() {
                             {props => <ArticlesPageOptimisedWrapper {...props} source="history" buttonType="none"
                                 lang={language} screenType={screenType} />}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="settings" options={{ headerShown: false }}>
+                        <NavigationDrawer.Screen name="settings_handler" options={{ headerShown: false }}>
                             {props => <Settings {...props}
                                 lang={language} languages={Languages} screenType={screenType} />}
                         </NavigationDrawer.Screen>
@@ -573,14 +573,14 @@ export default function App() {
                         }}>
                             {props => <Wizard {...props} lang={language} languages={Languages} />}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="legacyWebview" options={{
+                        <NavigationDrawer.Screen name="legacy_webview" options={{
                             swipeEnabled: false,
                             unmountOnBlur: true, headerShown: false, drawerStyle:
                                 { width: screenType >= 2 ? 0 : undefined }
                         }}>
                             {props => <LegacyWebview {...props} lang={language} />}
                         </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="webpageReader" options={{
+                        <NavigationDrawer.Screen name="reader_mode" options={{
                             swipeEnabled: false,
                             unmountOnBlur: true, headerShown: false, drawerStyle:
                                 { width: screenType >= 2 ? 0 : undefined }

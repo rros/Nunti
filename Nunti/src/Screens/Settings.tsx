@@ -23,8 +23,18 @@ import Styles, { Accents } from '../Styles';
 import Switch from '../Components/Switch';
 import ModalRadioButton from '../Components/ModalRadioButton';
 
+type NavigationParamList = {
+    settings: undefined,
+    tags: undefined,
+    feeds: undefined,
+    feed_details: undefined,
+    background: undefined,
+    advanced: undefined,
+    learning: undefined,
+};
+
 import { NativeStackHeaderProps, createNativeStackNavigator } from '@react-navigation/native-stack';
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<NavigationParamList>();
 
 import SettingsTags from './SettingsSubpages/SettingsTags';
 import SettingsFeeds from './SettingsSubpages/SettingsFeeds';
