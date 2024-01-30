@@ -26,8 +26,8 @@ import { Tag } from '../../Backend/Tag';
 
 function SettingsFeedDetails(props: ScreenProps) {
     const [feed, _setFeed] = useState<Feed>(props.route.params?.feed);
-    const [noImages, setNoImages] = useState(feed['noImages']);
-    const [enabled, setEnabled] = useState(!feed['enabled']);
+    const [noImages, setNoImages] = useState(feed.noImages);
+    const [hidden, setHidden] = useState(!feed.enabled);
     const [tags, setTags] = useState([...feed.tags]);
     const log = useRef(logRef.current!.globalLog.current.context('SettingsFeedDetails'));
 
@@ -39,9 +39,9 @@ function SettingsFeedDetails(props: ScreenProps) {
         globalStateRef.current?.reloadFeed(true);
     }
 
-    const changeEnabled = async () => {
-        feed.enabled = !feed.enabled;
-        setEnabled(feed.enabled);
+    const changeHidden = async () => {
+        feed.enabled = hidden;
+        setHidden(!feed.enabled);
 
         await Feed.Save(feed);
         globalStateRef.current?.reloadFeed(true);
@@ -79,7 +79,7 @@ function SettingsFeedDetails(props: ScreenProps) {
             </Card>
             <Card mode={'contained'} style={Styles.card}>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{'URL'}</Text>
+                    <Text variant="titleMedium">{props.lang.url}</Text>
                     <Text variant="labelSmall">{feed.url}</Text>
                 </View>
                 <TouchableNativeFeedback
@@ -95,7 +95,7 @@ function SettingsFeedDetails(props: ScreenProps) {
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
-                    onPress={() => changeNoImages()}>
+                    onPress={changeNoImages}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
                             <Text variant="titleMedium">{props.lang.no_images}</Text>
@@ -106,13 +106,13 @@ function SettingsFeedDetails(props: ScreenProps) {
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
-                    onPress={() => changeEnabled}>
+                    onPress={changeHidden}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
                             <Text variant="titleMedium">{props.lang.hide_feed}</Text>
                             <Text variant="labelSmall">{props.lang.hide_feed_description}</Text>
                         </View>
-                        <Switch value={enabled} disabled={false} />
+                        <Switch value={hidden} disabled={false} />
                     </View>
                 </TouchableNativeFeedback>
             </Card>

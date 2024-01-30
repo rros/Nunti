@@ -188,4 +188,4 @@ function FeedRemoveModal(props: FeedRemoveModalProps) {
     );
 }
 
-export default withTheme(SettingsFeeds);
+export default withTheme(React.memo(SettingsFeeds));

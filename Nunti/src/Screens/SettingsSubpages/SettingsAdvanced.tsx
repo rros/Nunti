@@ -274,4 +274,4 @@ function ResetCacheModal(props: LangProps) {
     );
 }
 
-export default withTheme(SettingsAdvanced);
+export default withTheme(React.memo(SettingsAdvanced));

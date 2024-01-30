@@ -85,4 +85,4 @@ function About(props: ScreenProps) {
     );
 }
 
-export default withTheme(About);
+export default withTheme(React.memo(About));

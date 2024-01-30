@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, Component } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     Image,
     Platform,
@@ -43,56 +43,50 @@ interface WizardProps extends ScreenProps {
     languages: LanguageList,
 }
 
-class Wizard extends Component<WizardProps> {
-    private log = logRef.current!.globalLog.current.context('Wizard');
+function Wizard(props: WizardProps) {
+    const log = useRef(logRef.current!.globalLog.current.context('Wizard'));
 
-    constructor(props: WizardProps) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <NavigationTabs.Navigator tabBarPosition="bottom"
-                screenOptions={{
-                    tabBarStyle: { backgroundColor: this.props.theme.colors.surface, elevation: 0 },
-                    tabBarIndicatorStyle: { backgroundColor: 'transparent' },
-                    tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => {
-                        return (
-                            <View style={Styles.wizardTabContainer}>
-                                <Icon style={{ alignSelf: 'center' }} name={focused ? 'circle' : 'radiobox-blank'}
-                                    size={16} color={focused ? this.props.theme.colors.primary :
-                                        this.props.theme.colors.outline} />
-                            </View>
-                        );
-                    }
-                }}>
-                <NavigationTabs.Screen name="welcome">
-                    {props => <Step1Welcome {...props} parentLog={this.log}
-                        lang={this.props.lang} theme={this.props.theme} />}
-                </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="language">
-                    {props => <Step2Language {...props} lang={this.props.lang}
-                        languages={this.props.languages} theme={this.props.theme} />}
-                </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="theming">
-                    {props => <Step3Theme {...props} lang={this.props.lang}
-                        theme={this.props.theme} />}
-                </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="topics">
-                    {props => <Step4Topics {...props} lang={this.props.lang}
-                        theme={this.props.theme} />}
-                </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="notifications">
-                    {props => <Step5Notifications {...props} lang={this.props.lang}
-                        theme={this.props.theme} />}
-                </NavigationTabs.Screen>
-                <NavigationTabs.Screen name="learning">
-                    {props => <Step6Learning {...props} lang={this.props.lang}
-                        theme={this.props.theme} />}
-                </NavigationTabs.Screen>
-            </NavigationTabs.Navigator>
-        )
-    };
+    return (
+        <NavigationTabs.Navigator tabBarPosition="bottom"
+            screenOptions={{
+                tabBarStyle: { backgroundColor: props.theme.colors.surface, elevation: 0 },
+                tabBarIndicatorStyle: { backgroundColor: 'transparent' },
+                tabBarShowLabel: false, tabBarShowIcon: true, tabBarIcon: ({ focused }) => {
+                    return (
+                        <View style={Styles.wizardTabContainer}>
+                            <Icon style={{ alignSelf: 'center' }} name={focused ? 'circle' : 'radiobox-blank'}
+                                size={16} color={focused ? props.theme.colors.primary :
+                                    props.theme.colors.outline} />
+                        </View>
+                    );
+                }
+            }}>
+            <NavigationTabs.Screen name="welcome">
+                {_props => <Step1Welcome {..._props} parentLog={log.current}
+                    lang={props.lang} theme={props.theme} />}
+            </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="language">
+                {_props => <Step2Language {..._props} lang={props.lang}
+                    languages={props.languages} theme={props.theme} />}
+            </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="theming">
+                {_props => <Step3Theme {..._props} lang={props.lang}
+                    theme={props.theme} />}
+            </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="topics">
+                {_props => <Step4Topics {..._props} lang={props.lang}
+                    theme={props.theme} />}
+            </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="notifications">
+                {_props => <Step5Notifications {..._props} lang={props.lang}
+                    theme={props.theme} />}
+            </NavigationTabs.Screen>
+            <NavigationTabs.Screen name="learning">
+                {_props => <Step6Learning {..._props} lang={props.lang}
+                    theme={props.theme} />}
+            </NavigationTabs.Screen>
+        </NavigationTabs.Navigator>
+    )
 }
 
 function Step1Welcome(props: ScreenProps & LogProps) {
@@ -441,4 +435,4 @@ function Step6Learning(props: ScreenProps) {
     );
 }
 
-export default withTheme(Wizard);
+export default withTheme(React.memo(Wizard));

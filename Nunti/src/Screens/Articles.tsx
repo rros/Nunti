@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, Component } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import {
     View,
     Share,
@@ -40,38 +40,13 @@ import { Utils } from '../Backend/Utils';
 import { Storage } from '../Backend/Storage';
 import { Current } from '../Backend/Current';
 import Styles from '../Styles';
-import { LangProps, Route, ScreenProps, ScreenTypeProps, ThemeProps, WordIndex, ArticleSource, SortType, EventStateProps, ArticleSwipe, ButtonType } from '../Props';
+import { LangProps, Route, ScreenProps, ScreenTypeProps, ThemeProps, WordIndex, ArticleSource, SortType, ArticleSwipe, ButtonType } from '../Props';
 import { ArticlesFilter } from '../Backend/ArticlesFilter';
 import { Tag } from '../Backend/Tag';
 
 interface Props extends ScreenProps, ScreenTypeProps {
     source: ArticleSource,
     buttonType: ButtonType,
-}
-
-// use a class wrapper to stop rerenders caused by global snack/modal
-class ArticlesPageOptimisedWrapper extends Component<Props> {
-    constructor(props: Props) {
-        super(props);
-    }
-
-    shouldComponentUpdate(nextProps: Props, _: any) {
-        if (nextProps.theme.accentName != this.props.theme.accentName
-            || nextProps.theme.themeName != this.props.theme.themeName
-            || nextProps.theme.dark != this.props.theme.dark
-            || nextProps.lang.this_language != this.props.lang.this_language
-            || nextProps.screenType != this.props.screenType) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    render() {
-        return (
-            <ArticlesPage {...this.props} />
-        );
-    }
 }
 
 function ArticlesPage(props: Props) {
@@ -99,6 +74,21 @@ function ArticlesPage(props: Props) {
 
     const log = useRef(logRef.current!.globalLog.current.context('ArticlePage_' + props.route.name));
 
+    useLayoutEffect(() => {
+        props.navigation.setOptions({
+            rightFirstCallback: () => {
+                modalRef.current?.showModal(<FilterModalContent theme={theme.current}
+                    applyFilter={applyFilter} lang={lang.current}
+                    sourceFilter={sourceFilter.current} />);
+            },
+            rightSecondCallback: () => {
+                modalRef.current?.showModal(<RssModalContent theme={theme.current}
+                    applyFilter={applyFilter} lang={lang.current}
+                    sourceFilter={sourceFilter.current} />);
+            },
+        });
+    }, [props.navigation])
+
     // on component mount
     useEffect(() => {
         (async () => {
@@ -125,28 +115,8 @@ function ArticlesPage(props: Props) {
             setShowImages(!Backend.UserSettings.DisableImages);
         });
 
-        // show filter and rss modal on button press in appbar header
-        const onState = props.navigation.addListener('state', (parentState: EventStateProps) => {
-            parentState.data.state.routes.some(pickedRoute => {
-                if (pickedRoute.name == props.route.name && pickedRoute.params?.showFilterModal) {
-                    log.current.debug('Showing filter modal, appbar button pressed');
-                    props.navigation.setParams({ showFilterModal: false });
-                    modalRef.current?.showModal(<FilterModalContent theme={theme.current}
-                        applyFilter={applyFilter} lang={lang.current}
-                        sourceFilter={sourceFilter.current} />);
-                } else if (pickedRoute.name == props.route.name && pickedRoute.params?.showRssModal) {
-                    log.current.debug('Showing rss modal, appbar button pressed');
-                    props.navigation.setParams({ showRssModal: false });
-                    modalRef.current?.showModal(<RssModalContent theme={theme.current}
-                        applyFilter={applyFilter} lang={lang.current}
-                        sourceFilter={sourceFilter.current} />);
-                }
-            });
-        });
-
         return () => {
             onFocus();
-            onState();
         }
     }, []);
 
@@ -871,4 +841,4 @@ function ArticleCard(props: ArticleCardProps) {
     }
 }
 
-export default withTheme(ArticlesPageOptimisedWrapper);
+export default withTheme(React.memo(ArticlesPage));

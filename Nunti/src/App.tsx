@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 
 import {
-    Provider as PaperProvider,
     Appbar,
     Drawer,
     Portal,
@@ -22,6 +21,7 @@ import {
     Button,
     MD3DarkTheme,
     MD3LightTheme,
+    withTheme,
 } from 'react-native-paper';
 
 import Animated, {
@@ -37,7 +37,7 @@ import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 import Styles, { Accents } from './Styles';
 import { Languages } from './Locale';
 import Wizard from './Screens/Wizard';
-import ArticlesPageOptimisedWrapper from './Screens/Articles';
+import ArticlesPage from './Screens/Articles';
 import Settings from './Screens/Settings';
 import About from './Screens/About';
 import LegacyWebview from './Screens/LegacyWebview';
@@ -46,7 +46,7 @@ import Backend from './Backend';
 import { Utils } from './Backend/Utils';
 import Log from './Log';
 
-import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { DrawerContentComponentProps, DrawerHeaderProps, createDrawerNavigator } from '@react-navigation/drawer';
 
@@ -56,14 +56,15 @@ import { Background } from './Backend/Background';
 import { Storage } from './Backend/Storage';
 import {
     Accent, ScreenTypeProps, Theme, NavigationStateProps, AccentName, ThemeName,
-    Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef, LangProps, ThemeProps, WordIndex, LanguageCode, BrowserMode
+    Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef, LangProps,
+    ThemeProps, WordIndex, LanguageCode, BrowserMode, ScreenOptions
 } from './Props';
 import Color from 'color';
 
 type NavigationParamList = {
-    feed: { showFilterModal: boolean },
-    bookmarks: { showFilterModal: boolean },
-    history: { showFilterModal: boolean },
+    feed: undefined,
+    bookmarks: undefined,
+    history: undefined,
     wizard: undefined,
     settings_handler: undefined,
     about: undefined,
@@ -81,8 +82,11 @@ export const browserRef = React.createRef<BrowserRef>();
 export const globalStateRef = React.createRef<GlobalStateRef>();
 export const logRef = React.createRef<LogRef>();
 
-export default function App() {
-    const [theme, setTheme] = useState<Theme>({ dark: true, themeName: 'dark', accentName: 'default', colors: Accents.default.dark });
+interface AppProps extends ThemeProps {
+    setTheme: (theme: Theme) => void,
+}
+
+function App(props: AppProps) {
     const [language, setLanguage] = useState(Languages.en);
 
     const [snackVisible, setSnackVisible] = useState(false);
@@ -237,12 +241,12 @@ export default function App() {
 
         // disable back button if the user is in the wizard
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (modalAnim.value) {
+            if (modalRef.current?.modalVisible) {
                 hideModal();
                 return true;
             } else if (drawerNavigationRef.current!.getCurrentRoute()?.name != 'feed'
                 && !Backend.UserSettings.FirstLaunch) {
-                drawerNavigationRef.current!.navigate({ key: 'feed' });
+                drawerNavigationRef.current!.navigate({ name: 'feed', params: undefined});
                 return true;
             } else {
                 return false;
@@ -325,7 +329,7 @@ export default function App() {
         Backend.UserSettings.Accent = accentName;
         Backend.UserSettings.Save();
 
-        let newTheme: Theme = { dark: theme.dark, themeName: themeName, accentName: accentName, colors: theme.colors };
+        let newTheme: Theme = { dark: props.theme.dark, themeName: themeName, accentName: accentName, colors: props.theme.colors };
         if (themeName == 'system') {
             newTheme.dark = Appearance.getColorScheme() == 'light' ? false : true;
 
@@ -345,12 +349,12 @@ export default function App() {
         // override background colours when using black theme
         // otherwise identical to dark theme
         if (newTheme.themeName == 'black') {
-            newTheme.colors = {...newTheme.colors}; // copy needed so that we do not overwrite accent
+            newTheme.colors = { ...newTheme.colors }; // copy needed so that we do not overwrite accent
             newTheme.colors.background = '#000000';
             newTheme.colors.surface = '#000000';
         }
 
-        setTheme(newTheme);
+        props.setTheme(newTheme);
         forceUpdate(!forceValue)
 
         setStatusBarColor(newTheme.colors.surface, newTheme.dark);
@@ -376,7 +380,7 @@ export default function App() {
         else if (accentName == 'material_you')
             accent = patchMaterialYouPalette(await MaterialYouModule.getMaterialYouPalette('light'), false);
         else
-            accent = isDarkTheme ? {...Accents[accentName].dark} : {...Accents[accentName].light};
+            accent = isDarkTheme ? { ...Accents[accentName].dark } : { ...Accents[accentName].light };
 
         return accent;
     }
@@ -406,7 +410,7 @@ export default function App() {
             level4: Color(accent.inversePrimary).alpha(0.14).toString(),
             level5: Color(accent.inversePrimary).alpha(0.15).toString(),
         };
-        
+
         return accent;
     }
 
@@ -536,108 +540,105 @@ export default function App() {
         return null;
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-            <PaperProvider theme={theme}>
-                <NavigationContainer theme={theme as { dark: boolean, colors: any }} ref={drawerNavigationRef}
-                    onReady={() => RNBootSplash.hide({ fade: true })}>
-                    <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
-                        drawerContent={(props) => <CustomDrawer {...props} screenType={screenType}
-                            theme={theme} lang={language} />} backBehavior="none"
-                        screenOptions={{
-                            drawerType: screenType >= 2 ? 'permanent' : 'front', overlayColor: theme.colors.backdrop,
-                            header: (props) => <CustomHeader {...props} screenType={screenType}
-                                theme={theme} lang={language} />
-                        }}>
-                        <NavigationDrawer.Screen name="feed" initialParams={{ showFilterModal: false }}>
-                            {props => <ArticlesPageOptimisedWrapper {...props} source="feed" buttonType="rate"
-                                lang={language} screenType={screenType} />}
-                        </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="bookmarks" initialParams={{ showFilterModal: false }}>
-                            {props => <ArticlesPageOptimisedWrapper {...props} source="bookmarks" buttonType="delete"
-                                lang={language} screenType={screenType} />}
-                        </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="history" initialParams={{ showFilterModal: false }}>
-                            {props => <ArticlesPageOptimisedWrapper {...props} source="history" buttonType="none"
-                                lang={language} screenType={screenType} />}
-                        </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="settings_handler" options={{ headerShown: false }}>
-                            {props => <Settings {...props}
-                                lang={language} languages={Languages} screenType={screenType} />}
-                        </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="about">
-                            {props => <About {...props} lang={language} />}
-                        </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="wizard" options={{
-                            swipeEnabled: false,
-                            unmountOnBlur: true
-                        }}>
-                            {props => <Wizard {...props} lang={language} languages={Languages} />}
-                        </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="legacy_webview" options={{
-                            swipeEnabled: false,
-                            unmountOnBlur: true, headerShown: false, drawerStyle:
-                                { width: screenType >= 2 ? 0 : undefined }
-                        }}>
-                            {props => <LegacyWebview {...props} lang={language} />}
-                        </NavigationDrawer.Screen>
-                        <NavigationDrawer.Screen name="reader_mode" options={{
-                            swipeEnabled: false,
-                            unmountOnBlur: true, headerShown: false, drawerStyle:
-                                { width: screenType >= 2 ? 0 : undefined }
-                        }}>
-                            {props => <WebpageReader {...props} lang={language} />}
-                        </NavigationDrawer.Screen>
-                    </NavigationDrawer.Navigator>
-                </NavigationContainer>
-                <Portal>
-                    {modalVisible ? <View style={Styles.modal}>
-                        <TouchableWithoutFeedback onPress={hideModal}>
-                            <Animated.View style={[modalScrimAnimStyle, { backgroundColor: theme.colors.backdrop },
-                                StyleSheet.absoluteFill]}>
-                            </Animated.View>
-                        </TouchableWithoutFeedback>
-                        <View style={Styles.modalContentWrapper}>
-                            <Animated.View style={[{ backgroundColor: theme.colors.surface },
-                            Styles.modalContent, modalContentAnimStyle]}>
-                                <View style={[{
-                                    backgroundColor:
-                                        (theme.themeName == 'black' ? theme.colors.elevation.level0 :
-                                            theme.colors.elevation.level3), flexShrink: 1
-                                },
-                                ]}>{modalContent}
-                                </View>
-                            </Animated.View>
-                        </View>
-                    </View> : null}
-
-                    {snackVisible ? <View style={Styles.snackBarWrapper}>
-                        <Animated.View style={[Styles.snackBarBase, snackAnimStyle, { backgroundColor: theme.colors.inverseSurface }]}>
-                            <View style={[Styles.snackBar, { backgroundColor: theme.colors.inverseElevation.level2 }]}>
-                                <Text style={{ color: theme.colors.inverseOnSurface, flexShrink: 1, marginRight: 8 }}>{snackMessage}</Text>
-                                <Button textColor={theme.colors.inversePrimary}
-                                    onPress={() => { snackCallback.current(); hideSnack(); }}>{snackButtonLabel}</Button>
+        <>
+            <NavigationContainer theme={props.theme as { dark: boolean, colors: any }} ref={drawerNavigationRef}
+                onReady={() => RNBootSplash.hide({ fade: true })}>
+                <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
+                    drawerContent={(_props) => <CustomDrawer {..._props} screenType={screenType}
+                        theme={props.theme} lang={language} />} backBehavior="none"
+                    screenOptions={{
+                        drawerType: screenType >= 2 ? 'permanent' : 'front', overlayColor: props.theme.colors.backdrop,
+                        header: (_props) => <CustomHeader {..._props} screenType={screenType}
+                            theme={props.theme} lang={language} />
+                    }}>
+                    <NavigationDrawer.Screen name="feed">
+                        {props => <ArticlesPage {...props} source="feed" buttonType="rate"
+                            lang={language} screenType={screenType} />}
+                    </NavigationDrawer.Screen>
+                    <NavigationDrawer.Screen name="bookmarks">
+                        {props => <ArticlesPage {...props} source="bookmarks" buttonType="delete"
+                            lang={language} screenType={screenType} />}
+                    </NavigationDrawer.Screen>
+                    <NavigationDrawer.Screen name="history">
+                        {props => <ArticlesPage {...props} source="history" buttonType="none"
+                            lang={language} screenType={screenType} />}
+                    </NavigationDrawer.Screen>
+                    <NavigationDrawer.Screen name="settings_handler" options={{ headerShown: false }}>
+                        {props => <Settings {...props}
+                            lang={language} languages={Languages} screenType={screenType} />}
+                    </NavigationDrawer.Screen>
+                    <NavigationDrawer.Screen name="about">
+                        {props => <About {...props} lang={language} />}
+                    </NavigationDrawer.Screen>
+                    <NavigationDrawer.Screen name="wizard" options={{
+                        swipeEnabled: false,
+                        unmountOnBlur: true
+                    }}>
+                        {props => <Wizard {...props} lang={language} languages={Languages} />}
+                    </NavigationDrawer.Screen>
+                    <NavigationDrawer.Screen name="legacy_webview" options={{
+                        swipeEnabled: false,
+                        unmountOnBlur: true, headerShown: false, drawerStyle:
+                            { width: screenType >= 2 ? 0 : undefined }
+                    }}>
+                        {props => <LegacyWebview {...props} lang={language} />}
+                    </NavigationDrawer.Screen>
+                    <NavigationDrawer.Screen name="reader_mode" options={{
+                        swipeEnabled: false,
+                        unmountOnBlur: true, headerShown: false, drawerStyle:
+                            { width: screenType >= 2 ? 0 : undefined }
+                    }}>
+                        {props => <WebpageReader {...props} lang={language} />}
+                    </NavigationDrawer.Screen>
+                </NavigationDrawer.Navigator>
+            </NavigationContainer>
+            <Portal>
+                {modalVisible ? <View style={Styles.modal}>
+                    <TouchableWithoutFeedback onPress={hideModal}>
+                        <Animated.View style={[modalScrimAnimStyle, { backgroundColor: props.theme.colors.backdrop },
+                            StyleSheet.absoluteFill]}>
+                        </Animated.View>
+                    </TouchableWithoutFeedback>
+                    <View style={Styles.modalContentWrapper}>
+                        <Animated.View style={[{ backgroundColor: props.theme.colors.surface },
+                        Styles.modalContent, modalContentAnimStyle]}>
+                            <View style={[{
+                                backgroundColor:
+                                    (props.theme.themeName == 'black' ? props.theme.colors.elevation.level0 :
+                                        props.theme.colors.elevation.level3), flexShrink: 1
+                            },
+                            ]}>{modalContent}
                             </View>
                         </Animated.View>
-                    </View> : null}
-                </Portal>
-            </PaperProvider>
-        </GestureHandlerRootView>
+                    </View>
+                </View> : null}
+
+                {snackVisible ? <View style={Styles.snackBarWrapper}>
+                    <Animated.View style={[Styles.snackBarBase, snackAnimStyle, { backgroundColor: props.theme.colors.inverseSurface }]}>
+                        <View style={[Styles.snackBar, { backgroundColor: props.theme.colors.inverseElevation.level2 }]}>
+                            <Text style={{ color: props.theme.colors.inverseOnSurface, flexShrink: 1, marginRight: 8 }}>{snackMessage}</Text>
+                            <Button textColor={props.theme.colors.inversePrimary}
+                                onPress={() => { snackCallback.current(); hideSnack(); }}>{snackButtonLabel}</Button>
+                        </View>
+                    </Animated.View>
+                </View> : null}
+            </Portal>
+        </>
     );
 }
 
+interface CustomHeaderProps extends ScreenTypeProps, LangProps, ThemeProps, DrawerHeaderProps {
+    options: ScreenOptions,
+}
 
-function CustomHeader(props: DrawerHeaderProps & ScreenTypeProps & LangProps & ThemeProps) {
-    const isArticlePage: boolean = (props.route.name == 'feed'
-        || props.route.name == 'bookmarks'
-        || props.route.name == 'history');
-
+function CustomHeader(props: CustomHeaderProps) {
     return (
         <Appbar.Header mode={'small'} elevated={false}>
             {(props.route.name != 'wizard' && props.screenType <= 1) ?
                 <Appbar.Action icon="menu" onPress={() => { props.navigation.openDrawer(); }} /> : null}
             <Appbar.Content title={props.lang[props.route.name as WordIndex]} />
-            {isArticlePage ? <Appbar.Action icon="rss" onPress={() => props.navigation.setParams({ showRssModal: true })} /> : null}
-            {isArticlePage ? <Appbar.Action icon="filter-variant" onPress={() => props.navigation.setParams({ showFilterModal: true })} /> : null}
+            {props.options.rightFirstCallback ? <Appbar.Action icon="rss" onPress={props.options.rightFirstCallback} /> : null}
+            {props.options.rightSecondCallback !== undefined ? <Appbar.Action icon="filter-variant" onPress={props.options.rightSecondCallback} /> : null}
         </Appbar.Header>
     );
 }
@@ -734,3 +735,5 @@ function CustomDrawer(props: DrawerContentComponentProps & ScreenTypeProps & Nav
         </View>
     );
 }
+
+export default withTheme(App);

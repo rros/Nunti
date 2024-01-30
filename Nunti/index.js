@@ -4,7 +4,7 @@
 
 import 'react-native-gesture-handler';
 import {AppRegistry} from 'react-native';
-import App from './src/App';
+import AppWrapper from './src/AppWrapper';
 import {name as appName} from './app.json';
 
 import Log from './src/Log';
@@ -24,7 +24,7 @@ if (!__DEV__) {
     Log.isRelease = true;
     }
 
-AppRegistry.registerComponent(appName, () => App);
+AppRegistry.registerComponent(appName, () => AppWrapper);
 
 import BackgroundFetch from './src/BackgroundFetch';
 import { Background } from './src/Backend/Background';

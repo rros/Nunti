@@ -65,4 +65,4 @@ function SettingsLearning(props: ScreenProps) {
     );
 }
 
-export default withTheme(SettingsLearning);
+export default withTheme(React.memo(SettingsLearning));

@@ -19,4 +19,4 @@ function LoadingScreenComponent(props: ThemeProps) {
     );
 }
 
-export default withTheme(LoadingScreenComponent);
+export default withTheme(React.memo(LoadingScreenComponent));

@@ -4,6 +4,7 @@ import { Feed } from "./Backend/Feed";
 import { English } from "./Locale";
 import { MD3Colors } from "react-native-paper/lib/typescript/types";
 import { MutableRefObject } from "react";
+import { DrawerNavigationOptions } from "@react-navigation/drawer";
 
 export type ArticleSource = 'feed' | 'bookmarks' | 'history';
 export type SortType = 'learning' | 'date';
@@ -98,6 +99,10 @@ export type TopicList = { [id in TopicName]: Topic }
 export type BrowserMode = Extract<WordIndex, 'webview' | 'legacy_webview' | 'reader_mode' | 'external_browser'>;
 
 export type Route = RouteProp<any, string>;
+export type ScreenOptions = {
+    rightFirstCallback?: () => void,
+    rightSecondCallback?: () => void,
+} & DrawerNavigationOptions;
 export type NavigationState = {
     index: number,
     routes: Route[],
@@ -133,6 +138,7 @@ export interface ScreenProps extends ThemeProps, LangProps {
     route: Route,
     navigation: {
         navigate: (target: string, params?: NavigationParams) => void,
+        setOptions: (options: ScreenOptions) => void,
         pop: () => void,
         openDrawer: () => void,
         addListener: (type: string, fn: (param?: any) => void) => () => void,

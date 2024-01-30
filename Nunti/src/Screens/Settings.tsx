@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect, Component } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Platform,
+    BackHandler,
 } from 'react-native';
 
 import {
@@ -53,63 +54,61 @@ interface Props extends ScreenProps, ScreenTypeProps {
     languages: LanguageList,
 }
 
-// use a class wrapper to stop rerenders caused by global snack/modal
-class Settings extends Component<Props> {
-    constructor(props: Props) {
-        super(props);
-    }
+function Settings(props: Props) {
+    useEffect(() => {
+            const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+                if(modalRef.current?.modalVisible) {
+                    modalRef.current?.hideModal();
+                    return true;
+                } else {
+                    return false;
+                }
+    
+            });
 
-    shouldComponentUpdate(nextProps: Props, _: any) {
-        if (nextProps.theme.accentName != this.props.theme.accentName
-            || nextProps.theme.themeName != this.props.theme.themeName
-            || nextProps.theme.dark != this.props.theme.dark
-            || nextProps.lang.this_language != this.props.lang.this_language
-            || nextProps.screenType != this.props.screenType) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+            return () => {
+                backHandler.remove();
 
-    render() {
-        return (
-            <Stack.Navigator
-                screenOptions={{
-                    header: (props) => <CustomHeader {...props} lang={this.props.lang}
-                        parentNavigation={this.props.navigation} screenType={this.props.screenType} />, animation: 'fade'
-                    /* animation slide in from right is too laggy and the default one is very very weird */
-                }}>
-                <Stack.Screen name="settings">
-                    {props => <SettingsMain {...props} lang={this.props.lang}
-                        languages={this.props.languages} theme={this.props.theme} />}
-                </Stack.Screen>
-                <Stack.Screen name="tags">
-                    {props => <SettingsTags {...props}
-                        lang={this.props.lang} />}
-                </Stack.Screen>
-                <Stack.Screen name="feeds">
-                    {props => <SettingsFeeds {...props}
-                        lang={this.props.lang} />}
-                </Stack.Screen>
-                <Stack.Screen name="feed_details">
-                    {props => <SettingsFeedDetails {...props}
-                        lang={this.props.lang} />}
-                </Stack.Screen>
-                <Stack.Screen name="background">
-                    {props => <SettingsBackground {...props}
-                        lang={this.props.lang} />}
-                </Stack.Screen>
-                <Stack.Screen name="advanced">
-                    {props => <SettingsAdvanced {...props}
-                        lang={this.props.lang} />}
-                </Stack.Screen>
-                <Stack.Screen name="learning">
-                    {props => <SettingsLearning {...props}
-                        lang={this.props.lang} />}
-                </Stack.Screen>
-            </Stack.Navigator>
-        );
-    }
+            }
+    }, []);
+
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                header: (_props) => <CustomHeader {..._props} lang={props.lang}
+                    parentNavigation={props.navigation} screenType={props.screenType} />, animation: 'fade'
+                /* animation slide in from right is too laggy and the default one is very very weird */
+            }}>
+            <Stack.Screen name="settings">
+                {_props => <SettingsMain {..._props} lang={props.lang}
+                    languages={props.languages} theme={props.theme} />}
+            </Stack.Screen>
+            <Stack.Screen name="tags">
+                {_props => <SettingsTags {..._props}
+                    lang={props.lang} />}
+            </Stack.Screen>
+            <Stack.Screen name="feeds">
+                {_props => <SettingsFeeds {..._props}
+                    lang={props.lang} />}
+            </Stack.Screen>
+            <Stack.Screen name="feed_details">
+                {_props => <SettingsFeedDetails {..._props}
+                    lang={props.lang} />}
+            </Stack.Screen>
+            <Stack.Screen name="background">
+                {_props => <SettingsBackground {..._props}
+                    lang={props.lang} />}
+            </Stack.Screen>
+            <Stack.Screen name="advanced">
+                {_props => <SettingsAdvanced {..._props}
+                    lang={props.lang} />}
+            </Stack.Screen>
+            <Stack.Screen name="learning">
+                {_props => <SettingsLearning {..._props}
+                    lang={props.lang} />}
+            </Stack.Screen>
+        </Stack.Navigator>
+    );
 }
 
 interface CustomHeaderProps extends NativeStackHeaderProps, ScreenTypeProps, LangProps {
@@ -148,7 +147,6 @@ function SettingsMain(props: SettingsMainProps) {
     const [learningStatus, setLearningStatus] = useState<LearningStatus>();
     const log = useRef<Log>(logRef.current!.globalLog.current.context('Settings'));
 
-    // on component mount
     useEffect(() => {
         const onFocus = props.navigation.addListener('focus', () => {
             (async () => {
@@ -663,4 +661,4 @@ function ResetDataModal(props: ThemeProps & LangProps) {
     );
 }
 
-export default withTheme(Settings);
+export default withTheme(React.memo(Settings));

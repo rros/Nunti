@@ -182,4 +182,4 @@ function TagRemoveModal(props: TagRemoveModalProps) {
     );
 }
 
-export default withTheme(SettingsTags);
+export default withTheme(React.memo(SettingsTags));

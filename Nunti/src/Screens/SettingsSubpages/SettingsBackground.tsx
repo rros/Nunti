@@ -266,4 +266,4 @@ function ChangeIntervalModal(props: ChangeIntervalModalProps) {
     );
 }
 
-export default withTheme(SettingsBackground);
+export default withTheme(React.memo(SettingsBackground));
