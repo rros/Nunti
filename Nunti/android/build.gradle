@@ -33,14 +33,15 @@ allprojects {
 }
 
 subprojects {
-    afterEvaluate {
+    beforeEvaluate {
         project ->
             if (project.hasProperty("android")) {
                 android {
                     buildToolsVersion = "34.0.0"
                     compileSdkVersion = 34
                     
-                    if (namespace == null) {
+                    def agpVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0].toInteger()
+                    if (namespace == null && agpVersion >= 7) {
                         namespace project.group
                     }
                 }

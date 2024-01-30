@@ -3,22 +3,24 @@ import Log from '../Log';
 import { Article } from './Article';
 import { Background } from './Background';
 import { UserSettings } from './UserSettings';
+import Store from 'react-native-fs-store';
 import { Utils } from './Utils';
 import { Current } from './Current';
 import { OfflineArticle } from './OfflineCache';
+const FSStore = new Store('store1');
 
 export class Storage {
     public static LastRemovedBookmark: Article | null = null;
     public static DB_VERSION = '3.1';
     public static DbLocked = false; //prevents running multiple CheckDB at the same time
-    public static FSStore = AsyncStorage;
+    public static FSStore = FSStore;
     private static log = Log.BE.context('Storage');
 
     /* Resets cache */
     public static async ResetCache(): Promise<void> {
         this.log.context('ResetCache').info('Resetting cache..');
-        await AsyncStorage.setItem('cache', JSON.stringify({'timestamp': 0, 'articles': []}));
-        await AsyncStorage.setItem('offline-cache', JSON.stringify({}));
+        await FSStore.setItem('cache', JSON.stringify({'timestamp': 0, 'articles': []}));
+        await FSStore.setItem('offline-cache', JSON.stringify({}));
     }
     /* Resets all data in the app storage. */
     public static async ResetAllData(): Promise<void> {
@@ -107,11 +109,11 @@ export class Storage {
     public static async GetArticleCache(): Promise<{timestamp: number | string, articles: Article[]}> {
         const log = this.log.context('GetArticleCache');
         const startTime = Date.now();
-        let cache = await AsyncStorage.getItem('cache');
+        let cache = await FSStore.getItem('cache');
         if (cache == null) {
             log.debug('Cache is null, initializing it.');
             cache = {'timestamp': 0, 'articles': []};
-            await AsyncStorage.setItem('cache',JSON.stringify(cache));
+            await FSStore.setItem('cache',JSON.stringify(cache));
         } else {
             cache = JSON.parse(cache);
         }
@@ -121,19 +123,19 @@ export class Storage {
         return cache;
     }
     public static async ClearOfflineCacheAsync(): Promise<void> {
-        await AsyncStorage.setItem('offline-cache', '{}');
+        await FSStore.setItem('offline-cache', '{}');
     }
     public static async SetOfflineCacheAsync(arts: {[url: string]: OfflineArticle}): Promise<void> {
-        await AsyncStorage.setItem('offline-cache', JSON.stringify(arts));
+        await FSStore.setItem('offline-cache', JSON.stringify(arts));
     }
     public static async GetOfflineCacheAsync(): Promise<{[url: string]: OfflineArticle}> {
         const log = this.log.context('GetOfflineCache');
         const startTime = Date.now();
-        let cache = await AsyncStorage.getItem('offline-cache');
+        let cache = await FSStore.getItem('offline-cache');
         if (cache == null) {
             log.debug('Cache is null, initializing it.');
             cache = {};
-            await AsyncStorage.setItem('cache',JSON.stringify(cache));
+            await FSStore.setItem('cache',JSON.stringify(cache));
         } else {
             cache = JSON.parse(cache);
         }
