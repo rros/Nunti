@@ -502,7 +502,7 @@ function FilterModalContent(props: FilterModalProps) {
                         <View style={[Styles.settingsModalButton, Styles.chipContainer]}>
                             {Backend.UserSettings.Tags.map((tag) => {
                                 return (
-                                    <Chip onPress={() => tagClick(tag)}
+                                    <Chip onPress={() => tagClick(tag)} key={tag.name}
                                         selected={tags.some(pickedTag => pickedTag.name == tag.name)} style={Styles.chip}>{tag.name}</Chip>
                                 );
                             })}
@@ -582,7 +582,7 @@ function RssModalContent(props: FilterModalProps) {
 
                             {Backend.UserSettings.FeedList.map((feed) => {
                                 return (
-                                    <TouchableNativeFeedback
+                                    <TouchableNativeFeedback key={feed.url}
                                         background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                                         onPress={() => changeSelectedFeeds(feed.url)}>
                                         <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>

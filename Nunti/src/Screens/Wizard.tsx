@@ -188,7 +188,7 @@ function Step2Language(props: WizardProps) {
 
                     {Object.keys(props.languages).map((language) => {
                         return (
-                            <TouchableNativeFeedback
+                            <TouchableNativeFeedback key={language}
                                 background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                                 onPress={() => changeLanguage(props.languages[language as LanguageIndex].code as LanguageCode)}>
                                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
@@ -278,7 +278,7 @@ function Step3Theme(props: ScreenProps) {
                 <RadioButton.Group value={accent} onValueChange={(_) => { }}>
                     {Object.keys(Accents).map((accentName) => {
                         return (
-                            <TouchableNativeFeedback
+                            <TouchableNativeFeedback key={accentName}
                                 background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                                 onPress={() => changeAccent(accentName as AccentName)}>
                                 <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
@@ -354,7 +354,7 @@ function Step4Topics(props: ScreenProps) {
                     }
 
                     return (
-                        <TouchableNativeFeedback
+                        <TouchableNativeFeedback key={topic.name}
                             background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                             onPress={() => changeDefaultTopics(topic)}>
                             <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
@@ -378,7 +378,7 @@ function Step4Topics(props: ScreenProps) {
                     }
 
                     return (
-                        <TouchableNativeFeedback
+                        <TouchableNativeFeedback key={topic.name}
                             background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                             onPress={() => changeDefaultTopics(topic)}>
                             <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>

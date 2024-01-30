@@ -472,7 +472,7 @@ function LanguageModal(props: LanguageModalProps) {
                             changeValue={newValue => changeLanguage(newValue as LanguageCode)} disabled={false} />
                         {Object.keys(props.languages).map((language) => {
                             return (
-                                <ModalRadioButton lang={_lang} theme={props.theme} value={language as LanguageCode}
+                                <ModalRadioButton key={language} lang={_lang} theme={props.theme} value={language as LanguageCode}
                                     changeValue={newValue => changeLanguage(newValue as LanguageCode)} disabled={false} />
                             );
                         })}
@@ -602,8 +602,8 @@ function AccentModal(props: AccentModalProps) {
                     <RadioButton.Group value={selectedAccent} onValueChange={(_) => { }}>
                         {Object.keys(Accents).map((accentName) => {
                             return (
-                                <ModalRadioButton lang={props.lang} theme={_theme} value={accentName as AccentName} disabled={false}
-                                    changeValue={newValue => changeAccent(newValue as AccentName)} />
+                                <ModalRadioButton key={accentName} lang={props.lang} theme={_theme} value={accentName as AccentName}
+                                    disabled={false} changeValue={newValue => changeAccent(newValue as AccentName)} />
                             );
                         })}
                         <ModalRadioButton lang={props.lang} theme={_theme} value={'material_you'}

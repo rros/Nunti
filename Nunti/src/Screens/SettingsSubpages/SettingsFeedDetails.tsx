@@ -122,7 +122,7 @@ function SettingsFeedDetails(props: ScreenProps) {
                     <View style={[Styles.settingsButton, Styles.chipContainer]}>
                         {Backend.UserSettings.Tags.map((tag) => {
                             return (
-                                <Chip onPress={() => changeFeedTag(tag)}
+                                <Chip onPress={() => changeFeedTag(tag)} key={tag.name}
                                     selected={feed.tags.some(pickedTag => pickedTag.name == tag.name)}
                                     style={Styles.chip}>{tag.name}</Chip>
                             );
