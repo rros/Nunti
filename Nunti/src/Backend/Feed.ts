@@ -21,10 +21,15 @@ export class Feed {
     constructor(url: string) {
         this.url = url;
         const r = url.match(/^(?:https?:\/\/)?(?:www\.)?(?:rss\.)?([^/]+\.[^/]+)(?:\/|$)/i);
-        if (r && r.length > 1)
+        if (r && r.length > 1) {
             this.name = r[1];
-        else
+            // remove everything before @ from the displayed name, sometimes contain username/password. see issue #102
+            if (this.name.indexOf('@') >= 0) {
+                this.name = this.name.slice(this.name.indexOf('@') + 1);
+            }
+        } else
             throw new Error('invalid url');
+        
         if (this.url.indexOf('http') != 0)
             this.url = 'http://' + this.url;
     }
