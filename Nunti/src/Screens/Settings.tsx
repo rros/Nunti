@@ -46,7 +46,7 @@ import SettingsLearning from './SettingsSubpages/SettingsLearning';
 import { Backup } from '../Backend/Backup';
 import {
     LangProps, ScreenProps, ScreenTypeProps, ThemeProps, LanguageList, WordIndex,
-    BrowserMode, ThemeName, AccentName, LanguageCode, LearningStatus
+    BrowserMode, ThemeName, AccentName, LanguageCode, LearningStatus, Navigation
 } from '../Props';
 import Log from '../Log';
 
@@ -56,27 +56,26 @@ interface Props extends ScreenProps, ScreenTypeProps {
 
 function Settings(props: Props) {
     useEffect(() => {
-            const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-                if(modalRef.current?.modalVisible) {
-                    modalRef.current?.hideModal();
-                    return true;
-                } else {
-                    return false;
-                }
-    
-            });
-
-            return () => {
-                backHandler.remove();
-
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+            if (modalRef.current?.modalVisible) {
+                modalRef.current?.hideModal();
+                return true;
+            } else {
+                return false;
             }
+        });
+
+        return () => {
+            backHandler.remove();
+
+        }
     }, []);
 
     return (
         <Stack.Navigator
             screenOptions={{
                 header: (_props) => <CustomHeader {..._props} lang={props.lang}
-                    parentNavigation={props.navigation} screenType={props.screenType} />, animation: 'fade'
+                    screenType={props.screenType} />, animation: 'fade'
                 /* animation slide in from right is too laggy and the default one is very very weird */
             }}>
             <Stack.Screen name="settings">
@@ -111,18 +110,12 @@ function Settings(props: Props) {
     );
 }
 
-interface CustomHeaderProps extends NativeStackHeaderProps, ScreenTypeProps, LangProps {
-    parentNavigation: {
-        openDrawer: () => void,
-    }
-}
-
-function CustomHeader(props: CustomHeaderProps) {
+function CustomHeader(props: NativeStackHeaderProps & ScreenTypeProps & LangProps) {
     return (
         <Appbar.Header mode={'small'} elevated={false}>
             {(props.route.name == 'settings' && props.screenType <= 1) ?
-                <Appbar.Action icon="menu" onPress={() => { props.parentNavigation.openDrawer(); }} /> : null}
-            {props.route.name != 'settings' ? <Appbar.BackAction onPress={() => { props.navigation.pop(); }} /> : null}
+                <Appbar.Action icon="menu" onPress={() => { props.navigation.getParent<Navigation>()!.openDrawer(); }} /> : null}
+            {props.route.name != 'settings' ? <Appbar.BackAction onPress={props.navigation.goBack} /> : null}
             <Appbar.Content title={props.lang[props.route.name as WordIndex]} />
         </Appbar.Header>
     );
@@ -465,7 +458,7 @@ function LanguageModal(props: LanguageModalProps) {
                 borderBottomColor: props.theme.colors.outline
             }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    <RadioButton.Group value={selectedLang} onValueChange={(_) => { }}>
+                    <RadioButton.Group value={selectedLang} onValueChange={(value) => changeLanguage(value as LanguageCode)}>
                         <ModalRadioButton lang={_lang} theme={props.theme} value={'system'}
                             changeValue={newValue => changeLanguage(newValue as LanguageCode)} disabled={false} />
                         {Object.keys(props.languages).map((language) => {
@@ -509,7 +502,7 @@ function BrowserModeModal(props: BrowserModeModalProps) {
                 borderBottomColor: props.theme.colors.outline
             }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    <RadioButton.Group value={browserMode} onValueChange={(_) => { }}>
+                    <RadioButton.Group value={browserMode} onValueChange={(value) => changeBrowserMode(value as BrowserMode)}>
                         <ModalRadioButton lang={props.lang} theme={props.theme} value={'reader_mode'}
                             changeValue={newValue => changeBrowserMode(newValue as BrowserMode)} disabled={false} />
                         <ModalRadioButton lang={props.lang} theme={props.theme} value={'legacy_webview'}
@@ -553,7 +546,7 @@ function ThemeModal(props: ThemeModalProps) {
                 borderBottomColor: _theme.colors.outline
             }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    <RadioButton.Group value={selectedTheme} onValueChange={(_) => { }}>
+                    <RadioButton.Group value={selectedTheme} onValueChange={(value) => changeTheme(value as ThemeName)}>
                         <ModalRadioButton lang={props.lang} theme={_theme} value={'system'}
                             changeValue={newValue => changeTheme(newValue as ThemeName)} disabled={false} />
                         <ModalRadioButton lang={props.lang} theme={_theme} value={'light'}
@@ -597,7 +590,7 @@ function AccentModal(props: AccentModalProps) {
                 borderBottomColor: _theme.colors.outline
             }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    <RadioButton.Group value={selectedAccent} onValueChange={(_) => { }}>
+                    <RadioButton.Group value={selectedAccent} onValueChange={(value) => changeAccent(value as AccentName)}>
                         {Object.keys(Accents).map((accentName) => {
                             return (
                                 <ModalRadioButton key={accentName} lang={props.lang} theme={_theme} value={accentName as AccentName}

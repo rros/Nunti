@@ -54,4 +54,4 @@ function EmptyScreenComponent(props: Props) {
     );
 }
 
-export default withTheme(EmptyScreenComponent);
+export default withTheme(React.memo(EmptyScreenComponent));

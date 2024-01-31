@@ -36,4 +36,4 @@ function ModalRadioButton(props: Props) {
     );
 }
 
-export default withTheme(ModalRadioButton);
+export default withTheme(React.memo(ModalRadioButton));

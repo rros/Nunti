@@ -168,7 +168,7 @@ function Step2Language(props: WizardProps) {
             <Text variant="labelLarge" style={[Styles.settingsSectionTitle, { color: props.theme.colors.onSurfaceVariant }]}>
                 {props.lang.language}</Text>
             <Card mode={'contained'} style={Styles.card}>
-                <RadioButton.Group value={selectedLang} onValueChange={(_) => { }}>
+                <RadioButton.Group value={selectedLang} onValueChange={(value) => changeLanguage(value as LanguageCode)}>
                     <TouchableNativeFeedback
                         background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                         onPress={() => changeLanguage('system')}>
@@ -221,7 +221,7 @@ function Step3Theme(props: ScreenProps) {
             <Text variant="labelLarge" style={[Styles.settingsSectionTitle, { color: props.theme.colors.onSurfaceVariant }]}>
                 {props.lang.theme}</Text>
             <Card mode={'contained'} style={Styles.card}>
-                <RadioButton.Group value={theme} onValueChange={(_) => { }}>
+                <RadioButton.Group value={theme} onValueChange={(value) => changeTheme(value as ThemeName)}>
                     <TouchableNativeFeedback
                         background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                         onPress={() => changeTheme('system')}>
@@ -269,7 +269,7 @@ function Step3Theme(props: ScreenProps) {
             { color: props.theme.colors.onSurfaceVariant }]}>
                 {props.lang.accent}</Text>
             <Card mode={'contained'} style={Styles.card}>
-                <RadioButton.Group value={accent} onValueChange={(_) => { }}>
+                <RadioButton.Group value={accent} onValueChange={(value) => changeAccent(value as AccentName)}>
                     {Object.keys(Accents).map((accentName) => {
                         return (
                             <TouchableNativeFeedback key={accentName}

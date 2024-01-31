@@ -1,5 +1,3 @@
-<script src="http://localhost:8097"></script>
-
 import * as React from 'react';
 import { PaperProvider } from 'react-native-paper';
 import App from './App';

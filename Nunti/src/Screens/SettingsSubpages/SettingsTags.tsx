@@ -26,12 +26,12 @@ import { LangProps, LogProps, ScreenProps } from '../../Props';
 import { useAnimatedRef } from 'react-native-reanimated';
 
 function SettingsTags(props: ScreenProps) {
-    const [tags, setTags] = useState(Backend.UserSettings.Tags);
+    const [tags, setTags] = useState<Tag[]>([...Backend.UserSettings.Tags]);
     const flatListRef = useAnimatedRef<FlatList>();
     const log = useRef(logRef.current!.globalLog.current.context('SettingsTags'));
 
-    const changeTags = (newTags: Tag[], scrollToEnd: boolean = false) => {
-        setTags(newTags);
+    const updateTags = (scrollToEnd: boolean = false) => {
+        setTags([...Backend.UserSettings.Tags]);
 
         if (scrollToEnd) {
             flatListRef.current!.scrollToEnd();
@@ -53,7 +53,7 @@ function SettingsTags(props: ScreenProps) {
                     <TouchableNativeFeedback
                         background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                         onPress={() => modalRef.current?.showModal(<TagRemoveModal lang={props.lang}
-                            tag={item} changeParentTags={changeTags} parentLog={log.current} />)}>
+                            tag={item} updateTags={updateTags} parentLog={log.current} />)}>
                         <View style={[{ borderLeftWidth: 1, borderLeftColor: props.theme.colors.outline }]}>
                             <Icon name="close" style={{ margin: 12 }}
                                 size={24} color={props.theme.colors.onSurface} />
@@ -70,7 +70,7 @@ function SettingsTags(props: ScreenProps) {
                 ref={flatListRef}
 
                 data={tags}
-                keyExtractor={item => item.name}
+                keyExtractor={(item: Tag, _) => item.name}
 
                 showsVerticalScrollIndicator={false}
                 removeClippedSubviews={true}
@@ -86,7 +86,7 @@ function SettingsTags(props: ScreenProps) {
                 icon={'plus'}
                 size={'large'}
                 onPress={() => modalRef.current?.showModal(<TagAddModal lang={props.lang}
-                    changeParentTags={changeTags} parentLog={log.current} />)}
+                    updateTags={updateTags} parentLog={log.current} />)}
                 style={Styles.fab}
             />
         </View>
@@ -94,7 +94,7 @@ function SettingsTags(props: ScreenProps) {
 }
 
 interface TagAddModalProps extends LangProps, LogProps {
-    changeParentTags: (feeds: Tag[], scrollToEnd?: boolean) => void,
+    updateTags: (scrollToEnd?: boolean) => void,
 }
 
 function TagAddModal(props: TagAddModalProps) {
@@ -111,7 +111,7 @@ function TagAddModal(props: TagAddModalProps) {
 
             const tag: Tag = await Tag.New(inputValue);
             snackbarRef.current?.showSnack((props.lang.added_tag).replace('%tag%', ("\"" + tag.name + "\"")));
-            props.changeParentTags(Backend.UserSettings.Tags, true);
+            props.updateTags(true);
         } catch (err) {
             log.current.error('Can\'t add tag', err);
             snackbarRef.current?.showSnack(props.lang.add_tag_fail);
@@ -140,7 +140,7 @@ function TagAddModal(props: TagAddModalProps) {
 
 interface TagRemoveModalProps extends LangProps, LogProps {
     tag: Tag,
-    changeParentTags: (feeds: Tag[], scrollToEnd?: boolean) => void,
+    updateTags: (scrollToEnd?: boolean) => void,
 }
 
 function TagRemoveModal(props: TagRemoveModalProps) {
@@ -153,13 +153,13 @@ function TagRemoveModal(props: TagRemoveModalProps) {
 
         await Tag.Remove(props.tag);
 
-        props.changeParentTags(Backend.UserSettings.Tags);
+        props.updateTags();
 
         modalRef.current?.hideModal();
         snackbarRef.current?.showSnack((props.lang.removed_tag).replace('%tag%',
             ("\"" + props.tag.name + "\"")), props.lang.undo, () => {
                 Tag.UndoRemove();
-                props.changeParentTags(Backend.UserSettings.Tags, true);
+                props.updateTags(true);
             });
         globalStateRef.current?.reloadFeed(false);
     }

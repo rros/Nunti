@@ -112,6 +112,16 @@ export type NavigationParams = {
     feed?: Feed,
     url?: string,
     screen?: string,
+    initial?: false,
+    params?: NavigationParams,
+}
+export type Navigation = {
+    navigate: (target: string, params?: NavigationParams) => void,
+    setOptions: (options: ScreenOptions) => void,
+    pop: () => void,
+    openDrawer: () => void,
+    addListener: (type: string, fn: (param?: any) => void) => () => void,
+    setParams: (values: { [index: string]: any }) => void,
 }
 
 export interface ThemeProps {
@@ -136,12 +146,5 @@ export interface NavigationStateProps {
 }
 export interface ScreenProps extends ThemeProps, LangProps {
     route: Route,
-    navigation: {
-        navigate: (target: string, params?: NavigationParams) => void,
-        setOptions: (options: ScreenOptions) => void,
-        pop: () => void,
-        openDrawer: () => void,
-        addListener: (type: string, fn: (param?: any) => void) => () => void,
-        setParams: (values: { [index: string]: any }) => void,
-    },
+    navigation: Navigation,
 }

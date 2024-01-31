@@ -82,4 +82,4 @@ function Switch(props: Props) {
     );
 }
 
-export default withTheme(Switch);
+export default withTheme(React.memo(Switch));

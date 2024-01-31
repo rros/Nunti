@@ -102,4 +102,4 @@ function SegmentedButton(props: Props) {
     );
 }
 
-export default withTheme(SegmentedButton);
+export default withTheme(React.memo(SegmentedButton));

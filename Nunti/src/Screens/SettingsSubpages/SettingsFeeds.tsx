@@ -26,12 +26,12 @@ import { LangProps, LogProps, ScreenProps } from '../../Props';
 import { useAnimatedRef } from 'react-native-reanimated';
 
 function SettingsFeeds(props: ScreenProps) {
-    const [feeds, setFeeds] = useState(Backend.UserSettings.FeedList);
+    const [feeds, setFeeds] = useState([...Backend.UserSettings.FeedList]);
     const flatListRef = useAnimatedRef<FlatList>();
     const log = useRef(logRef.current!.globalLog.current.context('SettingsFeeds'));
 
-    const changeFeeds = (newFeeds: Feed[], scrollToEnd: boolean = false) => {
-        setFeeds(newFeeds)
+    const updateFeeds = (scrollToEnd: boolean = false) => {
+        setFeeds([...Backend.UserSettings.FeedList])
 
         if (scrollToEnd) {
             flatListRef.current!.scrollToEnd();
@@ -57,7 +57,7 @@ function SettingsFeeds(props: ScreenProps) {
                         <TouchableNativeFeedback
                             background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                             onPress={() => modalRef.current?.showModal(<FeedRemoveModal lang={props.lang}
-                                feed={item} changeParentFeeds={changeFeeds} parentLog={log.current} />)}>
+                                feed={item} updateFeeds={updateFeeds} parentLog={log.current} />)}>
                             <View style={{ borderLeftWidth: 1, borderLeftColor: props.theme.colors.outline }}>
                                 <Icon name="close" style={[Styles.settingsIcon, { margin: 12 }]}
                                     size={24} color={props.theme.colors.onSurface} />
@@ -75,7 +75,7 @@ function SettingsFeeds(props: ScreenProps) {
                 ref={flatListRef}
 
                 data={feeds}
-                keyExtractor={item => item.url}
+                keyExtractor={(item: Feed, _) => item.url}
 
                 showsVerticalScrollIndicator={false}
                 removeClippedSubviews={true}
@@ -91,7 +91,7 @@ function SettingsFeeds(props: ScreenProps) {
                 icon={'plus'}
                 size={'large'}
                 onPress={() => modalRef.current?.showModal(<FeedAddModal lang={props.lang}
-                    changeParentFeeds={changeFeeds} parentLog={log.current} />)}
+                    updateFeeds={updateFeeds} parentLog={log.current} />)}
                 style={Styles.fab}
             />
         </View>
@@ -99,7 +99,7 @@ function SettingsFeeds(props: ScreenProps) {
 }
 
 interface FeedAddModalProps extends LangProps, LogProps {
-    changeParentFeeds: (feeds: Feed[], scrollToEnd?: boolean) => void,
+    updateFeeds: (scrollToEnd?: boolean) => void,
 }
 
 function FeedAddModal(props: FeedAddModalProps) {
@@ -118,7 +118,7 @@ function FeedAddModal(props: FeedAddModalProps) {
         } else {
             const feed = await Feed.New(rssUrl);
             snackbarRef.current?.showSnack((props.lang.added_feed).replace('%feed%', ("\"" + feed.name + "\"")));
-            props.changeParentFeeds(Backend.UserSettings.FeedList, true);
+            props.updateFeeds(true);
             globalStateRef.current?.reloadFeed(true);
         }
 
@@ -145,7 +145,7 @@ function FeedAddModal(props: FeedAddModalProps) {
 
 interface FeedRemoveModalProps extends LangProps, LogProps {
     feed: Feed,
-    changeParentFeeds: (feeds: Feed[], scrollToEnd?: boolean) => void,
+    updateFeeds: (scrollToEnd?: boolean) => void,
 }
 
 function FeedRemoveModal(props: FeedRemoveModalProps) {
@@ -162,10 +162,10 @@ function FeedRemoveModal(props: FeedRemoveModalProps) {
         snackbarRef.current?.showSnack((props.lang.removed_feed).replace('%feed%',
             ("\"" + props.feed.name + "\"")), props.lang.undo, () => {
                 Feed.UndoRemove();
-                props.changeParentFeeds(Backend.UserSettings.FeedList, true);
+                props.updateFeeds(true);
             });
 
-        props.changeParentFeeds(Backend.UserSettings.FeedList);
+        props.updateFeeds();
         modalRef.current?.hideModal();
         globalStateRef.current?.reloadFeed(true);
     }

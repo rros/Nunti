@@ -301,6 +301,7 @@ function ArticlesPage(props: Props) {
             case 'add_feeds':
                 props.navigation.navigate('settings_handler', {
                     screen: 'feeds',
+                    initial: false,
                 });
                 break;
             case 'goto_settings':
