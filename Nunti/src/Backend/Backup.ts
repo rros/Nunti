@@ -36,6 +36,7 @@ export class Backup {
         UserSettings.Instance.FeedList.forEach( (feed: Feed) => {
             const outline = doc.createElement('outline');
             outline.setAttribute('text', feed.name);
+            outline.setAttribute('title', feed.name);
             outline.setAttribute('xmlUrl', feed.url);
             outline.setAttribute('type', 'rss');
             body.appendChild(outline);
@@ -81,7 +82,12 @@ export class Backup {
                 const elems = doc.getElementsByTagName('outline');
                 for (let i = 0; i < elems.length; i++) {
                     try {
-                        feeds.push(new Feed(elems[i].getAttribute('xmlUrl')));
+                        const feed = new Feed(elems[i].getAttribute('xmlUrl'));
+                        if (elems[i].hasAttribute('text') && elems[i].getAttribute('text').trim() != '')
+                            feed.name = elems[i].getAttribute('text').trim();
+                        if (elems[i].hasAttribute('title') && elems[i].getAttribute('title').trim() != '')
+                            feed.name = elems[i].getAttribute('title').trim();
+                        feeds.push(feed);
                     }  catch { /* dontcare */ }
                 }
                 log.info(`Importing OPML, imported ${feeds.length} feed(s).`);
