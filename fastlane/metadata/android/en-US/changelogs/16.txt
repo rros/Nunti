@@ -1,0 +1,14 @@
+- added Ukrainian translation
+- added .xml extension as a valid opml extension
+- added reader mode
+- added an offline mode leveraging reader mode article parsing
+- added a loading indicator to reader mode and integrated webview
+- improved the first wizard screen to be more intuitive
+- improved the no feeds banner to go straight to the feed settings page
+- improved rss feed details, is now a separate screen
+- improved all around performance of the UI
+- fixed missing undo word in persian locale
+- fixed preference threshold mismatch
+- fixed selected sort type not being saved
+- fixed wifi only mode allowing opening articles on data
+- fixed opml import not respecting feed titles
