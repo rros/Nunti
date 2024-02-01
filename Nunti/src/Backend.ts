@@ -1,4 +1,4 @@
-import DefaultTopics from './DefaultTopics';
+import { DefaultTopics } from './DefaultTopics';
 import { NativeModules } from 'react-native';
 const NotificationsModule = NativeModules.Notifications;
 import Log from './Log';
@@ -14,6 +14,7 @@ import { Tag } from './Backend/Tag';
 import { Feed } from './Backend/Feed';
 import { OfflineCache } from './Backend/OfflineCache';
 import { ReadabilityArticle, WebpageParser } from './Backend/WebpageParser';
+import { ArticleSource, LearningStatus, TopicName, SortType } from './Props';
 
 export class Backend {
     public static log = Log.BE;
@@ -32,7 +33,7 @@ export class Backend {
 
     /* Wrapper around GetArticles(), returns articles in pages. */
     public static async GetArticlesPaginated(
-        articleSource: 'feed' | 'bookmarks' | 'history',
+        articleSource: ArticleSource,
         filter: ArticlesFilter = ArticlesFilter.Empty,
         abort: AbortController | null = null
     ): Promise<Article[][]> {
@@ -49,7 +50,7 @@ export class Backend {
     }
     /* Serves as a waypoint for frontend to grab rss,history,bookmarks, etc. */
     public static async GetArticles(
-        articleSource: 'feed' | 'bookmarks' | 'history',
+        articleSource: ArticleSource,
         filter: ArticlesFilter = ArticlesFilter.Empty,
         abort: AbortController | null = null
     ): Promise<Article[]> {
@@ -59,17 +60,15 @@ export class Backend {
 
         let articles: Article[];
         switch (articleSource) {
-        case 'feed':
-            articles = await this.GetFeedArticles({ sortType: filter.sortType }, abort);
-            break;
-        case 'bookmarks':
-            articles = (await Storage.GetSavedArticles()).reverse();
-            break;
-        case 'history':
-            articles = (await Storage.StorageGet('seen')).reverse().slice(0, this.UserSettings.ArticleHistory);
-            break;
-        default:
-            throw new Error(`Backend: GetArticles(), ${articleSource} is not a valid source.`);
+            case 'feed':
+                articles = await this.GetFeedArticles({ sortType: filter.sortType }, abort);
+                break;
+            case 'bookmarks':
+                articles = (await Storage.GetSavedArticles()).reverse();
+                break;
+            case 'history':
+                articles = (await Storage.StorageGet('seen')).reverse().slice(0, this.UserSettings.ArticleHistory);
+                break;
         }
         articles.forEach(Article.Fix);
 
@@ -87,7 +86,7 @@ export class Backend {
     }
     /* Retrieves sorted articles to show in feed. */
     public static async GetFeedArticles(
-        overrides: { sortType: string | undefined } = { sortType: undefined },
+        overrides: { sortType?: SortType } = { sortType: undefined },
         abort: AbortController | null = null
     ): Promise<Article[]> {
 
@@ -160,7 +159,7 @@ export class Backend {
             throw new Error('Aborted by AbortController.');
 
         OfflineCache.TryDoOfflineSave(arts);
-        
+
         return arts;
     }
     /* Sends push notification to user, returns true on success, false on fail. */
@@ -170,17 +169,17 @@ export class Backend {
         let channelDescription: string;
         const locale = Utils.GetLocale();
         switch (channel) {
-        case 'new_articles':
-            channelName = locale.notifications_new_articles;
-            channelDescription = locale.notifications_new_articles_description;
-            break;
-        case 'other':
-            channelName = 'Other';
-            channelDescription = 'Other notifications';
-            break;
-        default:
-            log.error(`Failed attempt, '${channel}' - channel not allowed.`);
-            return false;
+            case 'new_articles':
+                channelName = locale.notifications_new_articles;
+                channelDescription = locale.notifications_new_articles_description;
+                break;
+            case 'other':
+                channelName = 'Other';
+                channelDescription = 'Other notifications';
+                break;
+            default:
+                log.error(`Failed attempt, '${channel}' - channel not allowed.`);
+                return false;
         }
         const title = channelName;
         const summary = null;
@@ -195,16 +194,16 @@ export class Backend {
     }
 
     /* Change RSS topics */
-    public static async ChangeDefaultTopics(topicName: string, localisedName: string, enable: boolean): Promise<void> {
+    public static async ChangeDefaultTopics(topicName: TopicName, localisedName: string, enable: boolean): Promise<void> {
         const log = this.log.context('ChangeDefaultTopics');
         log.info(`${topicName} - ${enable ? 'add' : 'remove'}`);
 
         // create a default tag if enabling
         let tag: Tag | null = enable ? await Tag.New(localisedName) : null;
 
-        if (DefaultTopics.Topics[topicName] !== undefined) {
-            for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
-                const topicFeed: Feed = DefaultTopics.Topics[topicName].sources[i];
+        if (DefaultTopics[topicName] !== undefined) {
+            for (let i = 0; i < DefaultTopics[topicName].sources.length; i++) {
+                const topicFeed: Feed = DefaultTopics[topicName].sources[i];
                 if (enable) {
                     if (this.UserSettings.FeedList.indexOf(topicFeed) < 0) {
                         log.debug(`add feed ${topicFeed.name} to feedlist with tag ${tag?.name}`);
@@ -238,15 +237,15 @@ export class Backend {
     // NOTE from frontend: leave this sync, I can't use await in componentDidMount when creating states with this
     // NOTE: also sync is faster (by eye) and this needs to be fast
     /* Checks wheter use has at least X percent of the topic enabled. */
-    public static IsTopicEnabled(topicName: string, threshold = 0.5): boolean {
-        if (DefaultTopics.Topics[topicName] !== undefined) {
+    public static IsTopicEnabled(topicName: TopicName, threshold = 0.5): boolean {
+        if (DefaultTopics[topicName] !== undefined) {
             let enabledFeedsCount = 0;
-            for (let i = 0; i < DefaultTopics.Topics[topicName].sources.length; i++) {
-                const topicFeed = DefaultTopics.Topics[topicName].sources[i];
+            for (let i = 0; i < DefaultTopics[topicName].sources.length; i++) {
+                const topicFeed = DefaultTopics[topicName].sources[i];
                 if (Utils.FindFeedByUrl(topicFeed.url, this.UserSettings.FeedList) >= 0)
                     enabledFeedsCount++;
             }
-            if (enabledFeedsCount / DefaultTopics.Topics[topicName].sources.length >= threshold)
+            if (enabledFeedsCount / DefaultTopics[topicName].sources.length >= threshold)
                 return true;
             else
                 return false;
@@ -255,18 +254,10 @@ export class Backend {
     }
 
     /* Returns basic info about the learning process to inform the user. */
-    public static async GetLearningStatus(): Promise<{
-        TotalUpvotes: number,
-        TotalDownvotes: number,
-        VoteRatio: string,
-        SortingEnabled: boolean,
-        SortingEnabledIn: number,
-        LearningLifetime: number,
-        LearningLifetimeRemaining: number
-    }> {
+    public static async GetLearningStatus(): Promise<LearningStatus> {
         const prefs = this.UserSettings;
         const learning_db = await Storage.StorageGet('learning_db');
-        const status = {
+        const status: LearningStatus = {
             TotalUpvotes: prefs.TotalUpvotes,
             TotalDownvotes: prefs.TotalDownvotes,
             VoteRatio: ((learning_db['upvotes'] + 1) / (learning_db['downvotes'] + 1)).toFixed(2),

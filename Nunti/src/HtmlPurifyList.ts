@@ -6,7 +6,7 @@
 // tags -= 'audio', 'video'
 // attributes += 'content', 'property'
 
-export default HtmlPurifyList = {
+export default {
     tags: [
         'a',
         'abbr',

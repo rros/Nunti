@@ -16,23 +16,24 @@ import RenderHtml from 'react-native-render-html';
 import Log from '../Log';
 import LoadingScreenComponent from '../Components/LoadingScreenComponent'
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
-import { browserRef, snackbarRef } from '../App';
+import { browserRef } from '../App';
 
 import { Backend } from '../Backend';
+import { ScreenProps } from '../Props';
+import Styles from '../Styles';
 
-function WebPageReader(props) {
+function ReaderMode(props: ScreenProps) {
     const [loading, setLoading] = useState(true);
     const [articleTitle, setArticleTitle] = useState('');
     const [articleContent, setArticleContent] = useState({ html: '' });
-    const [ignoredTags, setIgnoredTags] = useState([]);
+    const [ignoredTags, setIgnoredTags] = useState<string[]>([]);
 
     const log = useRef(Log.FE.context('LegacyWebview'));
 
-    // on component mount
     useEffect(() => {
-        log.current.debug("Navigating from " + props.route.params.source)
+        log.current.debug("Navigating from " + props.route.params?.source)
         let backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-            props.navigation.navigate(props.route.params.source);
+            props.navigation.navigate(props.route.params?.source);
             return true;
         });
 
@@ -47,7 +48,7 @@ function WebPageReader(props) {
     }, []);
 
     const getArticle = async () => {
-        const article = await Backend.GetReaderModeArticle(props.route.params.uri);
+        const article = await Backend.GetReaderModeArticle(props.route.params?.url);
         if (article == null) {
             log.current.error('failed to get reader mode article');
         }
@@ -60,12 +61,12 @@ function WebPageReader(props) {
     }
 
     const forceWebview = async () => {
-        browserRef.current.openBrowser(props.route.params.uri, true, true);
+        browserRef.current?.openBrowser(props.route.params?.url, props.route.params?.source, true);
     }
 
     const openSettings = async () => {
-        props.navigation.navigate('settings', {
-            source: props.route.params.source,
+        props.navigation.navigate('settings_handler', {
+            source: props.route.params?.source,
         });
     }
 
@@ -90,15 +91,15 @@ function WebPageReader(props) {
                     ignoredDomTags={ignoredTags} />
             </ScrollView> :
                 <EmptyScreenComponent title={props.lang.opening_article_failed} description={props.lang.opening_article_failed_reason}
-                    bottomOffset={true} footer={() => (
+                    useBottomOffset={true} footer={
                         <View style={Styles.settingsButton}>
                             <Button icon="cog" style={Styles.bodyText}
                                 onPress={openSettings}>{props.lang.goto_settings}</Button>
                             <Button icon="web" style={Styles.bodyText} mode="contained"
                                 onPress={forceWebview}>{props.lang.force_open}</Button>
                         </View>
-                    )} />
+                    } />
     );
 }
 
-export default withTheme(WebPageReader);
+export default withTheme(ReaderMode);

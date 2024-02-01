@@ -4,7 +4,8 @@ import { UserSettings } from './UserSettings';
 import NetInfo from '@react-native-community/netinfo';
 import { NativeModules } from 'react-native';
 const I18nManager = NativeModules.I18nManager;
-import * as Languages from '../Locale';
+import { Languages } from '../Locale';
+import { Language, LanguageIndex } from '../Props';
 
 export class Utils {
     public static FindArticleByUrl(url: string, haystack: Article[]): number {
@@ -57,7 +58,7 @@ export class Utils {
 
         return ((wifionly && expensiveConnection === true) || !internetReachable);
     }
-    public static GetLocale(): {[key: string]: string} {
+    public static GetLocale(): Language {
         let locale;
         if (UserSettings.Instance.Language == 'system') {
             locale = I18nManager.localeIdentifier;
@@ -65,10 +66,10 @@ export class Utils {
             locale = UserSettings.Instance.Language;
         }
         for (const language in Languages) {
-            if (locale.includes(Languages[language].code)) { //eslint-disable-line
-                return Languages[language]; //eslint-disable-line
+            if (locale.includes(Languages[language as LanguageIndex].code)) {
+                return Languages[language as LanguageIndex];
             }
         }
-        return Languages['English'];
+        return Languages.en;
     }
 }

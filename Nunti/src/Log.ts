@@ -9,8 +9,7 @@
  *  as opposed to always rebuilding Log from scratch (prone to inconsistencies and more performance overhead)
  */
 
-const RNFS = require('react-native-fs');
-
+import RNFS from 'react-native-fs';
 export default class Log {
     public static isRelease = false;
     private contexts: string[] = [];
@@ -21,7 +20,7 @@ export default class Log {
     public static get BE(): Log {
         return Log.context('BE');
     }
-    
+
     public static context(ctx: string): Log {
         const log = new Log();
         log.contexts.push(ctx);
@@ -73,7 +72,7 @@ class LogStorage {
     private static queue: LogObject[] = [];
     private static lockQueue = true;
     private static initialized = false;
-    
+
     public static async log(context: string[], level: string, ...data: unknown[]): Promise<void> {
         const obj: LogObject = {
             timestamp: Date.now(),
@@ -81,10 +80,10 @@ class LogStorage {
             level: level,
             data: data
         };
-        
+
         if (!LogStorage.initialized)
             this.init();
-        
+
         while (this.lockQueue)
             await new Promise(r => setTimeout(r, 200));
         this.queue.push(obj);
@@ -127,12 +126,12 @@ class LogStorage {
                 last = [''];
             }
             this.lockQueue = false;
-            current.sort((a: string, b:string) => {
+            current.sort((a: string, b: string) => {
                 if (a == '' || b == '')
                     return -1;
                 return JSON.parse(a).timestamp < JSON.parse(b).timestamp ? -1 : 1;
             });
-            last.sort((a: string, b:string) => {
+            last.sort((a: string, b: string) => {
                 if (a == '' || b == '')
                     return -1;
                 return JSON.parse(a).timestamp < JSON.parse(b).timestamp ? -1 : 1;

@@ -21,24 +21,30 @@ import { Backend } from '../../Backend';
 import { Feed } from '../../Backend/Feed';
 import Styles from '../../Styles';
 import Switch from '../../Components/Switch';
+import { LangProps, LogProps, ScreenProps } from '../../Props';
+import { Tag } from '../../Backend/Tag';
 
-function SettingsFeedDetails(props) {
-    const [feed, _setFeed] = useState(props.route.params.feed);
-    const [noImages, setNoImages] = useState(feed['noImages']);
-    const [enabled, setEnabled] = useState(!feed['enabled']);
+function SettingsFeedDetails(props: ScreenProps) {
+    const [feed, _setFeed] = useState<Feed>(props.route.params?.feed);
+    const [noImages, setNoImages] = useState(feed.noImages);
+    const [hidden, setHidden] = useState(!feed.enabled);
     const [tags, setTags] = useState([...feed.tags]);
-    const [inputValue, setInputValue] = useState('');
-    const log = useRef(logRef.current.globalLog.current.context('SettingsFeedDetails'));
+    const log = useRef(logRef.current!.globalLog.current.context('SettingsFeedDetails'));
 
-    const changeFeedOption = async (optionName: string) => {
-        log.current.debug('Changing feed option:', optionName, '->', !feed[optionName]);
-
-        feed[optionName] = !feed[optionName];
-        setNoImages(feed['noImages']);
-        setEnabled(!feed['enabled']);
+    const changeNoImages = async () => {
+        feed.noImages = !feed.noImages;
+        setNoImages(feed.noImages);
 
         await Feed.Save(feed);
-        globalStateRef.current.reloadFeed(true);
+        globalStateRef.current?.reloadFeed(true);
+    }
+
+    const changeHidden = async () => {
+        feed.enabled = hidden;
+        setHidden(!feed.enabled);
+
+        await Feed.Save(feed);
+        globalStateRef.current?.reloadFeed(true);
     }
 
     const changeFeedTag = async (tag: Tag) => {
@@ -54,7 +60,7 @@ function SettingsFeedDetails(props) {
         log.current.debug('Changing feed tags:', newTags);
 
         setTags([...newTags]);
-        globalStateRef.current.reloadFeed(false);
+        globalStateRef.current?.reloadFeed(false);
     }
 
     return (
@@ -73,12 +79,12 @@ function SettingsFeedDetails(props) {
             </Card>
             <Card mode={'contained'} style={Styles.card}>
                 <View style={Styles.settingsButton}>
-                    <Text variant="titleMedium">{'URL'}</Text>
+                    <Text variant="titleMedium">{props.lang.url}</Text>
                     <Text variant="labelSmall">{feed.url}</Text>
                 </View>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}
-                    onPress={() => modalRef.current.showModal(() => <ChangeFeedNameModal feed={feed} parentLog={log.current} lang={props.lang}  />)}>
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
+                    onPress={() => modalRef.current?.showModal(<ChangeFeedNameModal feed={feed} parentLog={log.current} lang={props.lang} />)}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium">{props.lang.feed_name}</Text>
                         <Text variant="labelSmall">{feed.name}</Text>
@@ -88,25 +94,25 @@ function SettingsFeedDetails(props) {
 
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}
-                    onPress={() => changeFeedOption('noImages')}>
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
+                    onPress={changeNoImages}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
                             <Text variant="titleMedium">{props.lang.no_images}</Text>
                             <Text variant="labelSmall">{props.lang.no_images_description}</Text>
                         </View>
-                        <Switch value={noImages} />
+                        <Switch value={noImages} disabled={false} />
                     </View>
                 </TouchableNativeFeedback>
                 <TouchableNativeFeedback
-                    background={TouchableNativeFeedback.Ripple(props.theme.colors.pressedState)}
-                    onPress={() => changeFeedOption('enabled')}>
+                    background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
+                    onPress={changeHidden}>
                     <View style={[Styles.settingsButton, Styles.settingsRowContainer]}>
                         <View style={Styles.settingsLeftContent}>
                             <Text variant="titleMedium">{props.lang.hide_feed}</Text>
                             <Text variant="labelSmall">{props.lang.hide_feed_description}</Text>
                         </View>
-                        <Switch value={enabled} />
+                        <Switch value={hidden} disabled={false} />
                     </View>
                 </TouchableNativeFeedback>
             </Card>
@@ -116,7 +122,7 @@ function SettingsFeedDetails(props) {
                     <View style={[Styles.settingsButton, Styles.chipContainer]}>
                         {Backend.UserSettings.Tags.map((tag) => {
                             return (
-                                <Chip onPress={() => changeFeedTag(tag)}
+                                <Chip onPress={() => changeFeedTag(tag)} key={tag.name}
                                     selected={feed.tags.some(pickedTag => pickedTag.name == tag.name)}
                                     style={Styles.chip}>{tag.name}</Chip>
                             );
@@ -131,35 +137,39 @@ function SettingsFeedDetails(props) {
     );
 }
 
-function ChangeFeedNameModal ({feed, lang, parentLog}) {
-    const log = useRef(parentLog.context('FeedChangeNameModal'));
+interface ChangeFeedNameModalProps extends LangProps, LogProps {
+    feed: Feed,
+}
+
+function ChangeFeedNameModal(props: ChangeFeedNameModalProps) {
+    const log = useRef(props.parentLog.context('FeedChangeNameModal'));
     const [inputValue, setInputValue] = useState('');
     const [loading, _setLoading] = useState(false);
 
     const changeFeedName = async () => {
-        log.current.debug('Changing feed name:', feed.name, '->', inputValue);
+        log.current.debug('Changing feed name:', props.feed.name, '->', inputValue);
 
-        feed.name = inputValue;
-        await Feed.Save(feed);
+        props.feed.name = inputValue;
+        await Feed.Save(props.feed);
 
-        globalStateRef.current.reloadFeed(true);
-        modalRef.current.hideModal();
+        globalStateRef.current?.reloadFeed(true);
+        modalRef.current?.hideModal();
     }
 
-    return(
+    return (
         <>
-        <Dialog.Icon icon="rss" />
-        <Dialog.Title style={Styles.centeredText}>{lang.feed_name}</Dialog.Title>
-        <View style={Styles.modalNonScrollArea}>
-            <TextInput label={feed.name} autoCapitalize="none"
-                onChangeText={text => setInputValue(text)} disabled={loading}/>
-        </View>
-        <View style={Styles.modalButtonContainer}>
-            <Button onPress={changeFeedName} loading={loading} disabled={inputValue == '' || loading}
-                style={Styles.modalButton}>{lang.change}</Button>
-            <Button onPress={() => modalRef.current.hideModal() }
-                style={Styles.modalButton}>{lang.cancel}</Button>
-        </View>
+            <Dialog.Icon icon="rss" />
+            <Dialog.Title style={Styles.centeredText}>{props.lang.feed_name}</Dialog.Title>
+            <View style={Styles.modalNonScrollArea}>
+                <TextInput label={props.feed.name} autoCapitalize="none"
+                    onChangeText={text => setInputValue(text)} disabled={loading} />
+            </View>
+            <View style={Styles.modalButtonContainer}>
+                <Button onPress={changeFeedName} loading={loading} disabled={inputValue == '' || loading}
+                    style={Styles.modalButton}>{props.lang.change}</Button>
+                <Button onPress={() => modalRef.current?.hideModal()}
+                    style={Styles.modalButton}>{props.lang.cancel}</Button>
+            </View>
         </>
     );
 }

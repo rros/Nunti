@@ -11,9 +11,7 @@ import com.facebook.soloader.SoLoader;
 import java.util.List;
 
 import com.facebook.react.bridge.JSIModulePackage; 
-import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 import com.oblador.vectoricons.VectorIconsPackage;
-import com.rnfs.RNFSPackage;
 
 import com.nunti.MaterialYouPackage;
 import com.nunti.NotificationsPackage;
@@ -44,11 +42,6 @@ public class MainApplication extends Application implements ReactApplication {
         }
 
         @Override
-        protected JSIModulePackage getJSIModulePackage() { 
-            return new ReanimatedJSIModulePackage(); 
-        }
-
-        @Override
         protected boolean isNewArchEnabled() {
           return BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
         }
@@ -72,6 +65,5 @@ public class MainApplication extends Application implements ReactApplication {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
       DefaultNewArchitectureEntryPoint.load();
     }
-    ReactNativeFlipper.initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
   }
 }

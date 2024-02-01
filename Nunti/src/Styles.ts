@@ -1,4 +1,7 @@
 import { StyleSheet } from 'react-native';
+import { AccentList } from './Props';
+import Color from 'color';
+import { MD3DarkTheme } from 'react-native-paper';
 
 // use these in the material you module as well
 const Colors = {
@@ -9,7 +12,7 @@ const Colors = {
             errorContainer: '#93000a',
             onErrorContainer: '#ffdad6',
         },
-        
+
         light: {
             error: '#ba1a1a',
             onError: '#ffffff',
@@ -25,7 +28,7 @@ const Colors = {
             warnContainer: '#584400',
             onWarnContainer: '#ffe08b',
         },
-        
+
         light: {
             warn: '#745b00',
             onWarn: '#ffffff',
@@ -46,7 +49,7 @@ const Colors = {
             positiveContainer: '#045316',
             onPositiveContainer: '#aaf5a4',
         },
-        
+
         light: {
             positive: '#266c2b',
             onPositive: '#ffffff',
@@ -72,12 +75,12 @@ const Colors = {
     }
 };
 
-export const Accents = {
+export const Accents: AccentList = {
     default: {
         // primary base = #1eba81
 
         dark: {
-            primary: '#52dea2', 
+            primary: '#52dea2',
             onPrimary: '#003824',
             primaryContainer: '#005235',
             onPrimaryContainer: '#72fbbc',
@@ -86,7 +89,7 @@ export const Accents = {
             onSecondary: '#20352a',
             secondaryContainer: '#364b3f',
             onSecondaryContainer: '#d0e8d8',
-            
+
             tertiary: '#a4cdde',
             onTertiary: '#063543',
             tertiaryContainer: '#234c5a',
@@ -109,12 +112,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#7fda99',
             onPositive: '#00391a',
             positiveContainer: '#005229',
@@ -124,10 +127,35 @@ export const Accents = {
             onNegative: '#591d00',
             negativeContainer: '#7e2c00',
             onNegativeContainer: '#ffdbcd',
+
+            surfaceDisabled: Color('#e1e3df').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#e1e3df').alpha(0.12).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#e1e3df').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#52dea2').alpha(0.05).toString(),
+                level1: Color('#52dea2').alpha(0.08).toString(),
+                level2: Color('#52dea2').alpha(0.11).toString(),
+                level3: Color('#52dea2').alpha(0.12).toString(),
+                level4: Color('#52dea2').alpha(0.14).toString(),
+                level5: Color('#52dea2').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#006c48').alpha(0.05).toString(),
+                level1: Color('#006c48').alpha(0.08).toString(),
+                level2: Color('#006c48').alpha(0.11).toString(),
+                level3: Color('#006c48').alpha(0.12).toString(),
+                level4: Color('#006c48').alpha(0.14).toString(),
+                level5: Color('#006c48').alpha(0.15).toString(),
+            },
         },
 
         light: {
-            primary: '#006c48', 
+            primary: '#006c48',
             onPrimary: '#ffffff',
             primaryContainer: '#72fbbc',
             onPrimaryContainer: '#002113',
@@ -136,7 +164,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#d0e8d8',
             onSecondaryContainer: '#0a1f15',
-            
+
             tertiary: '#3c6472',
             onTertiary: '#ffffff',
             tertiaryContainer: '#c0e9fa',
@@ -159,12 +187,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#006d38',
             onPositive: '#ffffff',
             positiveContainer: '#9bf6b3',
@@ -174,6 +202,31 @@ export const Accents = {
             onNegative: '#ffffff',
             negativeContainer: '#ffb597',
             onNegativeContainer: '#360f00',
+
+            surfaceDisabled: Color('#191c1a').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#191c1a').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#191c1a').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#006c48').alpha(0.05).toString(),
+                level1: Color('#006c48').alpha(0.08).toString(),
+                level2: Color('#006c48').alpha(0.11).toString(),
+                level3: Color('#006c48').alpha(0.12).toString(),
+                level4: Color('#006c48').alpha(0.14).toString(),
+                level5: Color('#006c48').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#52dea2').alpha(0.05).toString(),
+                level1: Color('#52dea2').alpha(0.08).toString(),
+                level2: Color('#52dea2').alpha(0.11).toString(),
+                level3: Color('#52dea2').alpha(0.12).toString(),
+                level4: Color('#52dea2').alpha(0.14).toString(),
+                level5: Color('#52dea2').alpha(0.15).toString(),
+            },
         },
     },
 
@@ -181,7 +234,7 @@ export const Accents = {
         // primary base = #725aff
 
         dark: {
-            primary: '#c7bfff', 
+            primary: '#c7bfff',
             onPrimary: '#2e2176',
             primaryContainer: '#453a8e',
             onPrimaryContainer: '#e4dfff',
@@ -190,7 +243,7 @@ export const Accents = {
             onSecondary: '#302e41',
             secondaryContainer: '#474459',
             onSecondaryContainer: '#e5dff9',
-            
+
             tertiary: '#ecb8ce',
             onTertiary: '#482537',
             tertiaryContainer: '#613b4d',
@@ -213,12 +266,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#75daa3',
             onPositive: '#003921',
             positiveContainer: '#005232',
@@ -228,10 +281,35 @@ export const Accents = {
             onNegative: '#670021',
             negativeContainer: '#8c1134',
             onNegativeContainer: '#ffd9dc',
+
+            surfaceDisabled: Color('#e5e1e6').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#e5e1e6').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#e5e1e6').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#c7bfff').alpha(0.05).toString(),
+                level1: Color('#c7bfff').alpha(0.08).toString(),
+                level2: Color('#c7bfff').alpha(0.11).toString(),
+                level3: Color('#c7bfff').alpha(0.12).toString(),
+                level4: Color('#c7bfff').alpha(0.14).toString(),
+                level5: Color('#c7bfff').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#5d53a7').alpha(0.05).toString(),
+                level1: Color('#5d53a7').alpha(0.08).toString(),
+                level2: Color('#5d53a7').alpha(0.11).toString(),
+                level3: Color('#5d53a7').alpha(0.12).toString(),
+                level4: Color('#5d53a7').alpha(0.14).toString(),
+                level5: Color('#5d53a7').alpha(0.15).toString(),
+            },
         },
 
         light: {
-            primary: '#5d53a7', 
+            primary: '#5d53a7',
             onPrimary: '#ffffff',
             primaryContainer: '#e4dfff',
             onPrimaryContainer: '#180362',
@@ -240,7 +318,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#e5dff9',
             onSecondaryContainer: '#1b192c',
-            
+
             tertiary: '#7b5265',
             onTertiary: '#ffffff',
             tertiaryContainer: '#ffd8e7',
@@ -263,12 +341,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#006d44',
             onPositive: '#ffffff',
             positiveContainer: '#91f7bd',
@@ -278,13 +356,38 @@ export const Accents = {
             onNegative: '#ffffff',
             negativeContainer: '#ffb2bb',
             onNegativeContainer: '#400011',
+
+            surfaceDisabled: Color('#1c1b1f').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#1c1b1f').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#1c1b1f').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#5d53a7').alpha(0.05).toString(),
+                level1: Color('#5d53a7').alpha(0.08).toString(),
+                level2: Color('#5d53a7').alpha(0.11).toString(),
+                level3: Color('#5d53a7').alpha(0.12).toString(),
+                level4: Color('#5d53a7').alpha(0.14).toString(),
+                level5: Color('#5d53a7').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#c7bfff').alpha(0.05).toString(),
+                level1: Color('#c7bfff').alpha(0.08).toString(),
+                level2: Color('#c7bfff').alpha(0.11).toString(),
+                level3: Color('#c7bfff').alpha(0.12).toString(),
+                level4: Color('#c7bfff').alpha(0.14).toString(),
+                level5: Color('#c7bfff').alpha(0.15).toString(),
+            },
         },
     },
     aqua: {
         // primary base = #4596e2
 
         dark: {
-            primary: '#9dcaff', 
+            primary: '#9dcaff',
             onPrimary: '#003257',
             primaryContainer: '#00497c',
             onPrimaryContainer: '#d1e4ff',
@@ -293,7 +396,7 @@ export const Accents = {
             onSecondary: '#253140',
             secondaryContainer: '#3b4858',
             onSecondaryContainer: '#d6e4f7',
-            
+
             tertiary: '#d6bee5',
             onTertiary: '#3b2948',
             tertiaryContainer: '#524060',
@@ -316,12 +419,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#75daa3',
             onPositive: '#003921',
             positiveContainer: '#005232',
@@ -331,10 +434,35 @@ export const Accents = {
             onNegative: '#670021',
             negativeContainer: '#8c1134',
             onNegativeContainer: '#ffd9dc',
+
+            surfaceDisabled: Color('#e2e2e6').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#e2e2e6').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#e2e2e6').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#9dcaff').alpha(0.05).toString(),
+                level1: Color('#9dcaff').alpha(0.08).toString(),
+                level2: Color('#9dcaff').alpha(0.11).toString(),
+                level3: Color('#9dcaff').alpha(0.12).toString(),
+                level4: Color('#9dcaff').alpha(0.14).toString(),
+                level5: Color('#9dcaff').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#0061a2').alpha(0.05).toString(),
+                level1: Color('#0061a2').alpha(0.08).toString(),
+                level2: Color('#0061a2').alpha(0.11).toString(),
+                level3: Color('#0061a2').alpha(0.12).toString(),
+                level4: Color('#0061a2').alpha(0.14).toString(),
+                level5: Color('#0061a2').alpha(0.15).toString(),
+            },
         },
 
         light: {
-            primary: '#0061a2', 
+            primary: '#0061a2',
             onPrimary: '#ffffff',
             primaryContainer: '#d1e4ff',
             onPrimaryContainer: '#001d35',
@@ -343,7 +471,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#d6e4f7',
             onSecondaryContainer: '#0f1c2b',
-            
+
             tertiary: '#6a5778',
             onTertiary: '#ffffff',
             tertiaryContainer: '#f2daff',
@@ -366,12 +494,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#75daa3',
             onPositive: '#ffffff',
             positiveContainer: '#91f7bd',
@@ -381,13 +509,38 @@ export const Accents = {
             onNegative: '#ffffff',
             negativeContainer: '#ffb2bb#84c188',
             onNegativeContainer: '#400011',
+
+            surfaceDisabled: Color('#1a1c1e').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#1a1c1e').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#1a1c1e').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#0061a2').alpha(0.05).toString(),
+                level1: Color('#0061a2').alpha(0.08).toString(),
+                level2: Color('#0061a2').alpha(0.11).toString(),
+                level3: Color('#0061a2').alpha(0.12).toString(),
+                level4: Color('#0061a2').alpha(0.14).toString(),
+                level5: Color('#0061a2').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#9dcaff').alpha(0.05).toString(),
+                level1: Color('#9dcaff').alpha(0.08).toString(),
+                level2: Color('#9dcaff').alpha(0.11).toString(),
+                level3: Color('#9dcaff').alpha(0.12).toString(),
+                level4: Color('#9dcaff').alpha(0.14).toString(),
+                level5: Color('#9dcaff').alpha(0.15).toString(),
+            },
         },
     },
     cinnamon: {
         // primary base = #c3a6a2
 
         dark: {
-            primary: '#ffb4a5', 
+            primary: '#ffb4a5',
             onPrimary: '#5f1609',
             primaryContainer: '#7d2c1c',
             onPrimaryContainer: '#ffdad3',
@@ -396,7 +549,7 @@ export const Accents = {
             onSecondary: '#442a24',
             secondaryContainer: '#5d3f39',
             onSecondaryContainer: '#ffdad3',
-            
+
             tertiary: '#dcc48c',
             onTertiary: '#3d2f04',
             tertiaryContainer: '#554519',
@@ -419,12 +572,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#aad472',
             onPositive: '#203700',
             positiveContainer: '#304f00',
@@ -434,10 +587,35 @@ export const Accents = {
             onNegative: '#680200',
             negativeContainer: '#8b190e',
             onNegativeContainer: '#ffdad4',
+
+            surfaceDisabled: Color('#ede0dd').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#ede0dd').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#ede0dd').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#ffb4a5').alpha(0.05).toString(),
+                level1: Color('#ffb4a5').alpha(0.08).toString(),
+                level2: Color('#ffb4a5').alpha(0.11).toString(),
+                level3: Color('#ffb4a5').alpha(0.12).toString(),
+                level4: Color('#ffb4a5').alpha(0.14).toString(),
+                level5: Color('#ffb4a5').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#9c4331').alpha(0.05).toString(),
+                level1: Color('#9c4331').alpha(0.08).toString(),
+                level2: Color('#9c4331').alpha(0.11).toString(),
+                level3: Color('#9c4331').alpha(0.12).toString(),
+                level4: Color('#9c4331').alpha(0.14).toString(),
+                level5: Color('#9c4331').alpha(0.15).toString(),
+            },
         },
 
         light: {
-            primary: '#9c4331', 
+            primary: '#9c4331',
             onPrimary: '#ffffff',
             primaryContainer: '#ffdad3',
             onPrimaryContainer: '#3e0400',
@@ -446,7 +624,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#ffdad3',
             onSecondaryContainer: '#2c1511',
-            
+
             tertiary: '#6e5c2e',
             onTertiary: '#ffffff',
             tertiaryContainer: '#f9e0a6',
@@ -469,12 +647,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#456812',
             onPositive: '#ffffff',
             positiveContainer: '#c5f08b',
@@ -484,13 +662,38 @@ export const Accents = {
             onNegative: '#ffffff',
             negativeContainer: '#ffb4aa',
             onNegativeContainer: '#400100',
+
+            surfaceDisabled: Color('#201a19').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#201a19').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#201a19').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#9c4331').alpha(0.05).toString(),
+                level1: Color('#9c4331').alpha(0.08).toString(),
+                level2: Color('#9c4331').alpha(0.11).toString(),
+                level3: Color('#9c4331').alpha(0.12).toString(),
+                level4: Color('#9c4331').alpha(0.14).toString(),
+                level5: Color('#9c4331').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#ffb4a5').alpha(0.05).toString(),
+                level1: Color('#ffb4a5').alpha(0.08).toString(),
+                level2: Color('#ffb4a5').alpha(0.11).toString(),
+                level3: Color('#ffb4a5').alpha(0.12).toString(),
+                level4: Color('#ffb4a5').alpha(0.14).toString(),
+                level5: Color('#ffb4a5').alpha(0.15).toString(),
+            },
         },
     },
     forest: {
         // primary base = #84c188
 
         dark: {
-            primary: '#88d990', 
+            primary: '#88d990',
             onPrimary: '#003913',
             primaryContainer: '#00531e',
             onPrimaryContainer: '#a4f5aa',
@@ -499,7 +702,7 @@ export const Accents = {
             onSecondary: '#243424',
             secondaryContainer: '#3a4b3a',
             onSecondaryContainer: '#d4e8d1',
-            
+
             tertiary: '#a1ced6',
             onTertiary: '#00363d',
             tertiaryContainer: '#1f4d54',
@@ -522,12 +725,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#8bd88d',
             onPositive: '#003910',
             positiveContainer: '#00531a',
@@ -537,10 +740,35 @@ export const Accents = {
             onNegative: '#591d00',
             negativeContainer: '#7e2c00',
             onNegativeContainer: '#ffdbcd',
+
+            surfaceDisabled: Color('#e2e3dd').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#e2e3dd').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#e2e3dd').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#88d990').alpha(0.05).toString(),
+                level1: Color('#88d990').alpha(0.08).toString(),
+                level2: Color('#88d990').alpha(0.11).toString(),
+                level3: Color('#88d990').alpha(0.12).toString(),
+                level4: Color('#88d990').alpha(0.14).toString(),
+                level5: Color('#88d990').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#1b6c31').alpha(0.05).toString(),
+                level1: Color('#1b6c31').alpha(0.08).toString(),
+                level2: Color('#1b6c31').alpha(0.11).toString(),
+                level3: Color('#1b6c31').alpha(0.12).toString(),
+                level4: Color('#1b6c31').alpha(0.14).toString(),
+                level5: Color('#1b6c31').alpha(0.15).toString(),
+            },
         },
 
         light: {
-            primary: '#1b6c31', 
+            primary: '#1b6c31',
             onPrimary: '#ffffff',
             primaryContainer: '#a4f5aa',
             onPrimaryContainer: '#002108',
@@ -549,7 +777,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#d4e8d1',
             onSecondaryContainer: '#0f1f11',
-            
+
             tertiary: '#39656c',
             onTertiary: '#ffffff',
             tertiaryContainer: '#bdeaf3',
@@ -572,12 +800,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#206c2e',
             onPositive: '#ffffff',
             positiveContainer: '#a6f5a7',
@@ -587,13 +815,38 @@ export const Accents = {
             onNegative: '#ffffff',
             negativeContainer: '#ffb597',
             onNegativeContainer: '#360f00',
+
+            surfaceDisabled: Color('#1a1c19').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#1a1c19').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#1a1c19').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#1b6c31').alpha(0.05).toString(),
+                level1: Color('#1b6c31').alpha(0.08).toString(),
+                level2: Color('#1b6c31').alpha(0.11).toString(),
+                level3: Color('#1b6c31').alpha(0.12).toString(),
+                level4: Color('#1b6c31').alpha(0.14).toString(),
+                level5: Color('#1b6c31').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#88d990').alpha(0.05).toString(),
+                level1: Color('#88d990').alpha(0.08).toString(),
+                level2: Color('#88d990').alpha(0.11).toString(),
+                level3: Color('#88d990').alpha(0.12).toString(),
+                level4: Color('#88d990').alpha(0.14).toString(),
+                level5: Color('#88d990').alpha(0.15).toString(),
+            },
         },
     },
     gold: {
         // primary base = #ffbe00
 
         dark: {
-            primary: '#fcbc00', 
+            primary: '#fcbc00',
             onPrimary: '#402d00',
             primaryContainer: '#5c4300',
             onPrimaryContainer: '#ffdea1',
@@ -602,7 +855,7 @@ export const Accents = {
             onSecondary: '#3b2f15',
             secondaryContainer: '#53452a',
             onSecondaryContainer: '#f5e0bb',
-            
+
             tertiary: '#b1cfa9',
             onTertiary: '#1e361b',
             tertiaryContainer: '#344d30',
@@ -625,12 +878,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#aad472',
             onPositive: '#203700',
             positiveContainer: '#304f00',
@@ -640,10 +893,35 @@ export const Accents = {
             onNegative: '#591d00',
             negativeContainer: '#7e2c00',
             onNegativeContainer: '#ffdbcd',
+
+            surfaceDisabled: Color('#e9e1d9').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#e9e1d9').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#e9e1d9').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#fcbc00').alpha(0.05).toString(),
+                level1: Color('#fcbc00').alpha(0.08).toString(),
+                level2: Color('#fcbc00').alpha(0.11).toString(),
+                level3: Color('#fcbc00').alpha(0.12).toString(),
+                level4: Color('#fcbc00').alpha(0.14).toString(),
+                level5: Color('#fcbc00').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#7a5900').alpha(0.05).toString(),
+                level1: Color('#7a5900').alpha(0.08).toString(),
+                level2: Color('#7a5900').alpha(0.11).toString(),
+                level3: Color('#7a5900').alpha(0.12).toString(),
+                level4: Color('#7a5900').alpha(0.14).toString(),
+                level5: Color('#7a5900').alpha(0.15).toString(),
+            },
         },
 
         light: {
-            primary: '#7a5900', 
+            primary: '#7a5900',
             onPrimary: '#ffffff',
             primaryContainer: '#ffdea1',
             onPrimaryContainer: '#261900',
@@ -652,7 +930,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#f5e0bb',
             onSecondaryContainer: '#241a04',
-            
+
             tertiary: '#4b6546',
             onTertiary: '#ffffff',
             tertiaryContainer: '#cdebc3',
@@ -675,12 +953,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#456812',
             onPositive: '#ffffff',
             positiveContainer: '#c5f08b',
@@ -690,13 +968,38 @@ export const Accents = {
             onNegative: '#ffffff',
             negativeContainer: '#ffb597',
             onNegativeContainer: '#360f00',
+
+            surfaceDisabled: Color('#1e1b16').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#1e1b16').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#1e1b16').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#7a5900').alpha(0.05).toString(),
+                level1: Color('#7a5900').alpha(0.08).toString(),
+                level2: Color('#7a5900').alpha(0.11).toString(),
+                level3: Color('#7a5900').alpha(0.12).toString(),
+                level4: Color('#7a5900').alpha(0.14).toString(),
+                level5: Color('#7a5900').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#fcbc00').alpha(0.05).toString(),
+                level1: Color('#fcbc00').alpha(0.08).toString(),
+                level2: Color('#fcbc00').alpha(0.11).toString(),
+                level3: Color('#fcbc00').alpha(0.12).toString(),
+                level4: Color('#fcbc00').alpha(0.14).toString(),
+                level5: Color('#fcbc00').alpha(0.15).toString(),
+            },
         },
     },
     ocean: {
         // primary base = #00ffff
 
         dark: {
-            primary: '#00dddd', 
+            primary: '#00dddd',
             onPrimary: '#003737',
             primaryContainer: '#004f4f',
             onPrimaryContainer: '#00fbfb',
@@ -705,7 +1008,7 @@ export const Accents = {
             onSecondary: '#1b3534',
             secondaryContainer: '#324b4b',
             onSecondaryContainer: '#cce8e7',
-            
+
             tertiary: '#b3c8e8',
             onTertiary: '#1c314b',
             tertiaryContainer: '#334863',
@@ -728,12 +1031,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#74daa4',
             onPositive: '#003822',
             positiveContainer: '#005233',
@@ -743,10 +1046,35 @@ export const Accents = {
             onNegative: '#591d00',
             negativeContainer: '#7e2c00',
             onNegativeContainer: '#ffdbcd',
+
+            surfaceDisabled: Color('#e0e3e2').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#e0e3e2').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#e0e3e2').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#00dddd').alpha(0.05).toString(),
+                level1: Color('#00dddd').alpha(0.08).toString(),
+                level2: Color('#00dddd').alpha(0.11).toString(),
+                level3: Color('#00dddd').alpha(0.12).toString(),
+                level4: Color('#00dddd').alpha(0.14).toString(),
+                level5: Color('#00dddd').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#006a6a').alpha(0.05).toString(),
+                level1: Color('#006a6a').alpha(0.08).toString(),
+                level2: Color('#006a6a').alpha(0.11).toString(),
+                level3: Color('#006a6a').alpha(0.12).toString(),
+                level4: Color('#006a6a').alpha(0.14).toString(),
+                level5: Color('#006a6a').alpha(0.15).toString(),
+            },
         },
 
         light: {
-            primary: '#006a6a', 
+            primary: '#006a6a',
             onPrimary: '#ffffff',
             primaryContainer: '#00fbfb',
             onPrimaryContainer: '#002020',
@@ -755,7 +1083,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#cce8e7',
             onSecondaryContainer: '#051f1f',
-            
+
             tertiary: '#4b607c',
             onTertiary: '#ffffff',
             tertiaryContainer: '#d3e4ff',
@@ -778,12 +1106,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#006c45',
             onPositive: '#ffffff',
             positiveContainer: '#90f7be',
@@ -793,13 +1121,38 @@ export const Accents = {
             onNegative: '#ffffff',
             negativeContainer: '#ffb597',
             onNegativeContainer: '#360f00',
+
+            surfaceDisabled: Color('#191c1c').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#191c1c').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#191c1c').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#006a6a').alpha(0.05).toString(),
+                level1: Color('#006a6a').alpha(0.08).toString(),
+                level2: Color('#006a6a').alpha(0.11).toString(),
+                level3: Color('#006a6a').alpha(0.12).toString(),
+                level4: Color('#006a6a').alpha(0.14).toString(),
+                level5: Color('#006a6a').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#00dddd').alpha(0.05).toString(),
+                level1: Color('#00dddd').alpha(0.08).toString(),
+                level2: Color('#00dddd').alpha(0.11).toString(),
+                level3: Color('#00dddd').alpha(0.12).toString(),
+                level4: Color('#00dddd').alpha(0.14).toString(),
+                level5: Color('#00dddd').alpha(0.15).toString(),
+            },
         },
     },
     orchid: {
         // primary base = #c42cc9
 
         dark: {
-            primary: '#ffaaf8', 
+            primary: '#ffaaf8',
             onPrimary: '#5a005e',
             primaryContainer: '#7f0085',
             onPrimaryContainer: '#ffd6f7',
@@ -808,7 +1161,7 @@ export const Accents = {
             onSecondary: '#3c2b3a',
             secondaryContainer: '#544151',
             onSecondaryContainer: '#f6daef',
-            
+
             tertiary: '#f6b8a9',
             onTertiary: '#4c261c',
             tertiaryContainer: '#663b30',
@@ -831,12 +1184,12 @@ export const Accents = {
             onError: Colors.error.dark.onError,
             errorContainer: Colors.error.dark.errorContainer,
             onErrorContainer: Colors.error.dark.onErrorContainer,
-            
+
             warn: Colors.warn.dark.warn,
             onWarn: Colors.warn.dark.onWarn,
             warnContainer: Colors.warn.dark.warnContainer,
             onWarnContainer: Colors.warn.dark.onWarnContainer,
-            
+
             positive: '#a9d473',
             onPositive: '#1f3700',
             positiveContainer: '#2f4f00',
@@ -846,10 +1199,35 @@ export const Accents = {
             onNegative: '#670021',
             negativeContainer: '#8c1134',
             onNegativeContainer: '#ffd9dc',
+
+            surfaceDisabled: Color('#e9e0e4').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#e9e0e4').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#e9e0e4').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#ffaaf8').alpha(0.05).toString(),
+                level1: Color('#ffaaf8').alpha(0.08).toString(),
+                level2: Color('#ffaaf8').alpha(0.11).toString(),
+                level3: Color('#ffaaf8').alpha(0.12).toString(),
+                level4: Color('#ffaaf8').alpha(0.14).toString(),
+                level5: Color('#ffaaf8').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#a700ae').alpha(0.05).toString(),
+                level1: Color('#a700ae').alpha(0.08).toString(),
+                level2: Color('#a700ae').alpha(0.11).toString(),
+                level3: Color('#a700ae').alpha(0.12).toString(),
+                level4: Color('#a700ae').alpha(0.14).toString(),
+                level5: Color('#a700ae').alpha(0.15).toString(),
+            },
         },
 
         light: {
-            primary: '#a700ae', 
+            primary: '#a700ae',
             onPrimary: '#ffffff',
             primaryContainer: '#ffd6f7',
             onPrimaryContainer: '#37003a',
@@ -858,7 +1236,7 @@ export const Accents = {
             onSecondary: '#ffffff',
             secondaryContainer: '#f6daef',
             onSecondaryContainer: '#261625',
-            
+
             tertiary: '#825246',
             onTertiary: '#ffffff',
             tertiaryContainer: '#ffdbd2',
@@ -881,12 +1259,12 @@ export const Accents = {
             onError: Colors.error.light.onError,
             errorContainer: Colors.error.light.errorContainer,
             onErrorContainer: Colors.error.light.onErrorContainer,
-            
+
             warn: Colors.warn.light.warn,
             onWarn: Colors.warn.light.onWarn,
             warnContainer: Colors.warn.light.warnContainer,
             onWarnContainer: Colors.warn.light.onWarnContainer,
-            
+
             positive: '#446813',
             onPositive: '#ffffff',
             positiveContainer: '#c4f18c',
@@ -896,12 +1274,37 @@ export const Accents = {
             onNegative: '#ffffff',
             negativeContainer: '#ffb2bb',
             onNegativeContainer: '#400011',
+
+            surfaceDisabled: Color('#1e1a1d').alpha(0.12).toString(),
+            onSurfaceDisabled: Color('#1e1a1d').alpha(0.38).toString(),
+            outlineVariant: MD3DarkTheme.colors.outlineVariant,
+            shadow: MD3DarkTheme.colors.shadow,
+            scrim: MD3DarkTheme.colors.scrim,
+            backdrop: Color('#1e1a1d').alpha(0.20).toString(),
+
+            elevation: {
+                level0: Color('#a700ae').alpha(0.05).toString(),
+                level1: Color('#a700ae').alpha(0.08).toString(),
+                level2: Color('#a700ae').alpha(0.11).toString(),
+                level3: Color('#a700ae').alpha(0.12).toString(),
+                level4: Color('#a700ae').alpha(0.14).toString(),
+                level5: Color('#a700ae').alpha(0.15).toString(),
+            },
+
+            inverseElevation: {
+                level0: Color('#ffaaf8').alpha(0.05).toString(),
+                level1: Color('#ffaaf8').alpha(0.08).toString(),
+                level2: Color('#ffaaf8').alpha(0.11).toString(),
+                level3: Color('#ffaaf8').alpha(0.12).toString(),
+                level4: Color('#ffaaf8').alpha(0.14).toString(),
+                level5: Color('#ffaaf8').alpha(0.15).toString(),
+            },
         },
     },
 };
 
 // custom css here
-export default Styles = StyleSheet.create ({
+export default StyleSheet.create({
     modal: {
         width: '100%',
         height: '100%',
@@ -956,7 +1359,7 @@ export default Styles = StyleSheet.create ({
     modalRadioButton: {
         paddingHorizontal: 24,
         paddingVertical: 12,
-    }, 
+    },
 
     card: {
         marginBottom: 8,
@@ -969,7 +1372,7 @@ export default Styles = StyleSheet.create ({
         borderTopRightRadius: 12,
         borderTopLeftRadius: 12,
     },
-    
+
     flatListCardBottom: {
         borderBottomRightRadius: 12,
         borderBottomLeftRadius: 12,
@@ -978,9 +1381,9 @@ export default Styles = StyleSheet.create ({
     cardCover: {
         borderRadius: 12,
     },
-    
+
     cardCoverSide: {
-        flex: 1, 
+        flex: 1,
         margin: 12
     },
 
@@ -997,7 +1400,7 @@ export default Styles = StyleSheet.create ({
         marginRight: 'auto',
         alignSelf: 'center',
     },
-    
+
     cardSwipeLeft: {
         flex: 1,
         marginBottom: 8,
@@ -1006,7 +1409,7 @@ export default Styles = StyleSheet.create ({
         justifyContent: 'center',
         alignItems: 'flex-start',
     },
-    
+
     cardSwipeRight: {
         flex: 1,
         marginBottom: 8,
@@ -1031,7 +1434,7 @@ export default Styles = StyleSheet.create ({
     centeredText: {
         textAlign: 'center'
     },
-    
+
     footerContainer: {
         flexDirection: 'row',
         flex: 1,
@@ -1055,20 +1458,20 @@ export default Styles = StyleSheet.create ({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    
+
     centeredImageContainer: {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 24,
     },
-    
+
     fullscreenImage: {
         height: 200,
         width: undefined,
         aspectRatio: 1,
     },
 
-    settingsButton: { 
+    settingsButton: {
         paddingHorizontal: 12,
         paddingVertical: 12,
     },
@@ -1081,8 +1484,8 @@ export default Styles = StyleSheet.create ({
         flexShrink: 1,
         marginRight: 'auto',
     },
-    
-    settingsSectionTitle: { 
+
+    settingsSectionTitle: {
         paddingHorizontal: 20,
         paddingTop: 8,
         paddingBottom: 4
@@ -1107,7 +1510,7 @@ export default Styles = StyleSheet.create ({
     },
 
     chipContainer: {
-        flexDirection: "row", 
+        flexDirection: "row",
         flexWrap: "wrap",
     },
 
@@ -1138,7 +1541,7 @@ export default Styles = StyleSheet.create ({
         borderBottomRightRadius: 16,
         overflow: 'hidden',
     },
-    
+
     drawerPermanent: {
         flex: 1,
 
@@ -1160,7 +1563,7 @@ export default Styles = StyleSheet.create ({
         flex: 1,
         justifyContent: 'center'
     },
-    
+
     wizardCardWithButtonContainer: {
         marginBottom: 8,
         marginHorizontal: 16,

@@ -13,15 +13,20 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { TouchableNativeFeedback } from 'react-native-gesture-handler';
 
 import { snackbarRef } from '../App';
-import { Backend } from '../Backend';
+import Backend from '../Backend';
+import Styles from '../Styles';
+import { ThemeProps, LangProps, LearningStatus, SortType } from '../Props';
 
-function SegmentedButton({ theme, lang, sourceFilter, applySorting }) {
-    const [sortType, setSortType] = useState();
-    const [learningDisabled, setLearningDisabled] = useState();
+interface Props extends ThemeProps, LangProps {
+    applySorting: (sortingType: SortType) => void,
+}
 
-    const learningStatus = useRef();
+function SegmentedButton(props: Props) {
+    const [sortType, setSortType] = useState<SortType>();
+    const [learningDisabled, setLearningDisabled] = useState<boolean>();
 
-    // on component mount
+    const learningStatus = useRef<LearningStatus>();
+
     useEffect(() => {
         (async () => {
             learningStatus.current = await Backend.GetLearningStatus();
@@ -38,55 +43,63 @@ function SegmentedButton({ theme, lang, sourceFilter, applySorting }) {
         })();
     });
 
-    const changeSortType = (newSortType) => {
-        if(learningDisabled && newSortType == 'learning') {
-            snackbarRef.current.showSnack((lang.rate_more).replace('%articles%',
-                learningStatus.current?.SortingEnabledIn));
+    const changeSortType = (newSortType: SortType) => {
+        if (learningDisabled && newSortType == 'learning') {
+            snackbarRef.current?.showSnack((props.lang.rate_more).replace('%articles%',
+                learningStatus.current?.SortingEnabledIn.toString() ?? "0"));
             return;
         }
 
-        if(sortType != newSortType) {
+        if (sortType != newSortType) {
             setSortType(newSortType);
-            applySorting(newSortType);
+            props.applySorting(newSortType);
         }
-        
+
         Backend.UserSettings.SortType = newSortType;
         Backend.UserSettings.Save();
     }
-    
-    return(
-        <View style={[Styles.segmentedButtonContainerOutline, {backgroundColor: theme.colors.outline}]}>
-        <View style={Styles.segmentedButtonContainer}>
-            <View style={{flex: 1}}>
-            <TouchableNativeFeedback style={{backgroundColor: theme.colors.surface}}
-                background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
-                onPress={() => changeSortType('learning')}>
-                <View style={[Styles.segmentedButton, {borderRightColor: theme.colors.outline, backgroundColor: (!learningDisabled ? 
-                    (sortType == 'learning' ? theme.colors.secondaryContainer : theme.colors.surface) : theme.colors.disabledContainer)}]}>
-                    { sortType == 'learning' ? <Icon size={18} name="check" color={theme.colors.onSecondaryContainer} 
-                        style={Styles.segmentedButtonIcon}/> : null }
-                    <Text variant="labelLarge" style={{color: (!learningDisabled ? (sortType == 'learning' ? 
-                        theme.colors.onSecondaryContainer : theme.colors.onSurface) : theme.colors.disabledContent)}}>{lang.sort_learning}</Text>
-                </View>
-            </TouchableNativeFeedback>
-            </View>
 
-            <View style={{flex: 1}}>
-            <TouchableNativeFeedback
-                background={TouchableNativeFeedback.Ripple(theme.colors.pressedState)}    
-                onPress={() => changeSortType('date')}>
-                <View style={[Styles.segmentedButton, {borderRightWidth: 0, backgroundColor: (sortType == 'date' ? 
-                    theme.colors.secondaryContainer : theme.colors.surface)}]}>
-                    { sortType == 'date' ? <Icon size={18} name="check" color={theme.colors.onSecondaryContainer} 
-                        style={Styles.segmentedButtonIcon}/> : null }
-                    <Text variant="labelLarge" style={{color: (sortType == 'date' ? 
-                        theme.colors.onSecondaryContainer : theme.colors.onSurface)}}>{lang.sort_date}</Text>
+    return (
+        <View style={[Styles.segmentedButtonContainerOutline, { backgroundColor: props.theme.colors.outline }]}>
+            <View style={Styles.segmentedButtonContainer}>
+                <View style={{ flex: 1 }}>
+                    <TouchableNativeFeedback style={{ backgroundColor: props.theme.colors.surface }}
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
+                        onPress={() => changeSortType('learning')}>
+                        <View style={[Styles.segmentedButton, {
+                            borderRightColor: props.theme.colors.outline, backgroundColor: (!learningDisabled ?
+                                (sortType == 'learning' ? props.theme.colors.secondaryContainer : props.theme.colors.surface) : props.theme.colors.surfaceDisabled)
+                        }]}>
+                            {sortType == 'learning' ? <Icon size={18} name="check" color={props.theme.colors.onSecondaryContainer}
+                                style={Styles.segmentedButtonIcon} /> : null}
+                            <Text variant="labelLarge" style={{
+                                color: (!learningDisabled ? (sortType == 'learning' ?
+                                    props.theme.colors.onSecondaryContainer : props.theme.colors.onSurface) : props.theme.colors.onSurfaceDisabled)
+                            }}>{props.lang.sort_learning}</Text>
+                        </View>
+                    </TouchableNativeFeedback>
                 </View>
-            </TouchableNativeFeedback>
+
+                <View style={{ flex: 1 }}>
+                    <TouchableNativeFeedback
+                        background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
+                        onPress={() => changeSortType('date')}>
+                        <View style={[Styles.segmentedButton, {
+                            borderRightWidth: 0, backgroundColor: (sortType == 'date' ?
+                                props.theme.colors.secondaryContainer : props.theme.colors.surface)
+                        }]}>
+                            {sortType == 'date' ? <Icon size={18} name="check" color={props.theme.colors.onSecondaryContainer}
+                                style={Styles.segmentedButtonIcon} /> : null}
+                            <Text variant="labelLarge" style={{
+                                color: (sortType == 'date' ?
+                                    props.theme.colors.onSecondaryContainer : props.theme.colors.onSurface)
+                            }}>{props.lang.sort_date}</Text>
+                        </View>
+                    </TouchableNativeFeedback>
+                </View>
             </View>
-        </View>
         </View>
     );
 }
 
-export default withTheme(SegmentedButton);
+export default withTheme(React.memo(SegmentedButton));

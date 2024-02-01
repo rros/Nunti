@@ -1,4 +1,6 @@
+import { SortType as SortType } from '../Backend/ArticlesFilter';
 import Log from '../Log';
+import { AccentName, BrowserMode, LanguageCode, ThemeName } from '../Props';
 import { Feed } from './Feed';
 import { Storage } from './Storage';
 import { Tag } from './Tag';
@@ -9,17 +11,17 @@ export class UserSettings {
     public FeedList: Feed[] = [];
     public Tags: Tag[] = [];
 
-    public SortType = 'date';
+    public SortType: SortType = 'date';
 
     public DisableImages = false;
     public LargeImages = true;
     public WifiOnly = false;
-    public BrowserMode = 'webview';
+    public BrowserMode: BrowserMode = 'webview';
     public MaxArticleAgeDays = 7;
 
-    public Language = 'system';
-    public Theme = 'system';
-    public Accent = 'default';
+    public Language: LanguageCode = 'system';
+    public Theme: ThemeName = 'system';
+    public Accent: AccentName = 'default';
 
     public FirstLaunch = true;
     

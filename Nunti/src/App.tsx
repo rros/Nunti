@@ -1,147 +1,168 @@
 import React, { useState, useRef, useEffect, useImperativeHandle } from 'react';
-import { 
+import {
     StyleSheet,
     StatusBar,
     Appearance,
     NativeModules,
-    BackHandler, 
+    BackHandler,
     Linking,
-    Platform,
     Dimensions,
     View,
     TouchableWithoutFeedback,
+    NativeEventSubscription,
 } from 'react-native';
 
-import { 
-    Provider as PaperProvider,
+import {
     Appbar,
     Drawer,
     Portal,
-    Modal,
     Text,
     Divider,
     Button,
-    MD3LightTheme as LightTheme,
-    MD3DarkTheme as DarkTheme
+    MD3DarkTheme,
+    MD3LightTheme,
+    withTheme,
 } from 'react-native-paper';
 
-import Animated, { 
+import Animated, {
     useAnimatedStyle,
     useSharedValue,
     withTiming,
     interpolate,
-    interpolateColor,
     runOnJS,
 } from 'react-native-reanimated';
 
-import Color from 'color';
 import { InAppBrowser } from 'react-native-inappbrowser-reborn';
-import { WebView } from 'react-native-webview';
 
-// our files
 import Styles, { Accents } from './Styles';
-import * as Languages from './Locale';
+import { Languages } from './Locale';
 import Wizard from './Screens/Wizard';
-import ArticlesPageOptimisedWrapper from './Screens/Articles';
+import ArticlesPage from './Screens/Articles';
 import Settings from './Screens/Settings';
 import About from './Screens/About';
 import LegacyWebview from './Screens/LegacyWebview';
-import WebpageReader from './Screens/WebpageReader.tsx';
+import WebpageReader from './Screens/WebpageReader';
 import Backend from './Backend';
 import { Utils } from './Backend/Utils';
 import Log from './Log';
 
-import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
-import { NavigationContainer, useNavigationContainerRef, CommonActions } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import { ScrollView } from 'react-native-gesture-handler';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
+import { DrawerContentComponentProps, DrawerHeaderProps, createDrawerNavigator } from '@react-navigation/drawer';
 
 import RNBootSplash from 'react-native-bootsplash';
 import BackgroundFetch from './BackgroundFetch';
 import { Background } from './Backend/Background';
 import { Storage } from './Backend/Storage';
+import {
+    Accent, ScreenTypeProps, Theme, NavigationStateProps, AccentName, ThemeName,
+    Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef, LangProps,
+    ThemeProps, WordIndex, LanguageCode, BrowserMode, ScreenOptions
+} from './Props';
+import Color from 'color';
 
-const NavigationDrawer = createDrawerNavigator();
+type NavigationParamList = {
+    feed: undefined,
+    bookmarks: undefined,
+    history: undefined,
+    wizard: undefined,
+    settings_handler: undefined,
+    about: undefined,
+    legacy_webview: { source: string, url: string },
+    reader_mode: { source: string, url: string },
+};
+
+const NavigationDrawer = createDrawerNavigator<NavigationParamList>();
 const MaterialYouModule = NativeModules.MaterialYouModule;
 const NotificationsModule = NativeModules.Notifications;
 
-export const modalRef = React.createRef();
-export const snackbarRef = React.createRef();
-export const browserRef = React.createRef();
-export const globalStateRef = React.createRef();
-export const logRef = React.createRef();
+export const modalRef = React.createRef<ModalRef>();
+export const snackbarRef = React.createRef<SnackbarRef>();
+export const browserRef = React.createRef<BrowserRef>();
+export const globalStateRef = React.createRef<GlobalStateRef>();
+export const logRef = React.createRef<LogRef>();
 
-export default function App (props) {
-    const [theme, setTheme] = useState(DarkTheme);
-    const [language, setLanguage] = useState(Languages.English);
+interface AppProps extends ThemeProps {
+    setTheme: (theme: Theme) => void,
+}
+
+function App(props: AppProps) {
+    const [language, setLanguage] = useState(Languages.en);
 
     const [snackVisible, setSnackVisible] = useState(false);
     const [snackMessage, setSnackMessage] = useState('');
     const [snackButtonLabel, setSnackButtonLabel] = useState('');
-    const snackButton = React.useRef();
+    const snackCallback = React.useRef(() => { });
     const snackTimerDuration = React.useRef(4);
-    const snackTimer = React.useRef();
-    
+    const snackTimer = React.useRef<NodeJS.Timeout>();
+
     const [screenHeight, setScreenHeight] = useState(Dimensions.get('window').height);
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
     const [screenType, setScreenType] = useState(0);
-    
+
     const [modalVisible, setModalVisible] = useState(false);
-    const [modalContent, setModalContent] = useState<ModalChildren>(null);
-    
+    const [modalContent, setModalContent] = useState<JSX.Element>();
+
     const [prefsLoaded, setPrefsLoaded] = useState(false);
     const [forceValue, forceUpdate] = useState(false);
-    
+
     const shouldFeedReload = useRef(false);
     const globalLog = useRef(Log.FE);
     const log = useRef(globalLog.current.context('App.tsx'));
     const snackLog = useRef(log.current.context('Snackbar'));
     const modalLog = useRef(log.current.context('Modal'));
-    
+
     // animations
     const snackAnim = useSharedValue(0);
     const modalAnim = useSharedValue(0);
 
     const modalHideAnimationEnd = () => {
-        if(modalContent != null) {
-            setModalContent(null);
+        if (modalContent !== undefined) {
+            setModalContent(undefined);
         }
     }
-    
+
     const snackHideAnimationEnd = () => {
-        if(snackVisible == true) {
+        if (snackVisible == true) {
             snackLog.current.debug('Snack set to invisible');
             setSnackVisible(false);
         }
     }
-    
-    const snackAnimStyle = useAnimatedStyle(() => { return {
-        opacity: withTiming(snackAnim.value, {duration: 200}, (finished) => {
-            if(snackAnim.value == 0) {
-                runOnJS(snackHideAnimationEnd)();
-            }
-        }),
-        scaleX: withTiming(interpolate(snackAnim.value, [0, 1], [0.9, 1])),
-        scaleY: withTiming(interpolate(snackAnim.value, [0, 1], [0.9, 1])),
-    };});
-    const modalContentAnimStyle = useAnimatedStyle(() => { return {
-        opacity: withTiming(modalAnim.value, null, (finished) => {
-            if(modalAnim.value == 0) {
-                runOnJS(modalHideAnimationEnd)();
-            }
-        }),
-        scaleX: withTiming(interpolate(modalAnim.value, [0, 1], [0.8, 1])),
-        scaleY: withTiming(interpolate(modalAnim.value, [0, 1], [0.8, 1])),
-    };});
-    const modalScrimAnimStyle = useAnimatedStyle(() => { return {
-        opacity: withTiming(modalAnim.value),
-    };});
 
-    const appearanceSubscription = useRef();
-    const drawerNavigationRef = useNavigationContainerRef();
-    
+    const snackAnimStyle = useAnimatedStyle(() => {
+        return {
+            opacity: withTiming(snackAnim.value, { duration: 200 }, () => {
+                if (snackAnim.value == 0) {
+                    runOnJS(snackHideAnimationEnd)();
+                }
+            }),
+            scaleX: withTiming(interpolate(snackAnim.value, [0, 1], [0.9, 1])),
+            scaleY: withTiming(interpolate(snackAnim.value, [0, 1], [0.9, 1])),
+        };
+    });
+    const modalContentAnimStyle = useAnimatedStyle(() => {
+        return {
+            opacity: withTiming(modalAnim.value, undefined, () => {
+                if (modalAnim.value == 0) {
+                    runOnJS(modalHideAnimationEnd)();
+                }
+            }),
+            scaleX: withTiming(interpolate(modalAnim.value, [0, 1], [0.8, 1])),
+            scaleY: withTiming(interpolate(modalAnim.value, [0, 1], [0.8, 1])),
+        };
+    });
+    const modalScrimAnimStyle = useAnimatedStyle(() => {
+        return {
+            opacity: withTiming(modalAnim.value),
+        };
+    });
+
+    const appearanceSubscription = useRef<NativeEventSubscription>();
+    const drawerNavigationRef = React.useRef<NavigationContainerRef<NavigationParamList>>(null);
+
     // makes sure the modal gets hidden after the full animation has run
     useEffect(() => {
-        if(modalContent != null) {
+        if (modalContent != null) {
             modalLog.current.debug('Starting modal appear animation');
             modalAnim.value = 1;
         } else {
@@ -149,19 +170,19 @@ export default function App (props) {
             setModalVisible(false);
         }
     }, [modalContent]);
-    
+
     useEffect(() => {
-        if(snackVisible) {
+        if (snackVisible) {
             snackLog.current.debug('Starting snack appear animation');
             snackAnim.value = 1;
 
             snackTimerDuration.current = 4;
             snackTimer.current = setInterval(() => {
                 snackTimerDuration.current -= 1;
-                
+
                 if (snackTimerDuration.current <= 0) {
                     snackLog.current.debug('Hiding snack after a 4 second interval');
-                    
+
                     clearInterval(snackTimer.current);
                     hideSnack();
                 }
@@ -169,7 +190,6 @@ export default function App (props) {
         }
     }, [snackVisible]);
 
-    // on component mount
     useEffect(() => {
         (async () => {
             await Backend.Init();
@@ -210,7 +230,7 @@ export default function App (props) {
             // or if the user revoked the permission
             // we turn off the setting instead of asking for the permission again because the revokal of the permission
             // is a user choice that was made 
-            if(!(await NotificationsModule.areNotificationsEnabled()) && Backend.UserSettings.EnableNotifications) {
+            if (!(await NotificationsModule.areNotificationsEnabled()) && Backend.UserSettings.EnableNotifications) {
                 log.current.warn("Notification permission was revoked, turning off notifications");
                 Backend.UserSettings.EnableNotifications = false;
                 Backend.UserSettings.Save();
@@ -221,28 +241,28 @@ export default function App (props) {
 
         // disable back button if the user is in the wizard
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if(modalAnim.value) {
+            if (modalRef.current?.modalVisible) {
                 hideModal();
                 return true;
-            } else if(drawerNavigationRef.getCurrentRoute().name != 'feed'
+            } else if (drawerNavigationRef.current!.getCurrentRoute()?.name != 'feed'
                 && !Backend.UserSettings.FirstLaunch) {
-                drawerNavigationRef.navigate('feed');
+                drawerNavigationRef.current!.navigate({ name: 'feed', params: undefined});
                 return true;
             } else {
                 return false;
             }
         });
 
-        const dimensionsSubscription = Dimensions.addEventListener('change', ({window, screen}) => 
+        const dimensionsSubscription = Dimensions.addEventListener('change', ({ window }) =>
             dimensionsUpdate(window.height, window.width));
 
         // splash screen will hide when navigator has finished loading
-        
-        return () => { 
+
+        return () => {
             backHandler.remove();
             dimensionsSubscription.remove();
-            appearanceSubscription?.remove();
-            
+            appearanceSubscription.current?.remove();
+
             clearInterval(snackTimer.current);
         }
     }, []);
@@ -255,15 +275,15 @@ export default function App (props) {
 
         let newScreenType;
         const smallerSide = height > width ? width : height;
-        if(smallerSide < 600) {
+        if (smallerSide < 600) {
             newScreenType = 0; // vertical cards, vertical details, hidden drawer
-        } else if(smallerSide >= 600 && smallerSide < 839) {
+        } else if (smallerSide >= 600 && smallerSide < 839) {
             newScreenType = 2; // 2+ => horizontal cards, vertical details, permanent drawer
-        } else if(smallerSide >= 839) { 
-            newScreenType = 4; 
+        } else {
+            newScreenType = 4;
         }
 
-        if(smallerSide == height) {
+        if (smallerSide == height) {
             newScreenType += 1; // landscape modes of the breakpoints
         }
 
@@ -277,207 +297,129 @@ export default function App (props) {
 
         await updateLanguage(Backend.UserSettings.Language);
         await updateTheme(Backend.UserSettings.Theme, Backend.UserSettings.Accent);
-        
+
         log.current.info('FE is ready, hiding splashscreen');
         setPrefsLoaded(true);
     }
 
-    const updateLanguage = (newLanguage: string) => {
-        Backend.UserSettings.Language = newLanguage;
+    const updateLanguage = (newLanguageCode: LanguageCode) => {
+        Backend.UserSettings.Language = newLanguageCode;
         Backend.UserSettings.Save();
-        
-        let locale: string;
 
-        if(newLanguage == 'system'){
-            locale = NativeModules.I18nManager.localeIdentifier;
-        } else {
-            locale = newLanguage;
+        let newLanguage: Language | undefined = undefined;
+        const languageCodeStr: string = newLanguageCode == 'system' ? NativeModules.I18nManager.localeIdentifier : newLanguageCode;
+
+        for (const [key, value] of Object.entries(Languages)) {
+            if (languageCodeStr.includes(key))
+                newLanguage = value;
         }
 
-        for(let language in Languages){
-            if(locale.includes(Languages[language].code)){
-                setLanguage(Languages[language]);
-                log.current.debug('language set to', Languages[language].code)
-                return Languages[language]; // for updating the modal
-            }
+        if (newLanguage === undefined) {
+            log.current.error('language update failed, did not find coresponding language object');
+            return language;
+        } else {
+            log.current.debug('language set to', newLanguage.code);
+            setLanguage(newLanguage);
+            return newLanguage;
         }
     }
 
-    const updateTheme = async (themeName: string, accentName: string) => {
+    const updateTheme = async (themeName: ThemeName, accentName: AccentName) => {
         Backend.UserSettings.Theme = themeName;
         Backend.UserSettings.Accent = accentName;
         Backend.UserSettings.Save();
-        
-        let newTheme;
-        let palette;
 
-        if(themeName == 'system') {
-            if(Appearance.getColorScheme() == 'light'){
-                newTheme = LightTheme;
-            } else {
-                newTheme = DarkTheme;
-            }
+        let newTheme: Theme = { dark: props.theme.dark, themeName: themeName, accentName: accentName, colors: props.theme.colors };
+        if (themeName == 'system') {
+            newTheme.dark = Appearance.getColorScheme() == 'light' ? false : true;
 
-            // live update
             appearanceSubscription.current?.remove();
             appearanceSubscription.current = Appearance.addChangeListener(() => {
                 hideModal();
                 updateTheme('system', accentName);
             });
-        } else if (themeName == 'light'){
-            appearanceSubscription.current?.remove();
-            newTheme = LightTheme;
-        } else { // dark and black themes
-            appearanceSubscription.current?.remove();
-            newTheme = DarkTheme;
         }
-            
-        palette = await getPalette(accentName, newTheme.dark);
-        newTheme = await applyPalette(newTheme, palette);
-        
-        newTheme.accentName = accentName;
-        newTheme.themeName = themeName;
-            
+        else if (themeName == 'light')
+            newTheme.dark = false;
+        else
+            newTheme.dark = true;
+
+        newTheme.colors = await getAccent(accentName, newTheme.dark);
+
         // override background colours when using black theme
         // otherwise identical to dark theme
-        if(newTheme.themeName == 'black') {
+        if (newTheme.themeName == 'black') {
+            newTheme.colors = { ...newTheme.colors }; // copy needed so that we do not overwrite accent
             newTheme.colors.background = '#000000';
             newTheme.colors.surface = '#000000';
-        } 
+        }
 
-        setTheme(newTheme);
-        forceUpdate(!forceValue) // react is retarded and doesn't refresh
-        
+        props.setTheme(newTheme);
+        forceUpdate(!forceValue)
+
         setStatusBarColor(newTheme.colors.surface, newTheme.dark);
 
         log.current.debug('Theme set to ' + newTheme.themeName + ' with ' + newTheme.accentName + ' accent.');
-        return newTheme; // for updating the modal
+        log.current.debug('Theme is ' + (newTheme.dark ? 'dark' : 'light'));
+        return newTheme;
     }
 
     const setStatusBarColor = async (statusBarColor: string, darkTheme: boolean) => {
-        if(!prefsLoaded) { // setting statusbar on startup is bugged, so we wait a while
-            await new Promise(r => setTimeout(r, 1000));
-        }
-
-        if(darkTheme) {
+        if (darkTheme)
             StatusBar.setBarStyle('light-content');
-        } else {
+        else
             StatusBar.setBarStyle('dark-content');
-        }
 
         StatusBar.setBackgroundColor(statusBarColor);
     }
 
-    const getPalette = async (accentName: string, isDarkTheme: boolean): {} => {
-        let palette;
+    const getAccent = async (accentName: AccentName, isDarkTheme: boolean) => {
+        let accent: Accent;
+        if (accentName == 'material_you' && isDarkTheme)
+            accent = patchMaterialYouPalette(await MaterialYouModule.getMaterialYouPalette('dark'), true);
+        else if (accentName == 'material_you')
+            accent = patchMaterialYouPalette(await MaterialYouModule.getMaterialYouPalette('light'), false);
+        else
+            accent = isDarkTheme ? { ...Accents[accentName].dark } : { ...Accents[accentName].light };
 
-        try {
-            if(isDarkTheme) {
-                if(accentName == 'material_you') {
-                    palette = await MaterialYouModule.getMaterialYouPalette('dark');
-                } else {
-                    palette = Accents[accentName].dark;
-                }
-            } else {
-                if(accentName == 'material_you') {
-                    palette = await MaterialYouModule.getMaterialYouPalette('light');
-                } else {
-                    palette = Accents[accentName].light;
-                }
-            }
-        } catch {
-            // fallback
-            if(palette === undefined) {
-                log.current.warn('Accent not found, falling back to default accent')
-                accentName = 'default';
-
-                Backend.UserSettings.Accent = accentName;
-                Backend.UserSettings.Save();
-
-                palette = await getPalette(accentName, isDarkTheme);
-            }
-        }
-
-        return palette;
+        return accent;
     }
 
-    const applyPalette = (theme, palette): {} => {
-        theme.colors.primary = palette.primary; 
-        theme.colors.onPrimary = palette.onPrimary;
-        theme.colors.primaryContainer = palette.primaryContainer;
-        theme.colors.onPrimaryContainer = palette.onPrimaryContainer;
+    const patchMaterialYouPalette = (accent: Accent, isDark: boolean) => {
+        accent.surfaceDisabled = Color(accent.onSurface).alpha(0.12).toString();
+        accent.onSurfaceDisabled = Color(accent.onSurface).alpha(0.38).toString();
+        accent.outlineVariant = isDark ? MD3DarkTheme.colors.outlineVariant : MD3LightTheme.colors.outlineVariant;
+        accent.shadow = isDark ? MD3DarkTheme.colors.shadow : MD3LightTheme.colors.shadow;
+        accent.scrim = isDark ? MD3DarkTheme.colors.scrim : MD3LightTheme.colors.scrim;
+        accent.backdrop = Color(accent.onSurface).alpha(0.20).toString();
 
-        theme.colors.secondary = palette.secondary;
-        theme.colors.onSecondary = palette.onSecondary;
-        theme.colors.secondaryContainer = palette.secondaryContainer;
-        theme.colors.onSecondaryContainer = palette.onSecondaryContainer;
-        
-        theme.colors.tertiary = palette.tertiary;
-        theme.colors.onTertiary = palette.onTertiary;
-        theme.colors.tertiaryContainer = palette.tertiaryContainer;
-        theme.colors.onTertiaryContainer = palette.onTertiaryContainer;
+        accent.elevation = {
+            level0: Color(accent.primary).alpha(0.05).toString(),
+            level1: Color(accent.primary).alpha(0.08).toString(),
+            level2: Color(accent.primary).alpha(0.11).toString(),
+            level3: Color(accent.primary).alpha(0.12).toString(),
+            level4: Color(accent.primary).alpha(0.14).toString(),
+            level5: Color(accent.primary).alpha(0.15).toString(),
+        };
 
-        theme.colors.background = palette.background;
-        theme.colors.onBackground = palette.onBackground;
-        theme.colors.surface = palette.surface;
-        theme.colors.onSurface = palette.onSurface;
+        accent.inverseElevation = {
+            level0: Color(accent.inversePrimary).alpha(0.05).toString(),
+            level1: Color(accent.inversePrimary).alpha(0.08).toString(),
+            level2: Color(accent.inversePrimary).alpha(0.11).toString(),
+            level3: Color(accent.inversePrimary).alpha(0.12).toString(),
+            level4: Color(accent.inversePrimary).alpha(0.14).toString(),
+            level5: Color(accent.inversePrimary).alpha(0.15).toString(),
+        };
 
-        theme.colors.surfaceVariant = palette.surfaceVariant;
-        theme.colors.onSurfaceVariant = palette.onSurfaceVariant;
-        theme.colors.outline = palette.outline;
-
-        theme.colors.inversePrimary = palette.inversePrimary;
-        theme.colors.inverseSurface = palette.inverseSurface;
-        theme.colors.inverseOnSurface = palette.inverseOnSurface;
-
-        theme.colors.error = palette.error;
-        theme.colors.onError = palette.onError;
-        theme.colors.errorContainer = palette.errorContainer;
-        theme.colors.onErrorContainer = palette.onErrorContainer;
-        
-        theme.colors.warn = palette.warn;
-        theme.colors.onWarn = palette.onWarn;
-        theme.colors.warnContainer = palette.warnContainer;
-        theme.colors.onWarnContainer = palette.onWarnContainer;
-        
-        theme.colors.positive = palette.positive;
-        theme.colors.onPositive = palette.onPositive;
-        theme.colors.positiveContainer = palette.positiveContainer;
-        theme.colors.onPositiveContainer = palette.onPositiveContainer;
-
-        theme.colors.negative = palette.negative;
-        theme.colors.onNegative = palette.onNegative;
-        theme.colors.negativeContainer = palette.negativeContainer;
-        theme.colors.onNegativeContainer = palette.onNegativeContainer;
-
-        theme.colors.elevation.level1 = Color(palette.primary).alpha(0.05).toString();
-        theme.colors.elevation.level2 = Color(palette.primary).alpha(0.08).toString();
-        theme.colors.elevation.level3 = Color(palette.primary).alpha(0.11).toString();
-        theme.colors.elevation.level4 = Color(palette.primary).alpha(0.12).toString();
-        theme.colors.elevation.level5 = Color(palette.primary).alpha(0.14).toString();
-        
-        // snackbar
-        theme.colors.inverseElevation = {};
-        //theme.colors.inverseElevation.level1 = Color(palette.inversePrimary).alpha(0.05).toString();
-        theme.colors.inverseElevation.level2 = Color(palette.inversePrimary).alpha(0.08).toString();
-        //theme.colors.inverseElevation.level3 = Color(palette.inversePrimary).alpha(0.11).toString();
-        //theme.colors.inverseElevation.level4 = Color(palette.inversePrimary).alpha(0.12).toString();
-        //theme.colors.inverseElevation.level5 = Color(palette.inversePrimary).alpha(0.14).toString();
-
-        theme.colors.pressedState = Color(palette.onSurface).alpha(0.12).toString();
-        theme.colors.disabledContent = Color(palette.onSurfaceVariant).alpha(0.38).toString();
-        theme.colors.disabledContainer = Color(palette.onSurfaceVariant).alpha(0.12).toString();
-        theme.colors.backdrop = Color(palette.onSurface).alpha(0.20).toString(); // recommended value is 0.32
-
-        return theme;
+        return accent;
     }
 
     // global component controls
     const showSnack = async (message: string, buttonLabel: string = '',
-        callback: fun = () => { }) => {
-        
+        callback: typeof snackCallback.current = () => { }) => {
+
         snackLog.current.debug('Show snack called');
-        if(snackVisible == true){ // hide the previous snack and show the new one
+        if (snackVisible == true) { // hide the previous snack and show the new one
             snackLog.current.debug('Closing previous snack');
             hideSnack();
 
@@ -485,14 +427,14 @@ export default function App (props) {
             await new Promise(r => setTimeout(r, 300));
         }
 
-        if(buttonLabel == '') {
+        if (buttonLabel == '')
             setSnackButtonLabel(language.dismiss);
-        } else {
+        else
             setSnackButtonLabel(buttonLabel);
-        }
+
         setSnackMessage(message);
-        snackButton.current = callback;
-        
+        snackCallback.current = callback;
+
         snackLog.current.debug('Snack set to visible');
         setSnackVisible(true);
 
@@ -505,8 +447,8 @@ export default function App (props) {
         snackAnim.value = 0;
         // snack gets hidden after animation finishes
     }
-    
-    const showModal = (newModalContent: ModalChildren) => {
+
+    const showModal = (newModalContent: JSX.Element) => {
         modalLog.current.debug('Modal set to visible');
         setModalVisible(true);
         setModalContent(newModalContent);
@@ -519,14 +461,13 @@ export default function App (props) {
         // modal gets hidden after animation finishes
     }
 
-    const openBrowser = async (url: string, ignoreConnectionStatus: boolean = false, useParentSource: boolean = false) => {
-        let browserType: string = Backend.UserSettings.BrowserMode;
+    const openBrowser = async (url: string, source?: string, ignoreConnectionStatus: boolean = false) => {
+        let browserType: BrowserMode = Backend.UserSettings.BrowserMode;
         if (!ignoreConnectionStatus && await Utils.IsDoNotDownloadActive())
-            browserType = 'webpage_reader';
+            browserType = 'reader_mode';
 
-        let source = drawerNavigationRef.getCurrentRoute().name;
-        if (useParentSource)
-            source = drawerNavigationRef.getCurrentRoute()?.params.source;
+        if (source === undefined)
+            source = drawerNavigationRef.current!.getCurrentRoute()?.name;
 
         switch (browserType) {
             case 'webview':
@@ -537,15 +478,23 @@ export default function App (props) {
                 break;
             case 'legacy_webview':
                 hideModal();
-                drawerNavigationRef.navigate('legacyWebview', { uri: url,
-                    source: source });
+                drawerNavigationRef.current!.navigate({
+                    name: 'legacy_webview', params: {
+                        url: url,
+                        source: source!,
+                    }
+                });
                 break;
             case 'external_browser':
                 Linking.openURL(url);
                 break;
-            case 'webpage_reader':
-                drawerNavigationRef.navigate('webpageReader', { uri: url, 
-                    source: source });
+            case 'reader_mode':
+                drawerNavigationRef.current!.navigate({
+                    name: 'reader_mode', params: {
+                        url: url,
+                        source: source!,
+                    }
+                });
                 break;
             default:
                 log.current.error("wrong browser mode type");
@@ -557,7 +506,7 @@ export default function App (props) {
         log.current.debug('Feed reload requested')
         shouldFeedReload.current = true;
 
-        if(resetCache) {
+        if (resetCache) {
             Storage.ResetCache();
         }
     }
@@ -567,13 +516,13 @@ export default function App (props) {
 
         await Storage.ResetAllData();
         await reloadGlobalStates();
-        
-        drawerNavigationRef.resetRoot({
+
+        drawerNavigationRef.current!.resetRoot({
             index: 0,
             routes: [{ name: 'wizard' }],
         });
-        drawerNavigationRef.navigate('wizard');
-        
+        drawerNavigationRef.current!.navigate({ name: 'wizard', params: undefined });
+
         hideModal();
         showSnack(language.wiped_data);
     }
@@ -581,196 +530,210 @@ export default function App (props) {
     useImperativeHandle(modalRef, () => ({ modalVisible, hideModal, showModal }));
     useImperativeHandle(snackbarRef, () => ({ showSnack }));
     useImperativeHandle(browserRef, () => ({ openBrowser }));
-    useImperativeHandle(globalStateRef, () => ({ updateLanguage, updateTheme, resetApp, 
-        reloadFeed, shouldFeedReload }));
+    useImperativeHandle(globalStateRef, () => ({
+        updateLanguage, updateTheme, resetApp,
+        reloadFeed, shouldFeedReload
+    }));
     useImperativeHandle(logRef, () => ({ globalLog }));
 
-    if(prefsLoaded == false){
+    if (prefsLoaded == false)
         return null;
-    } // else
-    
-    return(
-        <GestureHandlerRootView style={{ flex: 1 }}>
-        <PaperProvider theme={theme}>
-            <NavigationContainer theme={theme} ref={drawerNavigationRef}
-                onReady={() => RNBootSplash.hide({ fade: true }) }>
+
+    return (
+        <>
+            <NavigationContainer theme={props.theme as { dark: boolean, colors: any }} ref={drawerNavigationRef}
+                onReady={() => RNBootSplash.hide({ fade: true })}>
                 <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
-                     drawerContent={(props) => <CustomDrawer {...props} screenType={screenType}
-                        theme={theme} lang={language} />} backBehavior="none"
-                     screenOptions={{drawerType: screenType >= 2 ? 'permanent' : 'front', overlayColor: theme.colors.backdrop,
-                        header: (props) => <CustomHeader {...props} screenType={screenType}
-                            theme={theme} lang={language} />}}>
-                    <NavigationDrawer.Screen name="feed" initialParams={{ showFilterModal: false }}>
-                        {props => <ArticlesPageOptimisedWrapper {...props} source="feed" buttonType="rate"
+                    drawerContent={(_props) => <CustomDrawer {..._props} screenType={screenType}
+                        theme={props.theme} lang={language} />} backBehavior="none"
+                    screenOptions={{
+                        drawerType: screenType >= 2 ? 'permanent' : 'front', overlayColor: props.theme.colors.backdrop,
+                        header: (_props) => <CustomHeader {..._props} screenType={screenType}
+                            theme={props.theme} lang={language} />
+                    }}>
+                    <NavigationDrawer.Screen name="feed">
+                        {props => <ArticlesPage {...props} source="feed" buttonType="rate"
                             lang={language} screenType={screenType} />}
                     </NavigationDrawer.Screen>
-                    <NavigationDrawer.Screen name="bookmarks" initialParams={{ showFilterModal: false }}>
-                        {props => <ArticlesPageOptimisedWrapper {...props} source="bookmarks" buttonType="delete"
+                    <NavigationDrawer.Screen name="bookmarks">
+                        {props => <ArticlesPage {...props} source="bookmarks" buttonType="delete"
                             lang={language} screenType={screenType} />}
                     </NavigationDrawer.Screen>
-                    <NavigationDrawer.Screen name="history" initialParams={{ showFilterModal: false }}>
-                        {props => <ArticlesPageOptimisedWrapper {...props} source="history" buttonType="none"
+                    <NavigationDrawer.Screen name="history">
+                        {props => <ArticlesPage {...props} source="history" buttonType="none"
                             lang={language} screenType={screenType} />}
                     </NavigationDrawer.Screen>
-                    <NavigationDrawer.Screen name="settings" options={{headerShown: false}}>
-                        {props => <Settings {...props} 
-                            lang={language} Languages={Languages} screenType={screenType} />}
+                    <NavigationDrawer.Screen name="settings_handler" options={{ headerShown: false }}>
+                        {props => <Settings {...props}
+                            lang={language} languages={Languages} screenType={screenType} />}
                     </NavigationDrawer.Screen>
                     <NavigationDrawer.Screen name="about">
                         {props => <About {...props} lang={language} />}
                     </NavigationDrawer.Screen>
-                    <NavigationDrawer.Screen name="wizard" options={{swipeEnabled: false, 
-                        unmountOnBlur: true}}>
-                        {props => <Wizard {...props} lang={language} Languages={Languages}
-                            screenType={screenType} />}
+                    <NavigationDrawer.Screen name="wizard" options={{
+                        swipeEnabled: false,
+                        unmountOnBlur: true
+                    }}>
+                        {props => <Wizard {...props} lang={language} languages={Languages} />}
                     </NavigationDrawer.Screen>
-                    <NavigationDrawer.Screen name="legacyWebview" options={{swipeEnabled: false,
-                        unmountOnBlur: true, headerShown: false, drawerStyle: 
-                            {width: screenType >= 2 ? 0 : undefined}}}>
-                        {props => <LegacyWebview {...props}/>}
+                    <NavigationDrawer.Screen name="legacy_webview" options={{
+                        swipeEnabled: false,
+                        unmountOnBlur: true, headerShown: false, drawerStyle:
+                            { width: screenType >= 2 ? 0 : undefined }
+                    }}>
+                        {props => <LegacyWebview {...props} lang={language} />}
                     </NavigationDrawer.Screen>
-                    <NavigationDrawer.Screen name="webpageReader" options={{swipeEnabled: false,
-                        unmountOnBlur: true, headerShown: false, drawerStyle: 
-                            {width: screenType >= 2 ? 0 : undefined}}}>
-                        {props => <WebpageReader {...props} lang={language}/>}
+                    <NavigationDrawer.Screen name="reader_mode" options={{
+                        swipeEnabled: false,
+                        unmountOnBlur: true, headerShown: false, drawerStyle:
+                            { width: screenType >= 2 ? 0 : undefined }
+                    }}>
+                        {props => <WebpageReader {...props} lang={language} />}
                     </NavigationDrawer.Screen>
                 </NavigationDrawer.Navigator>
-            </NavigationContainer> 
+            </NavigationContainer>
             <Portal>
-                { modalVisible ? <View style={Styles.modal}>
+                {modalVisible ? <View style={Styles.modal}>
                     <TouchableWithoutFeedback onPress={hideModal}>
-                        <Animated.View style={[modalScrimAnimStyle, {backgroundColor: theme.colors.backdrop},
+                        <Animated.View style={[modalScrimAnimStyle, { backgroundColor: props.theme.colors.backdrop },
                             StyleSheet.absoluteFill]}>
                         </Animated.View>
                     </TouchableWithoutFeedback>
                     <View style={Styles.modalContentWrapper}>
-                        <Animated.View style={[{backgroundColor: theme.colors.surface},
-                            Styles.modalContent, modalContentAnimStyle]}>
-                            <View style={[{backgroundColor: 
-                                (theme.themeName == 'black' ? theme.colors.elevation.level0 :
-                                    theme.colors.elevation.level3), flexShrink: 1},
-                                ]}>{modalContent}
+                        <Animated.View style={[{ backgroundColor: props.theme.colors.surface },
+                        Styles.modalContent, modalContentAnimStyle]}>
+                            <View style={[{
+                                backgroundColor:
+                                    (props.theme.themeName == 'black' ? props.theme.colors.elevation.level0 :
+                                        props.theme.colors.elevation.level3), flexShrink: 1
+                            },
+                            ]}>{modalContent}
                             </View>
                         </Animated.View>
                     </View>
                 </View> : null}
-                
-                { snackVisible ? <View style={Styles.snackBarWrapper}>
-                <Animated.View style={[Styles.snackBarBase, snackAnimStyle, {backgroundColor: theme.colors.inverseSurface}]}>
-                    <View style={[Styles.snackBar, {backgroundColor: theme.colors.inverseElevation.level2}]}>
-                        <Text style={{color: theme.colors.inverseOnSurface, flexShrink: 1, marginRight: 8}}>{snackMessage}</Text>
-                        <Button textColor={theme.colors.inversePrimary}
-                            onPress={() => { snackButton.current(); hideSnack(); }}>{snackButtonLabel}</Button>
-                    </View>
-                </Animated.View>
-                </View> : null }
+
+                {snackVisible ? <View style={Styles.snackBarWrapper}>
+                    <Animated.View style={[Styles.snackBarBase, snackAnimStyle, { backgroundColor: props.theme.colors.inverseSurface }]}>
+                        <View style={[Styles.snackBar, { backgroundColor: props.theme.colors.inverseElevation.level2 }]}>
+                            <Text style={{ color: props.theme.colors.inverseOnSurface, flexShrink: 1, marginRight: 8 }}>{snackMessage}</Text>
+                            <Button textColor={props.theme.colors.inversePrimary}
+                                onPress={() => { snackCallback.current(); hideSnack(); }}>{snackButtonLabel}</Button>
+                        </View>
+                    </Animated.View>
+                </View> : null}
             </Portal>
-        </PaperProvider>
-        </GestureHandlerRootView>
+        </>
     );
 }
 
-function CustomHeader ({ navigation, route, lang, screenType, theme, showModal }) {
+interface CustomHeaderProps extends ScreenTypeProps, LangProps, ThemeProps, DrawerHeaderProps {
+    options: ScreenOptions,
+}
+
+function CustomHeader(props: CustomHeaderProps) {
     return (
-        <Appbar.Header mode={'small'} elevated={false}> 
-            { (route.name != 'wizard' && screenType <= 1) ? 
-                <Appbar.Action icon="menu" onPress={ () => { navigation.openDrawer(); }} /> : null }
-            <Appbar.Content title={lang[route.name]} />
-            { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
-                <Appbar.Action icon="rss" onPress={() => navigation.setParams({showRssModal: true}) } /> : null }
-            { (route.name == 'feed' || route.name == 'bookmarks' || route.name == 'history') ?
-                <Appbar.Action icon="filter-variant" onPress={() => navigation.setParams({showFilterModal: true}) } /> : null }
-        </Appbar.Header> 
+        <Appbar.Header mode={'small'} elevated={false}>
+            {(props.route.name != 'wizard' && props.screenType <= 1) ?
+                <Appbar.Action icon="menu" onPress={() => { props.navigation.openDrawer(); }} /> : null}
+            <Appbar.Content title={props.lang[props.route.name as WordIndex]} />
+            {props.options.rightFirstCallback ? <Appbar.Action icon="rss" onPress={props.options.rightFirstCallback} /> : null}
+            {props.options.rightSecondCallback !== undefined ? <Appbar.Action icon="filter-variant" onPress={props.options.rightSecondCallback} /> : null}
+        </Appbar.Header>
     );
 }
 
-function CustomDrawer ({ state, navigation, theme, lang, screenType }) {
-    const [active, setActive] = useState(state.routes[state.index].name);
+function CustomDrawer(props: DrawerContentComponentProps & ScreenTypeProps & NavigationStateProps & LangProps & ThemeProps) {
+    const [active, setActive] = useState(props.state.routes[props.state.index].name);
 
     // update selected tab when going back with backbutton
-    React.useEffect(() => { 
-        if(active != state.routes[state.index].name) {
-            setActive(state.routes[state.index].name);
+    React.useEffect(() => {
+        if (active != props.state.routes[props.state.index].name) {
+            setActive(props.state.routes[props.state.index].name);
         }
     });
 
     return (
-        <View style={[screenType >= 2 ? Styles.drawerPermanent : Styles.drawer, {backgroundColor: theme.colors.surface}]}>
-        <ScrollView showsVerticalScrollIndicator={false} overScrollMode={'never'}
-            style={{backgroundColor: (screenType >= 2 || theme.themeName == 'black') ?
-                theme.colors.elevation.level0 : theme.colors.elevation.level1, flex: 1}}>
-            <Text variant="titleLarge" 
-                style={[Styles.drawerTitle, {color: theme.colors.secondary}]}>Nunti</Text>
-            
-            <Drawer.Item
-                label={lang.feed}
-                icon="book"
-                active={active === state.routeNames[0]}
-                onPress={() => {
-                    if(active == 'wizard'){
-                        snackbarRef.current.showSnack(lang.complete_wizard_first);
-                        return;
-                    }
+        <View style={[props.screenType >= 2 ? Styles.drawerPermanent : Styles.drawer, { backgroundColor: props.theme.colors.surface }]}>
+            <ScrollView showsVerticalScrollIndicator={false} overScrollMode={'never'}
+                style={{
+                    backgroundColor: (props.screenType >= 2 || props.theme.themeName == 'black') ?
+                        props.theme.colors.elevation.level0 : props.theme.colors.elevation.level1, flex: 1
+                }}>
+                <Text variant="titleLarge"
+                    style={[Styles.drawerTitle, { color: props.theme.colors.secondary }]}>Nunti</Text>
 
-                    setActive(state.routeNames[0]);
-                    navigation.navigate(state.routes[0]);
-                }}/>
-            <Drawer.Item
-                label={lang.bookmarks}
-                icon="bookmark"
-                active={active === state.routeNames[1]}
-                onPress={() => {
-                    if(active == 'wizard'){
-                        snackbarRef.current.showSnack(lang.complete_wizard_first);
-                        return;
-                    }
+                <Drawer.Item
+                    label={props.lang.feed}
+                    icon="book"
+                    active={active === props.state.routes[0].name}
+                    onPress={() => {
+                        if (active == 'wizard') {
+                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
+                            return;
+                        }
 
-                    setActive(state.routeNames[1]);
-                    navigation.navigate(state.routes[1]);
-                }}/>
-            <Drawer.Item
-                label={lang.history}
-                icon="history"
-                active={active === state.routeNames[2]}
-                onPress={() => {
-                    if(active == 'wizard'){
-                        snackbarRef.current.showSnack(lang.complete_wizard_first);
-                        return;
-                    }
+                        setActive(props.state.routes[0].name);
+                        props.navigation.navigate(props.state.routes[0].name);
+                    }} />
+                <Drawer.Item
+                    label={props.lang.bookmarks}
+                    icon="bookmark"
+                    active={active === props.state.routes[1].name}
+                    onPress={() => {
+                        if (active == 'wizard') {
+                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
+                            return;
+                        }
 
-                    setActive(state.routeNames[2]);
-                    navigation.navigate(state.routes[2]);
-                }}/>
+                        setActive(props.state.routes[1].name);
+                        props.navigation.navigate(props.state.routes[1].name);
+                    }} />
+                <Drawer.Item
+                    label={props.lang.history}
+                    icon="history"
+                    active={active === props.state.routes[2].name}
+                    onPress={() => {
+                        if (active == 'wizard') {
+                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
+                            return;
+                        }
 
-            <Divider bold={true} horizontalInset={true} style={Styles.drawerDivider}/>
-            
-            <Drawer.Item
-                label={lang.settings}
-                icon="cog"
-                active={active === state.routeNames[3]}
-                onPress={() => {
-                    if(active == 'wizard'){
-                        snackbarRef.current.showSnack(lang.complete_wizard_first);
-                        return;
-                    }
-                    
-                    setActive(state.routeNames[3]);
-                    navigation.navigate(state.routes[3]);
-                }}/>
-            <Drawer.Item
-                label={lang.about}
-                icon="information"
-                active={active === state.routeNames[4]}
-                onPress={() => {
-                    if(active == 'wizard'){
-                        snackbarRef.current.showSnack(lang.complete_wizard_first);
-                        return;
-                    }
+                        setActive(props.state.routes[2].name);
+                        props.navigation.navigate(props.state.routes[2].name);
+                    }} />
 
-                    setActive(state.routeNames[4]);
-                    navigation.navigate(state.routes[4]);
-                }}/>
-        </ScrollView>
+                <Divider bold={true} horizontalInset={true} style={Styles.drawerDivider} />
+
+                <Drawer.Item
+                    label={props.lang.settings}
+                    icon="cog"
+                    active={active === props.state.routes[3].name}
+                    onPress={() => {
+                        if (active == 'wizard') {
+                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
+                            return;
+                        }
+
+                        setActive(props.state.routes[3].name);
+                        props.navigation.navigate(props.state.routes[3].name);
+                    }} />
+                <Drawer.Item
+                    label={props.lang.about}
+                    icon="information"
+                    active={active === props.state.routes[4].name}
+                    onPress={() => {
+                        if (active == 'wizard') {
+                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
+                            return;
+                        }
+
+                        setActive(props.state.routes[4].name);
+                        props.navigation.navigate(props.state.routes[4].name);
+                    }} />
+            </ScrollView>
         </View>
     );
 }
+
+export default withTheme(App);

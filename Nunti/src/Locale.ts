@@ -1,3 +1,5 @@
+import { Language, LanguageList } from "./Props";
+
 export const English = {
     code: 'en',
     wizard: 'Wizard',
@@ -112,7 +114,7 @@ export const English = {
     hide_feed_description: 'Hide articles from this feed',
     no_images_description: 'Load articles without images',
     browser_mode: 'Browser mode',
-    webpage_reader: 'Reader mode',
+    reader_mode: 'Reader mode',
     legacy_webview: 'Integrated',
     webview: 'Webview',
     external_browser: 'External',
@@ -138,13 +140,13 @@ export const English = {
     add_tags: 'Add tag',
     added_tag: 'Created %tag% tag',
     add_tag_fail: 'Cannot add tag',
-    remove_tag: 'Remove tag?', 
+    remove_tag: 'Remove tag?',
     remove_confirmation: 'Are you sure you want to remove %item%?',
     removed_tag: 'Removed %tag% tag',
     feeds: 'RSS feeds',
     feed_details: 'Details',
     add_feeds: 'Add RSS feed',
-    remove_feed: 'Remove feed?', 
+    remove_feed: 'Remove feed?',
     feed_status: 'Status',
     feed_status_ok: 'Feed is working',
     feed_status_warn: 'Feed download has failed',
@@ -250,7 +252,7 @@ export const English = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Czech = {
+export const Czech: Language = {
     code: 'cs',
     wizard: 'Průvodce',
     feed: 'Články',
@@ -364,7 +366,7 @@ export const Czech = {
     hide_feed_description: 'Schovat články z tohoto kanálu',
     no_images_description: 'Načíst články bez obrázků',
     browser_mode: 'Režim prohlížeče',
-    webpage_reader: 'Čtecí režim',
+    reader_mode: 'Čtecí režim',
     legacy_webview: 'Integrovaný',
     webview: 'Webview',
     external_browser: 'Externí',
@@ -390,7 +392,7 @@ export const Czech = {
     add_tags: 'Přidat štítek',
     added_tag: 'Vytvořen štítek %tag%',
     add_tag_fail: 'Nelze přidat štítek',
-    remove_tag: 'Odstranit štítek?', 
+    remove_tag: 'Odstranit štítek?',
     remove_confirmation: 'Opravdu chcete odstranit %item%?',
     removed_tag: 'Odstraněn štítek %tag%',
     feeds: 'RSS kanály',
@@ -502,7 +504,7 @@ export const Czech = {
     opening_article_failed_reason: 'Zdá se, že zařízení je offline, nebo nastavení momentálně neumožnuje článek otevřít. Offline verze článku také není dostupná.',
     force_open: 'Nuceně otevřít',
 };
-export const Japanese = {
+export const Japanese: Language = {
     code: 'ja',
     wizard: 'ウィザード',
     feed: 'フィード',
@@ -616,7 +618,7 @@ export const Japanese = {
     hide_feed_description: 'このフィードの記事を隠す',
     no_images_description: '画像なしで記事を読み込む',
     browser_mode: 'ブラウザ モード',
-    webpage_reader: 'Reader mode',
+    reader_mode: 'Reader mode',
     legacy_webview: 'Integrated',
     webview: 'Webview',
     external_browser: '外部',
@@ -642,7 +644,7 @@ export const Japanese = {
     add_tags: 'タグを追加する',
     added_tag: '作成された%tag%タグ',
     add_tag_fail: 'タグを追加できません',
-    remove_tag: 'タグを外す？', 
+    remove_tag: 'タグを外す？',
     remove_confirmation: '本当に %item% を削除しますか？',
     removed_tag: '%tag%タグを削除しました',
     feeds: 'RSSフィード',
@@ -754,7 +756,7 @@ export const Japanese = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Italian = {
+export const Italian: Language = {
     code: 'it',
     wizard: 'Procedura guidata',
     feed: 'Articoli',
@@ -868,7 +870,7 @@ export const Italian = {
     hide_feed_description: 'Nascondi gli articoli da questo feed',
     no_images_description: 'Caricare gli articoli senza immagini',
     browser_mode: 'Modalità browser',
-    webpage_reader: 'Reader mode',
+    reader_mode: 'Reader mode',
     legacy_webview: 'Integrato',
     webview: 'Webview',
     external_browser: 'Esterno',
@@ -1006,7 +1008,7 @@ export const Italian = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Polish = {
+export const Polish: Language = {
     code: 'pl',
     wizard: 'Kreator',
     feed: 'Artykuły',
@@ -1120,7 +1122,7 @@ export const Polish = {
     hide_feed_description: 'Ukryj artykuły z tego kanału',
     no_images_description: 'Ładowanie artykułów bez obrazów',
     browser_mode: 'Tryb przeglądarki',
-    webpage_reader: 'Reader mode',
+    reader_mode: 'Reader mode',
     legacy_webview: 'Integrated',
     webview: 'Webview',
     external_browser: 'Zewnętrzna',
@@ -1146,7 +1148,7 @@ export const Polish = {
     add_tags: 'Dodaj tag',
     added_tag: 'Utworzono tag %tag%',
     add_tag_fail: 'Nie można dodać tagu',
-    remove_tag: 'Usunąć tag?', 
+    remove_tag: 'Usunąć tag?',
     remove_confirmation: 'Czy na pewno chcesz usunąć %item%?',
     removed_tag: 'Usunięto znacznik %tag%',
     feeds: 'Kanały RSS',
@@ -1258,7 +1260,7 @@ export const Polish = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const German = {
+export const German: Language = {
     code: 'de',
     wizard: 'Assistent',
     feed: 'Artikel',
@@ -1372,7 +1374,7 @@ export const German = {
     hide_feed_description: 'Artikel aus diesem Feed ausblenden',
     no_images_description: 'Artikel ohne Bilder laden',
     browser_mode: 'Artikel öffnen',
-    webpage_reader: 'Reader mode',
+    reader_mode: 'Reader mode',
     legacy_webview: 'Integrated',
     webview: 'In einem Browsertab',
     external_browser: 'Im Standardbrowser',
@@ -1510,7 +1512,7 @@ export const German = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const French = {
+export const French: Language = {
     code: 'fr',
     wizard: 'Assistant',
     feed: 'Flux',
@@ -1548,7 +1550,7 @@ export const French = {
     reset: 'Remettre à zéro',
     cancel: 'Annuler',
     start: 'Commencer à lire',
-    change: 'Changer', 
+    change: 'Changer',
     next: 'Suivant',
     back: 'Retour',
     filter: 'Filtrer',
@@ -1624,7 +1626,7 @@ export const French = {
     hide_feed_description: 'Masquer les articles de ce flux',
     no_images_description: 'Chargement des articles sans images',
     browser_mode: 'Mode navigateur',
-    webpage_reader: 'Reader mode',
+    reader_mode: 'Reader mode',
     legacy_webview: 'Integrated',
     webview: 'Webview',
     external_browser: 'Externe',
@@ -1650,7 +1652,7 @@ export const French = {
     add_tags: 'Ajouter un tag',
     added_tag: 'Tag %tag% créé',
     add_tag_fail: 'Impossible d\'ajouter un tag',
-    remove_tag: 'Supprimer le tag?', 
+    remove_tag: 'Supprimer le tag?',
     remove_confirmation: 'Êtes-vous sûr de vouloir supprimer %item%?',
     removed_tag: 'Suppression du tag %tag%',
     feeds: 'Flux RSS',
@@ -1762,7 +1764,7 @@ export const French = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const BrazilianPortuguese = {
+export const BrazilianPortuguese: Language = {
     code: 'pt_BR',
     wizard: 'Assistente',
     feed: 'Feed',
@@ -1876,7 +1878,7 @@ export const BrazilianPortuguese = {
     hide_feed_description: 'Ocultar artigos desta ração',
     no_images_description: 'Carregar artigos sem imagens',
     browser_mode: 'Modo navegador',
-    webpage_reader: 'Reader mode',
+    reader_mode: 'Reader mode',
     legacy_webview: 'Integrated',
     webview: 'Webview',
     external_browser: 'Externo',
@@ -1902,7 +1904,7 @@ export const BrazilianPortuguese = {
     add_tags: 'Adicionar tag',
     added_tag: 'Criado %tag% tag',
     add_tag_fail: 'Não é possível adicionar tag',
-    remove_tag: 'Remover a tag?', 
+    remove_tag: 'Remover a tag?',
     remove_confirmation: 'Você tem certeza de que quer remover %item%?',
     removed_tag: 'Removido %tag% tag',
     feeds: 'Feeds RSS',
@@ -2014,7 +2016,7 @@ export const BrazilianPortuguese = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Persian = {
+export const Persian: Language = {
     code: 'fa',
     wizard: 'راه‌اندازی',
     feed: 'اخبار',
@@ -2128,7 +2130,7 @@ export const Persian = {
     hide_feed_description: 'مطالب این منبع خبری رو نشون نده',
     no_images_description: 'مطالب رو بدون عکس نشون بده',
     browser_mode: 'حالت مرورگر',
-    webpage_reader: 'Reader mode',
+    reader_mode: 'Reader mode',
     legacy_webview: 'Integrated',
     webview: 'Webview',
     external_browser: 'مرورگر خارجی',
@@ -2154,13 +2156,13 @@ export const Persian = {
     add_tags: 'برچسب اضافه کن',
     added_tag: 'برچسب %tag% ایجاد شد',
     add_tag_fail: 'نتونستم برچسبو اضافه کنم',
-    remove_tag: 'برچسبو پاک کنم؟', 
+    remove_tag: 'برچسبو پاک کنم؟',
     remove_confirmation: 'مطمئنی می‌خوای %item% رو پاک کنی؟',
     removed_tag: 'برچسب %tag% پاک شد',
     feeds: 'منابع خبری RSS',
     feed_details: 'جزئیات',
     add_feeds: 'منبع خبری RSS اضافه کن',
-    remove_feed: 'منبع خبری رو پاک کنم؟', 
+    remove_feed: 'منبع خبری رو پاک کنم؟',
     feed_status: 'وضعیت',
     feed_status_ok: 'منبع خبری کار می‌کنه',
     feed_status_warn: 'دانلود منبع خبری به مشکل خورده',
@@ -2266,7 +2268,8 @@ export const Persian = {
     opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
     force_open: 'Force open',
 };
-export const Ukrainian = {
+
+export const Ukrainian: Language = {
     code: 'uk',
     wizard: 'Налаштування додатку',
     feed: 'Feed',
@@ -2333,6 +2336,8 @@ export const Ukrainian = {
     no_tags_description: 'Додайте тег щоб побачити його тут',
     no_feeds: 'Немає каналів',
     no_feeds_description: 'Додайте канал щоб побачити його тут',
+    new_to_rss: 'I am new to this',
+    have_backup: 'I have a backup',
     import: 'Імпортувати бекап',
     import_button: 'Імпорт',
     export: 'Експортувати бекап Nunti',
@@ -2373,12 +2378,16 @@ export const Ukrainian = {
     hide_feed: 'Сховати канал',
     wifi_only: 'Тільки Wi-Fi',
     wifi_only_description: 'Не завантажувати статті на мережевих з\'єднаннях',
+    offline_reading: 'Offline reading',
+    offline_reading_description: 'Download articles to be read when offline',
     hide_feed_description: 'Сховати статті з цього каналу',
     no_images_description: 'Завантажувати статті без картинок',
     browser_mode: 'Режим браузеру',
+    reader_mode: 'Reader mode',
     legacy_webview: 'Integrated',
     webview: 'Webview',
     external_browser: 'Зовнішній',
+    reader_failed: 'Reader mode failed',
     theme: 'Тема',
     accent: 'Акцент',
     light: 'Світла тема',
@@ -2400,13 +2409,13 @@ export const Ukrainian = {
     add_tags: 'Додати тег',
     added_tag: 'Створено тег %tag%',
     add_tag_fail: 'Неможливо додати тег',
-    remove_tag: 'Видалити тег?', 
+    remove_tag: 'Видалити тег?',
     remove_confirmation: 'Ви впевнені, що бажаєте видалити %item%?',
     removed_tag: 'Видалено тег %tag%',
     feeds: 'RSS-канали',
     feed_details: 'Деталі',
     add_feeds: 'Додати RSS-канал',
-    remove_feed: 'Видалити канал?', 
+    remove_feed: 'Видалити канал?',
     feed_status: 'Статус',
     feed_status_ok: 'Канал працює',
     feed_status_warn: 'Не вдалося завантажити канал',
@@ -2508,4 +2517,20 @@ export const Ukrainian = {
     backup_interval_description: 'Кожні %interval% днів',
     change_backup_interval_success: 'Період бекапів змінено',
     change_backup_interval_fail: 'Не вдалося змінити період бекапів',
+    opening_article_failed: 'Opening the article failed',
+    opening_article_failed_reason: 'It seems that the device is offline, or the current settings do not allow you to open an article right now. There is also no offline version available.',
+    force_open: 'Force open',
 };
+
+export const Languages: LanguageList = {
+    en: English,
+    cs: Czech,
+    ja: Japanese,
+    it: Italian,
+    pl: Polish,
+    de: German,
+    fr: French,
+    pt_BR: BrazilianPortuguese,
+    fa: Persian,
+    uk: Ukrainian,
+}

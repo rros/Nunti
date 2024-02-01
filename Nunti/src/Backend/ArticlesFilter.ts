@@ -1,8 +1,9 @@
+import { SortType } from '../Props';
 import { Article } from './Article';
 import { Tag } from './Tag';
 
 export class ArticlesFilter {
-    public sortType: string | undefined; //either 'learning' or 'date'
+    public sortType: SortType | undefined;
     public search: string | undefined;
     public tags: Tag[] | undefined;
     public feeds: string[] | undefined; //if not empty OR not ==['all_rss'] then only these feeds
