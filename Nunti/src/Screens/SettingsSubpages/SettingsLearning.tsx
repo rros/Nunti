@@ -55,7 +55,7 @@ function SettingsLearning(props: ScreenProps) {
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                     onPress={() => browserRef.current?.openBrowser(
-                        'https://gitlab.com/ondrejfoltyn/nunti/-/issues/28')}>
+                        'https://gitlab.com/ondrejfoltyn/nunti/-/wikis/Adaptive-learning')}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.learn_more}</Text>
                     </View>
