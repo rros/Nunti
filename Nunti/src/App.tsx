@@ -74,6 +74,7 @@ type NavigationParamList = {
 
 const NavigationDrawer = createDrawerNavigator<NavigationParamList>();
 const MaterialYouModule = NativeModules.MaterialYouModule;
+const AccessibilityModule = NativeModules.AccessibilityModule;
 const NotificationsModule = NativeModules.Notifications;
 
 export const modalRef = React.createRef<ModalRef>();
@@ -113,17 +114,18 @@ function App(props: AppProps) {
     const modalLog = useRef(log.current.context('Modal'));
 
     // animations
+    const [animationsEnabled, setAnimationsEnabled] = useState<boolean | undefined>(undefined);
     const snackAnim = useSharedValue(0);
     const modalAnim = useSharedValue(0);
 
     const modalHideAnimationEnd = () => {
-        if (modalContent !== undefined) {
+        if (modalAnim.value == 0 && modalContent !== undefined) {
             setModalContent(undefined);
         }
     }
 
     const snackHideAnimationEnd = () => {
-        if (snackVisible == true) {
+        if (snackAnim.value == 0 && snackVisible == true) {
             snackLog.current.debug('Snack set to invisible');
             setSnackVisible(false);
         }
@@ -131,24 +133,18 @@ function App(props: AppProps) {
 
     const snackAnimStyle = useAnimatedStyle(() => {
         return {
-            opacity: withTiming(snackAnim.value, { duration: 200 }, () => {
-                if (snackAnim.value == 0) {
-                    runOnJS(snackHideAnimationEnd)();
-                }
-            }),
-            scaleX: withTiming(interpolate(snackAnim.value, [0, 1], [0.9, 1])),
-            scaleY: withTiming(interpolate(snackAnim.value, [0, 1], [0.9, 1])),
+            opacity: animationsEnabled ? withTiming(snackAnim.value, { duration: 200 }, runOnJS(snackHideAnimationEnd))
+                : withTiming(1, undefined, runOnJS(snackHideAnimationEnd)),
+            scaleX: animationsEnabled ? withTiming(interpolate(snackAnim.value, [0, 1], [0.9, 1])) : 1,
+            scaleY: animationsEnabled ? withTiming(interpolate(snackAnim.value, [0, 1], [0.9, 1])) : 1,
         };
     });
     const modalContentAnimStyle = useAnimatedStyle(() => {
         return {
-            opacity: withTiming(modalAnim.value, undefined, () => {
-                if (modalAnim.value == 0) {
-                    runOnJS(modalHideAnimationEnd)();
-                }
-            }),
-            scaleX: withTiming(interpolate(modalAnim.value, [0, 1], [0.8, 1])),
-            scaleY: withTiming(interpolate(modalAnim.value, [0, 1], [0.8, 1])),
+            opacity: animationsEnabled ? withTiming(modalAnim.value, undefined, runOnJS(modalHideAnimationEnd))
+                : withTiming(1, undefined, runOnJS(modalHideAnimationEnd)),
+            scaleX: animationsEnabled ? withTiming(interpolate(modalAnim.value, [0, 1], [0.8, 1])) : 1,
+            scaleY: animationsEnabled ? withTiming(interpolate(modalAnim.value, [0, 1], [0.8, 1])) : 1,
         };
     });
     const modalScrimAnimStyle = useAnimatedStyle(() => {
@@ -236,6 +232,7 @@ function App(props: AppProps) {
                 Backend.UserSettings.Save();
             }
 
+            setAnimationsEnabled(await AccessibilityModule.areAnimationsEnabled());
             await reloadGlobalStates();
         })();
 
@@ -246,7 +243,7 @@ function App(props: AppProps) {
                 return true;
             } else if (drawerNavigationRef.current!.getCurrentRoute()?.name != 'feed'
                 && !Backend.UserSettings.FirstLaunch) {
-                drawerNavigationRef.current!.navigate({ name: 'feed', params: undefined});
+                drawerNavigationRef.current!.navigate({ name: 'feed', params: undefined });
                 return true;
             } else {
                 return false;
