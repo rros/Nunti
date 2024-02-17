@@ -72,7 +72,7 @@ export type InverseElevation = {
 }
 
 export type WordIndex = keyof typeof English;
-export type LanguageIndex = 'en' | 'cs' | 'ja' | 'it' | 'pl' | 'de' | 'fr' | 'pt_BR' | 'fa' | 'uk';
+export type LanguageIndex = 'en' | 'cs' | 'ja' | 'it' | 'pl' | 'de' | 'fr' | 'pt_BR' | 'fa' | 'uk' | 'tr';
 export type LanguageCode = Extract<WordIndex, LanguageIndex | 'system'>;
 export type Language = { [id in WordIndex]: string };
 export type LanguageList = { [id in LanguageIndex]: Language };
