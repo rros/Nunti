@@ -49,6 +49,7 @@ import {
     BrowserMode, ThemeName, AccentName, LanguageCode, LearningStatus
 } from '../Props.d';
 import Log from '../Log';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface Props extends ScreenProps, WindowClassProps {
     languages: LanguageList,
@@ -128,21 +129,16 @@ function SettingsMain(props: SettingsMainProps) {
     const [learningStatus, setLearningStatus] = useState<LearningStatus>();
     const log = useRef<Log>(logRef.current!.globalLog.current.context('Settings'));
 
-    useEffect(() => {
-        const onFocus = props.navigation.addListener('focus', () => {
+    useFocusEffect(
+        React.useCallback(() => {
             (async () => {
                 setLearningStatus(await Backend.GetLearningStatus());
             })();
 
             setFeeds(Backend.UserSettings.FeedList);
             setTags(Backend.UserSettings.Tags);
-        });
-
-        return () => {
-            onFocus();
-        }
-    }, []);
-
+        }, [])
+    );
     const changeWifiOnly = () => {
         const newValue = !wifiOnly;
 

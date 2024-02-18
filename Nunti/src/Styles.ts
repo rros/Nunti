@@ -1635,13 +1635,7 @@ export default StyleSheet.create({
         marginVertical: 12,
         marginHorizontal: 16,
         flex: 1,
-    },
-
-    segmentedButtonContainer: {
-        borderRadius: 20,
-        flexDirection: 'row',
-        overflow: 'hidden',
-        flex: 1,
+        maxWidth: 560,
     },
 
     segmentedButton: {

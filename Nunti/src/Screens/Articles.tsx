@@ -17,6 +17,7 @@ import {
     withTheme,
     Banner,
     Checkbox,
+    ProgressBar,
 } from 'react-native-paper';
 
 import { Swipeable, TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
@@ -34,8 +35,7 @@ import { Backend } from '../Backend';
 import { Article } from '../Backend/Article';
 import { modalRef, snackbarRef, browserRef, globalStateRef, logRef } from '../App';
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
-import SegmentedButton from '../Components/SegmentedButton';
-import LinearIndicator from '../Components/LinearIndicator';
+import SortTypeSelector from '../Components/SortTypeSelector';
 import { Utils } from '../Backend/Utils';
 import { Storage } from '../Backend/Storage';
 import { Current } from '../Backend/Current';
@@ -96,12 +96,12 @@ function ArticlesPage(props: Props) {
     useEffect(() => {
         props.navigation.setOptions({
             rightFirstCallback: () => {
-                modalRef.current?.showModal(<FilterModalContent theme={theme.current}
+                modalRef.current?.showModal(<RssModalContent theme={theme.current}
                     applyFilter={applyFilter} lang={lang.current}
                     sourceFilter={sourceFilter.current} />);
             },
             rightSecondCallback: () => {
-                modalRef.current?.showModal(<RssModalContent theme={theme.current}
+                modalRef.current?.showModal(<FilterModalContent theme={theme.current}
                     applyFilter={applyFilter} lang={lang.current}
                     sourceFilter={sourceFilter.current} />);
             },
@@ -174,11 +174,20 @@ function ArticlesPage(props: Props) {
         }
 
         setArticlePage(articlesFromBackend.current[currentPageIndex.current]);
-        setRefreshing(false);
+        // setRefreshing(false); // is set in the refresh status callback
     }
 
-    const refreshStatusCallback = (context: string, percentage: number) => {
+    const refreshStatusCallback = async (context: string, percentage: number) => {
         setRefreshingStatus(percentage);
+
+        // this is not ideal, but progress bar does not animate to 0
+        // if it is hidden, resulting in a fugly back and forth animation
+        // when reload happens for a second time
+        if (percentage == 1) {
+            await new Promise(r => setTimeout(r, 100));
+            setRefreshingStatus(0);
+            setRefreshing(false);
+        }
     }
 
     // article functions
@@ -321,8 +330,8 @@ function ArticlesPage(props: Props) {
 
     return (
         <View style={{ flexGrow: 1 }}>
-            {props.source == 'feed' ? <LinearIndicator show={refreshing}
-                value={refreshingStatus} /> : null}
+            {props.source == 'feed' ? <ProgressBar progress={refreshingStatus}
+                visible={refreshing} color={props.theme.colors.primary} /> : null}
             <Banner visible={bannerVisible} actions={[
                 {
                     label: props.lang.dismiss,
@@ -355,7 +364,7 @@ function ArticlesPage(props: Props) {
                 }
 
                 renderItem={({ item }) => renderItem(item)}
-                ListHeaderComponent={props.source == 'feed' ? <SegmentedButton 
+                ListHeaderComponent={props.source == 'feed' ? <SortTypeSelector
                     applySorting={applySorting} lang={props.lang} /> : null}
                 ListEmptyComponent={<ListEmptyComponent route={props.route} lang={props.lang} />}
                 ListFooterComponent={() => articlePage.length != 0 ? (

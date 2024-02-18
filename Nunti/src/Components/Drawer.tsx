@@ -65,7 +65,7 @@ function Drawer(props: DrawerProps) {
 
                 {isRail ? <View style={{ flex: 1 }} /> : null}
 
-                <View style={props.windowClass >= WindowClass.extraLarge ? { marginTop: 8 } : { marginTop: 16 }}>
+                <View style={props.windowClass >= WindowClass.extraLarge ? { marginTop: 12 } : { marginTop: 16 }}>
                     <DrawerItem
                         name="feed" icon="book"
                         active={active} onPress={drawerItemPress}
