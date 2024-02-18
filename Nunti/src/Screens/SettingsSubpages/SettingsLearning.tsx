@@ -15,21 +15,18 @@ import { browserRef } from '../../App';
 import { Backend } from '../../Backend';
 import { ScreenProps, LearningStatus } from '../../Props';
 import Styles from '../../Styles';
+import { useFocusEffect } from '@react-navigation/native';
 
 function SettingsLearning(props: ScreenProps) {
     const [learningStatus, setLearningStatus] = useState<LearningStatus>();
 
-    useEffect(() => {
-        const onFocus = props.navigation.addListener('focus', () => {
+    useFocusEffect(
+        React.useCallback(() => {
             (async () => {
                 setLearningStatus(await Backend.GetLearningStatus());
             })();
-        });
-
-        return () => {
-            onFocus();
-        }
-    }, []);
+        }, [])
+    );
 
     return (
         <ScrollView showsVerticalScrollIndicator={false}>

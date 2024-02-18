@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Share,
@@ -43,6 +43,7 @@ import Styles from '../Styles';
 import { LangProps, Route, ScreenProps, WindowClassProps, ThemeProps, WordIndex, ArticleSource, SortType, ArticleSwipe, ButtonType } from '../Props';
 import { ArticlesFilter } from '../Backend/ArticlesFilter';
 import { Tag } from '../Backend/Tag';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface Props extends ScreenProps, WindowClassProps {
     source: ArticleSource,
@@ -69,37 +70,13 @@ function ArticlesPage(props: Props) {
 
     const lang = useRef(props.lang); // modal event cannot read updated props
     const theme = useRef(props.theme); // modal event cannot read updated props
-    const sourceFilter = useRef<ArticlesFilter>({ sortType: Backend.UserSettings.SortType, search: '', feeds: [], tags: [] });
+    const sourceFilter = useRef<ArticlesFilter>({ sortType: Backend.UserSettings.SortType, search: '', feeds: ['all_rss'], tags: [] });
     const flatListRef = useAnimatedRef<FlatList>(); //scrollTo from reanimated doesn't work, use old .scrollToOffset
 
     const log = useRef(logRef.current!.globalLog.current.context('ArticlePage_' + props.route.name));
 
-    useLayoutEffect(() => {
-        props.navigation.setOptions({
-            rightFirstCallback: () => {
-                modalRef.current?.showModal(<FilterModalContent theme={theme.current}
-                    applyFilter={applyFilter} lang={lang.current}
-                    sourceFilter={sourceFilter.current} />);
-            },
-            rightSecondCallback: () => {
-                modalRef.current?.showModal(<RssModalContent theme={theme.current}
-                    applyFilter={applyFilter} lang={lang.current}
-                    sourceFilter={sourceFilter.current} />);
-            },
-        });
-    }, [props.navigation])
-
-    // on component mount
-    useEffect(() => {
-        (async () => {
-            sourceFilter.current.feeds = ['all_rss'];
-            sourceFilter.current.tags = [];
-            sourceFilter.current.search = '';
-
-            refresh(true);
-        })();
-
-        const onFocus = props.navigation.addListener('focus', () => {
+    useFocusEffect(
+        React.useCallback(() => {
             if (props.route.name != 'feed') {
                 refresh(false); // reload bookmarks/history on each access
             } else if (globalStateRef.current?.shouldFeedReload.current) {
@@ -113,11 +90,24 @@ function ArticlesPage(props: Props) {
                 refresh(true);
             }
             setShowImages(!Backend.UserSettings.DisableImages);
+        }, [])
+    );
+
+    useEffect(() => {
+        props.navigation.setOptions({
+            rightFirstCallback: () => {
+                modalRef.current?.showModal(<FilterModalContent theme={theme.current}
+                    applyFilter={applyFilter} lang={lang.current}
+                    sourceFilter={sourceFilter.current} />);
+            },
+            rightSecondCallback: () => {
+                modalRef.current?.showModal(<RssModalContent theme={theme.current}
+                    applyFilter={applyFilter} lang={lang.current}
+                    sourceFilter={sourceFilter.current} />);
+            },
         });
 
-        return () => {
-            onFocus();
-        }
+        refresh(true);
     }, []);
 
     useEffect(() => {
@@ -125,7 +115,7 @@ function ArticlesPage(props: Props) {
         // on state listener does not update it's props
         lang.current = props.lang;
         theme.current = props.theme;
-    });
+    }, [props.lang, props.theme]);
 
     const refresh = async (refreshIndicator: boolean = true) => {
         log.current.info('Refreshing articles with filter params: ', sourceFilter.current);
@@ -185,7 +175,6 @@ function ArticlesPage(props: Props) {
 
         setArticlePage(articlesFromBackend.current[currentPageIndex.current]);
         setRefreshing(false);
-
     }
 
     const refreshStatusCallback = (context: string, percentage: number) => {
@@ -366,8 +355,8 @@ function ArticlesPage(props: Props) {
                 }
 
                 renderItem={({ item }) => renderItem(item)}
-                ListHeaderComponent={props.source == 'feed' ? <SegmentedButton applySorting={applySorting}
-                    theme={props.theme} lang={props.lang} /> : null}
+                ListHeaderComponent={props.source == 'feed' ? <SegmentedButton 
+                    applySorting={applySorting} lang={props.lang} /> : null}
                 ListEmptyComponent={<ListEmptyComponent route={props.route} lang={props.lang} />}
                 ListFooterComponent={() => articlePage.length != 0 ? (
                     <View style={Styles.footerContainer}>

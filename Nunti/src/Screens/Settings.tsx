@@ -82,7 +82,7 @@ function Settings(props: Props) {
                     languages={props.languages} theme={props.theme} />}
             </Stack.Screen>
             <Stack.Screen name="tags">
-                {_props => <SettingsTags {..._props} 
+                {_props => <SettingsTags {..._props}
                     lang={props.lang} />}
             </Stack.Screen>
             <Stack.Screen name="feeds">
@@ -447,11 +447,11 @@ function LanguageModal(props: LanguageModalProps) {
             }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <RadioButton.Group value={selectedLang} onValueChange={(value) => changeLanguage(value as LanguageCode)}>
-                        <ModalRadioButton lang={_lang} theme={props.theme} value={'system'}
+                        <ModalRadioButton lang={_lang} value={'system'}
                             changeValue={newValue => changeLanguage(newValue as LanguageCode)} disabled={false} />
                         {Object.keys(props.languages).map((language) => {
                             return (
-                                <ModalRadioButton key={language} lang={_lang} theme={props.theme} value={language as LanguageCode}
+                                <ModalRadioButton key={language} lang={_lang} value={language as LanguageCode}
                                     changeValue={newValue => changeLanguage(newValue as LanguageCode)} disabled={false} />
                             );
                         })}
@@ -491,14 +491,14 @@ function BrowserModeModal(props: BrowserModeModalProps) {
             }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <RadioButton.Group value={browserMode} onValueChange={(value) => changeBrowserMode(value as BrowserMode)}>
-                        <ModalRadioButton lang={props.lang} theme={props.theme} value={'reader_mode'}
-                            changeValue={newValue => changeBrowserMode(newValue as BrowserMode)} disabled={false} />
-                        <ModalRadioButton lang={props.lang} theme={props.theme} value={'legacy_webview'}
-                            changeValue={newValue => changeBrowserMode(newValue as BrowserMode)} disabled={false} />
-                        <ModalRadioButton lang={props.lang} theme={props.theme} value={'webview'}
-                            changeValue={newValue => changeBrowserMode(newValue as BrowserMode)} disabled={false} />
-                        <ModalRadioButton lang={props.lang} theme={props.theme} value={'external_browser'}
-                            changeValue={newValue => changeBrowserMode(newValue as BrowserMode)} disabled={false} />
+                        <ModalRadioButton lang={props.lang} value={'reader_mode'} disabled={false}
+                            changeValue={newValue => changeBrowserMode(newValue as BrowserMode)} />
+                        <ModalRadioButton lang={props.lang} value={'legacy_webview'} disabled={false}
+                            changeValue={newValue => changeBrowserMode(newValue as BrowserMode)} />
+                        <ModalRadioButton lang={props.lang} value={'webview'} disabled={false}
+                            changeValue={newValue => changeBrowserMode(newValue as BrowserMode)} />
+                        <ModalRadioButton lang={props.lang} value={'external_browser'} disabled={false}
+                            changeValue={newValue => changeBrowserMode(newValue as BrowserMode)} />
                     </RadioButton.Group>
                 </ScrollView>
             </View>
@@ -535,14 +535,14 @@ function ThemeModal(props: ThemeModalProps) {
             }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <RadioButton.Group value={selectedTheme} onValueChange={(value) => changeTheme(value as ThemeName)}>
-                        <ModalRadioButton lang={props.lang} theme={_theme} value={'system'}
-                            changeValue={newValue => changeTheme(newValue as ThemeName)} disabled={false} />
-                        <ModalRadioButton lang={props.lang} theme={_theme} value={'light'}
-                            changeValue={newValue => changeTheme(newValue as ThemeName)} disabled={false} />
-                        <ModalRadioButton lang={props.lang} theme={_theme} value={'dark'}
-                            changeValue={newValue => changeTheme(newValue as ThemeName)} disabled={false} />
-                        <ModalRadioButton lang={props.lang} theme={_theme} value={'black'}
-                            changeValue={newValue => changeTheme(newValue as ThemeName)} disabled={false} />
+                        <ModalRadioButton lang={props.lang} value={'system'} disabled={false}
+                            changeValue={newValue => changeTheme(newValue as ThemeName)} />
+                        <ModalRadioButton lang={props.lang} value={'light'} disabled={false}
+                            changeValue={newValue => changeTheme(newValue as ThemeName)} />
+                        <ModalRadioButton lang={props.lang} value={'dark'} disabled={false}
+                            changeValue={newValue => changeTheme(newValue as ThemeName)} />
+                        <ModalRadioButton lang={props.lang} value={'black'} disabled={false}
+                            changeValue={newValue => changeTheme(newValue as ThemeName)} />
                     </RadioButton.Group>
                 </ScrollView>
             </View>
@@ -581,12 +581,12 @@ function AccentModal(props: AccentModalProps) {
                     <RadioButton.Group value={selectedAccent} onValueChange={(value) => changeAccent(value as AccentName)}>
                         {Object.keys(Accents).map((accentName) => {
                             return (
-                                <ModalRadioButton key={accentName} lang={props.lang} theme={_theme} value={accentName as AccentName}
+                                <ModalRadioButton key={accentName} lang={props.lang} value={accentName as AccentName}
                                     disabled={false} changeValue={newValue => changeAccent(newValue as AccentName)} />
                             );
                         })}
-                        <ModalRadioButton lang={props.lang} theme={_theme} value={'material_you'}
-                            disabled={Number(Platform.Version) < 31} changeValue={newValue => changeAccent(newValue as AccentName)} />
+                        <ModalRadioButton lang={props.lang} value={'material_you'} disabled={Number(Platform.Version) < 31} 
+                            changeValue={newValue => changeAccent(newValue as AccentName)} />
                     </RadioButton.Group>
                 </ScrollView>
             </View>
