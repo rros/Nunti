@@ -19,6 +19,7 @@ import {
     MD3DarkTheme,
     MD3LightTheme,
     withTheme,
+    FAB,
 } from 'react-native-paper';
 
 import Animated, {
@@ -55,7 +56,7 @@ import { Storage } from './Backend/Storage';
 import {
     Accent, Theme, AccentName, ThemeName,
     Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef,
-    ThemeProps, LanguageCode, BrowserMode, WindowClass
+    ThemeProps, LanguageCode, BrowserMode, WindowClass, FabRef
 } from './Props.d';
 import Color from 'color';
 
@@ -76,6 +77,7 @@ const NotificationsModule = NativeModules.Notifications;
 
 export const modalRef = React.createRef<ModalRef>();
 export const snackbarRef = React.createRef<SnackbarRef>();
+export const fabRef = React.createRef<FabRef>();
 export const browserRef = React.createRef<BrowserRef>();
 export const globalStateRef = React.createRef<GlobalStateRef>();
 export const logRef = React.createRef<LogRef>();
@@ -96,10 +98,15 @@ function App(props: AppProps) {
 
     const [screenHeight, setScreenHeight] = useState(Dimensions.get('window').height);
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
-    const [windowClass, setWindowClass] = useState<WindowClass>(WindowClass.compact); // will update before load
+    const [windowClass, setWindowClass] = useState(WindowClass.compact); // will update before load
 
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState<JSX.Element>();
+
+    const [fabVisible, setFabVisible] = useState(false);
+    const [drawerFabVisible, setDrawerFabVisible] = useState(false);
+    const fabAction = React.useRef<(() => void) | undefined>(() => { });
+    const fabLabel = React.useRef<string | undefined>(undefined);
 
     const [prefsLoaded, setPrefsLoaded] = useState(false);
     const [forceValue, forceUpdate] = useState(false);
@@ -109,6 +116,7 @@ function App(props: AppProps) {
     const log = useRef(globalLog.current.context('App.tsx'));
     const snackLog = useRef(log.current.context('Snackbar'));
     const modalLog = useRef(log.current.context('Modal'));
+    const fabLog = useRef(log.current.context('Fab'));
 
     // animations
     const snackAnim = useSharedValue(0);
@@ -457,6 +465,29 @@ function App(props: AppProps) {
         // modal gets hidden after animation finishes
     }
 
+    const showFab = (newFabAction?: () => void, newFabLabel?: string) => {
+        fabLog.current.debug("Showing fab");
+
+        if (windowClass >= WindowClass.medium)
+            setDrawerFabVisible(true);
+        else
+            setFabVisible(true);
+    
+        fabAction.current = newFabAction;
+        fabLabel.current = newFabLabel;
+    }
+
+    const hideFab = () => {
+        fabLog.current.debug("Hiding fab");
+
+        if (windowClass >= WindowClass.medium)
+            setDrawerFabVisible(false);
+        else
+            setFabVisible(false);
+
+        fabAction.current = () => { };
+    }
+
     const openBrowser = async (url: string, source?: string, ignoreConnectionStatus: boolean = false) => {
         let browserType: BrowserMode = Backend.UserSettings.BrowserMode;
         if (!ignoreConnectionStatus && await Utils.IsDoNotDownloadActive())
@@ -526,6 +557,7 @@ function App(props: AppProps) {
     useImperativeHandle(modalRef, () => ({ modalVisible, hideModal, showModal }));
     useImperativeHandle(snackbarRef, () => ({ showSnack }));
     useImperativeHandle(browserRef, () => ({ openBrowser }));
+    useImperativeHandle(fabRef, () => ({ showFab, hideFab }));
     useImperativeHandle(globalStateRef, () => ({
         updateLanguage, updateTheme, resetApp,
         reloadFeed, shouldFeedReload
@@ -540,9 +572,9 @@ function App(props: AppProps) {
             <NavigationContainer theme={props.theme as { dark: boolean, colors: any }} ref={drawerNavigationRef}
                 onReady={() => RNBootSplash.hide({ fade: true })}>
                 <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
-                    drawerContent={(_props) => <Drawer {..._props} windowClass={windowClass}
-                        lang={language} />} backBehavior="none"
-                    screenOptions={{
+                    drawerContent={(_props) => <Drawer {..._props} windowClass={windowClass} lang={language}
+                        fabVisible={drawerFabVisible} fabAction={fabAction.current} fabLabel={fabLabel.current} />} 
+                        backBehavior="none" screenOptions={{
                         drawerType: windowClass >= WindowClass.medium ? 'permanent' : 'front',
                         drawerStyle: windowClass >= WindowClass.medium && windowClass < WindowClass.extraLarge ?
                             Styles.railContainer : Styles.drawerContainer,
@@ -613,6 +645,14 @@ function App(props: AppProps) {
                         </View>
                     </Animated.View>
                 </View> : null}
+
+                <FAB
+                    icon="plus"
+                    size="large"
+                    onPress={fabAction.current}
+                    style={Styles.fab}
+                    visible={fabVisible}
+                />
             </Portal>
         </>
     );

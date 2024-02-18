@@ -9,7 +9,6 @@ import {
     Button,
     Dialog,
     TextInput,
-    FAB,
     Card,
     withTheme
 } from 'react-native-paper';
@@ -17,18 +16,32 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
-import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
+import { modalRef, snackbarRef, fabRef, globalStateRef, logRef } from '../../App';
 import { Backend } from '../../Backend';
 import { Feed } from '../../Backend/Feed';
 import Styles from '../../Styles';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 import { LangProps, LogProps, ScreenProps } from '../../Props';
 import { useAnimatedRef } from 'react-native-reanimated';
+import { useFocusEffect } from '@react-navigation/native';
 
 function SettingsFeeds(props: ScreenProps) {
     const [feeds, setFeeds] = useState([...Backend.UserSettings.FeedList]);
     const flatListRef = useAnimatedRef<FlatList>();
     const log = useRef(logRef.current!.globalLog.current.context('SettingsFeeds'));
+
+    useFocusEffect(
+        React.useCallback(() => {
+            log.current.debug("feed screen focused, showing fab");
+            fabRef.current?.showFab(() => modalRef.current?.showModal(<FeedAddModal lang={props.lang}
+                updateFeeds={updateFeeds} parentLog={log.current} />), props.lang.add_feeds);
+
+            return () => {
+                log.current.debug("feed screen blurred, hiding fab");
+                fabRef.current?.hideFab();
+            };
+        }, [])
+    );
 
     const updateFeeds = (scrollToEnd: boolean = false) => {
         setFeeds([...Backend.UserSettings.FeedList])
@@ -87,13 +100,6 @@ function SettingsFeeds(props: ScreenProps) {
                 ListEmptyComponent={<EmptyScreenComponent title={props.lang.no_feeds}
                     description={props.lang.no_feeds_description} useBottomOffset={false} />}
             ></FlatList>
-            <FAB
-                icon={'plus'}
-                size={'large'}
-                onPress={() => modalRef.current?.showModal(<FeedAddModal lang={props.lang}
-                    updateFeeds={updateFeeds} parentLog={log.current} />)}
-                style={Styles.fab}
-            />
         </View>
     );
 }

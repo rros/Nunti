@@ -82,7 +82,7 @@ function Settings(props: Props) {
                     languages={props.languages} theme={props.theme} />}
             </Stack.Screen>
             <Stack.Screen name="tags">
-                {_props => <SettingsTags {..._props}
+                {_props => <SettingsTags {..._props} 
                     lang={props.lang} />}
             </Stack.Screen>
             <Stack.Screen name="feeds">

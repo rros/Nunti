@@ -10,6 +10,7 @@ import {
     Text,
     Drawer as PaperDrawer,
     withTheme,
+    FAB,
 } from 'react-native-paper';
 
 import { snackbarRef } from '../App';
@@ -17,9 +18,15 @@ import Styles from '../Styles';
 import { ThemeProps, LangProps, WindowClass, WindowClassProps, WordIndex } from '../Props.d';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
 
-function Drawer(props: DrawerContentComponentProps & WindowClassProps & LangProps & ThemeProps) {
+interface DrawerProps extends DrawerContentComponentProps, WindowClassProps, LangProps, ThemeProps {
+    fabVisible: boolean,
+    fabAction?: () => void,
+    fabLabel?: string,
+}
+
+function Drawer(props: DrawerProps) {
     const [active, setActive] = useState<WordIndex>(props.state.routes[props.state.index].name as WordIndex);
-    const [isRail, setIsRail] = useState(props.windowClass >= WindowClass.medium && props.windowClass < WindowClass.extraLarge)
+    const [isRail, setIsRail] = useState(props.windowClass >= WindowClass.medium && props.windowClass < WindowClass.extraLarge);
 
     React.useEffect(() => {
         // update selected tab when going back with backbutton
@@ -46,9 +53,19 @@ function Drawer(props: DrawerContentComponentProps & WindowClassProps & LangProp
             <ScrollView showsVerticalScrollIndicator={false} overScrollMode={'never'} contentContainerStyle={{ flex: 1 }}>
                 {!isRail ? <Text variant="titleLarge" style={[Styles.drawerTitle, { color: props.theme.colors.secondary }]}>Nunti</Text> : null}
 
+                {props.windowClass >= WindowClass.medium ? <FAB
+                    icon="plus"
+                    label={props.windowClass >= WindowClass.extraLarge ? props.fabLabel : undefined}
+                    mode="flat"
+                    size="medium"
+                    onPress={props.fabAction}
+                    visible={props.fabVisible}
+                    style={{ marginHorizontal: 12, marginTop: 16, height: 56, width: 'auto' }}
+                /> : null}
+
                 {isRail ? <View style={{ flex: 1 }} /> : null}
 
-                <View style={{ marginTop: 16 }}>
+                <View style={props.windowClass >= WindowClass.extraLarge ? { marginTop: 12 } : { marginTop: 16 }}>
                     <DrawerItem
                         name="feed" icon="book"
                         active={active} onPress={drawerItemPress}

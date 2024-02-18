@@ -28,6 +28,10 @@ export type ModalRef = {
 export type SnackbarRef = {
     showSnack: (message: string, buttonLabel?: string, callback?: () => void) => Promise<void>,
 }
+export type FabRef = {
+    showFab: (fabAction?: () => void, fabLabel?: string) => void,
+    hideFab: () => void,
+}
 export type BrowserRef = {
     openBrowser: (url: string, source?: string, ignoreConnectionStatus?: boolean) => Promise<void>,
 }

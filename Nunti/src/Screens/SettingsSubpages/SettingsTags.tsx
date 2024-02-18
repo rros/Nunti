@@ -9,7 +9,6 @@ import {
     Button,
     Dialog,
     TextInput,
-    FAB,
     withTheme,
     Card,
 } from 'react-native-paper';
@@ -17,18 +16,32 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
 
-import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
+import { modalRef, snackbarRef, globalStateRef, logRef, fabRef } from '../../App';
 import { Backend } from '../../Backend';
 import { Tag } from '../../Backend/Tag'
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
 import Styles from '../../Styles';
 import { LangProps, LogProps, ScreenProps } from '../../Props';
 import { useAnimatedRef } from 'react-native-reanimated';
+import { useFocusEffect } from '@react-navigation/native';
 
 function SettingsTags(props: ScreenProps) {
     const [tags, setTags] = useState<Tag[]>([...Backend.UserSettings.Tags]);
     const flatListRef = useAnimatedRef<FlatList>();
     const log = useRef(logRef.current!.globalLog.current.context('SettingsTags'));
+
+    useFocusEffect(
+        React.useCallback(() => {
+            log.current.debug("feed screen focused, showing fab");
+            fabRef.current?.showFab(() => modalRef.current?.showModal(<TagAddModal lang={props.lang}
+                updateTags={updateTags} parentLog={log.current} />), props.lang.add_tags);
+
+            return () => {
+                log.current.debug("feed screen blurred, hiding fab");
+                fabRef.current?.hideFab();
+            };
+        }, [])
+    );
 
     const updateTags = (scrollToEnd: boolean = false) => {
         setTags([...Backend.UserSettings.Tags]);
@@ -82,13 +95,6 @@ function SettingsTags(props: ScreenProps) {
                 ListEmptyComponent={<EmptyScreenComponent title={props.lang.no_tags}
                     description={props.lang.no_tags_description} useBottomOffset={false} />}
             ></FlatList>
-            <FAB
-                icon={'plus'}
-                size={'large'}
-                onPress={() => modalRef.current?.showModal(<TagAddModal lang={props.lang}
-                    updateTags={updateTags} parentLog={log.current} />)}
-                style={Styles.fab}
-            />
         </View>
     );
 }
