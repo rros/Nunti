@@ -65,7 +65,7 @@ function Drawer(props: DrawerProps) {
 
                 {isRail ? <View style={{ flex: 1 }} /> : null}
 
-                <View style={props.windowClass >= WindowClass.extraLarge ? { marginTop: 12 } : { marginTop: 16 }}>
+                <View style={props.windowClass >= WindowClass.extraLarge ? { marginTop: 8 } : { marginTop: 16 }}>
                     <DrawerItem
                         name="feed" icon="book"
                         active={active} onPress={drawerItemPress}
@@ -77,7 +77,7 @@ function Drawer(props: DrawerProps) {
                         lang={props.lang} windowClass={props.windowClass}
                     />
                     <DrawerItem
-                        name="history" icon="history"
+                        name="history" icon="clock"
                         active={active} onPress={drawerItemPress}
                         lang={props.lang} windowClass={props.windowClass}
                     />
@@ -112,6 +112,7 @@ function DrawerItem(props: DrawerItemProps) {
         return (
             <PaperDrawer.CollapsedItem
                 focusedIcon={props.icon}
+                unfocusedIcon={props.icon + "-outline"}
                 active={props.active === props.name}
                 onPress={() => props.onPress(props.name)} />
         );

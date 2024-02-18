@@ -23,7 +23,7 @@ function Header(props: CustomHeaderProps) {
     }, [props.goBack, props.canGoBack]);
 
     return (
-        <Appbar.Header mode={'small'} elevated={false}>
+        <Appbar.Header mode={props.windowClass >= WindowClass.extraLarge ? 'medium' : 'small'} elevated={false}>
             {(props.openDrawer && !canGoBack && props.windowClass < WindowClass.medium) ?
                 <Appbar.Action icon="menu" onPress={props.openDrawer} /> : null}
             {canGoBack ? <Appbar.BackAction onPress={props.goBack} /> : null}
