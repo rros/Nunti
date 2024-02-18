@@ -13,11 +13,8 @@ import {
 } from 'react-native';
 
 import {
-    Appbar,
-    Drawer,
     Portal,
     Text,
-    Divider,
     Button,
     MD3DarkTheme,
     MD3LightTheme,
@@ -42,23 +39,24 @@ import Settings from './Screens/Settings';
 import About from './Screens/About';
 import LegacyWebview from './Screens/LegacyWebview';
 import WebpageReader from './Screens/WebpageReader';
+import Drawer from './Components/Drawer';
+import Header from './Components/Header';
 import Backend from './Backend';
 import { Utils } from './Backend/Utils';
 import Log from './Log';
 
-import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
-import { DrawerContentComponentProps, DrawerHeaderProps, createDrawerNavigator } from '@react-navigation/drawer';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import RNBootSplash from 'react-native-bootsplash';
 import BackgroundFetch from './BackgroundFetch';
 import { Background } from './Backend/Background';
 import { Storage } from './Backend/Storage';
 import {
-    Accent, ScreenTypeProps, Theme, NavigationStateProps, AccentName, ThemeName,
-    Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef, LangProps,
-    ThemeProps, WordIndex, LanguageCode, BrowserMode, ScreenOptions
-} from './Props';
+    Accent, Theme, AccentName, ThemeName,
+    Language, BrowserRef, GlobalStateRef, LogRef, ModalRef, SnackbarRef,
+    ThemeProps, LanguageCode, BrowserMode, WindowClass
+} from './Props.d';
 import Color from 'color';
 
 type NavigationParamList = {
@@ -66,7 +64,7 @@ type NavigationParamList = {
     bookmarks: undefined,
     history: undefined,
     wizard: undefined,
-    settings_handler: undefined,
+    settings: undefined,
     about: undefined,
     legacy_webview: { source: string, url: string },
     reader_mode: { source: string, url: string },
@@ -98,7 +96,7 @@ function App(props: AppProps) {
 
     const [screenHeight, setScreenHeight] = useState(Dimensions.get('window').height);
     const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
-    const [screenType, setScreenType] = useState(0);
+    const [windowClass, setWindowClass] = useState<WindowClass>(WindowClass.compact); // will update before load
 
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState<JSX.Element>();
@@ -246,7 +244,7 @@ function App(props: AppProps) {
                 return true;
             } else if (drawerNavigationRef.current!.getCurrentRoute()?.name != 'feed'
                 && !Backend.UserSettings.FirstLaunch) {
-                drawerNavigationRef.current!.navigate({ name: 'feed', params: undefined});
+                drawerNavigationRef.current!.navigate('feed');
                 return true;
             } else {
                 return false;
@@ -273,22 +271,20 @@ function App(props: AppProps) {
         setScreenHeight(height);
         setScreenWidth(width);
 
-        let newScreenType;
-        const smallerSide = height > width ? width : height;
-        if (smallerSide < 600) {
-            newScreenType = 0; // vertical cards, vertical details, hidden drawer
-        } else if (smallerSide >= 600 && smallerSide < 839) {
-            newScreenType = 2; // 2+ => horizontal cards, vertical details, permanent drawer
-        } else {
-            newScreenType = 4;
-        }
+        let newWindowClass;
+        if (width < WindowClass.compact)
+            newWindowClass = WindowClass.compact;
+        else if (width < WindowClass.medium)
+            newWindowClass = WindowClass.medium;
+        else if (width < WindowClass.expanded)
+            newWindowClass = WindowClass.expanded;
+        else if (width < WindowClass.large)
+            newWindowClass = WindowClass.large;
+        else
+            newWindowClass = WindowClass.extraLarge;
 
-        if (smallerSide == height) {
-            newScreenType += 1; // landscape modes of the breakpoints
-        }
-
-        log.current.debug('Screen orientation change:', screenType, '->', newScreenType);
-        setScreenType(newScreenType);
+        log.current.debug('Screen orientation change:', WindowClass[windowClass], '->', WindowClass[newWindowClass]);
+        setWindowClass(newWindowClass);
     }
 
     // language, theme, accent
@@ -521,7 +517,7 @@ function App(props: AppProps) {
             index: 0,
             routes: [{ name: 'wizard' }],
         });
-        drawerNavigationRef.current!.navigate({ name: 'wizard', params: undefined });
+        drawerNavigationRef.current!.navigate('wizard');
 
         hideModal();
         showSnack(language.wiped_data);
@@ -544,49 +540,46 @@ function App(props: AppProps) {
             <NavigationContainer theme={props.theme as { dark: boolean, colors: any }} ref={drawerNavigationRef}
                 onReady={() => RNBootSplash.hide({ fade: true })}>
                 <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
-                    drawerContent={(_props) => <CustomDrawer {..._props} screenType={screenType}
-                        theme={props.theme} lang={language} />} backBehavior="none"
+                    drawerContent={(_props) => <Drawer {..._props} windowClass={windowClass}
+                        lang={language} />} backBehavior="none"
                     screenOptions={{
-                        drawerType: screenType >= 2 ? 'permanent' : 'front', overlayColor: props.theme.colors.backdrop,
-                        header: (_props) => <CustomHeader {..._props} screenType={screenType}
-                            theme={props.theme} lang={language} />
+                        drawerType: windowClass >= WindowClass.medium ? 'permanent' : 'front',
+                        drawerStyle: windowClass >= WindowClass.medium && windowClass < WindowClass.extraLarge ?
+                            Styles.railContainer : Styles.drawerContainer,
+                        header: (_props) => <Header windowClass={windowClass} options={_props.options}
+                            route={_props.route} lang={language} openDrawer={_props.navigation.openDrawer} />
                     }}>
                     <NavigationDrawer.Screen name="feed">
                         {props => <ArticlesPage {...props} source="feed" buttonType="rate"
-                            lang={language} screenType={screenType} />}
+                            lang={language} windowClass={windowClass} />}
                     </NavigationDrawer.Screen>
                     <NavigationDrawer.Screen name="bookmarks">
                         {props => <ArticlesPage {...props} source="bookmarks" buttonType="delete"
-                            lang={language} screenType={screenType} />}
+                            lang={language} windowClass={windowClass} />}
                     </NavigationDrawer.Screen>
                     <NavigationDrawer.Screen name="history">
                         {props => <ArticlesPage {...props} source="history" buttonType="none"
-                            lang={language} screenType={screenType} />}
+                            lang={language} windowClass={windowClass} />}
                     </NavigationDrawer.Screen>
-                    <NavigationDrawer.Screen name="settings_handler" options={{ headerShown: false }}>
+                    <NavigationDrawer.Screen name="settings" options={{ headerShown: false }}>
                         {props => <Settings {...props}
-                            lang={language} languages={Languages} screenType={screenType} />}
+                            lang={language} languages={Languages} windowClass={windowClass} />}
                     </NavigationDrawer.Screen>
                     <NavigationDrawer.Screen name="about">
                         {props => <About {...props} lang={language} />}
                     </NavigationDrawer.Screen>
                     <NavigationDrawer.Screen name="wizard" options={{
-                        swipeEnabled: false,
-                        unmountOnBlur: true
+                        swipeEnabled: false, unmountOnBlur: true
                     }}>
                         {props => <Wizard {...props} lang={language} languages={Languages} />}
                     </NavigationDrawer.Screen>
                     <NavigationDrawer.Screen name="legacy_webview" options={{
-                        swipeEnabled: false,
-                        unmountOnBlur: true, headerShown: false, drawerStyle:
-                            { width: screenType >= 2 ? 0 : undefined }
+                        swipeEnabled: false, unmountOnBlur: true, headerShown: false, drawerStyle: { width: 0 }
                     }}>
                         {props => <LegacyWebview {...props} lang={language} />}
                     </NavigationDrawer.Screen>
                     <NavigationDrawer.Screen name="reader_mode" options={{
-                        swipeEnabled: false,
-                        unmountOnBlur: true, headerShown: false, drawerStyle:
-                            { width: screenType >= 2 ? 0 : undefined }
+                        swipeEnabled: false, unmountOnBlur: true, headerShown: false, drawerStyle: { width: 0 }
                     }}>
                         {props => <WebpageReader {...props} lang={language} />}
                     </NavigationDrawer.Screen>
@@ -603,9 +596,7 @@ function App(props: AppProps) {
                         <Animated.View style={[{ backgroundColor: props.theme.colors.surface },
                         Styles.modalContent, modalContentAnimStyle]}>
                             <View style={[{
-                                backgroundColor:
-                                    (props.theme.themeName == 'black' ? props.theme.colors.elevation.level0 :
-                                        props.theme.colors.elevation.level3), flexShrink: 1
+                                backgroundColor: props.theme.colors.elevation.level0, flexShrink: 1
                             },
                             ]}>{modalContent}
                             </View>
@@ -624,115 +615,6 @@ function App(props: AppProps) {
                 </View> : null}
             </Portal>
         </>
-    );
-}
-
-interface CustomHeaderProps extends ScreenTypeProps, LangProps, ThemeProps, DrawerHeaderProps {
-    options: ScreenOptions,
-}
-
-function CustomHeader(props: CustomHeaderProps) {
-    return (
-        <Appbar.Header mode={'small'} elevated={false}>
-            {(props.route.name != 'wizard' && props.screenType <= 1) ?
-                <Appbar.Action icon="menu" onPress={() => { props.navigation.openDrawer(); }} /> : null}
-            <Appbar.Content title={props.lang[props.route.name as WordIndex]} />
-            {props.options.rightFirstCallback ? <Appbar.Action icon="rss" onPress={props.options.rightFirstCallback} /> : null}
-            {props.options.rightSecondCallback !== undefined ? <Appbar.Action icon="filter-variant" onPress={props.options.rightSecondCallback} /> : null}
-        </Appbar.Header>
-    );
-}
-
-function CustomDrawer(props: DrawerContentComponentProps & ScreenTypeProps & NavigationStateProps & LangProps & ThemeProps) {
-    const [active, setActive] = useState(props.state.routes[props.state.index].name);
-
-    // update selected tab when going back with backbutton
-    React.useEffect(() => {
-        if (active != props.state.routes[props.state.index].name) {
-            setActive(props.state.routes[props.state.index].name);
-        }
-    });
-
-    return (
-        <View style={[props.screenType >= 2 ? Styles.drawerPermanent : Styles.drawer, { backgroundColor: props.theme.colors.surface }]}>
-            <ScrollView showsVerticalScrollIndicator={false} overScrollMode={'never'}
-                style={{
-                    backgroundColor: (props.screenType >= 2 || props.theme.themeName == 'black') ?
-                        props.theme.colors.elevation.level0 : props.theme.colors.elevation.level1, flex: 1
-                }}>
-                <Text variant="titleLarge"
-                    style={[Styles.drawerTitle, { color: props.theme.colors.secondary }]}>Nunti</Text>
-
-                <Drawer.Item
-                    label={props.lang.feed}
-                    icon="book"
-                    active={active === props.state.routes[0].name}
-                    onPress={() => {
-                        if (active == 'wizard') {
-                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
-                            return;
-                        }
-
-                        setActive(props.state.routes[0].name);
-                        props.navigation.navigate(props.state.routes[0].name);
-                    }} />
-                <Drawer.Item
-                    label={props.lang.bookmarks}
-                    icon="bookmark"
-                    active={active === props.state.routes[1].name}
-                    onPress={() => {
-                        if (active == 'wizard') {
-                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
-                            return;
-                        }
-
-                        setActive(props.state.routes[1].name);
-                        props.navigation.navigate(props.state.routes[1].name);
-                    }} />
-                <Drawer.Item
-                    label={props.lang.history}
-                    icon="history"
-                    active={active === props.state.routes[2].name}
-                    onPress={() => {
-                        if (active == 'wizard') {
-                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
-                            return;
-                        }
-
-                        setActive(props.state.routes[2].name);
-                        props.navigation.navigate(props.state.routes[2].name);
-                    }} />
-
-                <Divider bold={true} horizontalInset={true} style={Styles.drawerDivider} />
-
-                <Drawer.Item
-                    label={props.lang.settings}
-                    icon="cog"
-                    active={active === props.state.routes[3].name}
-                    onPress={() => {
-                        if (active == 'wizard') {
-                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
-                            return;
-                        }
-
-                        setActive(props.state.routes[3].name);
-                        props.navigation.navigate(props.state.routes[3].name);
-                    }} />
-                <Drawer.Item
-                    label={props.lang.about}
-                    icon="information"
-                    active={active === props.state.routes[4].name}
-                    onPress={() => {
-                        if (active == 'wizard') {
-                            snackbarRef.current?.showSnack(props.lang.complete_wizard_first);
-                            return;
-                        }
-
-                        setActive(props.state.routes[4].name);
-                        props.navigation.navigate(props.state.routes[4].name);
-                    }} />
-            </ScrollView>
-        </View>
     );
 }
 

@@ -40,11 +40,11 @@ import { Utils } from '../Backend/Utils';
 import { Storage } from '../Backend/Storage';
 import { Current } from '../Backend/Current';
 import Styles from '../Styles';
-import { LangProps, Route, ScreenProps, ScreenTypeProps, ThemeProps, WordIndex, ArticleSource, SortType, ArticleSwipe, ButtonType } from '../Props';
+import { LangProps, Route, ScreenProps, WindowClassProps, ThemeProps, WordIndex, ArticleSource, SortType, ArticleSwipe, ButtonType } from '../Props';
 import { ArticlesFilter } from '../Backend/ArticlesFilter';
 import { Tag } from '../Backend/Tag';
 
-interface Props extends ScreenProps, ScreenTypeProps {
+interface Props extends ScreenProps, WindowClassProps {
     source: ArticleSource,
     buttonType: ButtonType,
 }
@@ -299,13 +299,13 @@ function ArticlesPage(props: Props) {
     const bannerDoAction = (action: string) => {
         switch (action) {
             case 'add_feeds':
-                props.navigation.navigate('settings_handler', {
+                props.navigation.navigate('settings', {
                     screen: 'feeds',
                     initial: false,
                 });
                 break;
             case 'goto_settings':
-                props.navigation.navigate('settings_handler');
+                props.navigation.navigate('settings');
                 break;
             case 'open_filter':
                 modalRef.current?.showModal(<FilterModalContent theme={props.theme}
@@ -319,11 +319,11 @@ function ArticlesPage(props: Props) {
 
     const renderItem = (item: Article) => (
         <ArticleCard item={item} showImages={showImages} getDateCaption={getDateCaption}
-            screenType={props.screenType} viewDetails={() => {
+            windowClass={props.windowClass} viewDetails={() => {
                 currentArticle.current = item;
                 modalRef.current?.showModal((<DetailsModalContent lang={props.lang} theme={props.theme}
                     getDateCaption={getDateCaption} showImages={showImages} currentArticle={currentArticle.current!}
-                    buttonType={props.buttonType} screenType={props.screenType} saveArticle={saveArticle}
+                    buttonType={props.buttonType} windowClass={props.windowClass} saveArticle={saveArticle}
                     shareArticle={shareArticle} modifyArticle={modifyArticle} />))
             }}
             theme={props.theme} lang={props.lang} buttonType={props.buttonType}
@@ -585,7 +585,7 @@ function RssModalContent(props: FilterModalProps) {
     );
 }
 
-interface DetailsModalProps extends ThemeProps, LangProps, ScreenTypeProps {
+interface DetailsModalProps extends ThemeProps, LangProps, WindowClassProps {
     showImages: boolean,
     buttonType: ButtonType,
     currentArticle: Article,
@@ -632,7 +632,7 @@ function DetailsModalContent(props: DetailsModalProps) {
                 </View>
             </View>
         );
-    } else if (props.screenType == 1) {
+    } else if (props.windowClass == 1) {
         return (
             <View style={{ flexShrink: 1 }}>
                 <View style={{
@@ -702,7 +702,7 @@ function DetailsModalContent(props: DetailsModalProps) {
     }
 }
 
-interface ArticleCardProps extends ThemeProps, LangProps, ScreenTypeProps {
+interface ArticleCardProps extends ThemeProps, LangProps, WindowClassProps {
     showImages: boolean,
     buttonType: ButtonType,
     source: ArticleSource,
@@ -764,7 +764,7 @@ function ArticleCard(props: ArticleCardProps) {
         );
     }
 
-    if (props.screenType >= 1) {
+    if (props.windowClass >= 1) {
         return (
             <Animated.View style={cardContainerAnimStyle}>
                 <Swipeable renderLeftActions={props.source == 'history' ? undefined : leftSwipeComponent}

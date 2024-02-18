@@ -65,7 +65,7 @@ function ReaderMode(props: ScreenProps) {
     }
 
     const openSettings = async () => {
-        props.navigation.navigate('settings_handler', {
+        props.navigation.navigate('settings', {
             source: props.route.params?.source,
         });
     }
