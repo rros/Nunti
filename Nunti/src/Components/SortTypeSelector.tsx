@@ -11,7 +11,7 @@ import {
 
 import Backend from '../Backend';
 import Styles from '../Styles';
-import { ThemeProps, LangProps, LearningStatus, SortType } from '../Props';
+import { ThemeProps, LangProps, LearningStatus, SortType } from '../Props.d';
 
 interface Props extends ThemeProps, LangProps {
     applySorting: (sortingType: SortType) => void,

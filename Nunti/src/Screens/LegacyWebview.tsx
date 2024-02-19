@@ -11,7 +11,7 @@ import { WebView } from 'react-native-webview';
 
 import LoadingScreenComponent from '../Components/LoadingScreenComponent'
 import Log from '../Log';
-import { ScreenProps } from '../Props';
+import { ScreenProps } from '../Props.d';
 
 function LegacyWebview(props: ScreenProps) {
     const log = useRef(Log.FE.context('LegacyWebview'));

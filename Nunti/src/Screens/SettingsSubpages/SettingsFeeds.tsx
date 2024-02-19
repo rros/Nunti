@@ -21,7 +21,7 @@ import { Backend } from '../../Backend';
 import { Feed } from '../../Backend/Feed';
 import Styles from '../../Styles';
 import EmptyScreenComponent from '../../Components/EmptyScreenComponent'
-import { LangProps, LogProps, ScreenProps } from '../../Props';
+import { LangProps, LogProps, ScreenProps } from '../../Props.d';
 import { useAnimatedRef } from 'react-native-reanimated';
 import { useFocusEffect } from '@react-navigation/native';
 

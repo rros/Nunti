@@ -19,7 +19,7 @@ import EmptyScreenComponent from '../Components/EmptyScreenComponent';
 import { browserRef } from '../App';
 
 import { Backend } from '../Backend';
-import { ScreenProps } from '../Props';
+import { ScreenProps } from '../Props.d';
 import Styles from '../Styles';
 
 function ReaderMode(props: ScreenProps) {

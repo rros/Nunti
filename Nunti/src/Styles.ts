@@ -1635,7 +1635,7 @@ export default StyleSheet.create({
         marginVertical: 12,
         marginHorizontal: 16,
         flex: 1,
-        maxWidth: 560,
+        maxWidth: 840,
     },
 
     segmentedButton: {

@@ -21,7 +21,7 @@ import { Backend } from '../../Backend';
 import { Feed } from '../../Backend/Feed';
 import Styles from '../../Styles';
 import Switch from '../../Components/Switch';
-import { LangProps, LogProps, ScreenProps } from '../../Props';
+import { LangProps, LogProps, ScreenProps } from '../../Props.d';
 import { Tag } from '../../Backend/Tag';
 
 function SettingsFeedDetails(props: ScreenProps) {

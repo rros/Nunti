@@ -16,7 +16,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 
 import { modalRef, snackbarRef, globalStateRef, logRef } from '../../App';
 import { Backend } from '../../Backend';
-import { LangProps, ScreenProps, WordIndex } from '../../Props';
+import { LangProps, ScreenProps, WordIndex } from '../../Props.d';
 import Styles from '../../Styles';
 
 function SettingsAdvanced(props: ScreenProps) {

@@ -13,7 +13,7 @@ import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handle
 
 import { browserRef } from '../../App';
 import { Backend } from '../../Backend';
-import { ScreenProps, LearningStatus } from '../../Props';
+import { ScreenProps, LearningStatus } from '../../Props.d';
 import Styles from '../../Styles';
 import { useFocusEffect } from '@react-navigation/native';
 
