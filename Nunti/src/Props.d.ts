@@ -78,7 +78,7 @@ export type InverseElevation = {
 export enum WindowClass { compact = 600, medium = 840, expanded = 1200, large = 1600, extraLarge = 1601 }
 
 export type WordIndex = keyof typeof English;
-export type LanguageIndex = 'en' | 'cs' | 'ja' | 'it' | 'pl' | 'de' | 'fr' | 'pt_BR' | 'fa' | 'uk';
+export type LanguageIndex = 'en' | 'cs' | 'ja' | 'it' | 'pl' | 'de' | 'fr' | 'pt_BR' | 'fa' | 'uk' | 'tr';
 export type LanguageCode = Extract<WordIndex, LanguageIndex | 'system'>;
 export type Language = { [id in WordIndex]: string };
 export type LanguageList = { [id in LanguageIndex]: Language };
