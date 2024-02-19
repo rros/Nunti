@@ -50,7 +50,7 @@ function Drawer(props: DrawerProps) {
     return (
         <View style={[props.windowClass >= WindowClass.medium ? Styles.rail : Styles.drawer,
         { backgroundColor: props.windowClass >= WindowClass.medium ? props.theme.colors.background : props.theme.colors.surface }]}>
-            <ScrollView showsVerticalScrollIndicator={false} overScrollMode={'never'} contentContainerStyle={{ flex: 1 }}>
+            <ScrollView showsVerticalScrollIndicator={false} overScrollMode={'never'} contentContainerStyle={{ flexGrow: 1 }}>
                 {!isRail ? <Text variant="titleLarge" style={[Styles.drawerTitle, { color: props.theme.colors.secondary }]}>Nunti</Text> : null}
 
                 {props.windowClass >= WindowClass.medium ? <FAB
