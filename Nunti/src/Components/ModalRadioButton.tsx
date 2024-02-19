@@ -12,7 +12,7 @@ import {
 } from 'react-native-paper';
 
 import Styles from '../Styles';
-import { ThemeProps, LangProps, WordIndex } from '../Props';
+import { ThemeProps, LangProps, WordIndex } from '../Props.d';
 
 interface Props extends ThemeProps, LangProps {
     value: WordIndex,

@@ -18,7 +18,7 @@ import { browserRef, snackbarRef, logRef } from '../App';
 import Log from '../Log';
 
 import Styles from '../Styles';
-import { ScreenProps } from '../Props';
+import { ScreenProps } from '../Props.d';
 
 function About(props: ScreenProps) {
     const log = useRef<Log>(logRef.current!.globalLog.current.context('About'));

@@ -16,7 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import Styles from '../Styles';
-import { ThemeProps } from '../Props';
+import { ThemeProps } from '../Props.d';
 
 interface Props extends ThemeProps {
     title: string,

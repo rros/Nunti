@@ -1535,6 +1535,16 @@ export default StyleSheet.create({
         position: 'absolute',
     },
 
+    drawerContainer: {
+        width: 360,
+        borderRightWidth: 0
+    },
+
+    railContainer: {
+        width: 80,
+        borderRightWidth: 0
+    },
+
     drawer: {
         flex: 1,
         borderTopRightRadius: 16,
@@ -1542,21 +1552,13 @@ export default StyleSheet.create({
         overflow: 'hidden',
     },
 
-    drawerPermanent: {
+    rail: {
         flex: 1,
-
-        // TODO: in permanent drawer mode, the drawer is separated from 
-        // the screens by a weird line. I have not found a way to remove this,
-        // nor a way to recolour it to the theme
     },
 
     drawerTitle: {
-        marginVertical: 16,
+        marginTop: 16,
         marginLeft: 28
-    },
-
-    drawerDivider: {
-        marginVertical: 8
     },
 
     wizardTabContainer: {
@@ -1630,16 +1632,10 @@ export default StyleSheet.create({
         height: 40,
         padding: 1,
         borderRadius: 20,
-        marginVertical: 8,
+        marginVertical: 12,
         marginHorizontal: 16,
         flex: 1,
-    },
-
-    segmentedButtonContainer: {
-        borderRadius: 20,
-        flexDirection: 'row',
-        overflow: 'hidden',
-        flex: 1,
+        maxWidth: 840,
     },
 
     segmentedButton: {

@@ -20,7 +20,7 @@ const NotificationsModule = NativeModules.Notifications;
 import { modalRef, snackbarRef, logRef } from '../../App';
 import { Backend } from '../../Backend';
 import Switch from '../../Components/Switch';
-import { LangProps, ScreenProps, WordIndex } from '../../Props';
+import { LangProps, ScreenProps, WordIndex } from '../../Props.d';
 import Styles from '../../Styles';
 
 function SettingsBackground(props: ScreenProps) {

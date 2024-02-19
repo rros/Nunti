@@ -26,7 +26,7 @@ import { DefaultTopics } from '../DefaultTopics';
 import SettingsBackground from '../Screens/SettingsSubpages/SettingsBackground';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { LogProps, ScreenProps, LanguageList, ThemeName, AccentName, TopicName, LanguageCode, LanguageIndex } from '../Props';
+import { LogProps, ScreenProps, LanguageList, ThemeName, AccentName, TopicName, LanguageCode, LanguageIndex } from '../Props.d';
 
 type NavigationParamList = {
     welcome: undefined,

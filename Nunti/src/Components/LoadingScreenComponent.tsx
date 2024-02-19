@@ -9,7 +9,7 @@ import {
 } from 'react-native-paper';
 
 import Styles from '../Styles';
-import { ThemeProps } from '../Props';
+import { ThemeProps } from '../Props.d';
 
 function LoadingScreenComponent(props: ThemeProps) {
     return (

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { PaperProvider } from 'react-native-paper';
 import App from './App';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Theme } from './Props';
+import { Theme } from './Props.d';
 import { Accents } from './Styles';
 
 export default function AppWrapper() {

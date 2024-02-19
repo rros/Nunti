@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Share,
     FlatList,
     RefreshControl,
+    LayoutAnimation,
 } from 'react-native';
 
 import {
@@ -17,34 +18,28 @@ import {
     withTheme,
     Banner,
     Checkbox,
+    ProgressBar,
 } from 'react-native-paper';
 
-import { Swipeable, TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
-import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    useAnimatedRef,
-    withTiming,
-    interpolate,
-} from 'react-native-reanimated';
-
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { TouchableNativeFeedback, ScrollView } from 'react-native-gesture-handler';
+import { useAnimatedRef } from 'react-native-reanimated';
 
 import { Backend } from '../Backend';
 import { Article } from '../Backend/Article';
 import { modalRef, snackbarRef, browserRef, globalStateRef, logRef } from '../App';
+import ArticleCard from '../Components/ArticleCard';
 import EmptyScreenComponent from '../Components/EmptyScreenComponent';
-import SegmentedButton from '../Components/SegmentedButton';
-import LinearIndicator from '../Components/LinearIndicator';
+import SortTypeSelector from '../Components/SortTypeSelector';
 import { Utils } from '../Backend/Utils';
 import { Storage } from '../Backend/Storage';
 import { Current } from '../Backend/Current';
 import Styles from '../Styles';
-import { LangProps, Route, ScreenProps, ScreenTypeProps, ThemeProps, WordIndex, ArticleSource, SortType, ArticleSwipe, ButtonType } from '../Props';
+import { LangProps, Route, ScreenProps, WindowClassProps, ThemeProps, WordIndex, ArticleSource, SortType, ButtonType } from '../Props.d';
 import { ArticlesFilter } from '../Backend/ArticlesFilter';
 import { Tag } from '../Backend/Tag';
+import { useFocusEffect } from '@react-navigation/native';
 
-interface Props extends ScreenProps, ScreenTypeProps {
+interface Props extends ScreenProps, WindowClassProps {
     source: ArticleSource,
     buttonType: ButtonType,
 }
@@ -69,37 +64,13 @@ function ArticlesPage(props: Props) {
 
     const lang = useRef(props.lang); // modal event cannot read updated props
     const theme = useRef(props.theme); // modal event cannot read updated props
-    const sourceFilter = useRef<ArticlesFilter>({ sortType: Backend.UserSettings.SortType, search: '', feeds: [], tags: [] });
+    const sourceFilter = useRef<ArticlesFilter>({ sortType: Backend.UserSettings.SortType, search: '', feeds: ['all_rss'], tags: [] });
     const flatListRef = useAnimatedRef<FlatList>(); //scrollTo from reanimated doesn't work, use old .scrollToOffset
 
     const log = useRef(logRef.current!.globalLog.current.context('ArticlePage_' + props.route.name));
 
-    useLayoutEffect(() => {
-        props.navigation.setOptions({
-            rightFirstCallback: () => {
-                modalRef.current?.showModal(<FilterModalContent theme={theme.current}
-                    applyFilter={applyFilter} lang={lang.current}
-                    sourceFilter={sourceFilter.current} />);
-            },
-            rightSecondCallback: () => {
-                modalRef.current?.showModal(<RssModalContent theme={theme.current}
-                    applyFilter={applyFilter} lang={lang.current}
-                    sourceFilter={sourceFilter.current} />);
-            },
-        });
-    }, [props.navigation])
-
-    // on component mount
-    useEffect(() => {
-        (async () => {
-            sourceFilter.current.feeds = ['all_rss'];
-            sourceFilter.current.tags = [];
-            sourceFilter.current.search = '';
-
-            refresh(true);
-        })();
-
-        const onFocus = props.navigation.addListener('focus', () => {
+    useFocusEffect(
+        React.useCallback(() => {
             if (props.route.name != 'feed') {
                 refresh(false); // reload bookmarks/history on each access
             } else if (globalStateRef.current?.shouldFeedReload.current) {
@@ -113,11 +84,24 @@ function ArticlesPage(props: Props) {
                 refresh(true);
             }
             setShowImages(!Backend.UserSettings.DisableImages);
+        }, [])
+    );
+
+    useEffect(() => {
+        props.navigation.setOptions({
+            rightFirstCallback: () => {
+                modalRef.current?.showModal(<RssModalContent theme={theme.current}
+                    applyFilter={applyFilter} lang={lang.current}
+                    sourceFilter={sourceFilter.current} />);
+            },
+            rightSecondCallback: () => {
+                modalRef.current?.showModal(<FilterModalContent theme={theme.current}
+                    applyFilter={applyFilter} lang={lang.current}
+                    sourceFilter={sourceFilter.current} />);
+            },
         });
 
-        return () => {
-            onFocus();
-        }
+        refresh(true);
     }, []);
 
     useEffect(() => {
@@ -125,7 +109,7 @@ function ArticlesPage(props: Props) {
         // on state listener does not update it's props
         lang.current = props.lang;
         theme.current = props.theme;
-    });
+    }, [props.lang, props.theme]);
 
     const refresh = async (refreshIndicator: boolean = true) => {
         log.current.info('Refreshing articles with filter params: ', sourceFilter.current);
@@ -184,12 +168,20 @@ function ArticlesPage(props: Props) {
         }
 
         setArticlePage(articlesFromBackend.current[currentPageIndex.current]);
-        setRefreshing(false);
-
+        // setRefreshing(false); // is set in the refresh status callback
     }
 
-    const refreshStatusCallback = (context: string, percentage: number) => {
+    const refreshStatusCallback = async (context: string, percentage: number) => {
         setRefreshingStatus(percentage);
+
+        // this is not ideal, but progress bar does not animate to 0
+        // if it is hidden, resulting in a fugly back and forth animation
+        // when reload happens for a second time
+        if (percentage == 1) {
+            await new Promise(r => setTimeout(r, 100));
+            setRefreshingStatus(0);
+            setRefreshing(false);
+        }
     }
 
     // article functions
@@ -225,6 +217,19 @@ function ArticlesPage(props: Props) {
         refresh(true);
         log.current.debug('Applying filtering:', sourceFilter.current);
     }
+
+    const layoutAnimConfig = {
+        duration: 300,
+        update: {
+            type: LayoutAnimation.Types.easeInEaseOut,
+        },
+        delete: {
+            duration: 100,
+            type: LayoutAnimation.Types.easeInEaseOut,
+            property: LayoutAnimation.Properties.opacity,
+        },
+    };
+
 
     const modifyArticle = async (article: Article, direction: string = 'right') => {
         if (props.buttonType == 'delete') {
@@ -264,6 +269,7 @@ function ArticlesPage(props: Props) {
         }
 
         forceUpdate(!forceValue);
+        LayoutAnimation.configureNext(layoutAnimConfig)
     }
 
     const changePage = async (newPageIndex: number) => {
@@ -299,13 +305,13 @@ function ArticlesPage(props: Props) {
     const bannerDoAction = (action: string) => {
         switch (action) {
             case 'add_feeds':
-                props.navigation.navigate('settings_handler', {
+                props.navigation.navigate('settings', {
                     screen: 'feeds',
                     initial: false,
                 });
                 break;
             case 'goto_settings':
-                props.navigation.navigate('settings_handler');
+                props.navigation.navigate('settings');
                 break;
             case 'open_filter':
                 modalRef.current?.showModal(<FilterModalContent theme={props.theme}
@@ -319,11 +325,11 @@ function ArticlesPage(props: Props) {
 
     const renderItem = (item: Article) => (
         <ArticleCard item={item} showImages={showImages} getDateCaption={getDateCaption}
-            screenType={props.screenType} viewDetails={() => {
+            windowClass={props.windowClass} viewDetails={() => {
                 currentArticle.current = item;
                 modalRef.current?.showModal((<DetailsModalContent lang={props.lang} theme={props.theme}
                     getDateCaption={getDateCaption} showImages={showImages} currentArticle={currentArticle.current!}
-                    buttonType={props.buttonType} screenType={props.screenType} saveArticle={saveArticle}
+                    buttonType={props.buttonType} windowClass={props.windowClass} saveArticle={saveArticle}
                     shareArticle={shareArticle} modifyArticle={modifyArticle} />))
             }}
             theme={props.theme} lang={props.lang} buttonType={props.buttonType}
@@ -332,8 +338,8 @@ function ArticlesPage(props: Props) {
 
     return (
         <View style={{ flexGrow: 1 }}>
-            {props.source == 'feed' ? <LinearIndicator show={refreshing}
-                value={refreshingStatus} /> : null}
+            {props.source == 'feed' ? <ProgressBar progress={refreshingStatus}
+                visible={refreshing} color={props.theme.colors.primary} /> : null}
             <Banner visible={bannerVisible} actions={[
                 {
                     label: props.lang.dismiss,
@@ -366,8 +372,8 @@ function ArticlesPage(props: Props) {
                 }
 
                 renderItem={({ item }) => renderItem(item)}
-                ListHeaderComponent={props.source == 'feed' ? <SegmentedButton applySorting={applySorting}
-                    theme={props.theme} lang={props.lang} /> : null}
+                ListHeaderComponent={props.source == 'feed' ? <SortTypeSelector
+                    applySorting={applySorting} lang={props.lang} /> : null}
                 ListEmptyComponent={<ListEmptyComponent route={props.route} lang={props.lang} />}
                 ListFooterComponent={() => articlePage.length != 0 ? (
                     <View style={Styles.footerContainer}>
@@ -585,7 +591,7 @@ function RssModalContent(props: FilterModalProps) {
     );
 }
 
-interface DetailsModalProps extends ThemeProps, LangProps, ScreenTypeProps {
+interface DetailsModalProps extends ThemeProps, LangProps, WindowClassProps {
     showImages: boolean,
     buttonType: ButtonType,
     currentArticle: Article,
@@ -596,250 +602,38 @@ interface DetailsModalProps extends ThemeProps, LangProps, ScreenTypeProps {
 }
 
 function DetailsModalContent(props: DetailsModalProps) {
-    if (props.currentArticle.cover === undefined || !props.showImages) {
-        return (
-            <View style={{ flexShrink: 1 }}>
-                <View style={[Styles.cardContent, {
-                    borderBottomColor: props.theme.colors.outline,
-                    borderBottomWidth: (props.currentArticle.description.length != 0 ? 0 : 1)
-                }]}>
+    return (
+        <View style={{ flexShrink: 1 }}>
+            {props.currentArticle.cover !== undefined && props.showImages ?
+                <Card.Cover style={Styles.cardCover}
+                    source={{ uri: props.currentArticle.cover }} />
+                : null}
+
+            <View style={[{ flexShrink: 1, borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1 }]}>
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
                     <Text selectable={true} variant="titleLarge">{props.currentArticle.title}</Text>
-                    <Text selectable={true} variant="labelSmall" style={Styles.captionText}>
+                    <Text selectable={true} style={Styles.captionText} variant="labelSmall">
                         {props.getDateCaption(props.currentArticle.date) === undefined ?
                             props.currentArticle.source :
                             props.getDateCaption(props.currentArticle.date) + ' • ' + props.currentArticle.source}</Text>
-                </View>
-
-                {props.currentArticle.description.length != 0 ?
-                    <View style={[{
-                        flexShrink: 1, borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1,
-                        borderTopColor: props.theme.colors.outline, borderTopWidth: 1
-                    }]}>
-                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
-                            <Text selectable={true} variant="bodyMedium">{props.currentArticle.description}</Text>
-                        </ScrollView>
-                    </View> : null}
-
-                <View style={Styles.cardButtonContainer}>
-                    <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
-                        onPress={() => { browserRef.current?.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
-                    {props.buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
-                        onPress={() => { props.saveArticle(props.currentArticle); }} /> : null}
-                    {props.buttonType == 'delete' ? <IconButton icon="delete" size={24}
-                        onPress={() => { props.modifyArticle(props.currentArticle); }} /> : null}
-                    <IconButton icon="share" size={24} style={{ marginRight: 0 }}
-                        onPress={() => { props.shareArticle(props.currentArticle.url); }} />
-                </View>
+                    {props.currentArticle.description.length != 0 ?
+                        <Text selectable={true} variant="bodyMedium" style={Styles.bodyText}>
+                            {props.currentArticle.description}</Text> : null}
+                </ScrollView>
             </View>
-        );
-    } else if (props.screenType == 1) {
-        return (
-            <View style={{ flexShrink: 1 }}>
-                <View style={{
-                    flexDirection: 'row-reverse', flexShrink: 1,
-                    borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1
-                }}>
-                    <Card.Cover style={[Styles.cardCover, Styles.cardCoverSide]}
-                        source={{ uri: props.currentArticle.cover }} />
 
-                    <View style={{ flex: 1, marginTop: 12 }}>
-                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
-                            <Text selectable={true} variant="titleLarge">{props.currentArticle.title}</Text>
-                            <Text selectable={true} style={Styles.captionText} variant="labelSmall">
-                                {props.getDateCaption(props.currentArticle.date) === undefined ?
-                                    props.currentArticle.source :
-                                    props.getDateCaption(props.currentArticle.date) + ' • ' + props.currentArticle.source}</Text>
-                            {props.currentArticle.description.length != 0 ?
-                                <Text selectable={true} variant="bodyMedium" style={Styles.bodyText}>
-                                    {props.currentArticle.description}</Text> : null}
-                        </ScrollView>
-                    </View>
-                </View>
-
-                <View style={Styles.cardButtonContainer}>
-                    <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
-                        onPress={() => { browserRef.current?.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
-                    {props.buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
-                        onPress={() => { props.saveArticle(props.currentArticle); }} /> : null}
-                    {props.buttonType == 'delete' ? <IconButton icon="delete" size={24}
-                        onPress={() => { props.modifyArticle(props.currentArticle); }} /> : null}
-                    <IconButton icon="share" size={24} style={{ marginRight: 0 }}
-                        onPress={() => { props.shareArticle(props.currentArticle.url); }} />
-                </View>
+            <View style={Styles.cardButtonContainer}>
+                <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
+                    onPress={() => { browserRef.current?.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
+                {props.buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
+                    onPress={() => { props.saveArticle(props.currentArticle); }} /> : null}
+                {props.buttonType == 'delete' ? <IconButton icon="delete" size={24}
+                    onPress={() => { props.modifyArticle(props.currentArticle); }} /> : null}
+                <IconButton icon="share" size={24} style={{ marginRight: 0 }}
+                    onPress={() => { props.shareArticle(props.currentArticle.url); }} />
             </View>
-        );
-    } else {
-        return (
-            <View style={{ flexShrink: 1 }}>
-                <Card.Cover style={Styles.cardCover}
-                    source={{ uri: props.currentArticle.cover }} />
-
-                <View style={[{ flexShrink: 1, borderBottomColor: props.theme.colors.outline, borderBottomWidth: 1 }]}>
-                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={Styles.cardContent}>
-                        <Text selectable={true} variant="titleLarge">{props.currentArticle.title}</Text>
-                        <Text selectable={true} style={Styles.captionText} variant="labelSmall">
-                            {props.getDateCaption(props.currentArticle.date) === undefined ?
-                                props.currentArticle.source :
-                                props.getDateCaption(props.currentArticle.date) + ' • ' + props.currentArticle.source}</Text>
-                        {props.currentArticle.description.length != 0 ?
-                            <Text selectable={true} variant="bodyMedium" style={Styles.bodyText}>
-                                {props.currentArticle.description}</Text> : null}
-                    </ScrollView>
-                </View>
-
-                <View style={Styles.cardButtonContainer}>
-                    <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
-                        onPress={() => { browserRef.current?.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
-                    {props.buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
-                        onPress={() => { props.saveArticle(props.currentArticle); }} /> : null}
-                    {props.buttonType == 'delete' ? <IconButton icon="delete" size={24}
-                        onPress={() => { props.modifyArticle(props.currentArticle); }} /> : null}
-                    <IconButton icon="share" size={24} style={{ marginRight: 0 }}
-                        onPress={() => { props.shareArticle(props.currentArticle.url); }} />
-                </View>
-            </View>
-        );
-    }
-}
-
-interface ArticleCardProps extends ThemeProps, LangProps, ScreenTypeProps {
-    showImages: boolean,
-    buttonType: ButtonType,
-    source: ArticleSource,
-    item: Article,
-    viewDetails: (article: Article) => void,
-    modifyArticle: (article: Article, direction: ArticleSwipe) => void,
-    getDateCaption: (date?: Date) => void,
-}
-
-function ArticleCard(props: ArticleCardProps) {
-    const cardAnim = useSharedValue(1);
-    const cardOpacityAnim = useSharedValue(0);
-
-    const cardContainerAnimStyle = useAnimatedStyle(() => {
-        return {
-            maxHeight: withTiming(interpolate(cardAnim.value, [0, 1], [0, 500]), { duration: 500 }),
-            opacity: withTiming(cardOpacityAnim.value),
-        };
-    });
-    const swipeComponentAnimStyle = useAnimatedStyle(() => {
-        return {
-            scaleY: withTiming(interpolate(cardAnim.value, [0, 1], [0.8, 1])),
-        };
-    });
-
-    useEffect(() => {
-        appearAnimation();
-    }, []);
-
-    const appearAnimation = () => {
-        cardOpacityAnim.value = 1;
-    }
-
-    const disappearAnimation = () => {
-        cardAnim.value = 0;
-        cardOpacityAnim.value = 0;
-    }
-
-    const leftSwipeComponent = () => {
-        return (
-            <Animated.View style={[Styles.cardSwipeLeft, {
-                backgroundColor: (props.buttonType == 'delete') ?
-                    props.theme.colors.negativeContainer : props.theme.colors.positiveContainer
-            }, swipeComponentAnimStyle]}>
-                <Icon name={props.buttonType == 'delete' ? 'delete' : 'thumb-up'}
-                    size={24} color={props.buttonType == 'delete' ? props.theme.colors.onNegativeContainer :
-                        props.theme.colors.onPositiveContainer} style={Styles.cardSwipeIcon} />
-            </Animated.View>
-        );
-    }
-
-    const rightSwipeComponent = () => {
-        return (
-            <Animated.View style={[Styles.cardSwipeRight,
-            { backgroundColor: props.theme.colors.negativeContainer }, swipeComponentAnimStyle]}>
-                <Icon name={props.buttonType == 'delete' ? 'delete' : 'thumb-down'}
-                    size={24} color={props.theme.colors.onNegativeContainer} style={Styles.cardSwipeIcon} />
-            </Animated.View>
-        );
-    }
-
-    if (props.screenType >= 1) {
-        return (
-            <Animated.View style={cardContainerAnimStyle}>
-                <Swipeable renderLeftActions={props.source == 'history' ? undefined : leftSwipeComponent}
-                    renderRightActions={props.source == 'history' ? undefined : rightSwipeComponent}
-                    onSwipeableWillOpen={() => { disappearAnimation(); }}
-                    onSwipeableOpen={(direction) => { props.modifyArticle(props.item, direction); }}
-                    leftThreshold={150} rightThreshold={150}>
-                    <View style={[Styles.card, { backgroundColor: props.theme.colors.secondaryContainer }]}>
-                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
-                            useForeground={true}
-                            onPress={() => { browserRef.current?.openBrowser(props.item.url); }}
-                            onLongPress={() => { props.viewDetails(props.item); }}>
-
-                            <View style={{ flexDirection: 'row-reverse' }}>
-                                {(props.item.cover !== undefined && props.showImages) ?
-                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.colors.onSurfaceDisabled, flex: 1 }]}
-                                        source={{ uri: props.item.cover }} progressiveRenderingEnabled={true} /> : null}
-                                <View style={[Styles.cardContent, { flex: 1 }]}>
-                                    <Text variant="titleLarge" style={{ color: props.theme.colors.onSecondaryContainer }} numberOfLines={3}>
-                                        {props.item.title}</Text>
-                                    <Text variant="bodyMedium" numberOfLines={7} style={[{
-                                        flexGrow: 1,
-                                        color: props.theme.colors.onSecondaryContainer,
-                                        flex: ((props.item.cover !== undefined && props.showImages) ? 1 : undefined),
-                                        marginTop: (props.item.description.length != 0 ? 8 : 0)
-                                    }]}
-                                    >{props.item.description.length != 0 ? props.item.description : ''}</Text>
-                                    <Text style={[Styles.captionText, { color: props.theme.colors.onSecondaryContainer }]} variant="labelSmall">
-                                        {props.getDateCaption(props.item.date) === undefined ?
-                                            props.item.source :
-                                            props.getDateCaption(props.item.date) + ' • ' + props.item.source}</Text>
-                                </View>
-
-                            </View>
-                        </TouchableNativeFeedback>
-                    </View>
-                </Swipeable>
-            </Animated.View>
-        );
-    } else {
-        return (
-            <Animated.View style={cardContainerAnimStyle}>
-                <Swipeable renderLeftActions={props.source == 'history' ? undefined : leftSwipeComponent}
-                    renderRightActions={props.source == 'history' ? undefined : rightSwipeComponent}
-                    onSwipeableWillOpen={() => { disappearAnimation(); }}
-                    onSwipeableOpen={(direction) => { props.modifyArticle(props.item, direction); }}
-                    leftThreshold={150} rightThreshold={150}>
-                    <View style={[Styles.card, { backgroundColor: props.theme.colors.secondaryContainer }]}>
-                        <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
-                            useForeground={true}
-                            onPress={() => { browserRef.current?.openBrowser(props.item.url); }}
-                            onLongPress={() => { props.viewDetails(props.item); }}>
-
-                            <View>
-                                {(props.item.cover !== undefined && props.showImages) ?
-                                    <Card.Cover style={[Styles.cardCover, { backgroundColor: props.theme.colors.onSurfaceDisabled }]}
-                                        source={{ uri: props.item.cover }} progressiveRenderingEnabled={true} /> : null}
-                                <View style={Styles.cardContent}>
-                                    <Text variant="titleLarge" style={{ color: props.theme.colors.onSecondaryContainer }} numberOfLines={3}>{props.item.title}</Text>
-                                    {((props.item.description.length != 0 && !props.showImages) || props.item.cover === undefined) ?
-                                        <Text variant="bodyMedium" style={[Styles.bodyText, { color: props.theme.colors.onSecondaryContainer }]}
-                                            numberOfLines={7}>{props.item.description}</Text> : null}
-                                    <Text style={[Styles.captionText, { color: props.theme.colors.onSecondaryContainer }]} variant="labelSmall">
-                                        {props.getDateCaption(props.item.date) === undefined ?
-                                            props.item.source :
-                                            props.getDateCaption(props.item.date) + ' • ' + props.item.source}</Text>
-                                </View>
-
-                            </View>
-                        </TouchableNativeFeedback>
-                    </View>
-                </Swipeable>
-            </Animated.View>
-        );
-    }
+        </View>
+    );
 }
 
 export default withTheme(React.memo(ArticlesPage));

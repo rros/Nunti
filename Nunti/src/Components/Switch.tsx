@@ -15,7 +15,7 @@ import Animated, {
 import Color from 'color';
 
 import Styles from '../Styles';
-import { ThemeProps } from '../Props';
+import { ThemeProps } from '../Props.d';
 
 interface Props extends ThemeProps {
     value: boolean,
