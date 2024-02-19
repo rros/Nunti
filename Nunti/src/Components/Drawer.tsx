@@ -17,6 +17,7 @@ import { snackbarRef } from '../App';
 import Styles from '../Styles';
 import { ThemeProps, LangProps, WindowClass, WindowClassProps, WordIndex } from '../Props.d';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
+import { useAnimatedRef } from 'react-native-reanimated';
 
 interface DrawerProps extends DrawerContentComponentProps, WindowClassProps, LangProps, ThemeProps {
     fabVisible: boolean,
@@ -27,6 +28,7 @@ interface DrawerProps extends DrawerContentComponentProps, WindowClassProps, Lan
 function Drawer(props: DrawerProps) {
     const [active, setActive] = useState<WordIndex>(props.state.routes[props.state.index].name as WordIndex);
     const [isRail, setIsRail] = useState(props.windowClass >= WindowClass.medium && props.windowClass < WindowClass.extraLarge);
+    const scrollRef = useAnimatedRef<ScrollView>();
 
     React.useEffect(() => {
         // update selected tab when going back with backbutton
@@ -36,6 +38,11 @@ function Drawer(props: DrawerProps) {
 
         setIsRail(props.windowClass >= WindowClass.medium && props.windowClass < WindowClass.extraLarge);
     }, [props.windowClass, props.state]);
+
+    React.useEffect(() => {
+        if (props.fabVisible == true)
+            scrollRef.current?.scrollTo({x: 0, y: 0, animated: true})
+    }, [props.fabVisible]);
 
     const drawerItemPress = (name: WordIndex) => {
         if (active == 'wizard') {
@@ -50,7 +57,7 @@ function Drawer(props: DrawerProps) {
     return (
         <View style={[props.windowClass >= WindowClass.medium ? Styles.rail : Styles.drawer,
         { backgroundColor: props.windowClass >= WindowClass.medium ? props.theme.colors.background : props.theme.colors.surface }]}>
-            <ScrollView showsVerticalScrollIndicator={false} overScrollMode={'never'} contentContainerStyle={{ flexGrow: 1 }}>
+            <ScrollView showsVerticalScrollIndicator={false} overScrollMode={'never'} contentContainerStyle={{ flexGrow: 1 }} ref={scrollRef}>
                 {!isRail ? <Text variant="titleLarge" style={[Styles.drawerTitle, { color: props.theme.colors.secondary }]}>Nunti</Text> : null}
 
                 {props.windowClass >= WindowClass.medium ? <FAB

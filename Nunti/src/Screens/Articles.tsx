@@ -4,7 +4,6 @@ import {
     Share,
     FlatList,
     RefreshControl,
-    LayoutAnimation,
 } from 'react-native';
 
 import {
@@ -101,7 +100,8 @@ function ArticlesPage(props: Props) {
             },
         });
 
-        refresh(true);
+        if (props.route.name == 'feed')
+            refresh(true);
     }, []);
 
     useEffect(() => {
@@ -218,19 +218,6 @@ function ArticlesPage(props: Props) {
         log.current.debug('Applying filtering:', sourceFilter.current);
     }
 
-    const layoutAnimConfig = {
-        duration: 300,
-        update: {
-            type: LayoutAnimation.Types.easeInEaseOut,
-        },
-        delete: {
-            duration: 100,
-            type: LayoutAnimation.Types.easeInEaseOut,
-            property: LayoutAnimation.Properties.opacity,
-        },
-    };
-
-
     const modifyArticle = async (article: Article, direction: string = 'right') => {
         if (props.buttonType == 'delete') {
             modalRef.current?.hideModal();
@@ -269,7 +256,6 @@ function ArticlesPage(props: Props) {
         }
 
         forceUpdate(!forceValue);
-        LayoutAnimation.configureNext(layoutAnimConfig)
     }
 
     const changePage = async (newPageIndex: number) => {

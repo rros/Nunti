@@ -1536,7 +1536,6 @@ export default StyleSheet.create({
     },
 
     drawerContainer: {
-        width: 360,
         borderRightWidth: 0
     },
 
