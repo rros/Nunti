@@ -1,0 +1,4 @@
+- added Turkish translation
+- improved layout on wide screens
+- improved modal surface colour
+- fixed modals not appearing when using the system's no animations toggle
