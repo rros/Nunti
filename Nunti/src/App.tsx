@@ -469,7 +469,7 @@ function App(props: AppProps) {
             setDrawerFabVisible(true);
         else
             setFabVisible(true);
-    
+
         fabAction.current = newFabAction;
         fabLabel.current = newFabLabel;
     }
@@ -570,8 +570,8 @@ function App(props: AppProps) {
                 onReady={() => RNBootSplash.hide({ fade: true })}>
                 <NavigationDrawer.Navigator initialRouteName={Backend.UserSettings.FirstLaunch ? 'wizard' : 'feed'}
                     drawerContent={(_props) => <Drawer {..._props} windowClass={windowClass} lang={language}
-                        fabVisible={drawerFabVisible} fabAction={fabAction.current} fabLabel={fabLabel.current} />} 
-                        backBehavior="none" screenOptions={{
+                        fabVisible={drawerFabVisible} fabAction={fabAction.current} fabLabel={fabLabel.current} />}
+                    backBehavior="none" screenOptions={{
                         drawerType: windowClass >= WindowClass.medium ? 'permanent' : 'front',
                         drawerStyle: windowClass >= WindowClass.medium && windowClass < WindowClass.extraLarge ?
                             Styles.railContainer : Styles.drawerContainer,
@@ -615,6 +615,14 @@ function App(props: AppProps) {
                 </NavigationDrawer.Navigator>
             </NavigationContainer>
             <Portal>
+                <FAB
+                    icon="plus"
+                    size="large"
+                    onPress={fabAction.current}
+                    style={Styles.fab}
+                    visible={fabVisible}
+                />
+
                 {modalVisible ? <View style={Styles.modal}>
                     <TouchableWithoutFeedback onPress={hideModal}>
                         <Animated.View style={[modalScrimAnimStyle, { backgroundColor: props.theme.colors.backdrop },
@@ -642,14 +650,6 @@ function App(props: AppProps) {
                         </View>
                     </Animated.View>
                 </View> : null}
-
-                <FAB
-                    icon="plus"
-                    size="large"
-                    onPress={fabAction.current}
-                    style={Styles.fab}
-                    visible={fabVisible}
-                />
             </Portal>
         </>
     );
