@@ -1628,9 +1628,6 @@ export default StyleSheet.create({
     },
 
     segmentedButtonContainerOutline: {
-        height: 40,
-        padding: 1,
-        borderRadius: 20,
         marginVertical: 12,
         marginHorizontal: 16,
         flex: 1,
