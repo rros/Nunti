@@ -1,0 +1,3 @@
+- fixed fab buttons appearing over other UI
+- fixed feed sort UI being cropped in some cases
+- attempted to fix random app crashes
