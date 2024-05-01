@@ -2,8 +2,8 @@
 
 Finally a smart RSS reader which doesn't suck ass or your data.
 
-![F-Droid version](https://img.shields.io/f-droid/v/com.nunti)
-![Gitlab release](https://img.shields.io/gitlab/v/release/24697319)
+[![F-Droid version](https://img.shields.io/f-droid/v/com.nunti)](https://f-droid.org/packages/com.nunti/)
+[![Gitlab release](https://img.shields.io/gitlab/v/release/24697319)](https://gitlab.com/ondrejfoltyn/nunti/-/releases)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nunti)
 
@@ -80,7 +80,7 @@ The preferred way to contribute is to create a public fork of the project and cr
 
 # Licence, disclaimer or whatever
 
-Nunti Copyright &copy; 2021 - 2023  Ondřej Foltýn & Richard Klapáč
+Nunti Copyright &copy; 2021 - 2024  Ondřej Foltýn & Richard Klapáč
 
 > This program is free software: you can redistribute it and/or modify
 > it under the terms of the **GNU General Public License** as published by
