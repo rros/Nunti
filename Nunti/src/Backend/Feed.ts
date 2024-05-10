@@ -96,16 +96,19 @@ export class Feed {
                 return false;
             }
         };
+        
+        // appends a string (expected to start with /) to an url, avoiding adding double slash if url ends with a slash
+        const urlAppend = (url: string, str: string): string => url.endsWith('/') ? url.substring(0, url.length-1) + str : url + str;
 
-        if(url.indexOf('https://') == -1 && url.indexOf('http://') == -1)
+        if(!url.startsWith('https://') && !url.startsWith('http://'))
             url = 'https://' + url;
         if (await isWorking(url))
             return url;
-        if (await isWorking(url + '/rss'))
+        if (await isWorking(urlAppend(url, '/rss')))
             return url + '/rss';
-        if (await isWorking(url + '/feed'))
+        if (await isWorking(urlAppend(url, '/feed')))
             return url + '/feed';
-        if (await isWorking(url + '/rss.xml'))
+        if (await isWorking(urlAppend(url, '/rss.xml')))
             return url + '/rss.xml';
         return null;
     }
