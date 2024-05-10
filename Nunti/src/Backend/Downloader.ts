@@ -295,10 +295,15 @@ export class Downloader {
         } catch { /* dontcare */ }
     }
     private static ParseArticleUrl(art: Article, item: any) { //eslint-disable-line
-        if (art.url == 'about:blank') {
+        const isUrlUnset = () => art.url == 'about:blank' || art.url == null || art.url.trim() == '';
+
+        if (isUrlUnset())
             try { art.url = item.getElementsByTagName('link')[0].childNodes[0].nodeValue; } catch { /* dontcare */ }
-        }
-        if (art.url == 'about:blank') {
+
+        if (isUrlUnset()) // for CDATA cases, see issue #114
+            try { art.url = item.getElementsByTagName('link')[0].childNodes[0].nextSibling.nodeValue; } catch { /* dontcare */ }
+
+        if (isUrlUnset()) {
             try {
                 const linkElements = item.getElementsByTagName('link');
                 if (linkElements.length == 1)
@@ -313,18 +318,20 @@ export class Downloader {
                 }
             } catch { /* dontcare */ }
         }
-        if (!art.url?.trim() || art.url == 'about:blank') {
+
+        if (isUrlUnset()) {
             throw new Error(`Could not find any link to article (title: '${art.title}')`);
         }
     }
     private static ParseArticleDate(art: Article, item: any) { //eslint-disable-line
-        if (art.date == undefined)
+        const isDateUnset = () => art.date == undefined || art.date == null;
+        if (isDateUnset())
             try { art.date = new Date(item.getElementsByTagName('dc:date')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
-        if (art.date == undefined)
+        if (isDateUnset())
             try { art.date = new Date(item.getElementsByTagName('pubDate')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
-        if (art.date == undefined)
+        if (isDateUnset())
             try { art.date = new Date(item.getElementsByTagName('published')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
-        if (art.date == undefined)
+        if (isDateUnset())
             try { art.date = new Date(item.getElementsByTagName('updated')[0].childNodes[0].nodeValue); } catch { /* dontcare */ }
     }
     private static GetRandomUA(): string {
