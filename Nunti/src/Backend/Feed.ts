@@ -1,7 +1,5 @@
 import Log from '../Log';
-import { Article } from './Article';
 import { Downloader } from './Downloader';
-import { Storage } from './Storage';
 import { Tag } from './Tag';
 import { UserSettings } from './UserSettings';
 import { Utils } from './Utils';
@@ -117,34 +115,11 @@ export class Feed {
     public static async AddTag(feed: Feed, tag: Tag): Promise<void> {
         feed.tags.push(tag);
         await Feed.Save(feed);
-
-        let cache = await Storage.FSStore.getItem('cache');
-        if (cache != null) {
-            Log.BE.context('Feed:'+feed.url).context('AddTag').debug(`adding tag '${tag.name}' to articles.`);
-            cache = JSON.parse(cache);
-            cache.articles.forEach((art: Article) => {
-                if (art.sourceUrl == feed.url)
-                    art.tags.push(tag);
-            });
-            await Storage.FSStore.setItem('cache', JSON.stringify(cache));
-        }
     }
     /* Removes a tag from feed and also updates all articles in cache */
     public static async RemoveTag(feed: Feed, tag: Tag): Promise<void> {
         feed.tags.splice(feed.tags.indexOf(tag), 1);
         await Feed.Save(feed);
-
-        let cache = await Storage.FSStore.getItem('cache');
-        if (cache != null) {
-            Log.BE.context('Feed:'+feed.url).context('RemoveTag').debug(`Updating cache, removing tag '${tag.name}' from articles.`);
-            cache = JSON.parse(cache);
-            cache.articles.forEach((art: Article) => {
-                if (art.sourceUrl == feed.url) {
-                    art.tags.splice(art.tags.indexOf(tag), 1);
-                }
-            });
-            await Storage.FSStore.setItem('cache', JSON.stringify(cache));
-        }
     }
     public static HasTag(feed: Feed, tag: Tag): boolean {
         let has = false;

@@ -155,10 +155,6 @@ export class Downloader {
                     this.ParseArticleUrl(art, item);
                     this.ParseArticleDate(art, item);
 
-                    feed.tags.forEach((tag) => {
-                        art.tags.push(tag);
-                    });
-
                     arts.push(art);
                 } catch(err) {
                     log.error(`Cannot process article, err: ${err}`);

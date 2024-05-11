@@ -1,6 +1,8 @@
 import { SortType } from '../Props';
 import { Article } from './Article';
 import { Tag } from './Tag';
+import { UserSettings } from './UserSettings';
+import { Utils } from './Utils';
 
 export class ArticlesFilter {
     public sortType: SortType | undefined;
@@ -36,14 +38,20 @@ export class ArticlesFilter {
             //tags
             let passedTags = false;
             if (filter.tags != undefined && filter.tags != null && filter.tags.length > 0) {
-                art.tags.forEach((tag: Tag) => {
-                    if (filter.tags == undefined)
-                        return;
-                    filter.tags.forEach((filterTag: Tag) => {
-                        if (filterTag.name == tag.name)
-                            passedTags = true;
+                const feedList = UserSettings.Instance.FeedList;
+                const feed_index = Utils.FindFeedByUrl(art.sourceUrl, feedList);
+                if (feed_index < 0 || feed_index >= feedList.length) {
+                    passedTags = false;
+                } else {
+                    feedList[feed_index].tags.forEach((tag: Tag) => {
+                        if (filter.tags == undefined)
+                            return;
+                        filter.tags.forEach((filterTag: Tag) => {
+                            if (filterTag.name == tag.name)
+                                passedTags = true;
+                        });
                     });
-                });
+                }
             } else
                 passedTags = true;
 

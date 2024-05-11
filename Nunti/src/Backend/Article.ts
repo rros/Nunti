@@ -1,7 +1,6 @@
 import Log from '../Log';
 import { Current } from './Current';
 import { Storage } from './Storage';
-import { Tag } from './Tag';
 import { UserSettings } from './UserSettings';
 import { Utils } from './Utils';
 
@@ -11,10 +10,9 @@ export class Article {
     public description = '';
     public cover: string | undefined = undefined;
     public url = 'about:blank';
-    public source = 'unknown';
-    public sourceUrl = 'unknown';
+    public source = 'unknown'; // Feed pretty name
+    public sourceUrl = 'unknown'; // Feed URL
     public date: Date | undefined = undefined;
-    public tags: Tag[] = [];
 
     public score = 0;
     public keywords: {[id:string]: number} = {};
