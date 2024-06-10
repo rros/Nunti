@@ -1,6 +1,6 @@
 {
   "name": "nunti",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "private": true,
   "scripts": {
     "react-devtools": "react-devtools",

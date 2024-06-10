@@ -1,0 +1,3 @@
+- fixed parsing for feeds which provide url in CDATA
+- fixed bad performance during tag manipulation
+- deselecting "all rss" in rss filter now selects everything individually
