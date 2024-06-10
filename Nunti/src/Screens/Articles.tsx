@@ -492,27 +492,32 @@ function RssModalContent(props: FilterModalProps) {
     const [forceValue, forceUpdate] = useState(false);
 
     const changeSelectedFeeds = (feedUrl: string) => {
-        const feedWasRemoved = selectedFeeds.some(pickedFeedUrl => {
+        let feeds = selectedFeeds;
+
+        const feedWasRemoved = feeds.some(pickedFeedUrl => {
             if (pickedFeedUrl == feedUrl) {
-                selectedFeeds.splice(selectedFeeds.indexOf(feedUrl), 1);
+                feeds.splice(feeds.indexOf(feedUrl), 1);
                 return true;
             } else {
                 return false;
             }
         });
 
-        if (!feedWasRemoved) {
-            if (feedUrl == 'all_rss')
-                // unselect everything else
-                selectedFeeds.splice(0, selectedFeeds.length);
-            else if (selectedFeeds.indexOf('all_rss') >= 0)
-                // remove all_rss if picking something specific
-                selectedFeeds.splice(selectedFeeds.indexOf('all_rss'), 1);
-
-            selectedFeeds.push(feedUrl);
+        if (feedUrl == 'all_rss' && feedWasRemoved) {
+            // select everything else when unselecting all_rss
+            feeds = Backend.UserSettings.FeedList.map((feed) => feed.url);
+        } else if (feedUrl == 'all_rss' && !feedWasRemoved) {
+            // deselect everything else when selecting all_rss
+            feeds = [];
+        } else if (feeds.indexOf('all_rss') >= 0) {
+            // remove all_rss if selecting something specific
+            feeds.splice(feeds.indexOf('all_rss'), 1);
         }
 
-        setFeeds(selectedFeeds);
+        if (!feedWasRemoved)
+            feeds.push(feedUrl);
+
+        setFeeds(feeds);
         forceUpdate(!forceValue);
     }
 
