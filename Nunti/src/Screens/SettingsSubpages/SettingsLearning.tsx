@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     View,
 } from 'react-native';
@@ -51,7 +51,7 @@ function SettingsLearning(props: ScreenProps) {
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
-                    onPress={() => browserRef.current?.openBrowser(
+                    onPress={() => browserRef.current?.openExternalBrowser(
                         'https://gitlab.com/ondrejfoltyn/nunti/-/wikis/Adaptive-learning')}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.learn_more}</Text>

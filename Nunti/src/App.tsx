@@ -485,7 +485,7 @@ function App(props: AppProps) {
         fabAction.current = () => { };
     }
 
-    const openBrowser = async (url: string, source?: string, ignoreConnectionStatus: boolean = false) => {
+    const openArticle = async (url: string, source?: string, ignoreConnectionStatus: boolean = false) => {
         let browserType: BrowserMode = Backend.UserSettings.BrowserMode;
         if (!ignoreConnectionStatus && await Utils.IsDoNotDownloadActive())
             browserType = 'reader_mode';
@@ -526,6 +526,13 @@ function App(props: AppProps) {
         }
     }
 
+    const openExternalBrowser = async (url: string, source?: string) => {
+        if (source === undefined)
+            source = drawerNavigationRef.current!.getCurrentRoute()?.name;
+
+        Linking.openURL(url);
+    }
+
     const reloadFeed = (resetCache: boolean = true) => {
         log.current.debug('Feed reload requested')
         shouldFeedReload.current = true;
@@ -553,7 +560,7 @@ function App(props: AppProps) {
 
     useImperativeHandle(modalRef, () => ({ modalVisible, hideModal, showModal }));
     useImperativeHandle(snackbarRef, () => ({ showSnack }));
-    useImperativeHandle(browserRef, () => ({ openBrowser }));
+    useImperativeHandle(browserRef, () => ({ openArticle: openArticle, openExternalBrowser: openExternalBrowser }));
     useImperativeHandle(fabRef, () => ({ showFab, hideFab }));
     useImperativeHandle(globalStateRef, () => ({
         updateLanguage, updateTheme, resetApp,

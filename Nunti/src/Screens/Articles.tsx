@@ -615,7 +615,7 @@ function DetailsModalContent(props: DetailsModalProps) {
 
             <View style={Styles.cardButtonContainer}>
                 <Button icon="book" mode="contained" style={Styles.cardButtonLeft}
-                    onPress={() => { browserRef.current?.openBrowser(props.currentArticle.url); }}>{props.lang.read_more}</Button>
+                    onPress={() => { browserRef.current?.openArticle(props.currentArticle.url); }}>{props.lang.read_more}</Button>
                 {props.buttonType != 'delete' ? <IconButton icon="bookmark" size={24}
                     onPress={() => { props.saveArticle(props.currentArticle); }} /> : null}
                 {props.buttonType == 'delete' ? <IconButton icon="delete" size={24}

@@ -102,7 +102,7 @@ function ArticleCard(props: ArticleCardProps) {
                 <View style={[Styles.card, { backgroundColor: props.theme.colors.secondaryContainer }]}>
                     <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
                         useForeground={true}
-                        onPress={() => { browserRef.current?.openBrowser(props.item.url); }}
+                        onPress={() => { browserRef.current?.openArticle(props.item.url); }}
                         onLongPress={() => { props.viewDetails(props.item); }}>
 
                         <View style={{ flexDirection: isWide ? 'row-reverse' : 'column' }}>

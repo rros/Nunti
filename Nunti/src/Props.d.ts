@@ -33,7 +33,8 @@ export type FabRef = {
     hideFab: () => void,
 }
 export type BrowserRef = {
-    openBrowser: (url: string, source?: string, ignoreConnectionStatus?: boolean) => Promise<void>,
+    openArticle: (url: string, source?: string, ignoreConnectionStatus?: boolean) => Promise<void>,
+    openExternalBrowser: (url: string, source?: string) => Promise<void>
 }
 export type GlobalStateRef = {
     updateLanguage: (language: LanguageCode) => Language,

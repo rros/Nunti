@@ -67,7 +67,7 @@ function About(props: ScreenProps) {
             <Card mode={'contained'} style={Styles.card}>
                 <TouchableNativeFeedback
                     background={TouchableNativeFeedback.Ripple(props.theme.colors.surfaceDisabled, false, undefined)}
-                    onPress={() => browserRef.current?.openBrowser(
+                    onPress={() => browserRef.current?.openExternalBrowser(
                         'https://gitlab.com/ondrejfoltyn/nunti/-/issues')}>
                     <View style={Styles.settingsButton}>
                         <Text variant="titleMedium" style={{ color: props.theme.colors.onSurfaceVariant }}>{props.lang.issue_tracker}</Text>

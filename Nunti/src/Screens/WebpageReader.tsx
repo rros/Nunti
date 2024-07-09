@@ -61,7 +61,7 @@ function ReaderMode(props: ScreenProps) {
     }
 
     const forceWebview = async () => {
-        browserRef.current?.openBrowser(props.route.params?.url, props.route.params?.source, true);
+        browserRef.current?.openArticle(props.route.params?.url, props.route.params?.source, true);
     }
 
     const openSettings = async () => {
